@@ -1,0 +1,32 @@
+2009-11-23  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* R/toms644.R: renamed file from 'Bess.R'; check for
+	integer nu in  sin(pi * nu).
+
+2009-02-06  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* R/Bess.R: no longer stop() on overflow 'ierr = 2' but rather return  Inf
+
+2009-02-05  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* R/I-fn.R (bI, besselI.nuAsym, ..): added from MM/NUMERICS/
+
+	* inst/doc/other-Bessels.Rnw: notably about the {gsl} package.
+	* inst/doc/Bessel.bib: (new)
+
+	* src/zbsubs.c: translated via f2c, f2c-clean and much manually
+	* src/zbsubs.h: (new)
+
+2009-02-04  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* R/Bess.R: renamed; now allow *negative*  nu
+	* tests/  : added three test files
+
+2009-02-03  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* DESCRIPTION: package created
+
+	* src/zbsubs.f,
+	* src/machcon.f: basically as from TOMS 644 source
+
+	* R/zbess.R: interface to R, later renamed

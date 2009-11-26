@@ -1,0 +1,142 @@
+\documentclass{article}
+%
+\usepackage{myVignette}
+\usepackage{fullpage}% save trees ;-)
+\usepackage[authoryear,round]{natbib}
+\bibliographystyle{plainnat}
+\newcommand{\noFootnote}[1]{{\small (\textit{#1})}}
+\newcommand{\myOp}[1]{{$\left\langle\ensuremath{#1}\right\rangle$}}
+%
+%%\VignetteIndexEntry{Bessel Functions in other CRAN Packages}
+%%\VignetteDepends{Bessel,gsl}
+\SweaveOpts{engine=R,eps=FALSE,pdf=TRUE,width=7,height=4,strip.white=TRUE,keep.source=TRUE}
+%								          ^^^^^^^^^^^^^^^^
+\title{Bessel Functions in other CRAN Packages}
+\author{Martin Maechler\\ R Core Development Team
+  \\\email{maechler@stat.math.ethz.ch}}
+\date{February 2009 ({\tiny typeset on \tiny\today})}
+%
+\begin{document}
+\maketitle
+\begin{abstract}
+
+  Why do I write yet another \RR{} package, when \RR{} itself has Bessel
+  functions and several CRAN packages also have versions of these?
+
+\end{abstract}
+
+%% Note: These are explained in '?RweaveLatex' :
+<<preliminaries, echo=FALSE>>=
+options(width=75)
+library(Bessel)
+@
+
+\section{Introduction}
+\RR{} itself has had the function \Rfun{besselI},\Rfun{besselJ},\Rfun{besselK}
+and \Rfun{besselY}, from very early on.
+%% also brought to you by Martin Maechler ...
+
+However, they had shown deficiencies: First, they did only work for real
+(\code{double}) but not for \emph{complex} arguments, even though the
+Bessel functions are well-defined on the whole complex plain.
+%%
+Second, for $x \approx 1500$ and larger, \code{besselI(x,nu,
+  expon.scaled=TRUE)} jumped to zero, as I found, because of an overflow
+in the backward recursion (via difference equation),
+which I found elegantly to resolve (by re-scaling), for \RR{}2.9.0.
+However, the algorithm complexity is proportional to $\lfloor x \rfloor$,
+and for large $x$, a better algorithm has been desired for years.
+Hence, I had started experimenting with the two asymptotic expansions from
+\cite{AbrMS70}.
+%% ............
+
+The following \RR{} packages on CRAN (as of Jan.29, 2009) also provide
+Bessel functions:
+\begin{description}
+%% --> ../../Bessel_in_CRAN_pkgs
+%%     -------------------------
+
+\item[gsl]
+\item[fAsianOptions]
+
+\item[QRMlib]  Uses many \pkg{gsl} C functions in its own code;
+  or, rather, seems to have copy-pasted large parts of gsl in its own
+  \file{src/} directory
+%% /usr/local/app/R/R_local/src/QRMlib/src/bessel.c -- looks like 'gsl'
+%%                              =====        but it's *NOT* in GSL-reference
+%% *and* it has both Asymptotic expansions from Abramowitz & Stegun
+%% notably,  gsl_sf_bessel_Inu_scaled_asymp_unif_e()  has 9.7.7  with 6 terms
+
+\end{description}
+
+
+\section{\texttt{gsl}}% What is in the 'gsl' package
+
+The \RR{} package \pkg{gsl} by Robin Hankin provides an \RR{} interface on a
+function-by-function basis to much of the GSL, the GNU Scientific Library.
+You get a first overview with
+<<gsl-do,echo=FALSE>>=
+library(gsl)
+@
+<<gsl-help,eval=FALSE>>=
+library(gsl)
+?bessel_Knu
+@
+
+What can I say ...
+\begin{itemize}
+
+\item only real 'x',  not complex
+
+
+\item For fractional nu , the (only) interesting functions are
+
+\begin{verbatim}
+     bessel_Inu       (nu, x, give=FALSE, strict=TRUE)
+     bessel_Inu_scaled(nu, x, give=FALSE, strict=TRUE)
+     bessel_Jnu       (nu, x, give=FALSE, strict=TRUE)
+     bessel_Jnu_scaled(nu, x, give=FALSE, strict=TRUE)
+     bessel_Knu       (nu, x, give=FALSE, strict=TRUE)
+     bessel_Knu_scaled(nu, x, give=FALSE, strict=TRUE)
+     bessel_Ynu       (nu, x, give=FALSE, strict=TRUE)
+     bessel_Ynu_scaled(nu, x, give=FALSE, strict=TRUE)
+\end{verbatim}
+
+  where the \texttt{*\_scaled()} version of each corresponds to our functions
+  \code{expon.scaled=TRUE}.
+
+
+\item \texttt{bessel\_Inu\_scaled()} works for large x,
+  comparably to our \code{BesselI(.)} which give warnings about accuracy
+  loss here :
+<<bessel_Inu_scaled>>=
+   x <- (1:500)*50000; b2 <- BesselI(x, pi, expo=TRUE)
+   b1 <- bessel_Inu_scaled(pi, x)
+   all.equal(b1,b2,tol=0) ## "Mean relative difference: 1.544395e-12"
+
+   ## the accuracy is *as* limited (probably):
+   b1 <- bessel_Inu_scaled(pi, x, give=TRUE)
+   summary(b1$err)
+@
+%       Min.   1st Qu.    Median      Mean   3rd Qu.      Max.
+%  8.299e-08 9.580e-08 1.173e-07 1.606e-07 1.655e-07 1.856e-06
+where the GSL (info) manual says that \code{err} is an \emph{absolute} error
+estimate, hence for \emph{relative} error estimates, we look at
+
+<<bessel_Inu-relErr>>=
+    range(b1$err/ b1$val)
+@
+%% 0.001040159 0.001040161
+So, we see that either the error estimate is too conservative, or the
+results only have 3 digit accuracy.
+\end{itemize}
+
+\section{Session Info}
+
+<<sessionInfo, results=tex>>=
+toLatex(sessionInfo())
+@
+
+\bibliography{Bessel}
+
+\end{document}

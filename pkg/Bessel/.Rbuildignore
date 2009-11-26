@@ -1,0 +1,7 @@
+.Rhistory
+.*\.patch
+misc/
+Old/.*
+TOMS-dir
+.*-warnings
+.*CRAN_pkgs

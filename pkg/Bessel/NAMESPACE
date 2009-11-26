@@ -1,0 +1,18 @@
+useDynLib(Bessel)
+
+## These are the  TOMS 644  R-interface functions :
+
+export(BesselI,
+       BesselJ,
+       BesselK,
+       BesselY)
+
+export(BesselH,
+       AiryA, AiryB)
+
+## -------------------------------
+
+export(bI, ## <<< FIXME? rename ?
+       besselIasym,
+       besselI.ftrms,
+       besselI.nuAsym)

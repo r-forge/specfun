@@ -1,0 +1,8 @@
+- Vignette --> ./inst/doc/other-Bessels.Rnw
+
+- More docu in ./man/Bessel.Rd
+
+- Add (most / all) of ~/R/MM/NUMERICS/bessel-fn.R
+  R/I-fn.R  -- but we need to make these work with *complex* input
+  ========   should not be hart, since the Abramowitz & Stegun formula
+   are for complex .. though restricted, e.g. 9.7.1 (p.377) to  |Arg(z)| < pi/2
