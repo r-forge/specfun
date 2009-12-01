@@ -15,4 +15,8 @@ export(BesselH,
 export(bI, ## <<< FIXME? rename ?
        besselIasym,
        besselI.ftrms,
-       besselI.nuAsym)
+       besselI.nuAsym,
+
+#not yet besselKasym,
+       besselK.nuAsym)
+

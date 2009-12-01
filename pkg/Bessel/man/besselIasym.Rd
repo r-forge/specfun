@@ -1,30 +1,47 @@
 \name{besselIasym}
 \alias{besselIasym}
+%\alias{besselKasym}
 \alias{besselI.ftrms}
 \title{Asymptotic Expansion of besselI(x,nu) For Large x}
 \description{
-  ~~ A concise (1-5 lines) description of what the function does. ~~
+  Compute Bessel function \eqn{I_{\nu}(x)}{I[nu](x)}
+  and \eqn{K_{\nu}(x)}{K[nu](x)} for large \eqn{x} and small or moderate
+  \eqn{\nu}{nu}, using the asymptotic expansion (9.7.1), p.377 of
+  Abramowitz & Stegun, for \eqn{x \to\infty}{x -> Inf}, even valid for
+  \emph{\code{\link{complex}}} \eqn{x},
+  %% CARE: With the new parser you should only carefully wrap these lines:
+  \deqn{I_a(x) = exp(x) / \sqrt{2\pi x} \cdot f(x, a),
+  }{I_a(x) = exp(x) / sqrt(2*pi*x)* f(x, a),}
+  where
+  \deqn{f(x,a) = 1 - \frac{\mu-1}{8x} + \frac{(\mu-1)(\mu-9)}{2! (8x)^2}
+    - \ldots,}{f(x,a) = 1 - (mu-1) / (8x) + (mu-1)(mu-9) / (2! (8x)^2) - ...,}
+  %            = 1- (mu-1)/(8z)*(1- (mu-9)/(2(8z))*(1-(mu-25)/(3(8z))*..))
+  and  \eqn{\mu = 4 a^2}{mu = 4*a^2} and \eqn{|arg(x)| < \pi/2}.
+
+  Whereas \code{besselIasym(x,a)} computes \eqn{I_a(x)},
+  \code{besselI.ftrms} returns the corresponding \emph{terms} in the
+  series expansion of \eqn{f(x,a)} above.
 }
 \usage{
 besselIasym  (x, nu, k.max = 10, expon.scaled = FALSE, log = FALSE)
 besselI.ftrms(x, nu, K = 20)
 }
 \arguments{
-  \item{x}{ ~~Describe \code{x} here~~ }
-  \item{nu}{ ~~Describe \code{nu} here~~ }
-  \item{k.max, K}{ ~~Describe \code{k.max} here~~ }
-  \item{expon.scaled}{ ~~Describe \code{expon.scaled} here~~ }
-  \item{log}{ ~~Describe \code{log} here~~ }
+  \item{x}{numeric, \eqn{\ge 0}{>= 0}.}
+  \item{nu}{numeric; The \emph{order} (maybe fractional!) of the
+    corresponding Bessel function.}
+  \item{k.max, K}{integer number of terms in the expansion.}% << TODO more ?
+  \item{expon.scaled}{logical; if \code{TRUE}, the results are
+    exponentially scaled in order to avoid overflow.}
+  % (\eqn{I_{\nu}}{I(nu)}) or underflow (\eqn{K_{\nu}}{K(nu)}),
+  % respectively.}
+  \item{log}{logical; if TRUE, \eqn{\log(f(.))} is returned instead of \eqn{f}.}
 }
 \details{
-  ~~ If necessary, more details than the description above ~~
+ ......... FIXME ...
 }
 \value{
-  ~Describe the value returned
-  If it is a LIST, use
-  \item{comp1 }{Description of 'comp1'}
-  \item{comp2 }{Description of 'comp2'}
-  ...
+ a numeric vector of the same length as \code{x}.%% FIXME, x = matrix ?
 }
 \references{
   Abramowitz, M., and Stegun, I. A. (1955, etc).
@@ -33,54 +50,17 @@ besselI.ftrms(x, nu, K = 20)
 }
 \author{Martin Maechler}
 \seealso{
-  This package \code{\link{BesselI}}, \pkg{base} \code{\link{besselI}}, etc
+  From this package \pkg{Bessel()} \code{\link{BesselI}()}; further,
+  \code{\link{besselI.nuAsym}()} which is useful when \eqn{\nu} is large
+  (as well); further \pkg{base} \code{\link{besselI}}, etc
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-function(x, nu, k.max = 10, expon.scaled=FALSE, log=FALSE)
-{
-    ## Purpose: Asymptotic expansion of Bessel I_nu(x) function   x -> oo
-    ##        by Abramowitz & Stegun (9.7.1), p.377 :
-    ##
-    ## I_a(z) = exp(z) / sqrt(2*pi*z) * f(z,..)  where
-    ##   f(z,..) = 1 - (mu-1)/ (8*z) + (mu-1)(mu-9)/(2! (8z)^2) - ...
-    ##           = 1- (mu-1)/(8z)*(1- (mu-9)/(2(8z))*(1-(mu-25)/(3(8z))*..))
-    ## where  mu = 4*a^2
-    ## ----------------------------------------------------------------------
-    ## Arguments: x, nu, expon.scaled:  as besselI()
-    ## ----------------------------------------------------------------------
-    ## Author: Martin Maechler, Date: 11 Apr, 21 Nov 2008
-
-    ## Note that for each x the series eventually *DIVERGES*
-    ## it should be "stopped" as soon as it *converged* (:-)
-
-    stopifnot(k.max == round(k.max))
-
-    ## I_\nu(z) = exp(z) / sqrt(2*pi*z) * f(z, nu)
-
-    ## First compute  f(x, nu) to order k.max
-    f <- 1
-    d <- 0 ## d = 1 - f  <==>  f = 1 - d
-    if(k.max >= 1) {
-        m. <- 4*nu^2
-        x8 <- 8*x
-        for(k in k.max:1) {
-            ## mu <- 4*nu^2; d <- (1 - d)*(mu - (2*k-1)^2)/(k*x8)
-            ## mu - (2k-1)^2 = (2nu - (2k-1)) (2nu + (2k-1)) =
-            ##               = (2(nu-k)+1)(2(nu+k)-1)
-            d <- (1 - d)*((2*(nu-k)+1)*(2*(nu+k)-1))/(k*x8)
-        }
-    }
-    if(log) {
-        ## f = 1 - d  ==> log(f) = log1p(-d) :
-        (if(expon.scaled) log1p(-d) else x + log1p(-d)) - log(2*pi*x) / 2
-    } else {
-        (if(expon.scaled) (1-d) else exp(x)*(1-d)) / sqrt(2*pi*x)
-    }
-  }
+x <- c(1:10, 20, 50, 100^(2:10))
+nu <- c(1, 10, 20, 50, 100)
+%% FIXME: do something more sensible -- compare with  besselI() and *K()
+r <- lapply(c(0:4,10,20), function(k.)
+            sapply(nu, function(n.)
+                  besselIasym(x, nu=n., k.max = k., log = TRUE)))
+warnings() %% NaN's  ... seem a bit scattered.  FIXME ??
 }
 \keyword{math}
