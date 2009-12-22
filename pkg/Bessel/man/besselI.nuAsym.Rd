@@ -24,11 +24,15 @@ besselK.nuAsym(x, nu, k.max, expon.scaled = FALSE, log = FALSE)
     respectively.}
   \item{log}{logical; if TRUE, \eqn{\log(f(.))} is returned instead of \eqn{f}.}
 }
-% \details{
+\details{
+  Abramowitz & Stegun , page 378, has formula 9.7.7 and 9.7.8 for the asymptotic
+  expansions of \eqn{I_{\nu}(x)} and \eqn{K_{\nu}(x)}, respectively.
 
-% }
+  The Debye polynomials \eqn{u_k(x)} are defined in 9.3.9 and 9.3.10 (page 366).
+}
 \value{
- a numeric vector of the same length as \code{x}.%% FIXME, x = matrix ?
+  a numeric vector of the same length as the long of \code{x} and
+  \code{nu}. (usual argument recycling is applied implicitly.)
 }
 \references{
   Abramowitz, M., and Stegun, I. A. (1955, etc).
@@ -37,7 +41,7 @@ besselK.nuAsym(x, nu, k.max, expon.scaled = FALSE, log = FALSE)
 }
 \author{Martin Maechler}
 \seealso{
-  From this package \pkg{Bessel()} \code{\link{BesselI}()}; further,
+  From this package \pkg{Bessel} \code{\link{BesselI}()}; further,
   \code{\link{besselIasym}()} for the case when \eqn{x} is large and
   \eqn{\nu} is small or moderate; further \pkg{base}
   \code{\link{besselI}}, etc
