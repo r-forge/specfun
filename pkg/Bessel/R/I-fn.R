@@ -289,7 +289,7 @@ besselK.nuAsym <- function(x, nu, k.max, expon.scaled=FALSE, log=FALSE)
     }
 
     if(log) {
-        log1p(d) - nu*eta - (log(sz) + log(pi/(2*nu)))/2
+        log1p(d) - nu*eta - (log(sz) - log(pi/(2*nu)))/2
     } else {
         (1+d) * exp(-nu*eta)*sqrt(pi/(2*nu * sz))
     }

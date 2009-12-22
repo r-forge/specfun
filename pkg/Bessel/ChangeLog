@@ -1,3 +1,9 @@
+2009-12-22  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* tests/Bessel_asymp.R: new file
+
+	* R/I-fn.R (besselK.nuAsym): fix typo in 'log=TRUE' case.
+
 2009-11-23  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* R/toms644.R: renamed file from 'Bess.R'; check for
