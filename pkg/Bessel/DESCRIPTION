@@ -1,11 +1,10 @@
 Package: Bessel
-Version: 0.5-2
+Version: 0.5-3
 Date: 2009-12-22
 Title: Bessel -- Bessel Functions Computations and Approximations
 Author: Martin Maechler
 Maintainer: Martin Maechler <maechler@stat.math.ethz.ch>
-Depends: R (>= 2.9.2), Rmpfr
-Note: tests/IJKY.R currently requires R "2.10.1" !!
+Depends: R (>= 2.10.1), Rmpfr
 Suggests: gsl
 LazyData: yes
 Description: Bessel Function Computations for complex and real numbers;

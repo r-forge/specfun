@@ -1,6 +1,6 @@
 
-R version 2.10.0 Patched (2009-11-24 r50556)
-Copyright (C) 2009 The R Foundation for Statistical Computing
+R version 2.11.0 Patched (2010-04-24 r51820)
+Copyright (C) 2010 The R Foundation for Statistical Computing
 ISBN 3-900051-07-0
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -21,18 +21,13 @@ Loading C code of R package 'Rmpfr': GMP using 64 bits per limb
 
 Attaching package: 'Rmpfr'
 
+The following object(s) are masked from 'package:stats':
 
-	The following object(s) are masked from package:stats :
+    pnorm
 
-	 pnorm 
+The following object(s) are masked from 'package:base':
 
-
-	The following object(s) are masked from package:base :
-
-	 cbind,
-	 pmax,
-	 pmin,
-	 rbind 
+    cbind, pmax, pmin, rbind
 
 > 
 > #### Test cases for the Bessel functions I(), J(), K(), Y()

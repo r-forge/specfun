@@ -1,3 +1,7 @@
+2010-04-26  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* DESCRIPTION (Version): 0.5-3  for releasing to CRAN
+
 2009-12-22  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* tests/Bessel_asymp.R: new file
