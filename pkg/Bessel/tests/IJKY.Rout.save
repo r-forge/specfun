@@ -1,7 +1,8 @@
 
-R version 2.11.0 Patched (2010-04-24 r51820)
-Copyright (C) 2010 The R Foundation for Statistical Computing
+R version 2.13.0 Under development (unstable) (2011-03-13 r54781)
+Copyright (C) 2011 The R Foundation for Statistical Computing
 ISBN 3-900051-07-0
+Platform: x86_64-unknown-linux-gnu (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
@@ -271,4 +272,10 @@ The following object(s) are masked from 'package:base':
 > ##     function from the h functions of kinds 1 and 2.
 > 
 > ###--------> zbesyh() in ../src/zbsubs.c  is completely unneeded (otherwise) !
+> 
+> 
+> ##  "limit  z -> 0  does not exist (there are many complex "Inf"s),
+> ##		    but for z = real, z >=0 is -Inf
+> stopifnot(BesselY(0,1) == -Inf,# == besselY(0,1),
++ 	  is.nan(BesselY(0+0i, 1)))
 > 

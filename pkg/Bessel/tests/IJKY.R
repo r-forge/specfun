@@ -201,3 +201,9 @@ for(i in seq_along(nus.)) {
 ##     function from the h functions of kinds 1 and 2.
 
 ###--------> zbesyh() in ../src/zbsubs.c  is completely unneeded (otherwise) !
+
+
+##  "limit  z -> 0  does not exist (there are many complex "Inf"s),
+##		    but for z = real, z >=0 is -Inf
+stopifnot(BesselY(0,1) == -Inf,# == besselY(0,1),
+	  is.nan(BesselY(0+0i, 1)))

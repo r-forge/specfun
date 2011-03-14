@@ -1,3 +1,8 @@
+2011-03-14  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* R/toms644.R (BesselY): (0, nu) should not give an error message
+	from zbesy(), but either -Inf (real 0) or something like "Inf + NaN i".
+
 2010-04-26  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* DESCRIPTION (Version): 0.5-3  for releasing to CRAN

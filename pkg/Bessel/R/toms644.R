@@ -219,34 +219,42 @@ BesselY <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
     r <- if(isNum) numeric(nz * nSeq) else complex(nz * nSeq)
     if(nSeq > 1) r <- matrix(r, nz, nSeq)
     for(i in seq_len(nz)) {
+        if(zr[i] == 0 && zi[i] == 0) {
+            rz <- if(isNum) -Inf else
+            ## A limit  z -> 0  depends on the *direction*; it is
+            ## ``a version of Inf"', i.e. the only *complex* Inf, if you think
+            ## of the complex sphere. --> we use the same as 1/(0+0i):
+            1/(0+0i)
+        } else {
 ## 1182: zbesy(zr, zi, fnu, kode, n, cyr, cyi, nz, cwrkr, cwrki, ierr)
-	ri <- .Fortran("zbesy",
-		       zr[i], zi[i],
-		       fnu = nu,
-		       kode= as.integer(1L + as.logical(expon.scaled)),
+            ri <- .Fortran("zbesy",
+                           zr[i], zi[i],
+                           fnu = nu,
+                           kode= as.integer(1L + as.logical(expon.scaled)),
 					# 1 or 2, exactly as desired
-		       n = as.integer(nSeq),
-		       cyr = double(nSeq),
-		       cyi = double(nSeq),
-		       nz   = integer(1),
-		       cwrkr= double(nSeq),
-		       cwrki= double(nSeq),
-		       ierr = integer(1), PACKAGE = "Bessel")
-	if(ri$ierr) {
-	    f.x <- sprintf("'zbesy(%g %s %gi, nu=%g)'", zr[i],
-                           c("-","+")[1+(z >= 0)], abs(zi[i]), nu)
-	    if(ri$ierr == 3)
-		warning(sprintf("%s large arguments -> precision loss\n	 (of at least half machine accuracy)", f.x))
-	    else if(ri$ierr == 2) {
-		if(getOption("verbose"))
-                    message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
-                ri$cyr <- ri$cyi <- Inf
+                           n = as.integer(nSeq),
+                           cyr = double(nSeq),
+                           cyi = double(nSeq),
+                           nz   = integer(1),
+                           cwrkr= double(nSeq),
+                           cwrki= double(nSeq),
+                           ierr = integer(1), PACKAGE = "Bessel")
+            if(ri$ierr) {
+                f.x <- sprintf("'zbesy(%g %s %gi, nu=%g)'", zr[i],
+                               c("-","+")[1+(z >= 0)], abs(zi[i]), nu)
+                if(ri$ierr == 3)
+                    warning(sprintf("%s large arguments -> precision loss\n	 (of at least half machine accuracy)", f.x))
+                else if(ri$ierr == 2) {
+                    if(getOption("verbose"))
+                        message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
+                    ri$cyr <- ri$cyi <- Inf
+                }
+                else stop(sprintf("%s [Fortran] error ierr = %d", f.x, ri$ierr))
             }
-	    else stop(sprintf("%s [Fortran] error ierr = %d", f.x, ri$ierr))
-	}
-	rz <- if(isNum) ri$cyr else complex(re = ri$cyr,
-					    im = ri$cyi)
-	if(nSeq > 1) r[i,] <- rz else r[i] <- rz
+            rz <- if(isNum) ri$cyr else complex(re = ri$cyr,
+                                                im = ri$cyi)
+        }
+        if(nSeq > 1) r[i,] <- rz else r[i] <- rz
     }
     r
 } ## Y()
