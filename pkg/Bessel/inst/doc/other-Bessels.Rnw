@@ -9,8 +9,8 @@
 %
 %%\VignetteIndexEntry{Bessel Functions in other CRAN Packages}
 %%\VignetteDepends{Bessel,gsl}
-\SweaveOpts{engine=R,eps=FALSE,pdf=TRUE,width=7,height=4,strip.white=TRUE,keep.source=TRUE}
-%								          ^^^^^^^^^^^^^^^^
+\SweaveOpts{engine=R,eps=FALSE,pdf=TRUE,width=7,height=4,strip.white="true",keep.source=TRUE}
+%								            ^^^^^^^^^^^^^^^^
 \title{Bessel Functions in other CRAN Packages}
 \author{Martin Maechler\\ R Core Development Team
   \\\email{maechler@stat.math.ethz.ch}}
