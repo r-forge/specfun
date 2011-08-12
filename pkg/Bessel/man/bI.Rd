@@ -5,7 +5,7 @@
   Computes the modified Bessel \eqn{I} function, using one of its basic
   definitions as an infinite series.  The implementation is pure \R,
   working for \code{\link{numeric}}, \code{\link{complex}}, but also
-  e.g., for objects of class \code{"mpfr"}%% \linkS4class[Rmpfr]{mpfr}}
+  e.g., for objects of class \code{"\linkS4class[Rmpfr]{mpfr}"}
   from package \pkg{Rmpfr}.
 }
 \usage{
