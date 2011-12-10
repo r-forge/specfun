@@ -66,8 +66,8 @@ BesselI <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
             }
 	    else stop(sprintf("%s [Fortran] error ierr = %d", f.x, ri$ierr))
 	}
-	rz <- if(isNum) ri$cyr else complex(re = ri$cyr,
-					    im = ri$cyi)
+	rz <- if(isNum) ri$cyr else complex(real = ri$cyr,
+					    imaginary = ri$cyi)
 	if(nSeq > 1) r[i,] <- rz else r[i] <- rz
     }
     r
@@ -125,8 +125,8 @@ BesselJ <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
             }
 	    else stop(sprintf("%s [Fortran] error ierr = %d", f.x, ri$ierr))
 	}
-	rz <- if(isNum) ri$cyr else complex(re = ri$cyr,
-					    im = ri$cyi)
+	rz <- if(isNum) ri$cyr else complex(real = ri$cyr,
+					    imaginary = ri$cyi)
 	if(nSeq > 1) r[i,] <- rz else r[i] <- rz
     }
     r
@@ -180,8 +180,8 @@ BesselK <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
             }
 	    else stop(sprintf("%s [Fortran] error ierr = %d", f.x, ri$ierr))
 	}
-	rz <- if(isNum) ri$cyr else complex(re = ri$cyr,
-					    im = ri$cyi)
+	rz <- if(isNum) ri$cyr else complex(real = ri$cyr,
+					    imaginary = ri$cyi)
 	if(nSeq > 1) r[i,] <- rz else r[i] <- rz
     }
     r
@@ -251,8 +251,8 @@ BesselY <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
                 }
                 else stop(sprintf("%s [Fortran] error ierr = %d", f.x, ri$ierr))
             }
-            rz <- if(isNum) ri$cyr else complex(re = ri$cyr,
-                                                im = ri$cyi)
+            rz <- if(isNum) ri$cyr else complex(real = ri$cyr,
+                                                imaginary = ri$cyi)
         }
         if(nSeq > 1) r[i,] <- rz else r[i] <- rz
     }
@@ -336,8 +336,8 @@ BesselH <- function(m, z, nu, expon.scaled = FALSE, nSeq = 1)
             }
 	    else stop(sprintf("%s [Fortran] error ierr = %d", f.x, ri$ierr))
 	}
-	rz <- if(isNum) ri$cyr else complex(re = ri$cyr,
-					    im = ri$cyi)
+	rz <- if(isNum) ri$cyr else complex(real = ri$cyr,
+					    imaginary = ri$cyi)
 	if(nSeq > 1) r[i,] <- rz else r[i] <- rz
     }
     r
@@ -388,7 +388,7 @@ AiryA <- function(z, deriv = 0, expon.scaled = FALSE)
             }
 	    else stop(sprintf("%s [Fortran] error ierr = %d", f.x, ri$ierr))
 	}
-	r[i] <- if(isNum) ri$air else complex(re = ri$air, im = ri$aii)
+	r[i] <- if(isNum) ri$air else complex(real = ri$air, imaginary = ri$aii)
     }
     r
 } ## AiryA()
@@ -433,7 +433,7 @@ AiryB <- function(z, deriv = 0, expon.scaled = FALSE)
             }
 	    else stop(sprintf("%s [Fortran] error ierr = %d", f.x, ri$ierr))
 	}
-	r[i] <- if(isNum) ri$bir else complex(re = ri$bir, im = ri$bii)
+	r[i] <- if(isNum) ri$bir else complex(real = ri$bir, imaginary = ri$bii)
     }
     r
 } ## AiryB()
