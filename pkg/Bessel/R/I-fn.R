@@ -24,7 +24,7 @@ bI <- function(x, nu, nterm = 800, expon.scaled=FALSE, log = FALSE,
     ## improve accuracy for lgamma(j+1)  for "mpfr" numbers
     ## -- this is very important [evidence: e.g. bI(10000, 1)]
     if(is(l.s.j, "mpfr"))
-        j <- mpfr(j, prec = max(sapply(l.s.j@.Data, slot, "prec")))
+	j <- mpfr(j, precBits = max(sapply(l.s.j@.Data, slot, "prec")))
     else if(!isNum) j <- as(j, class(x))
 
     ## underflow (64-bit AMD) for x > 745.1332

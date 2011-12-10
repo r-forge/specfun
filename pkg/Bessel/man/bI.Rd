@@ -5,7 +5,7 @@
   Computes the modified Bessel \eqn{I} function, using one of its basic
   definitions as an infinite series.  The implementation is pure \R,
   working for \code{\link{numeric}}, \code{\link{complex}}, but also
-  e.g., for objects of class \code{"\linkS4class[Rmpfr]{mpfr}"}
+  e.g., for objects of class \code{"\link[Rmpfr:mpfr-class]{mpfr}"}
   from package \pkg{Rmpfr}.
 }
 \usage{
@@ -14,7 +14,8 @@ bI(x, nu, nterm = 800, expon.scaled = FALSE, log = FALSE,
 }
 \arguments{
   \item{x}{numeric of complex vector, or of another \code{\link{class}}
-    for which arithmetic methods are defined.}
+    for which arithmetic methods are defined, notably
+    objects of class \code{\linkS4class{mpfr}}.}
   \item{nu}{non-negative numeric (scalar).}
   \item{nterm}{integer indicating the number of terms to be used.
     should be in the order of \code{abs(x)}, but can be smaller for
@@ -29,8 +30,6 @@ bI(x, nu, nterm = 800, expon.scaled = FALSE, log = FALSE,
     has been sufficient.  The default is \dQuote{correct} for double
     precision and also for
     multiprecision objects.}
-%%once Rmpfr is released:
-%%  objects of class \code{\linkS4class[Rmpfr]{mpfr}}.}
 }
 % \details{ _____ FIXME
 % }
