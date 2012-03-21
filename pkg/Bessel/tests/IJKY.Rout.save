@@ -1,6 +1,6 @@
 
-R version 2.14.0 Patched (2011-12-09 r57854)
-Copyright (C) 2011 The R Foundation for Statistical Computing
+R version 2.15.0 beta (2012-03-20 r58793)
+Copyright (C) 2012 The R Foundation for Statistical Computing
 ISBN 3-900051-07-0
 Platform: x86_64-unknown-linux-gnu (64-bit)
 
@@ -18,6 +18,14 @@ Type 'q()' to quit R.
 
 > library(Bessel)
 Loading required package: Rmpfr
+Loading required package: gmp
+
+Attaching package: 'gmp'
+
+The following object(s) are masked from 'package:base':
+
+    %*%, apply, crossprod, matrix, tcrossprod
+
 Loading C code of R package 'Rmpfr': GMP using 64 bits per limb
 
 Attaching package: 'Rmpfr'
@@ -279,3 +287,6 @@ The following object(s) are masked from 'package:base':
 > stopifnot(BesselY(0,1) == -Inf,# == besselY(0,1),
 + 	  is.nan(BesselY(0+0i, 1)))
 > 
+> proc.time()
+   user  system elapsed 
+  2.378   0.083   2.577 
