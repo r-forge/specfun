@@ -1,3 +1,7 @@
+2012-03-21  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* DESCRIPTION (Version): 0.5-4, released to CRAN today.
+
 2011-03-14  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* R/toms644.R (BesselY): (0, nu) should not give an error message

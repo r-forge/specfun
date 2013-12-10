@@ -1,7 +1,6 @@
 
-R version 2.15.0 beta (2012-03-20 r58793)
-Copyright (C) 2012 The R Foundation for Statistical Computing
-ISBN 3-900051-07-0
+R version 3.0.2 Patched (2013-12-09 r64426) -- "Frisbee Sailing"
+Copyright (C) 2013 The R Foundation for Statistical Computing
 Platform: x86_64-unknown-linux-gnu (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -22,7 +21,7 @@ Loading required package: gmp
 
 Attaching package: 'gmp'
 
-The following object(s) are masked from 'package:base':
+The following objects are masked from 'package:base':
 
     %*%, apply, crossprod, matrix, tcrossprod
 
@@ -30,11 +29,11 @@ Loading C code of R package 'Rmpfr': GMP using 64 bits per limb
 
 Attaching package: 'Rmpfr'
 
-The following object(s) are masked from 'package:stats':
+The following objects are masked from 'package:stats':
 
     pnorm, print.integrate
 
-The following object(s) are masked from 'package:base':
+The following objects are masked from 'package:base':
 
     cbind, pmax, pmin, rbind
 
@@ -289,4 +288,4 @@ The following object(s) are masked from 'package:base':
 > 
 > proc.time()
    user  system elapsed 
-  2.378   0.083   2.577 
+  2.530   0.106   2.758 
