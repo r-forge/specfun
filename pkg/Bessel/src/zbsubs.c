@@ -26,6 +26,11 @@ static int c__1 = 1;
 static int c__2 = 2;
 static double c_b168 = .5;
 static double c_b169 = 0.;
+static double pi  = 3.141592653589793238462643383; // = pi
+static double hpi = 1.570796326794896619231321696; // = pi/2
+static double thpi= 4.7123889803846898576939650749;// = 3/2 pi
+static double rthpi=1.2533141373155002512078826424;// = sqrt(pi/2)
+static double aic = 1.265512123484645396488945797; // = log( 2*sqrt(pi) ) = log(2) + log(pi)/2
 
 /* Subroutine */ int
 zbesh_(double *zr, double *zi, double *fnu,
@@ -190,25 +195,11 @@ zbesh_(double *zr, double *zi, double *fnu,
  ***end prologue  zbesh
  */
 
-    /* Initialized data */
-    static double hpi = 1.57079632679489662;
-
     /* Local variables */
-    static int i__, k, k1, k2;
-    static double aa, bb, fn;
-    static int mm;
-    static double az;
-    static int ir, nn;
-    static double rl;
-    static int mr, nw;
-    static double dig, arg, aln, fmm, r1m5, ufl, sgn;
-    static int nuf, inu;
-    static double tol, sti, zni, zti, str, znr, alim, elim;
-    static double atol, rhpi;
-    static int inuh;
-    static double fnul, rtol, ascle, csgni;
-    static double csgnr;
-
+    static int k, k1, k2, mm, ir, nn, mr, nw, nuf, inu, inuh;
+    static double aa, bb, fn, az, rl, dig, arg, aln, fmm, r1m5, ufl, sgn,
+	tol, sti, zni, zti, str, znr, alim, elim, atol, rhpi,
+	fnul, rtol, ascle, csgni, csgnr;
 
     /* complex cy,z,zn,zt,csgn
 
@@ -404,7 +395,7 @@ L120:
     zti = -fmm;
     rtol = 1. / tol;
     ascle = ufl * rtol;
-    for (i__ = 1; i__ <= nn; ++i__) {
+    for (int i__ = 1; i__ <= nn; ++i__) {
 	/*
 	  str = cyr(i)*znr - cyi(i)*zni
 	  cyi(i) = cyr(i)*zni + cyi(i)*znr
@@ -416,13 +407,11 @@ L120:
 	aa = cyr[i__];
 	bb = cyi[i__];
 	atol = 1.;
-	if (fmax2(fabs(aa), fabs(bb)) > ascle) {
-	    goto L135;
+	if (fmax2(fabs(aa), fabs(bb)) <= ascle) {
+	    aa *= rtol;
+	    bb *= rtol;
+	    atol = tol;
 	}
-	aa *= rtol;
-	bb *= rtol;
-	atol = tol;
-L135:
 	str = aa * csgnr - bb * csgni;
 	sti = aa * csgni + bb * csgnr;
 	cyr[i__] = str * atol;
@@ -611,18 +600,13 @@ zbesi_(double *zr, double *zi, double *fnu,
  ***end prologue  zbesi
  */
     /* Initialized data */
-    static double pi = 3.14159265358979324;
     static double coner = 1.;
     static double conei = 0.;
 
     /* Local variables */
-    static int i__, k, k1, k2;
-    static double aa, bb, fn, az;
-    static int nn;
-    static double rl, dig, arg, r1m5;
-    static int inu;
-    static double tol, sti, zni, str, znr, alim, elim;
-    static double atol, fnul, rtol, ascle, csgni, csgnr;
+    static int i__, k, k1, k2, nn, inu;
+    static double aa, bb, fn, az, rl, dig, arg, r1m5, tol, sti,
+	zni, str, znr, alim, elim, atol, fnul, rtol, ascle, csgni, csgnr;
 
     /* complex cone,csgn,cw,cy,czero,z,zn
      Parameter adjustments */
@@ -925,7 +909,6 @@ zbesj_(double *zr, double *zi, double *fnu, int *kode, int *n,
 
     /* Initialized data */
 
-    static double hpi = 1.57079632679489662;
 
     /* Local variables */
     static int i__, k, k1, k2;
@@ -1601,14 +1584,12 @@ zbesy_(double *zr, double *zi, double *fnu,
     /* Initialized data */
     static double cipr[4] = { 1.,0.,-1.,0. };
     static double cipi[4] = { 0.,1.,0.,-1. };
-    static double hpi = 1.57079632679489662;
 
     /* Local variables */
     static int i__, k, k1, i4, k2, nz1, nz2, ifnu;
     static double ey, d1m5, arg, exi, exr, sti, tay, tol, zni, zui, str, znr,
-	    zvi, zzi, zur, zvr, zzr, elim, ffnu, atol, rhpi;
-    static double rtol, ascle, csgni, csgnr, cspni, cspnr;
-
+	zvi, zzi, zur, zvr, zzr, elim, ffnu, atol, rhpi,
+	rtol, ascle, csgni, csgnr, cspni, cspnr;
 
     /* complex cwrk,cy,c1,c2,ex,hci,z,zu,zv
      Parameter adjustments */
@@ -2370,7 +2351,6 @@ zbiry_(double *zr, double *zi, int *id,
     static double c1 = .614926627446000736;
     static double c2 = .448288357353826359;
     static double coef = .577350269189625765;
-    static double pi = 3.14159265358979324;
     static double coner = 1.;
     static double conei = 0.;
 
@@ -2697,7 +2677,6 @@ zsqrt_sub__(double *ar, double *ai, double *br, double *bi)
 
     /* Initialized data */
     static double drt = .7071067811865475244008443621;
-    static double dpi = 3.141592653589793238462643383;
 
     /* Local variables */
     static double zm;
@@ -2716,7 +2695,7 @@ zsqrt_sub__(double *ar, double *ai, double *br, double *bi)
 	goto L40;
     }
     if (*ar < 0.) {
-	dtheta -= dpi;
+	dtheta -= pi;
     }
     goto L50;
 L10:
@@ -2742,7 +2721,7 @@ L30:
     return 0;
 L40:
     if (*ar < 0.) {
-	dtheta += dpi;
+	dtheta += pi;
     }
 L50:
     dtheta *= .5;
@@ -2787,8 +2766,6 @@ zlog_sub__(double *ar, double *ai, double *br, double *bi, int *ierr)
  */
 
     /* Initialized data */
-    static double dpi = 3.141592653589793238462643383;
-    static double dhpi = 1.570796326794896619231321696;
 
     /* Builtin functions */
     double atan(double), log(double);
@@ -2809,14 +2786,14 @@ zlog_sub__(double *ar, double *ai, double *br, double *bi, int *ierr)
 	goto L40;
     }
     if (*ar < 0.) {
-	dtheta -= dpi;
+	dtheta -= pi;
     }
     goto L50;
 L10:
     if (*ai == 0.) {
 	goto L60;
     }
-    *bi = dhpi;
+    *bi = hpi;
     *br = log(fabs(*ai));
     if (*ai < 0.) {
 	*bi = -(*bi);
@@ -2827,7 +2804,7 @@ L20:
 	goto L30;
     }
     *br = log(fabs(*ar));
-    *bi = dpi;
+    *bi = pi;
     return 0;
 L30:
     *br = log(*ar);
@@ -2835,7 +2812,7 @@ L30:
     return 0;
 L40:
     if (*ar < 0.) {
-	dtheta += dpi;
+	dtheta += pi;
     }
 L50:
     zm = zabs_(ar, ai);
@@ -2912,10 +2889,7 @@ zbknu_(double *zr, double *zi, double *fnu,
     static double conei = 0.;
     static double ctwor = 2.;
     static double r1 = 2.;
-    static double dpi = 3.14159265358979324;
-    static double rthpi = 1.25331413731550025;
-    static double spi = 1.90985931710274403;
-    static double hpi = 1.57079632679489662;
+    static double spi = 1.90985931710274403; // = 6/pi
     static double fpi = 1.89769999331517738;
     static double tth = .666666666666666666;
     static double cc[8] = { .577215664901532861,-.0420026350340952355,
@@ -2924,19 +2898,15 @@ zbknu_(double *zr, double *zi, double *fnu,
 	    1.13302723198169588e-6,6.11609510448141582e-9 };
 
     /* Local variables */
-    static int i__, j, k, ic, kk, nw,  inu, inub, idum;
-    static int iflag, kflag, koded;
-    static double s, a1, a2, g1, g2, t1, t2, aa, bb, fc, ak, bk;
-    static double fi, fk, as, fr, pi, qi, tm, pr, qr;
-    static double p1i, p2i, s1i, s2i, p2m, p1r, p2r, s1r, s2r, cbi, cbr,
+    static int i__, j, k, ic, kk, nw,  inu, inub, idum, iflag, kflag, koded;
+    static double s, a1, a2, g1, g2, t1, t2, aa, bb, fc, ak, bk,
+	fi, fk, as, fr, p_i,p_r, qi,qr, tm,
+	p1i, p2i, s1i, s2i, p2m, p1r, p2r, s1r, s2r, cbi, cbr,
 	cki, caz, csi, ckr, fhs, fks, rak, czi, dnu, csr, elm, zdi, bry[3],
-	pti, czr, sti, zdr, cyr[2], rzi, ptr, cyi[2];
-    static double str, rzr, dnu2, cchi, cchr, alas, cshi;
-    static double cshr, fmui, rcaz, csrr[3], cssr[3], fmur;
-    static double smui, smur;
-    static double coefi;
-    static double ascle, coefr, helim, celmr, csclr, crscr;
-    static double etest;
+	pti, czr, sti, zdr, cyr[2], rzi, ptr, cyi[2],
+	str, rzr, dnu2, cchi, cchr, alas, cshi,
+	cshr, fmui, rcaz, csrr[3], cssr[3], fmur,
+	smui, smur, coefi, ascle, coefr, helim, celmr, csclr, crscr, etest;
 
     /*
      complex z,y,a,b,rz,smu,fu,fmu,f,flrz,cz,s1,s2,csh,cch
@@ -2988,14 +2958,12 @@ zbknu_(double *zr, double *zi, double *fnu,
     fmur = smur * dnu;
     fmui = smui * dnu;
     zshch_(&fmur, &fmui, &cshr, &cshi, &cchr, &cchi);
-    if (dnu == 0.) {
-	goto L10;
+    if (dnu != 0.) {
+	fc = dnu * pi;
+	fc /= sin(fc);
+	smur = cshr / dnu;
+	smui = cshi / dnu;
     }
-    fc = dnu * dpi;
-    fc /= sin(fc);
-    smur = cshr / dnu;
-    smui = cshi / dnu;
-L10:
     a2 = dnu + 1.;
 /* -----------------------------------------------------------------------
      gam(1-z)*gam(1+z)=pi*z/sin(pi*z), t1=1/gam(1-dnu), t2=1/gam(1+dnu)
@@ -3028,15 +2996,15 @@ L50:
     fr = fc * (cchr * g1 + smur * g2);
     fi = fc * (cchi * g1 + smui * g2);
     zexp_sub__(&fmur, &fmui, &str, &sti);
-    pr = str * .5 / t2;
-    pi = sti * .5 / t2;
+    p_r = str * .5 / t2;
+    p_i = sti * .5 / t2;
     zdiv_(&c_b168, &c_b169, &str, &sti, &ptr, &pti);
     qr = ptr / t1;
     qi = pti / t1;
     s1r = fr;
     s1i = fi;
-    s2r = pr;
-    s2i = pi;
+    s2r = p_r;
+    s2i = p_i;
     ak = 1.;
     a1 = 1.;
     ckr = coner;
@@ -3056,11 +3024,11 @@ L50:
     czi *= .25;
     t1 = caz * .25 * caz;
 L60:
-    fr = (fr * ak + pr + qr) / bk;
-    fi = (fi * ak + pi + qi) / bk;
+    fr = (fr * ak + p_r + qr) / bk;
+    fi = (fi * ak + p_i + qi) / bk;
     str = 1. / (ak - dnu);
-    pr *= str;
-    pi *= str;
+    p_r *= str;
+    p_i *= str;
     str = 1. / (ak + dnu);
     qr *= str;
     qi *= str;
@@ -3097,11 +3065,11 @@ L80:
     czi *= .25;
     t1 = caz * .25 * caz;
 L90:
-    fr = (fr * ak + pr + qr) / bk;
-    fi = (fi * ak + pi + qi) / bk;
+    fr = (fr * ak + p_r + qr) / bk;
+    fi = (fi * ak + p_i + qi) / bk;
     str = 1. / (ak - dnu);
-    pr *= str;
-    pi *= str;
+    p_r *= str;
+    p_i *= str;
     str = 1. / (ak + dnu);
     qr *= str;
     qi *= str;
@@ -3111,8 +3079,8 @@ L90:
     ckr = str * rak;
     s1r = ckr * fr - cki * fi + s1r;
     s1i = ckr * fi + cki * fr + s1i;
-    str = pr - fr * ak;
-    sti = pi - fi * ak;
+    str = p_r - fr * ak;
+    sti = p_i - fi * ak;
     s2r = ckr * str - cki * sti + s2r;
     s2i = ckr * sti + cki * str + s2i;
     a1 = a1 * t1 * rak;
@@ -3169,7 +3137,7 @@ L120:
 /* -----------------------------------------------------------------------
      miller algorithm for cabs(z) > r1
  ----------------------------------------------------------------------- */
-    ak = cos(dpi * dnu);
+    ak = cos(pi * dnu);
     ak = fabs(ak);
     if (ak == czeror) {
 	goto L300;
@@ -3189,22 +3157,18 @@ L120:
     t1 = fmax2(t1,12.);
     t1 = fmin2(t1,60.);
     t2 = tth * t1 - 6.;
-    if (*zr != 0.) {
-	goto L130;
+    if (*zr == 0.) {
+	t1 = hpi;
+    } else {
+	t1 = fabs(atan(*zi / *zr));
     }
-    t1 = hpi;
-    goto L140;
-L130:
-    t1 = atan(*zi / *zr);
-    t1 = fabs(t1);
-L140:
     if (t2 > caz) {
 	goto L170;
     }
 /* -----------------------------------------------------------------------
      forward recurrence loop when cabs(z) >= r2
  ----------------------------------------------------------------------- */
-    etest = ak / (dpi * caz * *tol);
+    etest = ak / (pi * caz * *tol);
     fk = coner;
     if (etest < coner) {
 	goto L180;
@@ -3605,13 +3569,10 @@ zkscl_(double *zrr, double *zri, double *fnu,
     static double zeroi = 0.;
 
     /* Local variables */
-    static int i__, ic;
-    static double as, fn;
-    static int kk, nn, nw;
-    static double s1i, s2i, s1r, s2r, acs, cki, elm, csi, ckr, cyi[2],
-	    zdi, csr, cyr[2], zdr, str, alas;
-    static int idum;
-    static double helim, celmr;
+    static int i__, ic, kk, nn, nw, idum;
+    static double as, fn, s1i, s2i, s1r, s2r, acs, cki, elm, ckr,
+	cyi[2], cyr[2], csi, csr, zdi, zdr, str,
+	alas, helim, celmr;
 
     /* complex ck,cs,cy,czero,rz,s1,s2,y,zr,zd,celm
      Parameter adjustments */
@@ -4025,32 +3986,26 @@ zbunk_(double *zr, double *zi, double *fnu,
  */
     static double ax, ay;
 
-    /* complex y,z
-     Parameter adjustments */
-    --yi;
-    --yr;
+    /* complex y,z */
 
     /* Function Body */
     *nz = 0;
     ax = fabs(*zr) * 1.7321;
     ay = fabs(*zi);
-    if (ay > ax) {
-	goto L10;
+    if (ay <= ax) {
+	/* -----------------------------------------------------------------------
+	   asymptotic expansion for K(fnu,z) for large fnu applied in
+	   -pi/3 <= arg(z) <= pi/3
+	   ----------------------------------------------------------------------- */
+	zunk1_(zr, zi, fnu, kode, mr, n, yr,yi, nz, tol, elim, alim);
+    } else {
+	/* -----------------------------------------------------------------------
+	   asymptotic expansion for H(2,fnu,z*exp(m*hpi)) for large fnu
+	   applied in pi/3 < abs(arg(z)) <= pi/2 where m=+i or -i
+	   and hpi=pi/2
+	   ----------------------------------------------------------------------- */
+	zunk2_(zr, zi, fnu, kode, mr, n, yr,yi, nz, tol, elim, alim);
     }
-/* -----------------------------------------------------------------------
-     asymptotic expansion for K(fnu,z) for large fnu applied in
-     -pi/3 <= arg(z) <= pi/3
- ----------------------------------------------------------------------- */
-    zunk1_(zr, zi, fnu, kode, mr, n, &yr[1], &yi[1], nz, tol, elim, alim);
-    goto L20;
-L10:
-/* -----------------------------------------------------------------------
-     asymptotic expansion for H(2,fnu,z*exp(m*hpi)) for large fnu
-     applied in pi/3 < abs(arg(z)) <= pi/2 where m=+i or -i
-     and hpi=pi/2
- ----------------------------------------------------------------------- */
-    zunk2_(zr, zi, fnu, kode, mr, n, &yr[1], &yi[1], nz, tol, elim, alim);
-L20:
     return 0;
 } /* zbunk_ */
 
@@ -4078,21 +4033,10 @@ zmlri_(double *zr, double *zi, double *fnu, int *kode, int *n,
     double d__1, d__2, d__3;
 
     /* Local variables */
-    static int i__, k, m;
-    static double ak, bk, ap, at;
-    static int kk, km;
-    static double az, p1i, p2i, p1r, p2r, ack, cki, fnf, fkk, ckr;
-    static int iaz;
-    static double rho;
-    static int inu;
-    static double pti, raz, sti, rzi, ptr, str, tst, rzr, rho2, flam,
-
-	    fkap, scle, tfnf;
-    static int idum;
-    static int ifnu;
-    static double sumi, sumr;
-    static int itime;
-    static double cnormi, cnormr;
+    static int i__, k, m, iaz, inu, kk, km, idum, ifnu, itime;
+    static double ak, bk, ap, at, az, p1i, p2i, p1r,p2r, ack, cki,ckr, fnf, fkk,
+	rho, pti,ptr, raz, sti,str, rzi,rzr,
+	rho2, flam, fkap, scle, tst, tfnf, sumi,sumr, cnormi,cnormr;
 
     /* complex ck,cnorm,cone,ctwo,czero,pt,p1,p2,rz,sum,y,z
      Parameter adjustments */
@@ -4708,8 +4652,7 @@ zasyi_(double *zr, double *zi, double *fnu,
 
     /* Initialized data */
 
-    static double pi = 3.14159265358979324;
-    static double rtpi = .159154943091895336;
+    static double rtpi = .159154943091895336; // = 1/(2 pi)
     static double zeror = 0.;
     static double zeroi = 0.;
     static double coner = 1.;
@@ -4719,16 +4662,12 @@ zasyi_(double *zr, double *zi, double *fnu,
     double d__1, d__2;
 
     /* Local variables */
-    static int i__, j, k, m;
-    static int ib, il, jl, nn, inu;
-    static double s, aa, bb, ak, bk, az;
-    static double p1i, s2i, p1r, s2r, cki, dki, fdn, arg, aez, arm, ckr,
-	    dkr, czi, ezi, sgn;
-    static double raz, czr, ezr, sqk, sti, rzi, tzi, str, rzr, tzr, ak1i,
-
-	    ak1r, cs1i, cs2i, cs1r, cs2r, dnu2, rtr1, dfnu;
-    static double atol;
-    static int koded;
+    static int i__, j, k, m, ib, il, jl, nn, inu, koded;
+    static double s, aa, bb, ak, bk, az,
+	p1i, s2i, p1r, s2r, cki, dki, fdn, arg, aez, arm, ckr,
+	dkr, czi, ezi, sgn,
+	raz, czr, ezr, sqk, sti, rzi, tzi, str, rzr, tzr, ak1i,
+	ak1r, cs1i, cs2i, cs1r, cs2r, dnu2, rtr1, dfnu, atol;
     /*
      complex ak1,ck,cone,cs1,cs2,cz,czero,dk,ez,p1,rz,s2,y,z
      Parameter adjustments */
@@ -4939,7 +4878,6 @@ zuoik_(double *zr, double *zi, double *fnu,
 
     static double zeror = 0.;
     static double zeroi = 0.;
-    static double aic = 1.265512123484645396;
 
     /* Local variables */
     static int i__;
@@ -5202,7 +5140,6 @@ zacon_(double *zr, double *zi, double *fnu,
  */
     /* Initialized data */
 
-    static double pi = 3.14159265358979324;
     static double zeror = 0.;
     static double coner = 1.;
 
@@ -5787,10 +5724,6 @@ zacai_(double *zr, double *zi, double *fnu,
  ***routines called  zasyi,zbknu,zmlri,zseri,zs1s2,d1mach,zabs
  ***end prologue  zacai
  */
-
-    /* Initialized data */
-    static double pi = 3.14159265358979324;
-
 
     /* Local variables */
     static double az;
@@ -6433,9 +6366,6 @@ zunhj_(double *zr, double *zi, double *fnu,
 	    .0118338262398482403 };
     static double ex1 = .333333333333333333;
     static double ex2 = .666666666666666667;
-    static double hpi = 1.57079632679489662;
-    static double gpi = 3.14159265358979324;
-    static double thpi = 4.71238898038468986;
     static double zeror = 0.;
     static double zeroi = 0.;
     static double coner = 1.;
@@ -6443,31 +6373,16 @@ zunhj_(double *zr, double *zi, double *fnu,
 
 
     /* Local variables */
-    static int j, k, l, m, l1, l2;
-    static int is, jr, ks, ju;
-    static double ac;
-    static double ap[30], pi[30];
-    static double pp, wi, pr[30];
-    static int lr;
-    static double wr, aw2;
-    static int kp1;
-    static double t2i, w2i, t2r, w2r, ang, fn13, fn23;
-    static int ias;
-    static double cri[14], dri[14];
-    static int ibs;
-    static double zai, zbi, zci, crr[14], drr[14], raw, zar, upi[14], sti,
-	     zbr, zcr, upr[14], str, raw2;
-    static int lrp1;
-    static double rfn13;
-    static int idum;
-    static double atol, btol, tfni;
-    static int kmax;
-    static double azth, tzai, tfnr, rfnu;
-    static double zthi, test, tzar, zthr, rfnu2, zetai, ptfni, sumai,
-
-	    sumbi, zetar, ptfnr, razth, sumar, sumbr, rzthi;
-    static double rzthr, rtzti, rtztr, przthi, przthr;
-
+    static int j, k, l, m, l1, l2, is, jr, ks, ju,
+	lr, kp1, ias, ibs, lrp1, idum, kmax;
+    static double ap[30], p_i[30], p_r[30];
+    static double cri[14],crr[14], dri[14],drr[14], upi[14],upr[14];
+    static double ac, aw2, pp, wi,wr, t2i,t2r, w2i,w2r, ang, fn13, fn23,
+	raw, raw2, sti,str, zai,zar, zbi,zbr, zci,zcr,
+	rfn13, atol, btol, tfni,tfnr, azth, rfnu, test,
+	zthi,zthr, tzai,tzar, rfnu2, zetai,zetar, ptfni,ptfnr,
+	sumai,sumar, sumbi,sumbr, razth, rzthi,rzthr,
+	rtzti,rtztr, przthi,przthr;
 
     /* complex arg,asum,bsum,cfnu,cone,cr,czero,dr,p,phi,przth,ptfn,
     * rfn13,rtzta,rzth,suma,sumb,tfn,t2,up,w,w2,z,za,zb,zc,zeta,zeta1,
@@ -6511,8 +6426,8 @@ L15:
      power series for cabs(w2) <= 0.25d0
  ----------------------------------------------------------------------- */
     k = 1;
-    pr[0] = coner;
-    pi[0] = conei;
+    p_r[0] = coner;
+    p_i[0] = conei;
     sumar = gama[0];
     sumai = zeroi;
     ap[0] = 1.;
@@ -6520,10 +6435,10 @@ L15:
 	goto L20;
     }
     for (k = 2; k <= 30; ++k) {
-	pr[k - 1] = pr[k - 2] * w2r - pi[k - 2] * w2i;
-	pi[k - 1] = pr[k - 2] * w2i + pi[k - 2] * w2r;
-	sumar += pr[k - 1] * gama[k - 1];
-	sumai += pi[k - 1] * gama[k - 1];
+	p_r[k - 1] = p_r[k - 2] * w2r - p_i[k - 2] * w2i;
+	p_i[k - 1] = p_r[k - 2] * w2i + p_i[k - 2] * w2r;
+	sumar += p_r[k - 1] * gama[k - 1];
+	sumai += p_i[k - 1] * gama[k - 1];
 	ap[k - 1] = ap[k - 2] * aw2;
 	if (ap[k - 1] < *tol) {
 	    goto L20;
@@ -6558,8 +6473,8 @@ L20:
     sumbr = zeror;
     sumbi = zeroi;
     for (k = 1; k <= kmax; ++k) {
-	sumbr += pr[k - 1] * beta[k - 1];
-	sumbi += pi[k - 1] * beta[k - 1];
+	sumbr += p_r[k - 1] * beta[k - 1];
+	sumbi += p_i[k - 1] * beta[k - 1];
     }
     *asumr = zeror;
     *asumi = zeroi;
@@ -6585,8 +6500,8 @@ L20:
 	sumai = zeroi;
 	for (k = 1; k <= kmax; ++k) {
 	    m = l1 + k;
-	    sumar += pr[k - 1] * alfa[m - 1];
-	    sumai += pi[k - 1] * alfa[m - 1];
+	    sumar += p_r[k - 1] * alfa[m - 1];
+	    sumai += p_i[k - 1] * alfa[m - 1];
 	    if (ap[k - 1] < atol) {
 		goto L50;
 	    }
@@ -6605,13 +6520,11 @@ L60:
 	sumbi = zeroi;
 	for (k = 1; k <= kmax; ++k) {
 	    m = l2 + k;
-	    sumbr += pr[k - 1] * beta[m - 1];
-	    sumbi += pi[k - 1] * beta[m - 1];
-	    if (ap[k - 1] < atol) {
-		goto L80;
-	    }
+	    sumbr += p_r[k - 1] * beta[m - 1];
+	    sumbi += p_i[k - 1] * beta[m - 1];
+	    if (ap[k - 1] < atol)
+		break;
 	}
-L80:
 	*bsumr += sumbr * pp;
 	*bsumi += sumbi * pp;
 	if (pp < btol) {
@@ -6672,7 +6585,7 @@ L130:
     }
     ang = atan(zthi / zthr);
     if (zthr < 0.) {
-	ang += gpi;
+	ang += pi;
     }
 L140:
     pp = pow(azth, ex2);
@@ -6793,12 +6706,8 @@ L180:
 	ju = lrp1;
 	for (jr = 1; jr <= lr; ++jr) {
 	    --ju;
-	    sumbr = sumbr + drr[jr - 1] * upr[ju - 1] - dri[jr - 1] * upi[ju
-
-		    - 1];
-	    sumbi = sumbi + drr[jr - 1] * upi[ju - 1] + dri[jr - 1] * upr[ju
-
-		    - 1];
+	    sumbr = sumbr + drr[jr - 1] * upr[ju - 1] - dri[jr - 1] * upi[ju - 1];
+	    sumbi = sumbi + drr[jr - 1] * upi[ju - 1] + dri[jr - 1] * upr[ju - 1];
 	}
 	*bsumr += sumbr;
 	*bsumi += sumbi;
@@ -6840,7 +6749,6 @@ void zunk1_(double *zr, double *zi, double *fnu,
     static double zeror = 0.;
     static double zeroi = 0.;
     static double coner = 1.;
-    static double pi = 3.14159265358979324;
 
     /* Local variables */
     static int i__, j, k, m, ib, ic, il, kk, nw;
@@ -7399,9 +7307,6 @@ void zunk2_(double *zr, double *zi, double *fnu,
     static double cr1i = 1.73205080756887729;
     static double cr2r = -.5;
     static double cr2i = -.866025403784438647;
-    static double hpi = 1.57079632679489662;
-    static double pi = 3.14159265358979324;
-    static double aic = 1.26551212348464539;
     static double cipr[4] = { 1.,0.,-1.,0. };
     static double cipi[4] = { 0.,-1.,0.,1. };
 
@@ -8513,8 +8418,6 @@ void zuni2_(double *zr, double *zi, double *fnu,
     static double coner = 1.;
     static double cipr[4] = { 1.,0.,-1.,0. };
     static double cipi[4] = { 0.,1.,0.,-1. };
-    static double hpi = 1.57079632679489662;
-    static double aic = 1.265512123484645396;
 
     /* Local variables */
     static int i__, j, k, nd, in, nn, nw, nai, nuf, inu, ndai, idum, iflag;
