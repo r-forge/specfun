@@ -1,5 +1,8 @@
 useDynLib(Bessel)
 
+importFrom("methods", as, is, slot)
+importFrom("Rmpfr", mpfr, apply, asNumeric, colSums)
+
 ## These are the  TOMS 644  R-interface functions :
 
 export(BesselI,
@@ -12,7 +15,8 @@ export(BesselH,
 
 ## -------------------------------
 
-export(bI, ## <<< FIXME? rename ?
+export(besselIs,
+       bI, ## <-  deprecated on 2014-12-13
        besselIasym,
        besselI.ftrms,
        besselI.nuAsym,

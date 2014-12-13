@@ -3,17 +3,16 @@
 * Martin Maechler's plans and wish list for the  "Bessel" R package:
 
 ** TODO Vignette --> ./inst/doc/other-Bessels.Rnw
-
 ** TODO More docu in ./man/Bessel.Rd
-
+** DONE bI() - renamed to besselIs() now works with  'log = TRUE'
 ** Add (most / all) of ~/R/MM/NUMERICS/bessel-fn.R
-  R/I-fn.R  -- but we need to make these work with *complex* input
-  ========   should not be hart, since the Abramowitz & Stegun formula
+  R/I-fn.R already added; need to make these work with *complex* input
+  ========   should not be hard, since the Abramowitz & Stegun formula
    are for complex .. though restricted, e.g. 9.7.1 (p.377) to  |Arg(z)| < pi/2
 
 ** TODO David Scott: has *incomplete* BesselK  (x,y, nu,..) interfacing Fortran
   code from .... (2010), in
-  ../DistributionUtils/R/incompleteBesselK.R (etc: man/*, tests/*)
+  ~/R/D/R-forge/Rmetrics/pkg/DistributionUtils/R/incompleteBesselK.R (etc: man/*, tests/*)
   and offers to let me move them into 'Bessel'
     E-mail: Sat, Sep 18, 2010 at 14:34; From: David Scott <d.scott@auckland.ac.nz>
      	    Subject "Incomplete Bessel K Function"

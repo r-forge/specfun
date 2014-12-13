@@ -4,9 +4,9 @@
 ####  ----------------------------------------------
 ## besselI() - Definition as infinite sum  -- working for "mpfr" numbers, too!
 ## ---------
-bI <- function(x, nu, nterm = 800, expon.scaled=FALSE, log = FALSE,
-               Ceps = if(isNum) 8e-16 else 2^(- x@.Data[[1]]@prec))
-
+besselIs <-
+    function(x, nu, nterm = 800, expon.scaled = FALSE, log = FALSE,
+	     Ceps = if(isNum) 8e-16 else 2^(- x@.Data[[1]]@prec))
 {
     ## Purpose: besselI() primitively
     ## ----------------------------------------------------------------------
@@ -19,7 +19,7 @@ bI <- function(x, nu, nterm = 800, expon.scaled=FALSE, log = FALSE,
     n <- length(x)
     if(n == 0) return(x)
     l.s.j <- outer(j, (x/2), function(X,Y) X*2*log(Y))##-> {nterm x n} matrix
-
+    ##
     isNum <- is.numeric(x) || is.complex(x)
     ## improve accuracy for lgamma(j+1)  for "mpfr" numbers
     ## -- this is very important [evidence: e.g. bI(10000, 1)]
@@ -31,37 +31,44 @@ bI <- function(x, nu, nterm = 800, expon.scaled=FALSE, log = FALSE,
     ## for large x, this already overflows to Inf :
     ## s.j <- outer(j, (x^2/4), function(X,Y) Y^X) ##-> {nterm x n} matrix
     ## s.j <- s.j / (gamma(j+1) * gamma(nu+1 + j))  but without overflow :
-    log.s.j <- l.s.j - lgamma(j+1) - lgamma(nu+1 + j)
-    if(expon.scaled || log) {
-        ## Compute log I_nu(x) -- trying to avoid overflow/underflow for large x *OR* large nu
-        ## log(s.j)
-        if(log) stop("not yet implemented")
-        ## e..x <- exp(-x) # subnormal for x > 1024*log(2) ~ 710;
-        ## the expon.scaled case:
-        s.j <- exp(log.s.j - rep(x, each=nterm))
+    log.s.j <-
+	if(expon.scaled)
+	    l.s.j - rep(x, each=nterm) - lgamma(j+1) - lgamma(nu+1 + j)
+	else
+	    l.s.j		       - lgamma(j+1) - lgamma(nu+1 + j)
+    s.j <-
+        if(log) # NB: lsum() works on whole matrix
+            lsum(log.s.j) # == log(sum_{j} exp(log.s.j) )
+        else ## log I_nu(x) -- trying to avoid overflow/underflow for large x OR large nu
+            ## log(s.j) ; e..x <- exp(-x) # subnormal for x > 1024*log(2) ~ 710;
+            exp(log.s.j)
+    if(log) {
+	if(any(i0 <- x == 0)) s.j[i0] <- 0
+	if(any(lrgS <- log.s.j[1,] > log(Ceps) + s.j))
+	    lapply(x[lrgS], function(x)
+		warning(sprintf("bI(x=%g): 'nterm' may be too small", x),
+			call.=FALSE))
+	nu*log(x/2) + s.j
+    } else { ## !log
+	s <- colSums(s.j)
+	if(any(i0 <- x == 0)) s[i0] <- 0
+	if(!all(iFin <- is.finite(s)))
+	    stop(sprintf("infinite s for x=%g", x[!iFin][1]))
+	if(any(lrgS <- s.j[1,] > Ceps * s))
+	    lapply(x[lrgS], function(x)
+		warning(sprintf("bI(x=%g): 'nterm' may be too small", x),
+			call.=FALSE))
+	(x/2)^nu * s
     }
-    else {
-        s.j <- exp(log.s.j)
-    }
+}
 
-    s <- x ##- possibly not numeric but "mpfr"
-    for(i in 1:n) {
-        if(x[i] == 0)
-            s[i] <- 0
-        else {
-            sj <- s.j[,i]
-            ## when overflow both in numerator and denominator, drop these:
-            iFin <- is.finite(sj)
-            if(any(!iFin)) stop(sprintf("infinite s.j for x=%g", x[i]))
-            s[i] <- sum(sj)
-            if(sj[1] != 0) {
-                if(abs(sj[1]) > Ceps * abs(s[i]))
-                    warning(sprintf("bI(x=%g): 'nterm' is probably too small",
-                                    x[i]))
-            }
-        }
-    }
-    (x/2)^nu * s
+## old name [back compatibility]:
+bI <- function(x, nu, nterm = 800, expon.scaled = FALSE, log = FALSE,
+               Ceps = if(isNum) 8e-16 else 2^(- x@.Data[[1]]@prec))
+{
+    .Deprecated("besselIs")
+    isNum <- is.numeric(x) || is.complex(x)
+    besselIs(x, nu, nterm=nterm, expon.scaled=expon.scaled, log=log, Ceps=Ceps)
 }
 
 ###--------------- besselI() for large x or also large nu ---
@@ -135,8 +142,7 @@ besselI.ftrms <- function(x, nu, K = 20)
     ser <- cumprod(multf)
 
     ## now, for k-term approx. f_k  of  f(x,nu)   we have
-    ##  f_k = 1 + sum(ser[1:k]), i.e.
-    ##  (f_k)_k = 1 + cumsum(c(0, ser))[k+1]  for k= 0,1,...,K
+    ##  f_k = 1 + sum(ser[1:k]), i.e.    ##  (f_k)_k = 1 + cumsum(c(0, ser))[k+1]  for k= 0,1,...,K
     ser
 }
 

@@ -1,6 +1,6 @@
 
-R version 3.0.2 Patched (2013-12-09 r64426) -- "Frisbee Sailing"
-Copyright (C) 2013 The R Foundation for Statistical Computing
+R version 3.1.2 Patched (2014-12-05 r67105) -- "Pumpkin Helmet"
+Copyright (C) 2014 The R Foundation for Statistical Computing
 Platform: x86_64-unknown-linux-gnu (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -25,13 +25,14 @@ The following objects are masked from 'package:base':
 
     %*%, apply, crossprod, matrix, tcrossprod
 
-Loading C code of R package 'Rmpfr': GMP using 64 bits per limb
+C code of R package 'Rmpfr': GMP using 64 bits per limb
+
 
 Attaching package: 'Rmpfr'
 
 The following objects are masked from 'package:stats':
 
-    pnorm, print.integrate
+    dbinom, dnorm, dpois, pnorm
 
 The following objects are masked from 'package:base':
 
@@ -288,4 +289,4 @@ The following objects are masked from 'package:base':
 > 
 > proc.time()
    user  system elapsed 
-  2.530   0.106   2.758 
+  2.345   0.031   2.367 

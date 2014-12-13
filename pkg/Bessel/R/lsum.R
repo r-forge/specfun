@@ -1,0 +1,23 @@
+### From copula package [not yet exported there]. as of Dec.2014:
+
+##' Properly compute log(x_1 + .. + x_n) for a given (n x d)-matrix of n row
+##' vectors log(x_1),..,log(x_n) (each of dimension d)
+##' Here, x_i > 0  for all i
+##' @title Properly compute the logarithm of a sum
+##' @param lx (n,d)-matrix containing the row vectors log(x_1),..,log(x_n)
+##'        each of dimension d --- can be "mpfrArray" !!!!
+##' @param l.off the offset to substract and re-add; ideally in the order of
+##'        the maximum of each column
+##' @return log(x_1 + .. + x_n) [i.e., OF DIMENSION d!!!] computed via
+##'         log(sum(x)) = log(sum(exp(log(x))))
+##'         = log(exp(log(x_max))*sum(exp(log(x)-log(x_max))))
+##'         = log(x_max) + log(sum(exp(log(x)-log(x_max)))))
+##'         = lx.max + log(sum(exp(lx-lx.max)))
+##'         => VECTOR OF DIMENSION d
+##' @author Marius Hofert, Martin Maechler
+lsum <- function(lx, l.off = apply(lx, 2, max)) {
+    ## do not use cbind or rbind here, since it is not clear if the user specified
+    ## only one vector log(x) or several vectors of dimension 1 !!!
+    stopifnot(length(dim(lx)) == 2L) # is.matrix(.) generalized
+    l.off + log(colSums(exp(lx - rep(l.off, each=nrow(lx)))))
+}
