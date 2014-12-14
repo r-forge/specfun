@@ -21,6 +21,8 @@ export(besselIs,
        besselI.ftrms,
        besselI.nuAsym,
 
+       besselJs,
+
 #not yet besselKasym,
        besselK.nuAsym)
 

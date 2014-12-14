@@ -21,3 +21,27 @@ lsum <- function(lx, l.off = apply(lx, 2, max)) {
     stopifnot(length(dim(lx)) == 2L) # is.matrix(.) generalized
     l.off + log(colSums(exp(lx - rep(l.off, each=nrow(lx)))))
 }
+
+##' Properly compute log(x_1 + .. + x_n) for a given matrix of column vectors
+##' log(|x_1|),.., log(|x_n|) and corresponding signs sign(x_1),.., sign(x_n)
+##' Here, x_i is of arbitrary sign
+##' @title compute logarithm of a sum with signed large coefficients
+##' @param lxabs (d,n)-matrix containing the column vectors log(|x_1|),..,log(|x_n|)
+##'        each of dimension d
+##' @param signs corresponding matrix of signs sign(x_1), .., sign(x_n)
+##' @param l.off the offset to substract and re-add; ideally in the order of max(.)
+##' @param strict logical indicating if it should stop on some negative sums
+##' @return log(x_1 + .. + x_n) [i.e., of dimension d] computed via
+##'         log(sum(x)) = log(sum(sign(x)*|x|)) = log(sum(sign(x)*exp(log(|x|))))
+##'         = log(exp(log(x0))*sum(signs*exp(log(|x|)-log(x0))))
+##'         = log(x0) + log(sum(signs* exp(log(|x|)-log(x0))))
+##'         = l.off   + log(sum(signs* exp(lxabs -  l.off  )))
+##' @author Marius Hofert and Martin Maechler
+lssum <- function (lxabs, signs, l.off = apply(lxabs, 2, max), strict = TRUE) {
+    stopifnot(length(dim(lxabs)) == 2L) # is.matrix(.) generalized
+    sum. <- colSums(signs * exp(lxabs - rep(l.off, each=nrow(lxabs))))
+    if (any(is.nan(sum.) || sum. <= 0))
+        (if(strict) stop else warning)("lssum found non-positive sums")
+    l.off + log(sum.)
+}
+

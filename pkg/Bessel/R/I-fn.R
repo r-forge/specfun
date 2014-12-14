@@ -284,11 +284,11 @@ besselK.nuAsym <- function(x, nu, k.max, expon.scaled=FALSE, log=FALSE)
                         (- u1.t + (u2.t - u3.t/nu)/nu)/nu
                     else { ## k.max >= 4
                         u4.t <- t2*t2*(4465125 +
-                                       t2*(-94121676 +
-                                           t2*(349922430 +
-                                               t2*(-446185740 + t2*185910725))))/39813120
-                    if(k.max == 4)
-                        (- u1.t + (u2.t + (-u3.t + u4.t/nu)/nu)/nu)/nu
+                                           t2*(-94121676 +
+                                                   t2*(349922430 +
+                                                           t2*(-446185740 + t2*185910725))))/39813120
+                        if(k.max == 4)
+                            (- u1.t + (u2.t + (-u3.t + u4.t/nu)/nu)/nu)/nu
                     }
                 }
             }
