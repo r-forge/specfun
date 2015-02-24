@@ -1,29 +1,53 @@
-\documentclass{article}
+%\documentclass[article]{jss}
+\documentclass[nojss,article]{jss}
+%              ----- for the package-vignette, don't use JSS logo, etc
+%
+\title{Bessel Functions in other CRAN Packages}
+%\Plaintitle{...}
+%\Shorttitle{}
+%% \author{Martin Mächler\\ ETH Zurich and R Core Team
+%%   \\\email{maechler@stat.math.ethz.ch}}
+\author{Martin M\"achler \\ ETH Zurich}
+%% for pretty printing and a nice hypersummary also set:
+\Plainauthor{Martin M\"achler} %% comma-separated
+%
+% The index entry makes it into  build/vignette.rds :
+%%\VignetteIndexEntry{Bessel Functions in other CRAN Packages}
+%%\VignetteDepends{Bessel}
+%%\VignetteDepends{gsl}
+%%\VignetteDepends{sfsmisc}
+%%\VignetteDepends{fAsianOptions}
+\SweaveOpts{engine=R,eps=FALSE,pdf=TRUE,width=7,height=4,strip.white=true,keep.source=TRUE}
+%
 %
 \usepackage{myVignette}
-\usepackage{fullpage}% save trees ;-)
-\usepackage[authoryear,round]{natbib}
-\bibliographystyle{plainnat}
+%% \usepackage[authoryear,round]{natbib}
+%% \bibliographystyle{plainnat}
 \newcommand{\noFootnote}[1]{{\small (\textit{#1})}}
 \newcommand{\myOp}[1]{{$\left\langle\ensuremath{#1}\right\rangle$}}
 %
-%%\VignetteIndexEntry{Bessel Functions in other CRAN Packages}
-%%\VignetteDepends{Bessel,gsl}
-\SweaveOpts{engine=R,eps=FALSE,pdf=TRUE,width=7,height=4,strip.white=true,keep.source=TRUE}
-%								          ^^^^^^^^^^^^^^^^
-\title{Bessel Functions in other CRAN Packages}
-\author{Martin Maechler\\ R Core Development Team
-  \\\email{maechler@stat.math.ethz.ch}}
-\date{February 2009 ({\tiny typeset on \tiny\today})}
-%
-\begin{document}
-\maketitle
-\begin{abstract}
-
+\Abstract{
   Why do I write yet another \RR{} package, when \RR{} itself has Bessel
   functions and several CRAN packages also have versions of these?
 
-\end{abstract}
+  Short answer: I myself added the Bessel functions to \RR{} version 0.63, second
+  half of 1998, but they have been seen to be limited for ``large'' $x$ and
+  / or large order $\nu$.
+}
+\Keywords{Bessel Functions, Accuracy, \RR}
+\Plainkeywords{Bessel Functions, Accuracy, R}
+\Address{
+ Martin M\"achler\\
+ Seminar f\"ur Statistik, HG G~16\\
+ ETH Zurich\\
+ 8092 Zurich, Switzerland\\
+ E-mail: \email{maechler@stat.math.ethz.ch}\\
+ URL: \url{http://stat.ethz.ch/people/maechler}
+}
+%
+%
+\begin{document}
+%\maketitle -- not for jss
 
 %% Note: These are explained in '?RweaveLatex' :
 <<preliminaries, echo=FALSE>>=
@@ -33,8 +57,13 @@ library(Bessel)
 
 \section{Introduction}
 \RR{} itself has had the function \Rfun{besselI},\Rfun{besselJ},\Rfun{besselK}
-and \Rfun{besselY}, from very early on.
-%% also brought to you by Martin Maechler ...
+and \Rfun{besselY}, from very early on.  Specifically, I myself added them
+to \RR{} version 0.63, in 1998.  This helped quite a bit to attract people
+from computational finance to \RR{} in these early times.  For some reason
+I must have been under the impression that the Fortran code I ported to C
+and interfaced with R to be state of the art at the time, even though I now
+doubt it.
+
 
 However, they had shown deficiencies: First, they did only work for real
 (\code{double}) but not for \emph{complex} arguments, even though the
@@ -59,52 +88,103 @@ Bessel functions:
 \item[gsl]
 \item[fAsianOptions]
 
-\item[QRMlib]  Uses many \pkg{gsl} C functions in its own code;
-  or, rather, seems to have copy-pasted large parts of gsl in its own
-  \file{src/} directory
-%% /usr/local/app/R/R_local/src/QRMlib/src/bessel.c -- looks like 'gsl'
-%%                              =====        but it's *NOT* in GSL-reference
-%% *and* it has both Asymptotic expansions from Abramowitz & Stegun
-%% notably,  gsl_sf_bessel_Inu_scaled_asymp_unif_e()  has 9.7.7  with 6 terms
+\item[Rmpfr] provides arbitrary precision Bessel functions of
+  \emph{integer} order $\nu =: n$ of the first kind only,
+  $J_n(x)=$\code{jn(n,x)} and $Y_n(x)=$\code{yn(n,x)} (and \Rfun{j0},
+  \code{j1}, \code{y0}, \code{y1}) and---since MPFR version 3.0.0--- the
+  Airy function $Ai(x)=$\code{Ai(x)}.
+<<Rmpfr-1>>=
+suppressPackageStartupMessages(require("Rmpfr"))
+@
 
+\item[fAsianOptions] which also load \pkg{fBasics} focuses on the $I()$ and
+  $K()$ functions and additionally provides their \emph{derivatives}.
+<<fAsianOpts-1>>=
+suppressPackageStartupMessages(require("fAsianOptions"))
+ls.str("package:fAsianOptions", pattern="^[Bb]essel")
+@
+These four user functions build on internal ones, first
+\code{.BesselN()}, \emph{however} they allow \textbf{only integer} order $\nu$.
+One nice property is that all code is written in \RR{}, i.e., no C or Fortran
+is needed.
+
+\item[QRMlib] Uses many \file{GSL} (GNU Scientific Library) C functions in its own code,
+  or, rather, has copy-pasted ``Bessel-related'' parts of GSL into its own
+  \file{src/} directory.
+
+  Notably \file{QRMlib/src/bessel.c} is a copy (slightly modified to work as
+  ``standalone'' in the QRMlib sources) of \file{GSL}'s \file{specfunc/bessel.c}
+%% /usr/local/app/R/R_local/src/QRMlib/src/bessel.c
+  but has not been adapted to the latest GSL sources.
+  Further note that \pkg{QRMlib} only provides function \Rfun{besselM3()}:
+  ``M3'' for the \textbf{m}odified Bessel function of the \textbf{3}rd
+  kind, i.e., $K()$; note that it already has optional argument \code{logvalue=FALSE}
+  and will call \file{GSL}'s \code{gsl\_sf\_bessel\_lnKnu\_e()} for \code{logvalue=TRUE}.
+  Note that it calls different GSL routines for \emph{integer} $\nu$ ($=:
+  n$ in that case) than for non-integer  which presumably has at least
+  computational advantages. %% <<- MM: should learn more about this
 \end{description}
 
 
-\section{\texttt{gsl}}% What is in the 'gsl' package
+\section{Package `gsl'}%\section{\pkg{gsl}}% What is in the 'gsl' package
 
 The \RR{} package \pkg{gsl} by Robin Hankin provides an \RR{} interface on a
 function-by-function basis to much of the GSL, the GNU Scientific Library.
 You get a first overview with
-<<gsl-do,echo=FALSE>>=
+<<gsl-do>>=
+detach("package:fAsianOptions")# b/c of name clashes with our 'Bessel' pkg
 library(gsl)
-@
 <<gsl-help,eval=FALSE>>=
-library(gsl)
 ?bessel_Knu
+?Airy
 @
+where the \code{?bessel\_Knu}  lists all ``Bessel'' functions and
+\code{?Airy} additionally the ``Airy'' functions $Ai()$ and $Bi()$ and
+their derivatives which are strongly related to the Bessel functions (and
+can be defined via them).
 
-What can I say ...
+Indeed, the GSL and hence the \RR{} package \pkg{gsl} does contain quite an
+array of Bessel functions and the Airy functions, we can also get via
+<<gsl-bessel-ls>>=
+igsl <- match("package:gsl", search())
+aB <- apropos("Bessel", where=TRUE); unname(aB)[names(aB) == igsl]
+aA <- apropos("Airy",   where=TRUE); unname(aA)[names(aA) == igsl]
+@
+Features (and drawbacks):
 \begin{itemize}
-
-\item only real 'x',  not complex
-
-
-\item For fractional nu , the (only) interesting functions are
-
+\item only real 'x', not complex
+\item provides separate functions for \emph{integer} and \emph{fractional}
+  $\nu$ where the latter should be more general than the former (untested
+  in detail though).% FIXME
+\item For \emph{fractional} $\nu$, the relevant, i.e., interesting functions are
 \begin{verbatim}
+     bessel_Jnu       (nu, x, give=FALSE, strict=TRUE)
+
+     bessel_Ynu       (nu, x, give=FALSE, strict=TRUE)
+
      bessel_Inu       (nu, x, give=FALSE, strict=TRUE)
      bessel_Inu_scaled(nu, x, give=FALSE, strict=TRUE)
-     bessel_Jnu       (nu, x, give=FALSE, strict=TRUE)
-     bessel_Jnu_scaled(nu, x, give=FALSE, strict=TRUE)
+
      bessel_Knu       (nu, x, give=FALSE, strict=TRUE)
      bessel_Knu_scaled(nu, x, give=FALSE, strict=TRUE)
-     bessel_Ynu       (nu, x, give=FALSE, strict=TRUE)
-     bessel_Ynu_scaled(nu, x, give=FALSE, strict=TRUE)
+     bessel_lnKnu     (nu, x, give=FALSE, strict=TRUE)
 \end{verbatim}
 
   where the \texttt{*\_scaled()} version of each corresponds to our functions
   \code{expon.scaled=TRUE}.
 
+
+\item For fractional nu , the (only) interesting functions are
+<<bessel-real-nu>>=
+lst <- ls(patt="bessel_.*nu", pos="package:gsl")
+l2 <- sapply(lst, function(.) args(get(.)), simplify=FALSE)
+lnms <- setNames(format(lst), lst)
+arglst <- lapply(lst, ## a bit ugly, using deparse(.)
+    function(nm) sub(" *$","", sub("^function", lnms[[nm]], deparse(l2[[nm]])[[1]])))
+.tmp <- lapply(arglst, function(.) cat(format(.),"\n"))
+@
+where the \texttt{*\_scaled()} version of each function corresponds to our functions
+with option \code{expon.scaled=TRUE}.
 
 \item \texttt{bessel\_Inu\_scaled()} works for large x,
   comparably to our \code{BesselI(.)} which give warnings about accuracy
@@ -129,12 +209,57 @@ estimate, hence for \emph{relative} error estimates, we look at
 %% 0.001040159 0.001040161
 So, we see that either the error estimate is too conservative, or the
 results only have 3 digit accuracy.
+
+\item $J_\nu(.)$: Here (also), the GSL employs different algorithms in
+  different regions, notably also several asymptotic formula.
+  When $x < \nu$, notably $0 \approx x \ll \nu$, it does not seem to be ok,
+  in the the ``left tail'', returning \code{NaN}, for moderate $\nu$:
+<<Jnu-100>>=
+bessel_Jnu(100,  2^seq(-5,1, by=1/4))
+bessel_Jnu( 20,  2^seq(-50,-40, by=1/2))
+bessel_Jnu(  5,  2^seq(-210,-200, by=.5))
+@
+giving \code{NaN} instead of just underflowing to zero.  However,
+looking at the phenomenon shows that it is only because of the
+\pkg{gsl}'s default optional argument \code{strict = TRUE}: The underflow
+to zero which no longer allows the error to be controlled (and returned in
+\texttt{err} when \code{give = TRUE}), giving \code{status = 15} here:
+<<Jnu-underflow-status-ex>>=
+as.data.frame(bessel_Jnu( 20,  2^seq(-50,-40, by=1/2), give=TRUE, strict=FALSE))
+@
+If we do use \code{strict = FALSE}, consequently, all is fine:
+<<J-gsl, fig=TRUE>>=
+gslJ <- function(nu, f1 = .90, f2 = 1.10, nout = 512, give=FALSE, strict=FALSE) {
+    stopifnot(is.numeric(nu), length(nu) == 1, nout >= 1, f1 <= 1, f2 >= 1)
+    x <- seq(f1*nu, f2*nu, length.out = nout)
+    list(x=x, Jnu.x = bessel_Jnu(nu, x, give=give, strict=strict))
+}
+plJ <- function(nu, f1 =.90, f2=1.10, nout=512,
+                col=2, lwd=2, main = bquote(nu == .(nu)), ...) {
+    dJ <- gslJ(nu, f1=f1, f2=f2, nout=nout)
+    plot(Jnu.x ~ x, data=dJ, type="l", col=col, lwd=lwd, main=main, ...)
+    abline(h=0, lty=3, col=adjustcolor(1, 0.5))
+    invisible(dJ)
+}
+sfsmisc::mult.fig(4)
+plJ(500, f1=0)
+r1k <- plJ(1000, f1=0)
+head(as.data.frame(r1k)) # all 0 now (NaN's for  'strict=TRUE' !!)
+r10k <- plJ(10000, f1=0.5, f2=2)
+str( with(r10k, x[!is.finite(Jnu.x)]) ) # empty; had all NaN upto x = 8317
+r1M <- plJ(1e6, f1=0.8)
+@
+
 \end{itemize}
 
 \section{Session Info}
 
+<<require-again, echo=FALSE>>=
+library("fAsianOptions")
 <<sessionInfo, results=tex>>=
-toLatex(sessionInfo())
+toLatex(sessionInfo(), locale=FALSE)
+<<show-date, results=tex, echo=FALSE>>=
+cat(sprintf("Date (run in R): %s\n", format(Sys.Date())))
 @
 
 \bibliography{Bessel}
