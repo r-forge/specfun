@@ -42,18 +42,17 @@ Abramowitz and Stegun. %% FIXME : be explicit
   \emph{Handbook of mathematical functions}
   (NBS AMS series 55, U.S. Dept. of Commerce).
 
+  %% See also ../vignettes/Bessel.bib
   D. E. Amos (1986)
-  A portable package for Bessel functions of a complex argument
-  and nonnegative order;
+  Algorithm 644: A portable package for Bessel functions of a complex
+  argument and nonnegative order;
   \emph{ACM Trans. Math. Software} \bold{12}, 3, 265--273.
 
   D. E. Amos (1983)
-  \emph{Computation of Bessel Functions of Complex Argument};
-  Sand83-0083.
+  \emph{Computation of Bessel Functions of Complex Argument};  Sand83-0083.
 
   D. E. Amos (1983)
-  \emph{Computation of Bessel Functions of Complex Argument and
-    Large Order}; Sand83-0643.
+  \emph{Computation of Bessel Functions of Complex Argument and Large Order}; Sand83-0643.
 
   D. E. Amos (1985)
   \emph{A subroutine package for Bessel functions of a complex

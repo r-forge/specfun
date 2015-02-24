@@ -18,6 +18,7 @@ besselIs <-
     j <- (nterm-1):0 # sum smallest first!
     n <- length(x)
     if(n == 0) return(x)
+    if(is(nu, "mpfr")) x <- mpfr(x, precBits = max(64, .getPrec(nu)))
     l.s.j <- outer(j, (x/2), function(X,Y) X*2*log(Y))##-> {nterm x n} matrix
     ##
     isNum <- is.numeric(x) || is.complex(x)
@@ -216,12 +217,12 @@ besselI.nuAsym <- function(x, nu, k.max, expon.scaled=FALSE, log=FALSE)
                     if(k.max == 3)
                         (u1.t + (u2.t + u3.t/nu)/nu)/nu
                     else { ## k.max >= 4
-                        u4.t <- t2*t2*(4465125 +
-                                       t2*(-94121676 +
-                                           t2*(349922430 +
-                                               t2*(-446185740 + t2*185910725))))/39813120
-                    if(k.max == 4)
-                        (u1.t + (u2.t + (u3.t + u4.t/nu)/nu)/nu)/nu
+			u4.t <- t2*t2*(4465125 +
+				       t2*(-94121676 +
+					   t2*(349922430 +
+					       t2*(-446185740 + t2*185910725))))/39813120
+			if(k.max == 4)
+			    (u1.t + (u2.t + (u3.t + u4.t/nu)/nu)/nu)/nu
                     }
                 }
             }

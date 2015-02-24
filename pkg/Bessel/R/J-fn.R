@@ -19,12 +19,26 @@ besselJs <-
     ## Author: Martin Maechler, Date: Dec 2014
     if(length(nu) > 1)
         stop(" 'nu' must be scalar (length 1)!")
+    if (nu < 0) {
+	## Using Abramowitz & Stegun  9.1.2
+	## this may not be quite optimal (CPU and accuracy wise)
+        na <- floor(nu)
+        return(if(!log)
+                   (if(nu - na == 0.5) 0 else besselJs(x, -nu, nterm=nterm, Ceps=Ceps) * cospi(nu)) +
+                   (if(nu      == na ) 0 else besselY (x, -nu                        ) * sinpi(nu))
+                ## (if(nu      == na ) 0 else besselYs(x, -nu, nterm=nterm, Ceps=Ceps) * sinpi(nu))
+               else ## same on log scale  ==> need lsum() ?
+                   stop("besselJs(*, nu < 0, log = TRUE)  not yet implemented")
+               )
+    }
+
     j <- (nterm-1):0 # sum smallest first!
     sgns <- rep_len(if(nterm %% 2 == 0) c(-1,1) else c(1,-1), nterm)
     n <- length(x)
     if(n == 0) return(x)
     has0 <- any(i0 <- x == 0)
     x. <- if(has0) x[!i0] else x
+    if(is(nu, "mpfr")) x. <- mpfr(x., precBits = max(64, .getPrec(nu)))
     l.s.j <- outer(j, x./2, function(X,Y) X*2*log(Y))##-> {nterm x n} matrix
     ##
     isNum <- is.numeric(x) || is.complex(x)

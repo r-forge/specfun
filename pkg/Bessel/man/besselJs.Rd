@@ -3,10 +3,10 @@
 \title{Bessel J() function Simple Series Representation}
 \description{
   Computes the modified Bessel \eqn{J} function, using one of its basic
-  definitions as an infinite series.  The implementation is pure \R,
-  working for \code{\link{numeric}}, \code{\link{complex}}, but also
-  e.g., for objects of class \code{"\link[Rmpfr:mpfr-class]{mpfr}"}
-  from package \pkg{Rmpfr}.
+  definitions as an infinite series, e.g. A\&S, p.360, (9.1.10).  The
+  implementation is pure \R, working for \code{\link{numeric}},
+  \code{\link{complex}}, but also e.g., for objects of class
+  \code{"\link[Rmpfr:mpfr-class]{mpfr}"} from package \pkg{Rmpfr}.
 }
 \usage{
 besselJs(x, nu, nterm = 800, log = FALSE,
@@ -38,6 +38,7 @@ besselJs(x, nu, nterm = 800, log = FALSE,
   Abramowitz, M., and Stegun, I. A. (1955, etc).
   \emph{Handbook of mathematical functions}
   (NBS AMS series 55, U.S. Dept. of Commerce).
+  \url{http://people.math.sfu.ca/~cbm/aands/page_360.htm}
 }
 \author{Martin Maechler}
 \seealso{

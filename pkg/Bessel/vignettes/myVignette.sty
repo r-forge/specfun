@@ -4,15 +4,15 @@
 \RequirePackage{bm}%-> \bm (= bold math)
 \newcommand{\Slang}{\textsf{S} language}
 \newcommand{\RR}{\textsf{R}}
-\newcommand{\email}[1]{\href{mailto:#1}{\normalfont\texttt{#1}}}
+% \newcommand{\email}[1]{\href{mailto:#1}{\normalfont\texttt{#1}}}
 %- R programming markup
-\newcommand\code{\bgroup\@codex}
-\def\@codex#1{{\normalfont\ttfamily\hyphenchar\font=-1 #1}\egroup}
-\let\env=\code
-\let\command=\code
+% \newcommand\code{\bgroup\@codex}
+% \def\@codex#1{{\normalfont\ttfamily\hyphenchar\font=-1 #1}\egroup}
+% \let\env=\code
+% \let\command=\code
 \newcommand*{\Rfun}[1]{\code{#1()}\index{\RR~function #1}}
 \newcommand*{\class}[1]{\code{#1}\index{class #1}}%
-\newcommand*{\pkg}[1]{\code{#1}\index{\RR~package #1}}
+% \newcommand*{\pkg}[1]{\code{#1}\index{\RR~package #1}}
 %
 \newcommand{\kbd}[1]{{\normalfont\texttt{#1}}}
 \newcommand{\key}[1]{{\normalfont\texttt{\uppercase{#1}}}}
