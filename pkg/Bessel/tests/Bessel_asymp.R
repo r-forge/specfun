@@ -30,3 +30,6 @@ stopifnot(
           ,
           all.equal(M[,"K"], exp(M[,5]), tol= 1e-12)# on log.scale: 2e-16 !
           )
+
+
+cat('Time elapsed: ', proc.time(),'\n') # for ''statistical reasons''

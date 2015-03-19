@@ -20,6 +20,9 @@
 \SweaveOpts{engine=R,eps=FALSE,pdf=TRUE,width=7,height=4,strip.white=true,keep.source=TRUE}
 %
 %
+\usepackage[T1]{fontenc}% for correct hyphenation and T1 encoding
+\usepackage[utf8]{inputenc}%
+\usepackage{lmodern}% latin modern font
 \usepackage{myVignette}
 %% \usepackage[authoryear,round]{natbib}
 %% \bibliographystyle{plainnat}
@@ -100,8 +103,8 @@ suppressPackageStartupMessages(require("Rmpfr"))
 \item[fAsianOptions] which also load \pkg{fBasics} focuses on the $I()$ and
   $K()$ functions and additionally provides their \emph{derivatives}.
 <<fAsianOpts-1>>=
-suppressPackageStartupMessages(require("fAsianOptions"))
-ls.str("package:fAsianOptions", pattern="^[Bb]essel")
+if(hasfA <- suppressPackageStartupMessages(require("fAsianOptions")))
+  ls.str("package:fAsianOptions", pattern="^[Bb]essel")
 @
 These four user functions build on internal ones, first
 \code{.BesselN()}, \emph{however} they allow \textbf{only integer} order $\nu$.
@@ -132,7 +135,7 @@ The \RR{} package \pkg{gsl} by Robin Hankin provides an \RR{} interface on a
 function-by-function basis to much of the GSL, the GNU Scientific Library.
 You get a first overview with
 <<gsl-do>>=
-detach("package:fAsianOptions")# b/c of name clashes with our 'Bessel' pkg
+if(hasfA) detach("package:fAsianOptions")# b/c of name clashes with our 'Bessel' pkg
 library(gsl)
 <<gsl-help,eval=FALSE>>=
 ?bessel_Knu
@@ -255,7 +258,7 @@ r1M <- plJ(1e6, f1=0.8)
 \section{Session Info}
 
 <<require-again, echo=FALSE>>=
-library("fAsianOptions")
+if(hasfA) library("fAsianOptions")
 <<sessionInfo, results=tex>>=
 toLatex(sessionInfo(), locale=FALSE)
 <<show-date, results=tex, echo=FALSE>>=

@@ -1,7 +1,7 @@
 useDynLib(Bessel)
 
 importFrom("methods", as, is, slot)
-importFrom("Rmpfr", mpfr, apply, asNumeric, colSums)
+importFrom("Rmpfr", mpfr, apply, asNumeric, colSums, .getPrec)
 
 ## These are the  TOMS 644  R-interface functions :
 

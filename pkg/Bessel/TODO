@@ -9,7 +9,7 @@
 ** TODO More docu in ./man/Bessel.Rd
 ** TODO Implement simple series for Y() as we have besselJs() in R/J-fn.R
 ** DONE bI() - renamed to besselIs() now works with  'log = TRUE'
-** DONE Add (most / all) of ~/R/MM/NUMERICS/bessel-fn.R
+** DONE Add (most / all) of ~/R/MM/NUMERICS/Bessel/bessel-fn.R
   R/I-fn.R already added; need to make these work with *complex* input
   ========   should not be hard, since the Abramowitz & Stegun formula
    are for complex .. though restricted, e.g. 9.7.1 (p.377) to  |Arg(z)| < pi/2
@@ -20,3 +20,6 @@
   and offers to let me move them into 'Bessel'
     E-mail: Sat, Sep 18, 2010 at 14:34; From: David Scott <d.scott@auckland.ac.nz>
      	    Subject "Incomplete Bessel K Function"
+
+* Updates and misc.
+** TODO Once we depend on R >= 3.1.0,  use sinpi() and cospi() in R/toms644.R

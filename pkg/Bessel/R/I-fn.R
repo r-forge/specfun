@@ -102,8 +102,8 @@ besselIasym <- function(x, nu, k.max = 10, expon.scaled=FALSE, log=FALSE)
     ## f <- 1
     d <- 0 ## d = 1 - f  <==>  f = 1 - d
     if(k.max >= 1) {
-        m. <- 4*nu^2
-        x8 <- 8*x
+	## m. <- 4*nu^2
+	x8 <- 8*x
         for(k in k.max:1) {
             ## mu <- 4*nu^2; d <- (1 - d)*(mu - (2*k-1)^2)/(k*x8)
             ## mu - (2k-1)^2 = (2nu - (2k-1)) (2nu + (2k-1)) =
