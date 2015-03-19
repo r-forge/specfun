@@ -34,8 +34,9 @@ BesselI <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 	    return(BesselI(z, -nu, expon.scaled, nSeq=nSeq))
         ## else
 	nu. <- -nu + seq_len(nSeq) - 1
-	kf <- rep(2/pi*sin(pi*nu.)* (if(expon.scaled) exp(-2*abs(z)) else 1),
-		  each=nz)
+        kf <- rep(2/pi*sin(pi*nu.), each=nz)
+        if (expon.scaled) kf <- kf * rep(exp(-z-abs(zr)), nSeq)
+
 	return(	  BesselI(z, -nu, expon.scaled, nSeq=nSeq) +
 	       kf*BesselK(z, -nu, expon.scaled, nSeq=nSeq))
     }

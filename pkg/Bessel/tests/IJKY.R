@@ -3,7 +3,9 @@ library(Bessel)
 #### Test cases for the Bessel functions I(), J(), K(), Y()
 ####                    -----------------------------------
 
+if(getRversion() < "2.15.0")
 paste0 <- function(...) paste(..., sep="")
+
 ### --- For real arguments -- Comparisons with bessel[IJYK]()
 
 x <- c(1e-6, 0.1, 1:10, 20, 100, 200)# larger x : less (relative) accuracy (??)
@@ -207,3 +209,30 @@ for(i in seq_along(nus.)) {
 ##		    but for z = real, z >=0 is -Inf
 stopifnot(BesselY(0,1) == -Inf,# == besselY(0,1),
 	  is.nan(BesselY(0+0i, 1)))
+
+
+all.eq <- function(x,y, tol=1e-15,...) all.equal(x,y, tol=tol, ...)
+
+## Subject: bug in Bessel package
+## From: Hiroyuki Kawakatsu <...@gmail.com>, 18 Mar 2015
+
+z <- c(0.23+1i, 1.21-1i)
+nu <- -1/2
+stopifnot(length(Bz.s <- BesselI(z, nu, expon.scaled=TRUE)) == length(z))
+##
+## Check that the exp() scaling is correct:
+Bzu <- BesselI(z, nu)
+stopifnot(abs(Im(sc <- Bz.s / Bzu)) < 1e-15,
+	  all.eq(Re(sc), exp(-abs(Re(z)))))
+## Using  nSeq > 1  -- and checking it:
+options(warn=2)# warning = error {had warning of incompatible length}:
+(Bz.s3 <- BesselI(z, nu, expon.scaled=TRUE, nSeq=3))
+stopifnot(length(dim(Bz.s3)) == 2,
+	  dim(Bz.s3) == c(length(z), 3),
+	  all.eq(Bz.s3[,1], Bz.s),
+	  all.eq(Bz.s3[,2], BesselI(z, nu-1, expon.scaled=TRUE)),
+	  all.eq(Bz.s3[,3], BesselI(z, nu-2, expon.scaled=TRUE)))
+
+
+
+cat('Time elapsed: ', proc.time(),'\n') # for ''statistical reasons''
