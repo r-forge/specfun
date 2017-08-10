@@ -5,3 +5,4 @@ Old/.*
 TOMS-dir
 .*-warnings
 .*CRAN_pkgs
+vignettes/fullpage.sty

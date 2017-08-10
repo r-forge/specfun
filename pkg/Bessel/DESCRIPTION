@@ -1,9 +1,9 @@
 Title: Bessel Functions Computations and Approximations
 Package: Bessel
 Version: 0.6-0
-Date: 2015-03-19
-LastCRAN: 0.5-5, on 2013-12-10
-Description: Bessel Function Computations for complex, real and partly mpfr
+VersionNote: 0.5-5, on 2013-12-10
+Date: 2017-08-10
+Description: Bessel Function Computations for complex, real and partly 'mpfr'
   (arbitrary precision) numbers; notably interfacing TOMS 644; approximations for large
   arguments, experiments, etc.
 Author: Martin Maechler

@@ -1,7 +1,10 @@
 useDynLib(Bessel)
 
+importMethodsFrom("methods", coerce)# for as(..) / setAs(.)
 importFrom("methods", as, is, slot)
-importFrom("Rmpfr", mpfr, apply, asNumeric, colSums, .getPrec)
+
+importMethodsFrom("Rmpfr", asNumeric, apply, colSums, rowSums)
+importFrom("Rmpfr", mpfr, .getPrec)
 
 ## These are the  TOMS 644  R-interface functions :
 
