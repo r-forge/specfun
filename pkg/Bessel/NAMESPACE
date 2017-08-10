@@ -1,4 +1,4 @@
-useDynLib(Bessel)
+useDynLib(Bessel, .registration=TRUE)
 
 importMethodsFrom("methods", coerce)# for as(..) / setAs(.)
 importFrom("methods", as, is, slot)

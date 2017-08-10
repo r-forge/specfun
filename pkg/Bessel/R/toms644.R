@@ -45,7 +45,7 @@ BesselI <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
     r <- if(isNum) numeric(nz * nSeq) else complex(nz * nSeq)
     if(nSeq > 1) r <- matrix(r, nz, nSeq)
     for(i in seq_len(nz)) {
-	ri <- .Fortran("zbesi",
+	ri <- .Fortran(zbesi,
 		       zr[i], zi[i],
 		       fnu = nu,
 		       kode= as.integer(1L + as.logical(expon.scaled)),
@@ -104,7 +104,7 @@ BesselJ <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
     r <- if(isNum) numeric(nz * nSeq) else complex(nz * nSeq)
     if(nSeq > 1) r <- matrix(r, nz, nSeq)
     for(i in seq_len(nz)) {
-	ri <- .Fortran("zbesj",
+	ri <- .Fortran(zbesj,
 		       zr[i], zi[i],
 		       fnu = nu,
 		       kode= as.integer(1L + as.logical(expon.scaled)),
@@ -159,7 +159,7 @@ BesselK <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
     r <- if(isNum) numeric(nz * nSeq) else complex(nz * nSeq)
     if(nSeq > 1) r <- matrix(r, nz, nSeq)
     for(i in seq_len(nz)) {
-	ri <- .Fortran("zbesk",
+	ri <- .Fortran(zbesk,
 		       zr[i], zi[i],
 		       fnu = nu,
 		       kode= as.integer(1L + as.logical(expon.scaled)),
@@ -228,7 +228,7 @@ BesselY <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
             1/(0+0i)
         } else {
 ## 1182: zbesy(zr, zi, fnu, kode, n, cyr, cyi, nz, cwrkr, cwrki, ierr)
-            ri <- .Fortran("zbesy",
+            ri <- .Fortran(zbesy,
                            zr[i], zi[i],
                            fnu = nu,
                            kode= as.integer(1L + as.logical(expon.scaled)),
@@ -314,7 +314,7 @@ BesselH <- function(m, z, nu, expon.scaled = FALSE, nSeq = 1)
     if(nSeq > 1) r <- matrix(r, nz, nSeq)
     for(i in seq_len(nz)) {
 	## zbesh(zr, zi, fnu, kode, m, n, cyr, cyi, nz, ierr)
-	ri <- .Fortran("zbesh",
+	ri <- .Fortran(zbesh,
 		       zr[i], zi[i],
 		       fnu = nu,
 		       kode= as.integer(1L + as.logical(expon.scaled)),
@@ -368,7 +368,7 @@ AiryA <- function(z, deriv = 0, expon.scaled = FALSE)
     r <- if(isNum) numeric(nz) else complex(nz)
     for(i in seq_len(nz)) {
 	## zairy(zr, zi, id, kode, air, aii, nz, ierr)
-	ri <- .Fortran("zairy",
+	ri <- .Fortran(zairy,
 		       zr[i], zi[i],
 		       id = deriv,
 		       kode= as.integer(1L + as.logical(expon.scaled)),
@@ -413,7 +413,7 @@ AiryB <- function(z, deriv = 0, expon.scaled = FALSE)
     r <- if(isNum) numeric(nz) else complex(nz)
     for(i in seq_len(nz)) {
 	## zairy(zr, zi, id, kode, air, aii, nz, ierr)
-	ri <- .Fortran("zbiry",
+	ri <- .Fortran(zbiry,
 		       zr[i], zi[i],
 		       id = deriv,
 		       kode= as.integer(1L + as.logical(expon.scaled)),
