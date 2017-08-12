@@ -57,9 +57,11 @@ BesselI <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 		       ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zbesi(%g %s %gi, nu=%g)'", zr[i],
-                           c("-","+")[1+(z >= 0)], abs(zi[i]), nu)
+                           c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), nu)
 	    if(ri$ierr == 3)
-		warning(sprintf("%s' large arguments -> precision loss\n (of at least half machine accuracy)", f.x))
+		warning(sprintf(
+		"%s large arguments -> precision loss (of at least half machine accuracy)",
+				f.x))
 	    else if(ri$ierr == 2) {
 		if(getOption("verbose"))
                     message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
@@ -116,9 +118,11 @@ BesselJ <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 		       ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zbesj(%g %s %gi, nu=%g)'", zr[i],
-                           c("-","+")[1+(z >= 0)], abs(zi[i]), nu)
+                           c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), nu)
 	    if(ri$ierr == 3)
-		warning(sprintf("%s large arguments -> precision loss\n	 (of at least half machine accuracy)", f.x))
+		warning(sprintf(
+		"%s large arguments -> precision loss (of at least half machine accuracy)",
+				f.x))
 	    else if(ri$ierr == 2) {
 		if(getOption("verbose"))
                     message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
@@ -171,9 +175,11 @@ BesselK <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 		       ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zbesk(%g %s %gi, nu=%g)'", zr[i],
-                           c("-","+")[1+(z >= 0)], abs(zi[i]), nu)
+                           c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), nu)
 	    if(ri$ierr == 3)
-		warning(sprintf("%s large arguments -> precision loss\n	 (of at least half machine accuracy)", f.x))
+		warning(sprintf(
+		"%s large arguments -> precision loss (of at least half machine accuracy)",
+				f.x))
 	    else if(ri$ierr == 2) {
 		if(getOption("verbose"))
                     message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
@@ -242,9 +248,11 @@ BesselY <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
                            ierr = integer(1))
             if(ri$ierr) {
                 f.x <- sprintf("'zbesy(%g %s %gi, nu=%g)'", zr[i],
-                               c("-","+")[1+(z >= 0)], abs(zi[i]), nu)
+                               c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), nu)
                 if(ri$ierr == 3)
-                    warning(sprintf("%s large arguments -> precision loss\n	 (of at least half machine accuracy)", f.x))
+                    warning(sprintf(
+			"%s large arguments -> precision loss (of at least half machine accuracy)",
+			f.x))
                 else if(ri$ierr == 2) {
                     if(getOption("verbose"))
                         message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
@@ -327,9 +335,11 @@ BesselH <- function(m, z, nu, expon.scaled = FALSE, nSeq = 1)
 		       ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zbesh(%g %s %gi, nu=%g)'", zr[i],
-                           c("-","+")[1+(z >= 0)], abs(zi[i]), nu)
+                           c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), nu)
 	    if(ri$ierr == 3)
-		warning(sprintf("%s large arguments -> precision loss\n	 (of at least half machine accuracy)", f.x))
+		warning(sprintf(
+		"%s large arguments -> precision loss (of at least half machine accuracy)",
+				f.x))
 	    else if(ri$ierr == 2) {
 		if(getOption("verbose"))
                     message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
@@ -379,9 +389,11 @@ AiryA <- function(z, deriv = 0, expon.scaled = FALSE)
 		       ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zairy(%g %s %gi, deriv=%d)'", zr[i],
-                           c("-","+")[1+(z >= 0)], abs(zi[i]), deriv)
+                           c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), deriv)
 	    if(ri$ierr == 3)
-		warning(sprintf("%s large arguments -> precision loss\n	 (of at least half machine accuracy)", f.x))
+		warning(sprintf(
+		"%s large arguments -> precision loss (of at least half machine accuracy)",
+				f.x))
 	    else if(ri$ierr == 2) {
 		if(getOption("verbose"))
                     message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
@@ -424,9 +436,11 @@ AiryB <- function(z, deriv = 0, expon.scaled = FALSE)
 		       ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zairy(%g %s %gi, deriv=%d)'", zr[i],
-                           c("-","+")[1+(z >= 0)], abs(zi[i]), deriv)
+                           c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), deriv)
 	    if(ri$ierr == 3)
-		warning(sprintf("%s large arguments -> precision loss\n	 (of at least half machine accuracy)", f.x))
+		warning(sprintf(
+		"%s large arguments -> precision loss (of at least half machine accuracy)",
+				f.x))
 	    else if(ri$ierr == 2) {
 		if(getOption("verbose"))
                     message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
