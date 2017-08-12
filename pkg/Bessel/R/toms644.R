@@ -54,7 +54,7 @@ BesselI <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 		       cyr = double(nSeq),
 		       cyi = double(nSeq),
 		       nz   = integer(1),
-		       ierr = integer(1), PACKAGE = "Bessel")
+		       ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zbesi(%g %s %gi, nu=%g)'", zr[i],
                            c("-","+")[1+(z >= 0)], abs(zi[i]), nu)
@@ -113,7 +113,7 @@ BesselJ <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 		       cyr = double(nSeq),
 		       cyi = double(nSeq),
 		       nz   = integer(1),
-		       ierr = integer(1), PACKAGE = "Bessel")
+		       ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zbesj(%g %s %gi, nu=%g)'", zr[i],
                            c("-","+")[1+(z >= 0)], abs(zi[i]), nu)
@@ -168,7 +168,7 @@ BesselK <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 		       cyr = double(nSeq),
 		       cyi = double(nSeq),
 		       nz   = integer(1),
-		       ierr = integer(1), PACKAGE = "Bessel")
+		       ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zbesk(%g %s %gi, nu=%g)'", zr[i],
                            c("-","+")[1+(z >= 0)], abs(zi[i]), nu)
@@ -239,7 +239,7 @@ BesselY <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
                            nz   = integer(1),
                            cwrkr= double(nSeq),
                            cwrki= double(nSeq),
-                           ierr = integer(1), PACKAGE = "Bessel")
+                           ierr = integer(1))
             if(ri$ierr) {
                 f.x <- sprintf("'zbesy(%g %s %gi, nu=%g)'", zr[i],
                                c("-","+")[1+(z >= 0)], abs(zi[i]), nu)
@@ -324,7 +324,7 @@ BesselH <- function(m, z, nu, expon.scaled = FALSE, nSeq = 1)
 		       cyr = double(nSeq),
 		       cyi = double(nSeq),
 		       nz   = integer(1),
-		       ierr = integer(1), PACKAGE = "Bessel")
+		       ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zbesh(%g %s %gi, nu=%g)'", zr[i],
                            c("-","+")[1+(z >= 0)], abs(zi[i]), nu)
@@ -376,7 +376,7 @@ AiryA <- function(z, deriv = 0, expon.scaled = FALSE)
 		       air = double(1),
 		       aii = double(1),
 		       nz   = integer(1),
-		       ierr = integer(1), PACKAGE = "Bessel")
+		       ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zairy(%g %s %gi, deriv=%d)'", zr[i],
                            c("-","+")[1+(z >= 0)], abs(zi[i]), deriv)
@@ -421,7 +421,7 @@ AiryB <- function(z, deriv = 0, expon.scaled = FALSE)
 		       bir = double(1),
 		       bii = double(1),
 		       nz   = integer(1),
-		       ierr = integer(1), PACKAGE = "Bessel")
+		       ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zairy(%g %s %gi, deriv=%d)'", zr[i],
                            c("-","+")[1+(z >= 0)], abs(zi[i]), deriv)
