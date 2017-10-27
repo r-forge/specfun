@@ -16,7 +16,7 @@
 %%\VignetteDepends{Bessel}
 %%\VignetteDepends{gsl}
 %%\VignetteDepends{sfsmisc}
-%%\VignetteDepends{fAsianOptions}
+%%__VignetteDepends{fAsianOptions}
 \SweaveOpts{engine=R,eps=FALSE,pdf=TRUE,width=7,height=4,strip.white=true,keep.source=TRUE}
 %
 %
@@ -89,7 +89,6 @@ Bessel functions:
 %%     -------------------------
 
 \item[gsl]
-\item[fAsianOptions]
 
 \item[Rmpfr] provides arbitrary precision Bessel functions of
   \emph{integer} order $\nu =: n$ of the first kind only,
@@ -100,7 +99,9 @@ Bessel functions:
 suppressPackageStartupMessages(require("Rmpfr"))
 @
 
-\item[fAsianOptions] which also load \pkg{fBasics} focuses on the $I()$ and
+\item[fAsianOptions] \emph{currently \textbf{archived} on CRAN, i.e., no
+    longer easily available}.\\ It % which
+  also loads \pkg{fBasics} focuses on the $I()$ and
   $K()$ functions and additionally provides their \emph{derivatives}.
 <<fAsianOpts-1>>=
 if(hasfA <- suppressPackageStartupMessages(require("fAsianOptions")))
