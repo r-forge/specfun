@@ -4,7 +4,7 @@
 \title{News for \R Package \pkg{Bessel}}
 \encoding{UTF-8}
 
-\section{Changes in version 0.6-0 (2017-10-27, svn r31)}{
+\section{Changes in version 0.6-0 (2017-10-27, svn r33)}{
   \subsection{New Features}{
     \itemize{
       \item deprecate \code{bI()} to \code{besselSi()} -- enable
@@ -42,7 +42,7 @@
     \itemize{
       \item Improved vignette
     }
-
+  }
   \subsection{Bug Fixes}{
     \itemize{
       \item \code{BesselY(0, nu)} should not give an error message
@@ -62,6 +62,7 @@
   }
 }
 
-\section{Previous changes}
-  See the  \file{ChangeLog} file in the sources.
-}
+\section{ALL PREVIOUS changes (version 0.0-0)}{ \itemize{ \item
+    See the  \file{ChangeLog} file in the sources.
+}}
+
