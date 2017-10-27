@@ -10,7 +10,7 @@ Author: Martin Maechler
 Maintainer: Martin Maechler <maechler@stat.math.ethz.ch>
 Depends: Rmpfr
 Imports: methods
-Suggests: gsl, sfsmisc, fAsianOptions
+Suggests: gsl, sfsmisc
 SuggestsNote: only 'gsl' may be used in code; the others are for vignettes only
 License: GPL (>= 2)
 URL: http://specfun.r-forge.r-project.org/
