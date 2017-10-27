@@ -1,8 +1,6 @@
-2014-12-14  Martin Maechler  <maechler@stat.math.ethz.ch>
+2017-10-27  Martin Maechler  <maechler@stat.math.ethz.ch>
 
-	* DESCRIPTION (Version): 0.6-0
-
-	* R/J-fn.R (besselJs): new; Taylor series for J_nu(x)
+ ===>>>> ALL New Changes are to be documented in  inst/NEWS.Rd !!!
 
 2012-03-21  Martin Maechler  <maechler@stat.math.ethz.ch>
 
