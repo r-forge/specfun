@@ -71,8 +71,8 @@ AiryB(z, deriv = 0, expon.scaled = FALSE)
 curve(AiryA, -20, 100, n=1001)
 curve(AiryA,  -1, 100, n=1001, log="y")
 curve(AiryA(x, expon.scaled=TRUE), -1, 50, n=1001)
-curve(AiryA(x, expon.scaled=TRUE),  1, 10000, n=1001, log="xy")
-
+\donttest{## This gives many warnings (248 on nb-mm4, F24) about lost accuracy, but on Windows takes ~ 4 sec:
+curve(AiryA(x, expon.scaled=TRUE),  1, 10000, n=1001, log="xy")}
 
 ## The AiryB() := Bi() function
 curve(AiryB, -20, 2, n=1001); abline(h=0,v=0, col="gray",lty=2)

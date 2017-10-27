@@ -2,7 +2,7 @@ Title: Computations and Approximations for Bessel Functions
 Package: Bessel
 Version: 0.6-0
 VersionNote: 0.5-5, on 2013-12-10
-Date: 2017-08-10
+Date: 2017-10-27
 Description: Computations for Bessel function for complex, real and partly
   'mpfr' (arbitrary precision) numbers; notably interfacing TOMS 644;
   approximations for large arguments, experiments, etc.

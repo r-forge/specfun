@@ -4,7 +4,7 @@
 \title{News for \R Package \pkg{Bessel}}
 \encoding{UTF-8}
 
-\section{Changes in version 0.6-0 (2017-10-27, svn r30)}{
+\section{Changes in version 0.6-0 (2017-10-27, svn r31)}{
   \subsection{New Features}{
     \itemize{
       \item deprecate \code{bI()} to \code{besselSi()} -- enable

@@ -1,7 +1,7 @@
 \name{besselI.nuAsym}
+\title{Asymptotic Expansion of Bessel I(x,nu) and K(x,nu) for Large nu (and x)}
 \alias{besselI.nuAsym}
 \alias{besselK.nuAsym}
-\title{Asymptotic Expansion of Bessel I(x,nu) and K(x,nu) for Large nu (and x)}
 \description{
   Compute Bessel functions \eqn{I_{\nu}(x)}{I[nu](x)} and
   \eqn{K_{\nu}(x)}{K[nu](x)} for large \eqn{\nu}{nu} and possibly large
@@ -41,10 +41,11 @@ besselK.nuAsym(x, nu, k.max, expon.scaled = FALSE, log = FALSE)
 }
 \author{Martin Maechler}
 \seealso{
-  From this package \pkg{Bessel} \code{\link{BesselI}()}; further,
+  From this package \pkg{Bessel}: \code{\link{BesselI}()}; further,
   \code{\link{besselIasym}()} for the case when \eqn{x} is large and
-  \eqn{\nu} is small or moderate; further \pkg{base}
-  \code{\link{besselI}}, etc
+  \eqn{\nu} is small or moderate.
+
+  Further, from \pkg{base}: \code{\link{besselI}}, etc.
 }
 \examples{
 x <- c(1:10, 20, 50, 100, 100000)
