@@ -16,7 +16,6 @@
 %%\VignetteDepends{Bessel}
 %%\VignetteDepends{gsl}
 %%\VignetteDepends{sfsmisc}
-%%__VignetteDepends{fAsianOptions}
 \SweaveOpts{engine=R,eps=FALSE,pdf=TRUE,width=7,height=4,strip.white=true,keep.source=TRUE}
 %
 %
@@ -85,7 +84,7 @@ Hence, I had started experimenting with the two asymptotic expansions from
 The following \RR{} packages on CRAN (as of Jan.29, 2009) also provide
 Bessel functions:
 \begin{description}
-%% --> ../../Bessel_in_CRAN_pkgs
+%% --> ~/R/Pkgs/Bessel/Bessel_in_CRAN_pkgs <== updated Oct. 2017 == TODO: %% UPDATE THIS!!!
 %%     -------------------------
 
 \item[gsl]
@@ -98,19 +97,6 @@ Bessel functions:
 <<Rmpfr-1>>=
 suppressPackageStartupMessages(require("Rmpfr"))
 @
-
-\item[fAsianOptions] \emph{currently \textbf{archived} on CRAN, i.e., no
-    longer easily available}.\\ It % which
-  also loads \pkg{fBasics} focuses on the $I()$ and
-  $K()$ functions and additionally provides their \emph{derivatives}.
-<<fAsianOpts-1>>=
-if(hasfA <- suppressPackageStartupMessages(require("fAsianOptions")))
-  ls.str("package:fAsianOptions", pattern="^[Bb]essel")
-@
-These four user functions build on internal ones, first
-\code{.BesselN()}, \emph{however} they allow \textbf{only integer} order $\nu$.
-One nice property is that all code is written in \RR{}, i.e., no C or Fortran
-is needed.
 
 \item[QRMlib] Uses many \file{GSL} (GNU Scientific Library) C functions in its own code,
   or, rather, has copy-pasted ``Bessel-related'' parts of GSL into its own
@@ -136,7 +122,6 @@ The \RR{} package \pkg{gsl} by Robin Hankin provides an \RR{} interface on a
 function-by-function basis to much of the GSL, the GNU Scientific Library.
 You get a first overview with
 <<gsl-do>>=
-if(hasfA) detach("package:fAsianOptions")# b/c of name clashes with our 'Bessel' pkg
 library(gsl)
 <<gsl-help,eval=FALSE>>=
 ?bessel_Knu
@@ -259,7 +244,6 @@ r1M <- plJ(1e6, f1=0.8)
 \section{Session Info}
 
 <<require-again, echo=FALSE>>=
-if(hasfA) library("fAsianOptions")
 <<sessionInfo, results=tex>>=
 toLatex(sessionInfo(), locale=FALSE)
 <<show-date, results=tex, echo=FALSE>>=
