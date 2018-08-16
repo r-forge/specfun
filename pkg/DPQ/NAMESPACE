@@ -1,0 +1,13 @@
+
+importFrom("stats"
+         , dnorm, pnorm, qnorm
+         , dbeta, pbeta, qbeta
+         , dgamma, pgamma, qgamma
+           )
+
+importFrom("utils"
+         , str
+           )
+
+## For now export everything
+exportPattern("^[^.]")
