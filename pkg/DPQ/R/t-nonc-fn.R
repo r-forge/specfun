@@ -682,17 +682,6 @@ dnt.1 <- function(x, df, ncp, M = 1000, log = FALSE, verbose=FALSE, tol.check = 
     if(log) lf else exp(lf)
 }
 dnt <- Vectorize(dnt.1, c("x", "df", "ncp"))
-## dntM() := version for Rmpfr:
-nB <- length(body(dntM <- dnt))
-body(dntM)[[nB]] <- substitute(new("mpfr", THIS), list(THIS = body(dnt)[[nB]]))
-rm(nB) #                       -----------     -
-if(FALSE) {
-    require(Rmpfr)
-    stopifnot(all.equal(dnt.1(mpfr(0, 64),  5,10), ## gave NaN
-                         3.66083172640611114864e-23, tol=1e-20))
-
-    dntM(mpfr(-4:4, 256), 5, 10)##--> heureka! ==> more in ./dt-ex.R
-}
 
 
 ###-- qnt() did not exist yet at the time I wrote this ...

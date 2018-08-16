@@ -1,0 +1,38 @@
+importFrom("DPQ"
+          , dnt
+)
+
+importFrom("Rmpfr"
+         , mpfr, getPrec, Const
+         , dnorm, pnorm
+         , dpois
+)
+
+importClassesFrom("Rmpfr"
+                , "mpfr", "mpfrMatrix", "mpfrArray"
+)
+
+
+importFrom("stats"
+         , stats__dnorm = dnorm
+         , stats__pnorm = pnorm
+         , stats__dpois = dpois
+         , stats__dbinom = dbinom
+         , qnorm
+         , dbeta, pbeta, qbeta
+         , dgamma, pgamma, qgamma
+         , dchisq, pchisq
+         , dpois, ppois, qpois
+)
+
+## importFrom("sfsmisc"
+##          , mult.fig
+##      )
+
+importFrom("utils"
+         , str
+           )
+
+## For now export everything
+exportPattern("^[^.]")
+
