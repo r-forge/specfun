@@ -338,7 +338,7 @@ qnorm.appr <- function(p) {
 }
 
 qnormU.appr <- function(p,
-                        lp = R.DT.Clog(p, lower.tail=lower.tail, log.p=log.p),
+                        lp = .DT_Clog(p, lower.tail=lower.tail, log.p=log.p),
                                         # ~= log(1-p) -- independent of lower.tail, log.p
                         lower.tail=TRUE, log.p=FALSE)
 {
@@ -356,7 +356,7 @@ qnormU.appr <- function(p,
         swap <- if(lower.tail) p. < 1/2 else p. > 1/2 # logical vector
 
     } else {
-        p. <- R.D.qIv(p, log.p)
+        p. <- .D_qIv(p, log.p)
         ## swap p <--> 1-p -- so we are where approximation is better
         swap <- if(lower.tail) p. < 1/2 else p. > 1/2 # logical vector
         p[swap] <- if(log.p) R.Log1.Exp(p[swap]) else 1 - p[swap]
@@ -398,7 +398,7 @@ qbeta.appr.3 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(
     ##        ============  <<<<
 
     ## log
-    log.a <- if(lower.tail) R.D.log(a, log.p=log.p) else R.D.LExp(a, log.p=log.p)
+    log.a <- if(lower.tail) .D_log(a, log.p=log.p) else .D_LExp(a, log.p=log.p)
 
     pmin(1, exp(log.a +  log(p) + logbeta) / p)
 }
@@ -407,7 +407,7 @@ qbeta.appr.2 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(
 {
     ## Purpose: Approximate  qbeta(a, p,q)
 
-    l1ma <- if(lower.tail) R.D.LExp(a, log.p=log.p) else R.D.log(a, log.p=log.p)
+    l1ma <- if(lower.tail) .D_LExp(a, log.p=log.p) else .D_log(a, log.p=log.p)
     ## pmax(0, ....) -- needed when  (l1ma + log(q) + logbeta) / q > 0, e.g., for
     ## e.g. qbeta.appr.2(1/4, 1/2, 1/2)
     -expm1((l1ma + log(q) + logbeta) / q)
@@ -526,7 +526,7 @@ qbeta.R	 <-  function(alpha, p, q,
         if (alpha == 0 || alpha == 1) return(if(lower.tail) alpha else 1-alpha)
     }
 
-    p. <- R.DT.qIv(alpha, lower.tail, log.p=log.p) # = lower_tail prob (in any case)
+    p. <- .DT_qIv(alpha, lower.tail, log.p=log.p) # = lower_tail prob (in any case)
 
     if(R.pre.2014) {
         if(log.p && (p. == 0. || p. == 1.))
@@ -551,11 +551,11 @@ qbeta.R	 <-  function(alpha, p, q,
     ## la := log(a), but without numerical cancellation:
     if (alpha <= 1/2) {
 	a <- p.
-	la <- if(lower.tail) R.D.log(alpha, log.p) else R.D.LExp(alpha, log.p)
+	la <- if(lower.tail) .D_log(alpha, log.p) else .D_LExp(alpha, log.p)
         pp <- p; qq <- q; swap.tail <- FALSE
     } else {
-	a <- R.DT.CIv(alpha, lower.tail, log.p)
-	la <- if(lower.tail) R.D.LExp(alpha, log.p) else R.D.log(alpha, log.p)
+	a <- .DT_CIv(alpha, lower.tail, log.p)
+	la <- if(lower.tail) .D_LExp(alpha, log.p) else .D_log(alpha, log.p)
         pp <- q; qq <- p; swap.tail <- TRUE
     }
     if(verbose) cat(if(swap.tail)"SWAP tail" else "no swap", "\n")

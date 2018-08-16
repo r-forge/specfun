@@ -10,7 +10,7 @@
 #### Used to be part of ./t-nonc-approx.R, see also ./pt-ex.R
 ####                      ---------------             -------
 
-## for R.DT.val():
+## for .DT_val():
 ## source("/u/maechler/R/MM/NUMERICS/dpq-functions/dpq-h.R")
 
 ### TODO:  E.pnt = E [ . ] = delta * sqrt(nu/2)*gamma(.5*(nu-1))/gamma(.5*nu)
@@ -305,7 +305,7 @@ pntR1  <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
     if(tnc > 1 - 1e-10 && lower.tail)
         cat("finis: precision NOT reached\n")
 
-    R.DT.val(min(tnc, 1.), lower.tail, log.p)
+    .DT_val(min(tnc, 1.), lower.tail, log.p)
 }# pntR1()
 
 pntR  <- Vectorize(pntR1, c("t", "df", "ncp"))

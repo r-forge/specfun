@@ -111,7 +111,7 @@ dnchisqR <- function(x, df, ncp, log = FALSE)
     if (ncp < 0 || df <= 0 || !is.finite(df) || !is.finite(ncp))
 	return(NaN)
 
-    if(x < 0) return(R.D..0(log))
+    if(x < 0) return(.D_0(log))
     if(x == 0 && df < 2.)
 	return(Inf)
 ##     if(ncp == 0)
@@ -138,7 +138,7 @@ dnchisqR <- function(x, df, ncp, log = FALSE)
         if(log || ncp > 1000.) {
             nl <- df + ncp; ic <- nl/(nl + ncp) ##/* = "1/(1+b)" Abramowitz & St.*/
             return(dchisq(x*ic, nl*ic, log=log))
-        } else return(R.D..0(log))
+        } else return(.D_0(log))
     }
 
     sum <- mid
@@ -166,5 +166,5 @@ dnchisqR <- function(x, df, ncp, log = FALSE)
 	if (q < 1 && term * q <= (1-q)*eps) break
     }
     ## return
-    R.D.val(sum, log)
+    .D_val(sum, log)
 }

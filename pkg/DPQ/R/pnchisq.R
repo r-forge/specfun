@@ -39,10 +39,10 @@ pnchisq <- function(q, df, ncp = 0, lower.tail = TRUE,
 	if(x == 0 && df == 0)
 	    return(if(lower_tail) exp(-0.5*ncp) else -expm1(-0.5*ncp))
         ## else
-        return(R.DT.0(lower.tail, log.p=FALSE))
+        return(.DT_0(lower.tail, log.p=FALSE))
     }
     if(!is.finite(x))
-        return(R.DT.1(lower.tail, log.p=FALSE))
+        return(.DT_1(lower.tail, log.p=FALSE))
     lam <- 0.5 * ncp
 
     if(ncp < cutOffncp) {
@@ -100,7 +100,7 @@ pnchisq <- function(q, df, ncp = 0, lower.tail = TRUE,
             ## x > E[X] + xL.. * sigma(X)
              Cat(" and x > E(X) + ",formatC(xLrg.sigma),
                  "*sigma(X) : too large --> 1 \n")
-             return(R.DT.1(lower.tail, log.p=FALSE)) ## better than 0 --- but definitely "FIXME"
+             return(.DT_1(lower.tail, log.p=FALSE)) ## better than 0 --- but definitely "FIXME"
         } ## else :
         l.x <- log(x)
         Cat(" ln(x)=",l.x,"\n")
@@ -200,7 +200,7 @@ pnchisq <- function(q, df, ncp = 0, lower.tail = TRUE,
     }
     ##ifdef DEBUG_pnch
     ## REprintf("\n == L_End: n=%d; term= %g; bound=%g\n",n,term,bound);
-    structure(R.D.Lval(ans, lower.tail=lower.tail), iter = n)
+    structure(.D_Lval(ans, lower.tail=lower.tail), iter = n)
 }
 
 ## Cheaply Vectorized version:
@@ -362,8 +362,8 @@ ss <- function(x, df, ncp, i.max = 10000)
     if(length(x)   > 1) stop("'x' must be of length 1")
     if(length(df)  > 1) stop("'df' must be of length 1")
     if(length(ncp) > 1) stop("'ncp' must be of length 1")
-    expMiMa <- log(2)*unlist(.Machine[c("double.min.exp","double.max.exp")])
-    ## ~= (-708.4, 709.8)  (for IEEE FP)
+    expMin <- log(2)*.Machine$double.min.exp # ~= -708.4 for IEEE FP
+    expMax <- log(2)*.Machine$double.max.exp # ~= +709.8
 
     lambda <- ncp/2
 
@@ -378,7 +378,7 @@ ss <- function(x, df, ncp, i.max = 10000)
     }
 
     ## Nota Bene: v[n] == e_n(lambda) * exp(-lambda)  is always in [0,1)
-    useLv <- !(expMiMa[1] < -lambda && 1/lambda < expMiMa[2])
+    useLv <- !(expMin < -lambda && 1/lambda < expMax)
     if(!useLv) {## otherwise overflows/underflows
         u <- exp(-lambda)*cumprod(c(1, lambda / i))
         v <- cumsum(u)

@@ -16,7 +16,7 @@
 ## source("/u/maechler/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/beta-fns.R")
 ## if(FALSE) ## lgamma1p(), ... ----- also loads
 ## source("/u/maechler/R/MM/NUMERICS/dpq-functions/dpq-h.R")
-## --> R.DT.qIv() etc etc
+## --> .DT_qIv() etc etc
 
 
 
@@ -57,7 +57,7 @@ qchisq.appr.R <- function(p, nu, g = lgamma(nu/2),
 
         if(log.p) stopifnot(p <= 0) else stopifnot(0 <= p && p <= 1)
 
-        p1 <- R.DT.log(p, lower.tail, log.p)
+        p1 <- .DT_log(p, lower.tail, log.p)
 
         if(is.null(kind)) ## default
             kind <- {
@@ -95,7 +95,7 @@ qchisq.appr.R <- function(p, nu, g = lgamma(nu/2),
 
                    ##/* approximation for p tending to 1: */
                    if(kind == "p1WH" || (kind == "WHchk" && ch > 2.2*nu + 6))
-                       ch <- -2*(R.DT.Clog(p, lower.tail,log.p)
+                       ch <- -2*(.DT_Clog(p, lower.tail,log.p)
                                  - c*log(0.5*ch)+ g)
                },
                "nu.small" = { ##/* small  nu : 1.24*(-log(p)) <= nu <= 0.32 */
@@ -106,7 +106,7 @@ qchisq.appr.R <- function(p, nu, g = lgamma(nu/2),
                    C10 <- 13.32
 
                    ch <- 0.4
-                   a <- R.DT.Clog(p, lower.tail, log.p) + g + c*M.LN2
+                   a <- .DT_Clog(p, lower.tail, log.p) + g + c*M.LN2
 
                    Cat(sprintf("'nu.small', nu=%g, a(p,nu) = %19.13g ", nu,a))
 
@@ -169,7 +169,7 @@ qgamma.R <- function(p, alpha,  scale = 1, lower.tail = TRUE, log.p = FALSE,
     if (scale <= 0) stop("scale <= 0")
     if (alpha == 0) return(0)
 
-    p. <- R.DT.qIv(p, lower.tail, log.p)
+    p. <- .DT_qIv(p, lower.tail, log.p)
 
     Cat(sprintf("qgamma(p=%7g, alpha=%7g, scale=%7g, l.t.=%2d, log.p=%2d): ",
                 p,alpha,scale, lower.tail, log.p))
@@ -293,8 +293,8 @@ qgamma.R <- function(p, alpha,  scale = 1, lower.tail = TRUE, log.p = FALSE,
 	if(i >= 2) Cat(sprintf("         it=%d,  d{p}=%g\n",    i, p1))
 
 	if(abs(p1) < abs(epsN * p) ||
-	   (g <- dgamma(x, alpha, scale=scale, log = log.p)) == R.D..0(log.p)) {
-            if(i == 1 && g == R.D..0(log.p))
+	   (g <- dgamma(x, alpha, scale=scale, log = log.p)) == .D_0(log.p)) {
+            if(i == 1 && g == .D_0(log.p))
                 warning("no Newton step done because dgamma(*) = 0 !")
 	    break
 	}
