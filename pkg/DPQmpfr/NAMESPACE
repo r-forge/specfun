@@ -1,5 +1,5 @@
 importFrom("DPQ"
-          , dnt
+         , dnt
 )
 
 importFrom("Rmpfr"
@@ -12,22 +12,27 @@ importClassesFrom("Rmpfr"
                 , "mpfr", "mpfrMatrix", "mpfrArray"
 )
 
+## importFrom("sfsmisc"
+##          , mult.fig
+##      )
+
+
 
 importFrom("stats"
          , stats__dnorm = dnorm
          , stats__pnorm = pnorm
-         , stats__dpois = dpois
-         , stats__dbinom = dbinom
          , qnorm
+         , stats__dpois = dpois
+         , ppois, qpois
+         , stats__dbinom = dbinom
          , dbeta, pbeta, qbeta
          , dgamma, pgamma, qgamma
          , dchisq, pchisq
-         , dpois, ppois, qpois
 )
 
-## importFrom("sfsmisc"
-##          , mult.fig
-##      )
+importFrom("methods"
+         , new
+           )
 
 importFrom("utils"
          , str
