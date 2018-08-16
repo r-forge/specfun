@@ -17,11 +17,10 @@ pbetaRv1 <- function(x, pin, qin, lower.tail = TRUE,
     if(length(x) != 1 || length(pin) != 1 || length(qin) != 1)
 	stop("arguments must have length 1 !")
     isN <- is.numeric(x) && is.numeric(pin) && is.numeric(qin)
-    if(!isN) {
-        isMpfr <- is(x, "mpfr") || is(pin, "mpfr") || is(qin, "mpfr")
-        ## needed for printing mpfr numbers {-> pkg Rmpfr}, e.g.
-	.N <- if(isMpfr && require("Rmpfr")) asNumeric else as.numeric
-    }
+    isMpfr <- !isN && any_mpfr(x, pin, qin)
+    ## needed for printing mpfr numbers {-> pkg Rmpfr}, e.g.
+    .N <- if(isMpfr && requireNamespace("Rmpfr"))
+              Rmpfr::asNumeric else as.numeric
     Cat <- function(...) if(verbose > 0) cat(...)
 
     lneps <- log(eps) #  -36.7368  ---	 but may be lower in mpfr case

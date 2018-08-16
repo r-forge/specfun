@@ -1,6 +1,6 @@
 Package: DPQ
 Title: Probability Distributions DPQ (Density, Probability, Quantile) Computations
-Version: 0.5-0
+Version: 0.3-0
 Date: 2018-08-16
 Authors@R: c(person("Martin","Maechler", role=c("aut","cre"), email="maechler@stat.math.ethz.ch")
  )
@@ -8,13 +8,13 @@ Description: Computations for approximations and alternatives for the DPQ
   (Density (pdf), Probability (cdf) and Quantile) functions for probability
   distributions in R.
   Primary focus is on (central and non-central) beta, gamma and possibly
-  related distributions.
+  related distributions such as the chisquare, F-, and t-distribution.
   --
   This is for the use of researchers in these numerical approximation
   implementations, notably for my own use in order to improve R's pbeta(),
   qgamma(), ..., dpq-functions.
 Depends: R (>= 3.5.0)
-Imports: utils, stats
-Suggests: Rmpfr
+Imports: stats, graphics, methods, utils, sfsmisc
+Suggests: DPQmpfr
 License: GPL (>= 2)
 Encoding: UTF-8

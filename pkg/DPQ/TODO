@@ -1,0 +1,5 @@
+##-*- org -*-->  Emacs .. [Tab] key + [Org] menu; C-c C-o to follow links
+* t-distributions :
+** TODO extract functions (and "tests") from ~/R/MM/NUMERICS/dpq-functions/dt-ex.R
+** TODO extract fns & tests   from ~/R/MM/NUMERICS/dpq-functions/pt-ex.R
+** TODO extract fns & tests   from ~/R/MM/NUMERICS/dpq-functions/qt-ex.R

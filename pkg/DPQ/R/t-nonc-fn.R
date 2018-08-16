@@ -171,12 +171,13 @@ pntR1  <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
     isN <- is.numeric(t) && is.numeric(df) && is.numeric(ncp)
     if(!isN) {
 	if(verbose) cat("some 'non-numeric arguments .. fine\n")
-	if((isMpfr <- is(t, "mpfr") || is(df, "mpfr") || is(ncp, "mpfr"))) {
-	    stopifnot(require("Rmpfr"))
+	if((isMpfr <- any_mpfr(t, df, ncp))) {
+	    stopifnot(requireNamespace("Rmpfr"))
 	    ## if(!exists("pbetaRv1", mode="function"))
 	    ##     source("~/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/pbetaR.R")
+            getPrec <- Rmpfr::getPrec
 	    prec <- max(getPrec(t), getPrec(df), getPrec(ncp))
-	    pi <- Const("pi", prec = max(64, prec))
+	    pi <- Rmpfr::Const("pi", prec = max(64, prec))
 	}
     }
 
@@ -367,12 +368,13 @@ pnt3150.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE, M = 1000,
 
     isN <- is.numeric(t) && is.numeric(df) && is.numeric(ncp)
     if(!isN) {
-        if((isMpfr <- is(t, "mpfr") || is(df, "mpfr") || is(ncp, "mpfr"))) {
-            stopifnot(require("Rmpfr"))
+        if((isMpfr <- any_mpfr(t, df, ncp)) {
+            stopifnot(requireNamespace("Rmpfr"))
             ## if(!exists("pbetaRv1", mode="function"))
             ##     source("~/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/pbetaR.R")
+            getPrec <- Rmpfr::getPrec
             prec <- max(getPrec(t), getPrec(df), getPrec(ncp))
-            pi <- Const("pi", prec = max(64, prec))
+            pi <- Rmpfr::Const("pi", prec = max(64, prec))
             pbeta <- Vectorize(pbetaRv1, "qin") # so pbeta(x, p, <vector q>) works
             dbeta <- function(x, a,b, log=FALSE) {
                 lval <- (a-1)*log(x) + (b-1)*log1p(-x) - lbeta(a, b)
@@ -436,12 +438,13 @@ pntP94.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
     ## Make this workable also for "mpfr" objects --> use format() in cat()
     isN <- is.numeric(t) && is.numeric(df) && is.numeric(ncp)
     if(!isN) {
-        if((isMpfr <- is(t, "mpfr") || is(df, "mpfr") || is(ncp, "mpfr"))) {
-            stopifnot(require("Rmpfr"))
+        if((isMpfr <- any_mpfr(t, df, ncp)) {
+            stopifnot(requireNamespace("Rmpfr"))
             ## if(!exists("pbetaRv1", mode="function"))
             ##     source("~/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/pbetaR.R")
+            getPrec <- Rmpfr::getPrec
             prec <- max(getPrec(t), getPrec(df), getPrec(ncp))
-            pi <- Const("pi", prec = max(64, prec))
+            pi <- Rmpfr::Const("pi", prec = max(64, prec))
             pbeta <- pbetaRv1
             dbeta <- function(x, a,b, log=FALSE) {
                 lval <- (a-1)*log(x) + (b-1)*log1p(-x) - lbeta(a, b)
@@ -449,7 +452,7 @@ pntP94.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
             }
         }
         ## needed for printing mpfr numbers {-> pkg Rmpfr}, e.g.
-	.N <- if(isMpfr) asNumeric else as.numeric
+	.N <- if(isMpfr) Rmpfr::asNumeric else as.numeric
         Cat("Some 'non-numeric arguments .. fine\n")
     }
 
@@ -645,21 +648,22 @@ dnt.1 <- function(x, df, ncp, M = 1000, log = FALSE, verbose=FALSE, tol.check = 
     ln2 <- log(2)
     ._1.1..M <- c(1L, seq_len(M)) # cumprod(.) = (0!, 1!, 2! ..) =  (1, 1, 2, 6, ...)
     if(!isN) {
-        if((isMpfr <- is(x, "mpfr") || is(df, "mpfr") || is(ncp, "mpfr"))) {
-	    stopifnot(require("Rmpfr"))
+        if((isMpfr <- any_mpfr(x, df, ncp))) {
+	    stopifnot(requireNamespace("Rmpfr"))
+            mpfr <- Rmpfr::mpfr ; getPrec <- Rmpfr::getPrec
 	    prec <- max(getPrec(x), getPrec(df), getPrec(ncp))
-	    pi <- Const("pi", prec = max(64, prec))
+	    pi <- Rmpfr::Const("pi", prec = max(64, prec))
 	    ## this *is* necessary / improving results!
-	    if(!is(x,  "mpfr")) x   <- mpfr(x,  prec)
-	    if(!is(df, "mpfr")) df  <- mpfr(df, prec)
-	    if(!is(ncp,"mpfr")) ncp <- mpfr(ncp,prec)
+	    if(!inherits(x,  "mpfr")) x   <- mpfr(x,  prec)
+	    if(!inherits(df, "mpfr")) df  <- mpfr(df, prec)
+	    if(!inherits(ncp,"mpfr")) ncp <- mpfr(ncp,prec)
 	    ln2 <- log(mpfr(2,prec))
 	    ._1.1..M <- mpfr(._1.1..M, prec)
         } else {
             warning(" Not 'numeric' but also not  'mpfr' -- untested, beware!!")
         }
         ## needed for printing mpfr numbers {-> pkg Rmpfr}, e.g.
-	.N <- if(isMpfr) asNumeric else as.numeric
+	.N <- if(isMpfr) Rmpfr::asNumeric else as.numeric
     }
 
     x2 <- x^2

@@ -1,8 +1,23 @@
 
+importFrom("sfsmisc"
+         , mult.fig
+     )
+
 importFrom("stats"
          , dnorm, pnorm, qnorm
          , dbeta, pbeta, qbeta
          , dgamma, pgamma, qgamma
+         , dchisq, pchisq
+         , df, pf, qf
+         , dt, pt, qt
+         , dpois, ppois, qpois
+)
+
+importFrom("graphics",
+           curve, legend, lines, par, plot
+           )
+
+importFrom("methods", is, new
            )
 
 importFrom("utils"
