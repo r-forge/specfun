@@ -3,7 +3,7 @@
 ### ---> ./chisq-nonc-ex.R
 ###      ~~~~~~~~~~~~~~~~~
 
-source("~/R/MM/NUMERICS/dpq-functions/dpq-h.R")# the macros
+## source("~/R/MM/NUMERICS/dpq-functions/dpq-h.R")# the macros
 
 ## R's builtin  dchisq(x, df, ncp) is now {since P.Dalgaards improvement}
 ## -----------                     definitely better than this:
@@ -168,9 +168,3 @@ dnchisqR <- function(x, df, ncp, log = FALSE)
     ## return
     R.D.val(sum, log)
 }
-
-set.seed(1)
-for(x in rlnorm(500))
-    stopifnot(all.equal(dnchisqR(x,10, 2),
-                        dchisq  (x,10, 2), tol=1e-7))
-
