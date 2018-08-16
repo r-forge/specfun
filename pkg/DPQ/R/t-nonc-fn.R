@@ -166,15 +166,13 @@ pntR1  <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
 
     stopifnot(length(t) == 1, length(df) == 1, length(ncp) == 1,
               df > 0, ncp > 0) ## ncp == 0 --> pt()
-
     ## Make this workable also for "mpfr" objects --> use format() in cat()
     isN <- is.numeric(t) && is.numeric(df) && is.numeric(ncp)
+    isMpfr <- !isN && any_mpfr(t, df, ncp)
     if(!isN) {
 	if(verbose) cat("some 'non-numeric arguments .. fine\n")
-	if((isMpfr <- any_mpfr(t, df, ncp))) {
+	if(isMpfr) {
 	    stopifnot(requireNamespace("Rmpfr"))
-	    ## if(!exists("pbetaRv1", mode="function"))
-	    ##     source("~/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/pbetaR.R")
             getPrec <- Rmpfr::getPrec
 	    prec <- max(getPrec(t), getPrec(df), getPrec(ncp))
 	    pi <- Rmpfr::Const("pi", prec = max(64, prec))
@@ -367,8 +365,9 @@ pnt3150.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE, M = 1000,
                          log.p=log.p, M=M))
 
     isN <- is.numeric(t) && is.numeric(df) && is.numeric(ncp)
+    isMpfr <- !isN && any_mpfr(t, df, ncp)
     if(!isN) {
-        if((isMpfr <- any_mpfr(t, df, ncp)) {
+        if(isMpfr) {
             stopifnot(requireNamespace("Rmpfr"))
             ## if(!exists("pbetaRv1", mode="function"))
             ##     source("~/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/pbetaR.R")
@@ -437,8 +436,9 @@ pntP94.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
     Cat <- function(...) if(verbose > 0) cat(...)
     ## Make this workable also for "mpfr" objects --> use format() in cat()
     isN <- is.numeric(t) && is.numeric(df) && is.numeric(ncp)
+    isMpfr <- !isN && any_mpfr(t, df, ncp)
     if(!isN) {
-        if((isMpfr <- any_mpfr(t, df, ncp)) {
+        if(isMpfr) {
             stopifnot(requireNamespace("Rmpfr"))
             ## if(!exists("pbetaRv1", mode="function"))
             ##     source("~/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/pbetaR.R")
@@ -644,11 +644,12 @@ dnt.1 <- function(x, df, ncp, M = 1000, log = FALSE, verbose=FALSE, tol.check = 
 {
     stopifnot(length(x) == 1, length(df) == 1, length(ncp) == 1, length(M) == 1,
               df >= 0, is.numeric(M), M >= 1, M == round(M))
-    isN <- is.numeric(x) && is.numeric(df) && is.numeric(ncp)
     ln2 <- log(2)
     ._1.1..M <- c(1L, seq_len(M)) # cumprod(.) = (0!, 1!, 2! ..) =  (1, 1, 2, 6, ...)
+    isN <- is.numeric(x) && is.numeric(df) && is.numeric(ncp)
+    isMpfr <- !isN && any_mpfr(x, df, ncp)
     if(!isN) {
-        if((isMpfr <- any_mpfr(x, df, ncp))) {
+        if(isMpfr) {
 	    stopifnot(requireNamespace("Rmpfr"))
             mpfr <- Rmpfr::mpfr ; getPrec <- Rmpfr::getPrec
 	    prec <- max(getPrec(x), getPrec(df), getPrec(ncp))
