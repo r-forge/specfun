@@ -14,9 +14,9 @@
 ## source("/u/maechler/R/MM/NUMERICS/dpq-functions/dpq-h.R")
 
 ### TODO:  E.pnt = E [ . ] = delta * sqrt(nu/2)*gamma(.5*(nu-1))/gamma(.5*nu)
-###        -----  is very similar to  b.nu (and can use same asymptotic)
+###        -----  is very similar to  b_chi (and can use same asymptotic)
 
-b.nu <- function(nu, one.minus = FALSE, c1 = 341, c2 = 1000)
+b_chi <- function(nu, one.minus = FALSE, c1 = 341, c2 = 1000)
 {
     ## Purpose: Compute  E[ chi_nu ] / sqrt(nu)    --- useful for non-central t
     ## ----------------------------------------------------------------------
@@ -43,12 +43,12 @@ b.nu <- function(nu, one.minus = FALSE, c1 = 341, c2 = 1000)
     BL <- c2 < nu  # "L" : Large
     r[B1] <- b1(r[B1])
     r[B2] <- b2(r[B2])
-    r[BL] <- b.nu.asymp(nu[BL], one.minus=one.minus)
+    r[BL] <- b_chiAsymp(nu[BL], one.minus=one.minus)
     ##       ----------
     r
 }
 
-b.nu.asymp <- function(nu, one.minus = FALSE)
+b_chiAsymp <- function(nu, one.minus = FALSE)
 {
   ## Purpose: Compute  E[ chi_nu ] / sqrt(nu)  --- for "LARGE" nu
   ## ----------------------------------------------------------------------
@@ -58,8 +58,8 @@ b.nu.asymp <- function(nu, one.minus = FALSE)
 
   ## Abramowitz & Stegun, 6.1.47 (p.257) for a= 1/2, b=0 : __ for  z --> oo ___
   ## gamma(z + 1/2) / gamma(z) ~ sqrt(z)*(1 - 1/(8z) + 1/(128 z^2) + O(1/z^3))
-  ## i.e. for b(nu), z = nu/2;  b(nu) = sqrt(1/z)* gamma((nu+1)/2) / gamma(nu/2)
-  ##  b(nu) = 1 - 1/(8z) + 1/(128 z^2) + O(1/z^3) ~ 1 - 1/8z * (1 - 1/(16z))
+  ## i.e. for b_chi), z = nu/2;  b_chi) = sqrt(1/z)* gamma((nu+1)/2) / gamma(nu/2)
+  ##  b_chi) = 1 - 1/(8z) + 1/(128 z^2) + O(1/z^3) ~ 1 - 1/8z * (1 - 1/(16z))
   qq <- 1/(8*nu) # = 1/(16z)
   qq <- 2*qq*(1- qq)
   if(one.minus) qq else 1-qq
@@ -103,13 +103,13 @@ pt.appr <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE)
   ## Author: Martin Mächler, Date:  6 Feb 1999, 11 Mar 1999
   ## Johnson, Kotz,... , p.520, after (31.26a)
 
-  b <- b.nu(df)
+  b <- b_chi(df)
   ##   =====
   pnorm((t*b - ncp)/sqrt(1+ t*t*(1 - b*b)),
         lower.tail = lower.tail, log.p = log.p)
 }
 
-c.nu <- function(nu) {
+c_dt <- function(nu) {
     ## Purpose: The constant in  dt(t, nu, log=TRUE) =
     ##         = \log f_{\nu}(t) = c_{\nu} - \frac{\nu+1}{2}\log(1 + x^2/\nu)
     ## ----------------------------------------------------------------------
@@ -124,13 +124,13 @@ c.nu <- function(nu) {
     nu. <- nu[I <- !I & nu < 1e4]
     r[I] <- lgamma((nu.+1)/2) - lgamma(nu./2) - log(pi*nu.)/2
     I <- nu >= 1e4
-    r[I] <- c.nu.asymp(nu[I])
+    r[I] <- c_dtAsymp(nu[I])
     r
 }
 
-c.nu.asymp <- function(nu)
+c_dtAsymp <- function(nu)
 {
-    ## Purpose: Asymptotic of c.nu -- via Abramowitz & Stegun, 6.1.47 (p.257)
+    ## Purpose: Asymptotic of c_dt -- via Abramowitz & Stegun, 6.1.47 (p.257)
     ## ----------------------------------------------------------------------
     ## Arguments: nu >=0  (degrees of freedom)
     ## ----------------------------------------------------------------------
@@ -139,13 +139,13 @@ c.nu.asymp <- function(nu)
     -log(2*pi)/2 -1/(4*nu)
 }
 
-c.pt <- function(nu)
+c_pt <- function(nu)
 {
   ## Purpose: the asymptotic constant in log F_nu(-x) = const(nu) - nu * log(x)
   ##          where F_nu(x) == pt(x, nu)
   ## ----------------------------------------------------------------------
   ## Author: Martin Maechler, Date:  5 Nov 2008, 09:34
-  c.nu(nu) + (nu-1)/2 * log(nu)
+  c_dt(nu) + (nu-1)/2 * log(nu)
 }
 
 
@@ -704,7 +704,7 @@ qt.appr <- function(p, df, ncp, method = c("a","b","c"))
   ##----------- NEED df >> 1 (this is from experiments below; what exactly??)
   z <- qnorm(p)
   if(method %in% c("a","c")) {
-      b <- b.nu(df)
+      b <- b_chi(df)
       b2 <- b*b
   }
   ## For huge `df';  b2 ~= 1 ---> method b) sets b = b2 = 1

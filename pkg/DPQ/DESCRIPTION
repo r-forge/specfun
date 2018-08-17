@@ -15,6 +15,6 @@ Description: Computations for approximations and alternatives for the DPQ
   qgamma(), ..., dpq-functions.
 Depends: R (>= 3.5.0)
 Imports: stats, graphics, methods, utils, sfsmisc
-Suggests: DPQmpfr
+Suggests: Rmpfr, DPQmpfr
 License: GPL (>= 2)
 Encoding: UTF-8
