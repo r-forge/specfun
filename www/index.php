@@ -43,7 +43,34 @@ echo $contents; } ?>
 
 <!-- end of project description -->
 
-<p> No content added. </p>
+<p>
+Several R packages providing (algorithms to compute) special mathematical functions, typically all related to computing probability distribution functions, often "DPQ" (Density (pdf), Probability (cdf), and Quantiles (inverse cdf)).
+</p>
+
+<p>
+  Initiated and currently solely maintained by
+  <a href="https://stat.ethz.ch/~maechler/">Martin Maechler</a>,
+  <a href="https://www.ethz.ch/">ETH Zurich</a>,
+  and member of the R Core team since primordial times.
+</p>
+
+<p>
+  Traditionally, I have worked a lot in making the DPQ-functions in (base)
+  R more accurate in border cases,  notably implementing
+  the <tt>log=TRUE/FALSE</tt> and <tt>lower.tail = T|F</tt> possibilities.
+</p>
+
+<h3>R Packages part of the 'specfun' project on R-forge:</h3>
+<!--- FIXME: rather use a nice table == make it via markdown -->
+<ul>
+<li>Bessel: </li>
+<li>DPQ: </li>
+<li>DPQmpfr: </li>
+<li>dcdflib: </li>
+</ul>
+see the <strong>R Packages</strong> menu item on the project summary page,
+currently available <a href="http://r-forge.r-project.org/R/?group_id=611">here</a>.
+
 
 <p> The <strong>project summary page</strong> you can find <a href="http://<?php echo $domain; ?>/projects/<?php echo $group_name; ?>/"><strong>here</strong></a>. </p>
 
