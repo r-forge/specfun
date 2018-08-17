@@ -1,0 +1,37 @@
+cdfbet(WHICH,p,q, x,y, a,	b,	STATUS,bound) c.d.f. Beta
+cdfbin(WHICH,p,q, s,xn, pr,	ompr,	STATUS,bound) c.d.f. Binomial
+cdfchi(WHICH,p,q, x,df,			STATUS,bound) c.d.f. Chisquare
+cdfchn(WHICH,p,q, x,df, pnonc,		STATUS,bound) c.d.f. Non-centr.Chisquare
+cdff  (WHICH,p,q, f,dfn, dfd,		STATUS,bound) c.d.f. F
+cdffnc(WHICH,p,q, f,dfn, dfd,	phonc,	STATUS,bound) c.d.f. Non-central F
+cdfgam(WHICH,p,q, x,shape, scale,	STATUS,bound) c.d.f. Gamma
+cdfnbn(WHICH,p,q, s,xn, pr,	ompr,	STATUS,bound) c.d.f. Negative Binomial
+cdfnor(WHICH,p,q, x,mean, sd,		STATUS,bound) c.d.f. Normal
+cdfpoi(WHICH,p,q, s,xlam, 		STATUS,bound) c.d.f. Poisson
+cdft  (WHICH,p,q, t,df, 		STATUS,bound) c.d.f. T
+cdftnc(WHICH,p,q, t,df, pnonc,		STATUS,bound) c.d.f. Non-central T
+
+cumbet(x,y,a,b,		cum,ccum)
+cumbin(s,xn,pr,ompr,	cum,ccum)
+cumchi(x,df,		cum,ccum)
+cumchn(x,df,pnonc,	cum,ccum)
+cumf(f,dfn,dfd,		cum,ccum)
+cumfnc(f,dfn,dfd,pnonc, cum,ccum)
+cumgam(x,a,		cum,ccum)
+cumnbn(s,xn,pr,ompr,	cum,ccum)
+cumnor(arg,	     result,ccum)
+cumpoi(s,xlam,		cum,ccum)
+cumt(t,df,		cum,ccum)
+cumtnc(t,df,pnonc,	cum,ccum)
+
+bgrat (a,b,x,y,w, eps,IERR)
+bratio(a,b,x,y,w, w1, IERR)
+
+dinvr(STATUS,x,fx, unsigned long *qleft,unsigned long *qhi)
+dstinv(zsmall,zbig,zabsst, zrelst,zstpmu,zabsto, zrelto)
+dzror(STATUS,x,fx,xlo, xhi,unsigned long *qleft,unsigned long *qhi)
+dstzr(zxlo,zxhi,zabstl,zreltl)
+gaminv(a,x,x0,p,q, IERR)
+grat1(a,x,r,p,q, eps)
+gratio(a,x,ans,qans,int *ind)
+

@@ -1,0 +1,7 @@
+OLD
+older
+src-stuff
+.*unused
+.*\.tar\.gz$
+.*,v
+src/.*\.[RP]$
