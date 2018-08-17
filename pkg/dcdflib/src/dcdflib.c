@@ -5393,7 +5393,7 @@ static void E0000(int IENTRY,
     if(*status <= 0) {
 
 	if(!is_monotone(small,*x,big))
-	    ftnstop("(SMALL, X, BIG) not monotone in INVR");
+	    Rf_error("(SMALL, X, BIG) not monotone in INVR");
 	xsave = *x;
 	/*
 	  See that SMALL and BIG bound the zero and set QINCR
@@ -7690,6 +7690,7 @@ long fifidint(double a)
   return (long)(a);
 }
 
+#ifdef _USE_FTNSTOP_
 /*----------------------------------------------------------------------**
 FTNSTOP:
 Prints msg to standard error and then exits
@@ -7700,3 +7701,4 @@ void ftnstop(char* msg)
   if (msg != NULL) fprintf(stderr,"%s\n",msg);
   exit(EXIT_FAILURE); /* EXIT_FAILURE from stdlib.h, or use an int */
 }
+#endif

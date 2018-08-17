@@ -452,8 +452,8 @@ pnchisqIT <- function(q, df, ncp = 0, errmax = 1e-12,
             i0 = integer(1),
             n.terms = integer(1),
             terms = double(itrmax+1), ## !!
-            prob  = double(1),
-            DUP = FALSE)
+            prob  = double(1)
+          , PACKAGE = "DPQ")
     length(r$terms) <- r$n.terms
     r[c("prob", "i0", "n.terms", "terms")]
 }
@@ -481,7 +481,7 @@ ss2. <- function(q, df, ncp = 0, errmax = 1e-12,
             n.terms = integer(1),
             terms = double(itrmax+1), ## !!
             prob  = double(1),
-            DUP = FALSE)
+          , PACKAGE = "DPQ")
     length(r$terms) <- r$n.terms
     nT <- length(s <- r$terms)
 

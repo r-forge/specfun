@@ -66,7 +66,8 @@ b_chiAsymp <- function(nu, one.minus = FALSE)
 }
 
 
-pt.appr1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE) {
+## was called 'pt.appr1'
+pntLrg <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE) {
     ## Approximate pt()  [non-central t] --- using the "extreme case" formula
     ##  from C's pnt.c  and  pntR() below:
     ##
@@ -75,33 +76,32 @@ pt.appr1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE) {
     ## FIXME: test should depend on `df', `tt' AND `del' ! */
     ## /* Approx. from	 Abramowitz & Stegun 26.7.10 (p.949) */
 
-    ## VECTORIZE this:
-    ## if(t >= 0) {
-    ##     negdel <- FALSE
-    ##     del <- ncp
-    ## } else {
-    ##     negdel <- TRUE
-    ##     t   <- -t
-    ##     del <- -ncp
-    ## }
-    negdel <- t < 0
-    t  [negdel] <- -   t[negdel]
-    del[negdel] <- - del[negdel]
+    ## Vectorizing (in t) {{is this correct? -- FIXME??}}
+    n <- max(length(t), length(df), length(ncp))
+    if(length( t ) != n) t   <- rep_len(t,  n)
+    if(length( df) != n) df  <- rep_len(df, n)
+    if(length(ncp) != n) ncp <- rep_len(ncp,n)
 
+    neg <- t < 0
+    t  [neg] <- -   t[neg]
+    ncp[neg] <- - ncp[neg]
     s <- 1/(4*df)
-    pnorm(t*(1 - s), m = del, s = sqrt(1 + t*t*2*s),
-          lower.tail = (lower.tail != negdel), log.p=log.p)
+    pnorm(t*(1 - s), m = ncp, s = sqrt(1 + t*t*2*s),
+          lower.tail = (lower.tail != neg), log.p=log.p)
 }
 
-pt.appr <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE)
+## was called 'pt.appr'
+pntJW39 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE)
 {
-  ## Purpose: approximate non-central t -- still works FAST for huge ncp
-  ##      [but has *wrong* asymptotic tail (for |t| -> oo)
+  ## Purpose: Jennett & Welch (1939) approximation to non-central t
+  ##          see Johnson, Kotz, Bala... Vol.2, 2nd ed.(1995)
+  ##                                     p.520, after (31.26a)
+  ## -- still works FAST for huge ncp
+  ##    but has *wrong* asymptotic tail (for |t| -> oo)
   ## ----------------------------------------------------------------------
   ## Arguments: see  ?pt
   ## ----------------------------------------------------------------------
   ## Author: Martin Mächler, Date:  6 Feb 1999, 11 Mar 1999
-  ## Johnson, Kotz,... , p.520, after (31.26a)
 
   b <- b_chi(df)
   ##   =====

@@ -25,8 +25,8 @@ qtnc(p, df=stop("no df arg"), ncp=0, lower.tail = TRUE)
   the longest.
 
   Fortran code from the DCDFLIB of Barry W. Brown, James Lovato and
-  Kathy Russell (\url{ftp://odin.mdacc.tmc.edu/pub/source/dcdflib.f-1.1-tar.gz})
-  with S wrapper by Donald H. MacQueen (\email{macqueen1@llnl.gov})
+  Kathy Russell (originally from \file{ftp://odin.mdacc.tmc.edu/pub/source/dcdflib.f-1.1-tar.gz})
+  with original S wrapper by Donald H. MacQueen (\email{macqueen1@llnl.gov})
 }
 \references{
   Johnson, Kotz,  Balakrishnan (1995)
@@ -37,5 +37,4 @@ qtnc(p, df=stop("no df arg"), ncp=0, lower.tail = TRUE)
 ptnc( seq(-2,2,by=.25) , df=45, ncp=-.5)
 qtnc( p=seq(.2,.8,by=.2) , df=11, ncp=1)
 }
-% Converted by Sd2Rd version 0.3-3.
 \keyword{distribution}

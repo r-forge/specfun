@@ -108,7 +108,9 @@ double fifdmin1(double,double);
 double fifdsign(double,double);
 long fifidint(double);
 long fifmod(long,long);
+#ifdef _USE_FTNSTOP_
 void ftnstop(char*);
+#endif
 
 double exparg(int);
 double spmpar(int);

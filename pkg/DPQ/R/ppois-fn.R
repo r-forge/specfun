@@ -14,7 +14,7 @@ ppoisD <- function(q, lambda)
        n,
        as.double(lambda),
        pr = double(n),
-       DUP = FALSE)$pr
+     , PACKAGE = "DPQ")$pr
 }
 
 

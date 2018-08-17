@@ -86,7 +86,7 @@ plot(function(t)1-pt (t,df=4)/ptnc(t,df=4,ncp=0),col="blue",0,1000,n=10001)
 
 
 ## Compare dcdflib's ptnc() == Posten(1994)'s algorithm,
-## with our pt() and with the  "simple approximation"  :
+## with our pt() and with the  "simple approximation"s now from package 'DPQ'
 
 ## setwd("/u/maechler/R/MM/NUMERICS/dpq-functions")
 ## source("t-nonc-fn.R")## see also ./t-nonc-approx.R
@@ -94,31 +94,36 @@ plot(function(t)1-pt (t,df=4)/ptnc(t,df=4,ncp=0),col="blue",0,1000,n=10001)
 ## if(!dev.interactive(orNone=TRUE))
 ##    pdf("pt_ncp_appr.pdf", paper="default", height=0, width=0)
 
-op <- mult.fig(12, oma = c(0,0,3,1),
-               main = "pt(t, df=10, ncp) and approximations")$old.par
-ii <- seq(0,1, len=501)
-for(ncp in c(0,1,2,5,10,37.6218,37.6219,100,1000,1e4,1e5,1e10)) {
-  tt <- ii * max(2,2.4*(ncp + if(ncp < 3) ncp else 0))
-  print(c(system.time(p1 <- pt     (tt,df=10,ncp=ncp))[1],
-          system.time(p2 <- pntR   (tt,df=10,ncp=ncp))[1],
-          system.time(p.a<- pt.appr(tt,df=10,ncp=ncp))[1]))
-  matplot(tt, cbind(p1,p2, p.a), col=c("black","blue3","red3"),
-          lwd = c(1.5,1, .5), lty=1, type='l', xlab= "t", ylab = "",
-          main = paste("ncp = ",formatC(ncp, digits=10,wid=1)))
-  if(FALSE)
-      abline(h=.1*(0:10),col='gray80', lwd=.3, lty=3)
-  par(new=TRUE)
-  matplot(tt, abs(cbind(p.a,p2) - p1), type="l",
-          lty = 2:3, col = c("red3","blue3"), yaxt="n", ann = FALSE)
-  if(ncp == 0)
-      legend("topleft", c("|p.appr() - pt()|", "|ptnc() - pt()|"),
-             lty = 2:3, col = c("red3","blue3"),
-             inset=.02)
-  axis(4, col="purple")
+## FIXME: These do not even call ptnc() here !!!! <<<<<<<<<<<<<<<<<<
+if(requireNamespace("DPQ")) {
+    pntR    <- DPQ::pntR
+    pntJW39 <- DPQ::pntJW39 ## <--
+    op <- mult.fig(12, oma = c(0,0,3,1),
+                   main = "pt(t, df=10, ncp) and approximations")$old.par
+    ii <- seq(0,1, len=501)
+    for(ncp in c(0,1,2,5,10,37.6218,37.6219,100,1000,1e4,1e5,1e10)) {
+        tt <- ii * max(2,2.4*(ncp + if(ncp < 3) ncp else 0))
+        print(c(system.time(p1 <- pt     (tt,df=10,ncp=ncp))[1],
+                system.time(p2 <- pntR   (tt,df=10,ncp=ncp))[1],
+                system.time(p.a<- pntJW39(tt,df=10,ncp=ncp))[1]))
+        matplot(tt, cbind(p1,p2, p.a), col=c("black","blue3","red3"),
+                lwd = c(1.5,1, .5), lty=1, type='l', xlab= "t", ylab = "",
+                main = paste("ncp = ",formatC(ncp, digits=10,wid=1)))
+        if(FALSE)
+            abline(h=.1*(0:10),col='gray80', lwd=.3, lty=3)
+        par(new=TRUE)
+        matplot(tt, abs(cbind(p.a,p2) - p1), type="l",
+                lty = 2:3, col = c("red3","blue3"), yaxt="n", ann = FALSE)
+        if(ncp == 0)
+            legend("topleft", c("|p.appr() - pt()|", "|ptnc() - pt()|"),
+                   lty = 2:3, col = c("red3","blue3"),
+                   inset=.02)
+        axis(4, col="purple")
+    }
+    par(op)
 }
-par(op)
 
-dev.off()
+## dev.off()
 
 ### End{ originally from .............../pnt-ex.R } -------------------------
 

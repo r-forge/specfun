@@ -24,5 +24,7 @@ importFrom("utils"
          , str
            )
 
+### ----------------------- Exporting ----------------------------
+
 ## For now export everything
 exportPattern("^[^.]")

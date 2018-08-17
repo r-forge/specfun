@@ -1,6 +1,6 @@
 #### Vectorized DCDFLIB distributions
 ####
-#### t, F, Chi^2  --- central & noncentral   
+#### t, F, Chi^2  --- central & noncentral
 
 
 ### Original was :
@@ -115,9 +115,7 @@ tfchiV <- function(which=1,
 
     lens <- c( length(p),length(t),length(df),length(df2),length(ncp) )
     len <- max(lens)
-    if (any(is.na(match(lens, c(1,len)))))
-        warning(paste("tfchiV(", subrout.ext,
-                      "): lengths of arguments not all equal or 1\n"))
+    nonmatch <- any(is.na(match(lens, c(1,len))))
 
     p <- rep(as.double(p),  length=len)
     q <- rep(as.double(q),  length=len)
@@ -142,6 +140,10 @@ tfchiV <- function(which=1,
            chi2nc={ Sub <- "V_cdfchn"; .C(Sub, which, p=p, q=q, t=t, df=df,
            	    pnonc=pnonc, status=status, bound = bound, len, PACKAGE = "dcdflib") }
                  )
+
+    if(nonmatch)
+        warning(paste("tfchiV(", Sub,
+                      "): lengths of arguments not all equal or 1\n"))
 
     if (any(vt$status != 0)) {
         cat("Warning: error flag returned by DCDFLIB's ",
