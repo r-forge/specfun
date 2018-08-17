@@ -368,3 +368,18 @@ plot(function(t) t - pntJW39(qt.appr(t,df=10,ncp=1e5),df=10,ncp=1e5),
      col='red',add=T)
 
 
+###--- Diverse tests, some lifted from ../R/t-nonc-fn.R ------------------------
+
+dntR(1:6, df=3, ncp=5, check=TRUE)
+## [1] 0.0032023 0.2728377 1.5174647 2.4481320 2.4106931 1.9481189 -- wrong "but sensible"
+
+x <- seq(-1,20, by=1/4)
+plot(x, dt(x, df=3, ncp=5) / dntR(x, df=3, ncp=5))
+## ???
+
+(ft <- dnt(1:6, df=3, ncp=5, check=TRUE))
+## [1] 0.000508267 0.026060733 0.119137668 0.176104468 0.165771811 0.130541073
+## correct !! *with* the factorial !
+stopifnot(all.equal(ft, dt(1:6, df=3, ncp=5)))
+
+

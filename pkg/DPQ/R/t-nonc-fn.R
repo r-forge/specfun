@@ -431,7 +431,7 @@ pntP94.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
                    itrmax = 1000, errmax = 1e-12, verbose = TRUE) {
 
     stopifnot(length(t) == 1, length(df) == 1, length(ncp) == 1,
-              df > 0, ncp > 0) ## ncp == 0 --> pt()
+              df >= 0, ncp >= 0, df+ncp > 0) ## ncp == 0 --> pt()
 
     Cat <- function(...) if(verbose > 0) cat(...)
     ## Make this workable also for "mpfr" objects --> use format() in cat()
@@ -591,16 +591,6 @@ dntR.1 <- function(x, df, ncp, M = 1000, log = FALSE, check=FALSE, tol.check = 1
 }
 dntR <- Vectorize(dntR.1, c("x", "df", "ncp"))
 
-if(FALSE) {## no experiments in this file ... but for testing interactively :
-dntR(1:6, df=3, ncp=5, check=TRUE)
-## [1] 0.0032023 0.2728377 1.5174647 2.4481320 2.4106931 1.9481189 -- wrong "but sensible"
-
-x <- seq(-1,20, by=1/4)
-plot(x, dt(x, df=3, ncp=5) / dntR(x, df=3, ncp=5))
-## clearly wrong
-
-}## testing
-
 
 ### Johnson, Kotz and Balakrishnan (1995) [2nd ed.] have
 ###  (31.15) [p.516] and (31.15'), p.519 -- and they  contradict by a factor  (1 / j!)
@@ -629,12 +619,6 @@ dnt.1 <- function(x, df, ncp, M = 1000, log = FALSE, check=FALSE, tol.check = 1e
 }
 dnt <- Vectorize(dnt.1, c("x", "df", "ncp"))
 
-if(FALSE) {## no experiments in this file ... but for testing interactively :
-(ft <- dnt(1:6, df=3, ncp=5, check=TRUE))
-## [1] 0.000508267 0.026060733 0.119137668 0.176104468 0.165771811 0.130541073
-## correct !! *with* the factorial !
-stopifnot(all.equal(ft, dt(1:6, df=3, ncp=5)))
-}## testing
 
 logr <- function(x, a) ## == log(x / (x + a)) -- but numerically smart; x > 0, a >= 0 > -x
     if(a < x) -log1p(a/x) else log(x / (x + a))
@@ -691,7 +675,8 @@ dnt <- Vectorize(dnt.1, c("x", "df", "ncp"))
 
 ###-- qnt() did not exist yet at the time I wrote this ...
 ##    ---
-qt.appr <- function(p, df, ncp, method = c("a","b","c"))
+qt.appr <- function(p, df, ncp, lower.tail = TRUE, log.p = FALSE,
+                    method = c("a","b","c"))
 {
   ## Purpose: Quantiles of approximate non-central t
   ##  using Johnson,Kotz,.. p.521, formula (31.26 a) (31.26 b) & (31.26 c)
@@ -702,7 +687,7 @@ qt.appr <- function(p, df, ncp, method = c("a","b","c"))
     method <- match.arg(method)
 
   ##----------- NEED df >> 1 (this is from experiments below; what exactly??)
-  z <- qnorm(p)
+  z <- qnorm(p, lower.tail=lower.tail, log.p=log.p)
   if(method %in% c("a","c")) {
       b <- b_chi(df)
       b2 <- b*b
