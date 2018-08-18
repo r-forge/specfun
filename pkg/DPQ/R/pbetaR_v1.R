@@ -42,7 +42,7 @@ pbetaRv1 <- function(x, pin, qin, lower.tail = TRUE,
     if ((p + q) * y / (p + 1) < eps) {
 
 	## /* tail approximation */
-	Cat("pbetaR(): _tail approximation_ swap.tail : ",spap.tail,"\n")
+	Cat("pbetaR(): _tail approximation_ swap.tail : ", swap.tail,"\n")
 
 	xb <- p * log(max(y, sml)) - log(p) - lbeta(p, q)
 	if (xb > lnsml && y != 0) {

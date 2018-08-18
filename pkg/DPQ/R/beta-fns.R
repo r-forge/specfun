@@ -77,7 +77,7 @@ lbeta.asy <- function(a,b, k.max = 5, give.all = FALSE)
 }
 
 ## MM: this is unused (why ??)
-lbetaMM <- function(a,b, Cut.asy = 1e-2)
+lbetaMM <- function(a,b, Cut.asy = 1e-2, verbose = FALSE)
 {
   ## Purpose:  log(beta( a, b))  which also works for HUGE  a / b or b/a
   ## -------------------------------------------------------------------------
@@ -90,9 +90,8 @@ lbetaMM <- function(a,b, Cut.asy = 1e-2)
   stopifnot(is.numeric(Cut.asy), length(Cut.asy) == 1, Cut.asy >= 0)
   if(a>b) { cc <- b; b <- a; a <- cc } #- Now: a <= b
   if(a*a < b*Cut.asy) {
-    if(exists("DEBUG") && DEBUG)
-      warning(paste("a=",formatC(a)," b=",formatC(b),
-                    " -- using asymptotic  lbeta(.)"))
+    if(verbose)
+      message("a=",formatC(a)," b=",formatC(b), " -- using asymptotic  lbeta(.)")
     lgamma(a) - logQab.asy(a,b)
   } else
     lgamma(a)+lgamma(b)-lgamma(a+b) ## was =: lbeta00(a, b)

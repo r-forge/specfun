@@ -165,7 +165,7 @@ pntR1  <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
     ## Author: Martin Mächler, Date:  3 Apr 1999, 23:43
 
     stopifnot(length(t) == 1, length(df) == 1, length(ncp) == 1,
-              df > 0, ncp > 0) ## ncp == 0 --> pt()
+              df > 0, ncp >= 0) ## ncp == 0 --> pt()
     ## Make this workable also for "mpfr" objects --> use format() in cat()
     isN <- is.numeric(t) && is.numeric(df) && is.numeric(ncp)
     isMpfr <- !isN && any_mpfr(t, df, ncp)
@@ -298,7 +298,7 @@ pntR1  <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
 
     if(verbose)
         cat(sprintf("%stnc{sum} = %.12g, tnc+pnorm(-del) = %.12g, lower.t = %d\n",
-                    if(verbose == 1) sprintf("%d iter.: ", it) else "\\--> ",
+                    if(verbose == 1 && x > 0) sprintf("%d iter.: ", it) else "\\--> ",
                     tnc0, tnc, lower.tail))
 
     if(tnc > 1 - 1e-10 && lower.tail)
@@ -431,7 +431,7 @@ pntP94.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
                    itrmax = 1000, errmax = 1e-12, verbose = TRUE) {
 
     stopifnot(length(t) == 1, length(df) == 1, length(ncp) == 1,
-              df >= 0, ncp >= 0, df+ncp > 0) ## ncp == 0 --> pt()
+              df > 0, ncp >= 0) ## ncp == 0 --> pt()
 
     Cat <- function(...) if(verbose > 0) cat(...)
     ## Make this workable also for "mpfr" objects --> use format() in cat()
@@ -571,7 +571,7 @@ dntR.1 <- function(x, df, ncp, M = 1000, log = FALSE, check=FALSE, tol.check = 1
     ## *		sum_{k=0}^Inf  gamma((df + k + df)/2)*ncp^k /
     ## *				prod(1:k)*(2*x^2/(df+x^2))^(k/2)
     stopifnot(length(x) == 1, length(df) == 1, length(ncp) == 1, length(M) == 1,
-              ncp >= 0, df >= 0,
+              ncp >= 0, df > 0,
               is.numeric(M), M >= 1, M == round(M))
 
     if(check)
@@ -599,7 +599,7 @@ dntR <- Vectorize(dntR.1, c("x", "df", "ncp"))
 dnt.1 <- function(x, df, ncp, M = 1000, log = FALSE, check=FALSE, tol.check = 1e-7)
 {
     stopifnot(length(x) == 1, length(df) == 1, length(ncp) == 1, length(M) == 1,
-              ncp >= 0, df >= 0,
+              ncp >= 0, df > 0,
               is.numeric(M), M >= 1, M == round(M))
     if(check) ## this is the formula (31.15) unchanged:
      fac <- exp(-.5*ncp^2) * gamma((df+1)/2) / (  sqrt(pi*df)* gamma(df/2)) *    (df/(df+x^2))^((df+1)/2)
@@ -648,7 +648,7 @@ dnt.1 <- function(x, df, ncp, M = 1000, log = FALSE, verbose=FALSE, tol.check = 
             warning(" Not 'numeric' but also not  'mpfr' -- untested, beware!!")
         }
         ## needed for printing mpfr numbers {-> pkg Rmpfr}, e.g.
-	.N <- if(isMpfr) Rmpfr::asNumeric else as.numeric
+	## .N <- if(isMpfr) Rmpfr::asNumeric else as.numeric
     }
 
     x2 <- x^2
@@ -699,12 +699,12 @@ qt.appr <- function(p, df, ncp, lower.tail = TRUE, log.p = FALSE,
              (ncp*b + z*sqrt(den + ncp^2*(1-b2)))/den
          },
          "b" = {
-             den <- 1 - z*z/(2*nu)
-             (ncp + z*sqrt(den + ncp^2/(2*nu)))/den
+             den <- 1 - z*z/(2*df)
+             (ncp + z*sqrt(den + ncp^2/(2*df)))/den
 
          },
          "c" = {
-             den <- b2 - z*z/(2*nu)
-             (ncp*b + z*sqrt(den + ncp^2/(2*nu)))/den
+             den <- b2 - z*z/(2*df)
+             (ncp*b + z*sqrt(den + ncp^2/(2*df)))/den
          })
 }

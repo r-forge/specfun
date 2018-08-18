@@ -37,7 +37,7 @@ pnchisq <- function(q, df, ncp = 0, lower.tail = TRUE,
     x <- q
     if(x <= 0) {
 	if(x == 0 && df == 0)
-	    return(if(lower_tail) exp(-0.5*ncp) else -expm1(-0.5*ncp))
+	    return(if(lower.tail) exp(-0.5*ncp) else -expm1(-0.5*ncp))
         ## else
         return(.DT_0(lower.tail, log.p=FALSE))
     }

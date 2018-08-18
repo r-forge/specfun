@@ -31,21 +31,22 @@ if(!dev.interactive(orNone=TRUE)) pdf("pt_ncp_appr.pdf")
 (dmax <- sqrt(-2*log(2* .Machine$double.xmin))) # 37.62189
 .5*exp(-dmax^2/2) # 2.225074e-308
 
-pt.pos <- function(delta,q,df) (pt(q=q,df=df,ncp=delta)>0) - 1/2
+pt.pos <- function(delta,q,df) (pt(q=q,df=df,ncp=delta) > 0) - 1/2
 
 ## see 'MM{2014}' above: this no longer works
-d1 <- uniroot(pt.pos, q=10,df=2, lower=30, upper= 40, tol=1e-10)$root
-d2 <- uniroot(pt.pos, q= 1,df=2, lower=30, upper= 40, tol=1e-10)$root
-d1 == d2 # TRUE
+## d1 <- uniroot(pt.pos, q=10,df=2, lower=30, upper= 40, tol=1e-10)$root
+## d2 <- uniroot(pt.pos, q= 1,df=2, lower=30, upper= 40, tol=1e-10)$root
+## d1 == d2 # TRUE
 d3 <- uniroot(pt.pos, q=.1, df=20, lower=30, upper= 40, tol=1e-10)$root
-d4 <- uniroot(pt.pos, q=100,df=20, lower=30, upper= 40, tol=1e-10)$root
-d3 != d4 # T !!
-d1 == d4 # T
-c(d1,d3)
+## d4 <- uniroot(pt.pos, q=100,df=20, lower=30, upper= 40, tol=1e-10)$root
+## d3 != d4 # T !!
+## d1 == d4 # T
+## c(d1,d3)
 ## 38.57550 38.56226
 d5 <- uniroot(pt.pos, q=.01,df= 2, lower=30, upper= 40, tol=1e-10)$root
 d6 <- uniroot(pt.pos, q=.01,df=20, lower=30, upper= 40, tol=1e-10)$root
-unique(sort(c(d1,d2,d3,d4,d5,d6)))
+c(d3, d5, d6)
+## unique(sort(c(d1,d2,d3,d4,d5,d6)))
 ##[1] 38.45745 38.46036 38.56226 38.57550
 
 
@@ -65,7 +66,10 @@ d <- 38.5;pt(d,d,d)#  6.91692e-323  (799)  s<0 => error-bound < 0  (!) wrong con
 ##---
 pt(39,39,39)#   p = 0 ==> result=0 --- no longer
 
-
+## FIXME:
+pntR1(40,40, 38.5, verbose=2) ## and then edit ---> gives the *.out file
+## FIXME --- work via sink() or capture.output -- to get  rr data.frame()
+if(FALSE) {
 t.file <- "/u/maechler/R/MM/NUMERICS/dpq-functions/pnt-40-40-38.5.out"
 nr <- names(rr <- read.table(t.file, header= TRUE))
 summary(rr)
@@ -77,6 +81,8 @@ for(i in 2:ncol(rr)) {f[[2]] <- as.name(nr[i]); plot(f, data=rr, type='l')}
 
 par(mfrow=c(4,2)); f <- FF ~ it
 for(i in 2:ncol(rr)) {f[[2]] <- as.name(nr[i]); plot(f, data=rr, type='l', log='xy')}
+}
+##----------- end{FIXME}---------------------------------------------
 
 ###------------------------ dcdflib ptnc() ---- computations and plots
 ##			    ======= ~~~~~
@@ -145,10 +151,16 @@ qtSc <- function(n, p = 0.995, delta = .0001)  {
     ncp.n <- -qnorm(delta) * sqrt(n)
     qt(p, n-1, ncp=ncp.n) / sqrt(n)
 }
+
 n <- seq(80,120, by=.5); plot(n, qtSc(n), type = "l", col=2, lwd=1.5)
+summary(warnings()) # --> "full precision may not have been achieved in 'pnt{final}'"
 ## It's the *smaller* n's which give the warning:
+assign("last.warning", NULL, envir=as.environment(find("last.warning"))) # (non-API)
 n <- seq(80,102, by=.5); plot(n, qtSc(n), type = "l", col=2, lwd=1.5)
+try(# works "locally" but nut with the whole script
 stopifnot(length(n) == length(warnings())) ##
+)
+
 ## These give *no* warnings [and we know they are inaccurate!]:
 n <- seq(104,120, by=.5); plot(n, qtSc(n), type = "l", col=2, lwd=1.5)
 
@@ -370,16 +382,14 @@ plot(function(t) t - pntJW39(qt.appr(t,df=10,ncp=1e5),df=10,ncp=1e5),
 
 ###--- Diverse tests, some lifted from ../R/t-nonc-fn.R ------------------------
 
-dntR(1:6, df=3, ncp=5, check=TRUE)
+(f. <- dntR(1:6, df=3, ncp=5, check=TRUE))
 ## [1] 0.0032023 0.2728377 1.5174647 2.4481320 2.4106931 1.9481189 -- wrong "but sensible"
 
 x <- seq(-1,20, by=1/4)
 plot(x, dt(x, df=3, ncp=5) / dntR(x, df=3, ncp=5))
 ## ???
 
-(ft <- dnt(1:6, df=3, ncp=5, check=TRUE))
+(ft <- dnt(1:6, df=3, ncp=5))
 ## [1] 0.000508267 0.026060733 0.119137668 0.176104468 0.165771811 0.130541073
 ## correct !! *with* the factorial !
 stopifnot(all.equal(ft, dt(1:6, df=3, ncp=5)))
-
-

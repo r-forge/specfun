@@ -86,6 +86,7 @@ p.dnchiB <- function(df, ncp, log=FALSE, from=0, to = 2*ncp, p.log="", ...)
     ## Arguments:
     ## ----------------------------------------------------------------------
     ## Author: Martin Maechler, Date: 11 Apr 2008, 21:40
+    x <- NULL # -Wall(codetools)
     curve(dnchisqBessel(x, df=df, ncp=ncp, log=log), from=from, to=to,
           n=2001, ylab = "dnchisq[Bessel](x,*)",
           main = deparse(sys.call()), log=p.log, ...)
