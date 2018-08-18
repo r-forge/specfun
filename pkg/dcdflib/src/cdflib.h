@@ -16,11 +16,8 @@
  * --  ./vec_cdf.h
  *       ~~~~~~~~~ */
 
-
-/* The following is from R's  "S.h" -- S/R compatibility : */
-#ifndef longint
-#define longint int
-#endif
+/* remember which were Fortran logicals : */
+#define logical int
 
 double algdiv(double*,double*);
 double alngam(double*);
@@ -66,19 +63,19 @@ void cumtnc(double*,double*,double*,double*,double*);
 
 double devlpl(double*, int,double);
 double dinvnr(double *p,double *q);
-void dinvr   (int*,double*,double*,unsigned long*,unsigned long*);
+void dinvr   (int*,double*,double*,logical*,logical*);
 void dstinv  (double*,double*,double*,double*,double*,double*,double*);
 double dt1(double*,double*,double*);
 /*
-static void E0000(int,int*,double*,double*,unsigned long*,
-	   unsigned long*,double*,double*,double*,
+static void E0000(int,int*,double*,double*,logical*,
+	   logical*,double*,double*,double*,
 	   double*,double*,double*,double*);
 static void E0001(int,int*,double*,double*,double*,double*,
-	   unsigned long*,unsigned long*,double*,double*,
+	   logical*,logical*,double*,double*,
 	   double*,double*);
 */
 void dzror(int*,double*,double*,double*,double *,
-           unsigned long*,unsigned long*);
+           logical*,logical*);
 void dstzr(double *zxlo,double *zxhi,double *zabstl,double *zreltl);
 
 double erf1(double*);
@@ -94,7 +91,7 @@ double Xgamm(double*);
 void grat1(double*,double*,double*,double*,double*,double*);
 void gratio(double*,double*,double*,double*,int*);
 double gsumln(double*,double*);
-void pni(double *, double *, double *, double *, long *);
+void pni(double *, double *, double *, double *, int *);
 double psi(double*);
 double rcomp(double*,double*);
 double cdf_rexp(double*);

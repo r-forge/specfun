@@ -96,7 +96,6 @@ void gaminv(double *a, double *x, double *x0,
     double amin, amax, xmin, eps, rta, sum, b = 0./*Wall*/;
     double d__, e, g, h__, s, t, u, r__, w, y, z__, c1, c2, c3, e2, c4, c5;
     double s2, qg, pn, qn, xn, am1,ap1, ap2, ap3, apn;
-    long ier, iop;
 
 /*
   Machine dependent constants :
@@ -124,7 +123,7 @@ void gaminv(double *a, double *x, double *x0,
     amax = 4e-11 / (e * e);
     eps = fmax2(100 * e, 1e-10);
 
-    iop = 1;
+    int iop = 1;
     if (e > 1e-10) {
 	iop = 2;
     }
@@ -232,7 +231,9 @@ L50:
     if (*q < .5) {
 	t = .5 - *q;
     }
-    pni(p, q, &t, &s, &ier);
+    int p_ier;
+    pni(p, q, &t, &s, &p_ier);
+    // FIXME ? check p_ier
 
     rta = sqrt(*a);
     s2 = s * s;
@@ -252,8 +253,7 @@ L50:
 	goto L60;
     }
     *x = xn;
-    d__ = .5 - *x / *a + .5;
-    if (fabs(d__) <= .1) {
+    if (fabs(.5 - *x / *a + .5) <= .1) {
 	return;
     }
 
@@ -629,7 +629,7 @@ L110:    return -2.;
 
 } /* erfi */
 
-void pni(double *p, double *q, double *d, double *w, long *ierr)
+void pni(double *p, double *q, double *d, double *w, int *ierr)
 {
 /* -----------------------------------------------------------------------
 

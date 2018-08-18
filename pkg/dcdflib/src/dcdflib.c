@@ -14,14 +14,13 @@
  *		/usr/local/lib.src/NSWC/nswc/
  */
 
-/* remember which were Fortran logicals : */
-#define logical unsigned long
 
 #include <R.h>
 #include <Rmath.h>
 
 #include "cdflib.h"
-/* now includes the  DBGprt<n> macros */
+/* now includes the  DBGprt<n> macros and
+   #define logical int */
 
 /*
  * A comment about ints and longs - whether ints or longs are used should
@@ -117,7 +116,7 @@ double bcorr(double *a0,double *b0)
 -----------------------------------------------------------------------
  NB:  Similar to  algdiv()  above !
 */
-static double a,b,c,h,s11,s3,s5,s7,s9,t,w,x,x2;
+    static double a,b,c,h,s11,s3,s5,s7,s9,t,w,x,x2;
 
     a = fmin2(*a0,*b0);
     b = fmax2(*a0,*b0);
@@ -2955,7 +2954,7 @@ static double Half = 0.5;
 static double K5 = 5;
 static double Km1 = -1;
 
-    double xx,fx,xscale,cum,ccum,pq,porq=0.;
+    double xx,fx,xscale,cum,ccum,pq;
     int ierr;
     logical qhi,qleft,qporq=0;
     double T3,T4,T7,T8;
@@ -2974,10 +2973,12 @@ static double Km1 = -1;
 
     if(*which != 1) { /* Select the minimum of P or Q */
 	qporq = *p <= *q;
+	/* nowhere really used
 	if(qporq)
 	    porq = *p;
 	else
 	    porq = *q;
+	*/
     }
 
 /*
@@ -5375,7 +5376,7 @@ static void E0000(int IENTRY,
 
     static double fbig,fsmall,step,xhi,xlb,xlo,xsave,xub,yy;
     static int i99999;
-    static logical qbdd,qcond,qdum1,qdum2,qincr,qlim,qok,qup;
+    static logical qbdd,qcond,qdum1,qdum2,qincr,qlim,qup;
 
     if(IENTRY == 1) { /*--- dstinv() : Initialize --- */
 	small = *zsmall;
@@ -5450,7 +5451,7 @@ S90:
     yy = *fx;
     if(yy == 0) {
 	*status = 0;
-	qok = 1;
+	// qok = 1;
 	return;
     }
 
