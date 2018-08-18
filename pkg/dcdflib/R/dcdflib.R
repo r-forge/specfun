@@ -5,7 +5,7 @@
 
 bgrat <- function(a, b, x, y, w, eps, ierr)
 {
- .C("bgrat",
+ .C(C_bgrat,
             a = as.double(a),
             b = as.double(b),
             x = as.double(x),
@@ -13,11 +13,11 @@ bgrat <- function(a, b, x, y, w, eps, ierr)
             w = as.double(w),
           eps = as.double(eps),
          ierr = as.integer(ierr)
-  , PACKAGE = "dcdflib")
+  )
 }
 bratio <- function(a, b, x, y, w, w1, ierr)
 {
- .C("bratio",
+ .C(C_bratio,
             a = as.double(a),
             b = as.double(b),
             x = as.double(x),
@@ -25,11 +25,11 @@ bratio <- function(a, b, x, y, w, w1, ierr)
             w = as.double(w),
            w1 = as.double(w1),
          ierr = as.integer(ierr)
-  , PACKAGE = "dcdflib")
+  )
 }
 cdfbet <- function(which, p, q, x, y, a, b, status, bound)
 {
- .C("cdfbet",
+ .C(C_cdfbet,
         which = as.integer(which),
             p = as.double(p),
             q = as.double(q),
@@ -39,11 +39,11 @@ cdfbet <- function(which, p, q, x, y, a, b, status, bound)
             b = as.double(b),
        status = as.integer(status),
         bound = as.double(bound)
-  , PACKAGE = "dcdflib")
+  )
 }
 cdfbin <- function(which, p, q, s, xn, pr, ompr, status, bound)
 {
- .C("cdfbin",
+ .C(C_cdfbin,
         which = as.integer(which),
             p = as.double(p),
             q = as.double(q),
@@ -53,11 +53,11 @@ cdfbin <- function(which, p, q, s, xn, pr, ompr, status, bound)
          ompr = as.double(ompr),
        status = as.integer(status),
         bound = as.double(bound)
-  , PACKAGE = "dcdflib")
+  )
 }
 cdfchi <- function(which, p, q, x, df, status, bound)
 {
- .C("cdfchi",
+ .C(C_cdfchi,
         which = as.integer(which),
             p = as.double(p),
             q = as.double(q),
@@ -65,11 +65,11 @@ cdfchi <- function(which, p, q, x, df, status, bound)
            df = as.double(df),
        status = as.integer(status),
         bound = as.double(bound)
-  , PACKAGE = "dcdflib")
+  )
 }
 cdfchn <- function(which, p, q, x, df, pnonc, status, bound)
 {
- .C("cdfchn",
+ .C(C_cdfchn,
         which = as.integer(which),
             p = as.double(p),
             q = as.double(q),
@@ -78,11 +78,11 @@ cdfchn <- function(which, p, q, x, df, pnonc, status, bound)
         pnonc = as.double(pnonc),
        status = as.integer(status),
         bound = as.double(bound)
-  , PACKAGE = "dcdflib")
+  )
 }
 cdff <- function(which, p, q, f, dfn, dfd, status, bound)
 {
- .C("cdff",
+ .C(C_cdff,
         which = as.integer(which),
             p = as.double(p),
             q = as.double(q),
@@ -91,11 +91,11 @@ cdff <- function(which, p, q, f, dfn, dfd, status, bound)
           dfd = as.double(dfd),
        status = as.integer(status),
         bound = as.double(bound)
-  , PACKAGE = "dcdflib")
+  )
 }
 cdffnc <- function(which, p, q, f, dfn, dfd, pnonc, status, bound)
 {
- .C("cdffnc",
+ .C(C_cdffnc,
         which = as.integer(which),
             p = as.double(p),
             q = as.double(q),
@@ -105,11 +105,11 @@ cdffnc <- function(which, p, q, f, dfn, dfd, pnonc, status, bound)
         pnonc = as.double(pnonc),
        status = as.integer(status),
         bound = as.double(bound)
-  , PACKAGE = "dcdflib")
+  )
 }
 cdfgam <- function(which, p, q, x, shape, scale, status, bound)
 {
- .C("cdfgam",
+ .C(C_cdfgam,
         which = as.integer(which),
             p = as.double(p),
             q = as.double(q),
@@ -118,11 +118,11 @@ cdfgam <- function(which, p, q, x, shape, scale, status, bound)
         scale = as.double(scale),
        status = as.integer(status),
         bound = as.double(bound)
-  , PACKAGE = "dcdflib")
+  )
 }
 cdfnbn <- function(which, p, q, s, xn, pr, ompr, status, bound)
 {
- .C("cdfnbn",
+ .C(C_cdfnbn,
         which = as.integer(which),
             p = as.double(p),
             q = as.double(q),
@@ -132,11 +132,11 @@ cdfnbn <- function(which, p, q, s, xn, pr, ompr, status, bound)
          ompr = as.double(ompr),
        status = as.integer(status),
         bound = as.double(bound)
-  , PACKAGE = "dcdflib")
+  )
 }
 cdfnor <- function(which, p, q, x, mean, sd, status, bound)
 {
- .C("cdfnor",
+ .C(C_cdfnor,
         which = as.integer(which),
             p = as.double(p),
             q = as.double(q),
@@ -145,11 +145,11 @@ cdfnor <- function(which, p, q, x, mean, sd, status, bound)
            sd = as.double(sd),
        status = as.integer(status),
         bound = as.double(bound)
-  , PACKAGE = "dcdflib")
+  )
 }
 cdfpoi <- function(which, p, q, s, xlam, status, bound)
 {
- .C("cdfpoi",
+ .C(C_cdfpoi,
         which = as.integer(which),
             p = as.double(p),
             q = as.double(q),
@@ -157,11 +157,11 @@ cdfpoi <- function(which, p, q, s, xlam, status, bound)
          xlam = as.double(xlam),
        status = as.integer(status),
         bound = as.double(bound)
-  , PACKAGE = "dcdflib")
+  )
 }
 cdft <- function(which, p, q, t, df, status, bound)
 {
- .C("cdft",
+ .C(C_cdft,
         which = as.integer(which),
             p = as.double(p),
             q = as.double(q),
@@ -169,11 +169,11 @@ cdft <- function(which, p, q, t, df, status, bound)
            df = as.double(df),
        status = as.integer(status),
         bound = as.double(bound)
-  , PACKAGE = "dcdflib")
+  )
 }
 cdftnc <- function(which, p, q, t, df, pnonc, status, bound)
 {
- .C("cdftnc",
+ .C(C_cdftnc,
         which = as.integer(which),
             p = as.double(p),
             q = as.double(q),
@@ -182,193 +182,145 @@ cdftnc <- function(which, p, q, t, df, pnonc, status, bound)
         pnonc = as.double(pnonc),
        status = as.integer(status),
         bound = as.double(bound)
-  , PACKAGE = "dcdflib")
+  )
 }
 cumbet <- function(x, y, a, b, cum, ccum)
 {
- .C("cumbet",
+ .C(C_cumbet,
             x = as.double(x),
             y = as.double(y),
             a = as.double(a),
             b = as.double(b),
           cum = as.double(cum),
          ccum = as.double(ccum)
-  , PACKAGE = "dcdflib")
+  )
 }
 cumbin <- function(s, xn, pr, ompr, cum, ccum)
 {
- .C("cumbin",
+ .C(C_cumbin,
             s = as.double(s),
            xn = as.double(xn),
            pr = as.double(pr),
          ompr = as.double(ompr),
           cum = as.double(cum),
          ccum = as.double(ccum)
-  , PACKAGE = "dcdflib")
+  )
 }
 cumchi <- function(x, df, cum, ccum)
 {
- .C("cumchi",
+ .C(C_cumchi,
             x = as.double(x),
            df = as.double(df),
           cum = as.double(cum),
          ccum = as.double(ccum)
-  , PACKAGE = "dcdflib")
+  )
 }
 cumchn <- function(x, df, pnonc, cum, ccum)
 {
- .C("cumchn",
+ .C(C_cumchn,
             x = as.double(x),
            df = as.double(df),
         pnonc = as.double(pnonc),
           cum = as.double(cum),
          ccum = as.double(ccum)
-  , PACKAGE = "dcdflib")
+  )
 }
 cumf <- function(f, dfn, dfd, cum, ccum)
 {
- .C("cumf",
+ .C(C_cumf,
             f = as.double(f),
           dfn = as.double(dfn),
           dfd = as.double(dfd),
           cum = as.double(cum),
          ccum = as.double(ccum)
-  , PACKAGE = "dcdflib")
+  )
 }
 cumfnc <- function(f, dfn, dfd, pnonc, cum, ccum)
 {
- .C("cumfnc",
+ .C(C_cumfnc,
             f = as.double(f),
           dfn = as.double(dfn),
           dfd = as.double(dfd),
         pnonc = as.double(pnonc),
           cum = as.double(cum),
          ccum = as.double(ccum)
-  , PACKAGE = "dcdflib")
+  )
 }
 cumgam <- function(x, a, cum, ccum)
 {
- .C("cumgam",
+ .C(C_cumgam,
             x = as.double(x),
             a = as.double(a),
           cum = as.double(cum),
          ccum = as.double(ccum)
-  , PACKAGE = "dcdflib")
+  )
 }
 cumnbn <- function(s, xn, pr, ompr, cum, ccum)
 {
- .C("cumnbn",
+ .C(C_cumnbn,
             s = as.double(s),
            xn = as.double(xn),
            pr = as.double(pr),
          ompr = as.double(ompr),
           cum = as.double(cum),
          ccum = as.double(ccum)
-  , PACKAGE = "dcdflib")
+  )
 }
 cumnor <- function(arg, result, ccum)
 {
- .C("cumnor",
+ .C(C_cumnor,
           arg = as.double(arg),
        result = as.double(result),
          ccum = as.double(ccum)
-  , PACKAGE = "dcdflib")
+  )
 }
 cumpoi <- function(s, xlam, cum, ccum)
 {
- .C("cumpoi",
+ .C(C_cumpoi,
             s = as.double(s),
          xlam = as.double(xlam),
           cum = as.double(cum),
          ccum = as.double(ccum)
-  , PACKAGE = "dcdflib")
+  )
 }
 cumt <- function(t, df, cum, ccum)
 {
- .C("cumt",
+ .C(C_cumt,
             t = as.double(t),
            df = as.double(df),
           cum = as.double(cum),
          ccum = as.double(ccum)
-  , PACKAGE = "dcdflib")
+  )
 }
 cumtnc <- function(t, df, pnonc, cum, ccum)
 {
- .C("cumtnc",
+ .C(C_cumtnc,
             t = as.double(t),
            df = as.double(df),
         pnonc = as.double(pnonc),
           cum = as.double(cum),
          ccum = as.double(ccum)
-  , PACKAGE = "dcdflib")
+  )
 }
-dinvr <- function(status, x, fx, qleft, qhi)
-{
- .C("dinvr",
-       status = as.integer(status),
-            x = as.double(x),
-           fx = as.double(fx),
-        qleft = as.logical(qleft),
-          qhi = as.logical(qhi)
-  , PACKAGE = "dcdflib")
-}
-dstinv <- function(zsmall, zbig, zabsst, zrelst, zstpmu, zabsto, zrelto)
-{
- .C("dstinv",
-       zsmall = as.double(zsmall),
-         zbig = as.double(zbig),
-       zabsst = as.double(zabsst),
-       zrelst = as.double(zrelst),
-       zstpmu = as.double(zstpmu),
-       zabsto = as.double(zabsto),
-       zrelto = as.double(zrelto)
-  , PACKAGE = "dcdflib")
-}
-dzror <- function(status, x, fx, xlo, xhi, qleft, qhi)
-{
- .C("dzror",
-       status = as.integer(status),
-            x = as.double(x),
-           fx = as.double(fx),
-          xlo = as.double(xlo),
-          xhi = as.double(xhi),
-        qleft = as.logical(qleft),
-          qhi = as.logical(qhi)
-  , PACKAGE = "dcdflib")
-}
-dstzr <- function(zxlo, zxhi, zabstl, zreltl)
-{
- .C("dstzr",
-         zxlo = as.double(zxlo),
-         zxhi = as.double(zxhi),
-       zabstl = as.double(zabstl),
-       zreltl = as.double(zreltl)
-  , PACKAGE = "dcdflib")
-}
+
 grat1 <- function(a, x, r, p, q, eps)
 {
- .C("grat1",
+ .C(C_grat1,
             a = as.double(a),
             x = as.double(x),
             r = as.double(r),
             p = as.double(p),
             q = as.double(q),
           eps = as.double(eps)
-  , PACKAGE = "dcdflib")
+  )
 }
 gratio <- function(a, x, ans, qans, ind)
 {
- .C("gratio",
+ .C(C_gratio,
             a = as.double(a),
             x = as.double(x),
           ans = as.double(ans),
          qans = as.double(qans),
           ind = as.integer(ind)
-  , PACKAGE = "dcdflib")
-}
-ftnstop <- function(msg)
-{
- .C("ftnstop",
-          msg = as.character(msg)
-  , PACKAGE = "dcdflib")
+  )
 }

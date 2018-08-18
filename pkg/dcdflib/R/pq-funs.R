@@ -20,7 +20,7 @@
 pbetaB <- function(x = 1-y, a, b, y = 1-x, lower.tail = TRUE)
 {
   if(any(a<=0) || any(b<=0)) stop("'a' and 'b' must both be positive")
-  if(any(!is.one(x+y))) stop("'x == 1-y' is required")
+  if(any(!is1(x+y))) stop("'x == 1-y' is required")
 
   res <- cdfbetV(which=1, x=x,y=y,a=a,b=b,
                  p=0,q=1,status=0,bound=0)[c("p","q","status","bound")]

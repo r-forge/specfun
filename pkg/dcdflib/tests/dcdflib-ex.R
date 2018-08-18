@@ -17,12 +17,12 @@ if(!dev.interactive(orNone=TRUE)) pdf("ptnc_tsts.pdf")
 par(mfrow=c(3,2),lab=c(10,20,7))
 {
     plot(function(t)ptnc(t, df = 10, ncp=5.0),0,3)# no log
-    plot(function(t) pt(t, df = 10, ncp=5.0),0,3, add=TRUE, col="purple")
+    plot(function(t) pt (t, df = 10, ncp=5.0),0,3, add=TRUE, col="purple")
     abline(h=10^(-2:0),col="green",lty=3,lwd=.1)
 
     plot(function(t)ptnc(t, df = 10, ncp=5.0),0,3, log="y")
     ## bug: jumps to 0 for  t <= 1
-    plot(function(t) pt(t, df = 10, ncp=5.0),0,3, add=TRUE, col="purple")
+    plot(function(t) pt (t, df = 10, ncp=5.0),0,3, add=TRUE, col="purple")
     abline(h=10^(-2:0),col="green",lty=3,lwd=.1)
 
     plot(function(t)ptnc(t, df = 10, ncp=25),0,30)# no log

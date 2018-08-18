@@ -5,11 +5,11 @@
 
 gratio <- function(a, x, ans, qans, ind)
 {
- .C("gratio",
+ .C(C_gratio,
             a = as.double(a),
             x = as.double(x),
           ans = as.double(ans),
          qans = as.double(qans),
           ind = as.integer(ind)
-  , PACKAGE = "dcdflib")
+  )
 }

@@ -1,8 +1,10 @@
-
+useDynLib(dcdflib, .registration = TRUE, .fixes = "C_")
+                                        # <--> src/init.c
 
 ## At the moment everything
 export(bgrat
      , bratio
+
      , cdfbet, cdfbetV
      , cdfbin, cdfbinV
      , cdfchi, cdfchiV
@@ -13,6 +15,7 @@ export(bgrat
      , cdfnor, cdfnorV
      , cdfpoi, cdfpoiV
      , cdft, cdftnc, cdftncV, cdftV
+
      , cumbet
      , cumbin
      , cumchi
@@ -25,13 +28,10 @@ export(bgrat
      , cumpoi
      , cumt
      , cumtnc
-     , dinvr
-     , dstinv, dstzr
-     , dzror
-     , ftnstop
+
      , gaminv
      , grat1, gratio
-     , is.one
+                                        #, is1
      , pbetaB, pbinomB, pchisqB, pfB, pgammaB
      , pni
      , pnormB, ptB, ptnc

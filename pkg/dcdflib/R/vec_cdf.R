@@ -7,7 +7,7 @@
 cdfbetV <- function(which, p, q, x, y, a, b, status, bound)
 {
   len <- max(length(p), length(q), length(x), length(y), length(a), length(b), length(status), length(bound))
- .C("V_cdfbet",
+ .C(C_V_cdfbet,
         which = as.integer(which),
             p = rep(as.double(p), length = len),
             q = rep(as.double(q), length = len),
@@ -18,13 +18,13 @@ cdfbetV <- function(which, p, q, x, y, a, b, status, bound)
        status = rep(as.integer(status), length = len),
         bound = rep(as.double(bound), length = len),
           len = as.integer(len)
-  , PACKAGE = "dcdflib")
+  )
 }
 
 cdfbinV <- function(which, p, q, s, xn, pr, ompr, status, bound)
 {
   len <- max(length(p), length(q), length(s), length(xn), length(pr), length(ompr), length(status), length(bound))
- .C("V_cdfbin",
+ .C(C_V_cdfbin,
         which = as.integer(which),
             p = rep(as.double(p), length = len),
             q = rep(as.double(q), length = len),
@@ -35,13 +35,13 @@ cdfbinV <- function(which, p, q, s, xn, pr, ompr, status, bound)
        status = rep(as.integer(status), length = len),
         bound = rep(as.double(bound), length = len),
           len = as.integer(len)
-  , PACKAGE = "dcdflib")
+  )
 }
 
 cdfchiV <- function(which, p, q, x, df, status, bound)
 {
   len <- max(length(p), length(q), length(x), length(df), length(status), length(bound))
- .C("V_cdfchi",
+ .C(C_V_cdfchi,
         which = as.integer(which),
             p = rep(as.double(p), length = len),
             q = rep(as.double(q), length = len),
@@ -50,13 +50,13 @@ cdfchiV <- function(which, p, q, x, df, status, bound)
        status = rep(as.integer(status), length = len),
         bound = rep(as.double(bound), length = len),
           len = as.integer(len)
-  , PACKAGE = "dcdflib")
+  )
 }
 
 cdfchnV <- function(which, p, q, x, df, pnonc, status, bound)
 {
   len <- max(length(p), length(q), length(x), length(df), length(pnonc), length(status), length(bound))
- .C("V_cdfchn",
+ .C(C_V_cdfchn,
         which = as.integer(which),
             p = rep(as.double(p), length = len),
             q = rep(as.double(q), length = len),
@@ -66,13 +66,13 @@ cdfchnV <- function(which, p, q, x, df, pnonc, status, bound)
        status = rep(as.integer(status), length = len),
         bound = rep(as.double(bound), length = len),
           len = as.integer(len)
-  , PACKAGE = "dcdflib")
+  )
 }
 
 cdffV <- function(which, p, q, f, dfn, dfd, status, bound)
 {
   len <- max(length(p), length(q), length(f), length(dfn), length(dfd), length(status), length(bound))
- .C("V_cdff",
+ .C(C_V_cdff,
         which = as.integer(which),
             p = rep(as.double(p), length = len),
             q = rep(as.double(q), length = len),
@@ -82,13 +82,13 @@ cdffV <- function(which, p, q, f, dfn, dfd, status, bound)
        status = rep(as.integer(status), length = len),
         bound = rep(as.double(bound), length = len),
           len = as.integer(len)
-  , PACKAGE = "dcdflib")
+  )
 }
 
 cdffncV <- function(which, p, q, f, dfn, dfd, phonc, status, bound)
 {
   len <- max(length(p), length(q), length(f), length(dfn), length(dfd), length(phonc), length(status), length(bound))
- .C("V_cdffnc",
+ .C(C_V_cdffnc,
         which = as.integer(which),
             p = rep(as.double(p), length = len),
             q = rep(as.double(q), length = len),
@@ -99,13 +99,13 @@ cdffncV <- function(which, p, q, f, dfn, dfd, phonc, status, bound)
        status = rep(as.integer(status), length = len),
         bound = rep(as.double(bound), length = len),
           len = as.integer(len)
-  , PACKAGE = "dcdflib")
+  )
 }
 
 cdfgamV <- function(which, p, q, x, shape, scale, status, bound)
 {
   len <- max(length(p), length(q), length(x), length(shape), length(scale), length(status), length(bound))
- .C("V_cdfgam",
+ .C(C_V_cdfgam,
         which = as.integer(which),
             p = rep(as.double(p), length = len),
             q = rep(as.double(q), length = len),
@@ -115,13 +115,13 @@ cdfgamV <- function(which, p, q, x, shape, scale, status, bound)
        status = rep(as.integer(status), length = len),
         bound = rep(as.double(bound), length = len),
           len = as.integer(len)
-  , PACKAGE = "dcdflib")
+  )
 }
 
 cdfnbnV <- function(which, p, q, s, xn, pr, ompr, status, bound)
 {
   len <- max(length(p), length(q), length(s), length(xn), length(pr), length(ompr), length(status), length(bound))
- .C("V_cdfnbn",
+ .C(C_V_cdfnbn,
         which = as.integer(which),
             p = rep(as.double(p), length = len),
             q = rep(as.double(q), length = len),
@@ -132,13 +132,13 @@ cdfnbnV <- function(which, p, q, s, xn, pr, ompr, status, bound)
        status = rep(as.integer(status), length = len),
         bound = rep(as.double(bound), length = len),
           len = as.integer(len)
-  , PACKAGE = "dcdflib")
+  )
 }
 
 cdfnorV <- function(which, p, q, x, mean, sd, status, bound)
 {
   len <- max(length(p), length(q), length(x), length(mean), length(sd), length(status), length(bound))
- .C("V_cdfnor",
+ .C(C_V_cdfnor,
         which = as.integer(which),
             p = rep(as.double(p), length = len),
             q = rep(as.double(q), length = len),
@@ -148,13 +148,13 @@ cdfnorV <- function(which, p, q, x, mean, sd, status, bound)
        status = rep(as.integer(status), length = len),
         bound = rep(as.double(bound), length = len),
           len = as.integer(len)
-  , PACKAGE = "dcdflib")
+  )
 }
 
 cdfpoiV <- function(which, p, q, s, xlam, status, bound)
 {
   len <- max(length(p), length(q), length(s), length(xlam), length(status), length(bound))
- .C("V_cdfpoi",
+ .C(C_V_cdfpoi,
         which = as.integer(which),
             p = rep(as.double(p), length = len),
             q = rep(as.double(q), length = len),
@@ -163,13 +163,13 @@ cdfpoiV <- function(which, p, q, s, xlam, status, bound)
        status = rep(as.integer(status), length = len),
         bound = rep(as.double(bound), length = len),
           len = as.integer(len)
-  , PACKAGE = "dcdflib")
+  )
 }
 
 cdftV <- function(which, p, q, t, df, status, bound)
 {
   len <- max(length(p), length(q), length(t), length(df), length(status), length(bound))
- .C("V_cdft",
+ .C(C_V_cdft,
         which = as.integer(which),
             p = rep(as.double(p), length = len),
             q = rep(as.double(q), length = len),
@@ -178,13 +178,13 @@ cdftV <- function(which, p, q, t, df, status, bound)
        status = rep(as.integer(status), length = len),
         bound = rep(as.double(bound), length = len),
           len = as.integer(len)
-  , PACKAGE = "dcdflib")
+  )
 }
 
 cdftncV <- function(which, p, q, t, df, pnonc, status, bound)
 {
   len <- max(length(p), length(q), length(t), length(df), length(pnonc), length(status), length(bound))
- .C("V_cdftnc",
+ .C(C_V_cdftnc,
         which = as.integer(which),
             p = rep(as.double(p), length = len),
             q = rep(as.double(q), length = len),
@@ -194,6 +194,6 @@ cdftncV <- function(which, p, q, t, df, pnonc, status, bound)
        status = rep(as.integer(status), length = len),
         bound = rep(as.double(bound), length = len),
           len = as.integer(len)
-  , PACKAGE = "dcdflib")
+  )
 }
 

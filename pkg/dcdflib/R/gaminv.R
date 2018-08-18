@@ -5,22 +5,22 @@
 
 gaminv <- function(a, x, x0, p, q, ierr)
 {
- .C("gaminv",
+ .C(C_gaminv,
             a = as.double(a),
             x = as.double(x),
            x0 = as.double(x0),
             p = as.double(p),
             q = as.double(q),
          ierr = as.integer(ierr)
-  , PACKAGE = "dcdflib")
+  )
 }
 pni <- function(p, q, d, w, ierr)
 {
- .C("pni",
+ .C(C_pni,
             p = as.double(p),
             q = as.double(q),
             d = as.double(d),
             w = as.double(w),
          ierr = as.integer(ierr)
-  , PACKAGE = "dcdflib")
+  )
 }
