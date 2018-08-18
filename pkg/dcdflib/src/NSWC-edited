@@ -1,4 +1,0 @@
-;; -*- emacs-lisp -*-
-
-;; Extra "f" am Ende der Konstanten gelöscht
-(query-replace-regexp "\\([0-9]\\.?\\)f\\>" "\\1" nil)

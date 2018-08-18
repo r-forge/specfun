@@ -5,6 +5,7 @@
 
 ### I had started a version of that to the C version,
    at `~/R/MM/NUMERICS/dpq-functions/dcdflib-c`  from 1997-1999 (!)
+   but not used much.
 
 - The original Fortran and C versions of the underlying library are still
    (2018-08) available from Netlib:
@@ -33,6 +34,15 @@
 	https://biostatistics.mdanderson.org/SoftwareDownload/SingleSoftware.aspx?Software_Id=21
 
    which is the Unversity of Texas Md Anderson (Cancer) Center's "software kiosk".
+
+- I am pretty positive I had used  f2c  myself of the Fortran DCDFLIB code,
+  and worked with that generated "ANSI C" code.
+
+- In the fortran code (i.e., before translation), I had removed the final
+  'f' at the end of numeric constants, so they became double precision rather
+  than "float" (single precision).
+
+
 
 ## Also partly used an S interface (at Statlib ??) by Donald H. MacQueen
 	(mailto:macqueen1@llnl.gov) e.g. mentioned in `../../man/ptnc.Rd`
