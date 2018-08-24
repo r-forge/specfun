@@ -1,5 +1,12 @@
 #### -*- mode: R ; delete-old-versions: never -*-
 
+### Some docu in header of ../src/wienergerm_nchisq.c
+###                        --------------------------
+
+## Originally	~/R/MM/NUMERICS/dpq-functions/wienergerm_nchisq-fn.R
+##		====================================================
+## which goes back to  Jan 29, 2004
+
 ##' h(.) direct
 h0 <- function(y) { y2 <- y * y; ((1-y)*log(1 - y) + y - 0.5*y2) / y2}
 
@@ -30,10 +37,14 @@ h2 <- function(y, eps = .Machine$double.eps, verbose = getOption("verbose"))
     ##        ifelse(ay < (5 * eps)^ (1/3), y*(1/6 + y*(1/12 + y/20)),
     ##               ifelse(y == 1, 1/2,
     ##                      ((1-y)*log1p(- y) + y*(1- y/2)) / (y*y))))
-    y. <- y[c1 <- ay < (10/3 * eps)^ (1/2)]
+    y. <- y[c1 <- ay < (10/3 * eps)^ (1/2)] # (10/3 * eps)^ (1/2) == 2.720567e-08
     r[c1] <- y./6*(1 + y./2)
-    y. <- y[c2 <- !c1 & ay < (5 * eps)^(1/3)]
-    r[c2] <- y.*(1/6 + y.*(1/12 + y./20))
+    c2 <- !c1 & ay < (5 * eps)^(1/3)        #     (5 * eps)^(1/3) == 1.035468e-05
+    if(any(c2)) {
+        y. <- y[c2]
+        I_6 <- 1/(6+0*y.[1]) # (for Rmpfr, e.g., to have the same precision in I/6 = 1/6)
+        r[c2] <- y.*(I_6 + y.*(I_6/2 + y./20))
+    }
     r[c3 <- y == 1] <- 1/2
     y. <- y[c4 <- !(c1 | c2 | c3)]
     r[c4] <- ((1-y.)*log1p(- y.) + y.*(1- y./2)) / (y.*y.)
@@ -215,7 +226,7 @@ pchisqW.R <- function(x, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
     if (x <= 0)  return(p = if(lower.tail) 0 else 1)
     variant <- match.arg(variant)
 
-## /* start calculation */ (translated from C- 
+## /* start calculation */ (translated from C-
 
     mu2 = ncp / df
 
@@ -265,7 +276,7 @@ pchisqW.R <- function(x, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
 
 
 ##' Fortran/C version: ---> below for  pchisqW() -- the C only version
-##'                                    =========    
+##'                                    =========
 pchisq.W <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
                      Fortran, variant = c("s", "f"))
 {
@@ -276,6 +287,7 @@ pchisq.W <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
     ## ----------------------------------------------------------------------
     ## Author: Martin Maechler, Date: 14 Jan 2004, 13:24
     variant <- match.arg(variant)
+    ivariant <- match(variant, c("f", "s")) # f[irst] => 1; s[econd] => 2; int to allow > 2
     if(length(df) > 1) stop("'df' must be length 1")
     if(length(ncp) > 1) stop("'ncp' must be length 1")
     df <- as.double(df)
@@ -283,25 +295,25 @@ pchisq.W <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
     storage.mode(q) <- "double"
     if(Fortran)
         lapply(q, function(x)
-               .Fortran("noncechi",
-                        variant = (variant == "f"),
+               .Fortran(C_noncechi,
+                        variant = ivariant,
                         argument = x,
                         noncentr = ncp,
                         df = df,
-                        p = double(1),
-                        ifault = integer(1))
+                        p = double(1L),
+                        ifault = integer(1L))
                )
     else
         ## "nonc_chi" is not callable by .C() anymore
         ## we simulate the (Fortran) behavior for easier testing
-	lapply(.C("pchisqV",
-		  q, #   ^ vectorized
+	lapply(.C(C_pchisqV,
+		  q, #    ^ vectorized
 		  length(q),
 		  noncentr = ncp,
 		  df = df,
 		  lower = as.logical(lower.tail),
 		  log.p = as.logical(log.p),
-		  method = (variant == "f"))[[1]],
+                  variant = ivariant),
 	       function(x) list(p = x))
 }
 
@@ -326,17 +338,18 @@ pchisqW <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
     ## Author: Martin Maechler, Date: 26 Jan 2004, 10:10
 
     variant <- match.arg(variant)
-    if(length(df) > 1) stop("'df' must be length 1")
-    if(length(ncp) > 1) stop("'ncp' must be length 1")
-    df <- as.double(df)
+    ivariant <- match(variant, c("f","s")) # f[irst] => 1 /  s[econd] => 2
+    df  <- as.double(df)
     ncp <- as.double(ncp)
+    if(length(df)  > 1L) stop("'df' must be length 1")
+    if(length(ncp) > 1L) stop("'ncp' must be length 1")
     storage.mode(q) <- "double"
-    .C("pchisqV",
-       q,
+    .C(C_pchisqV,
+       q, # input *and* output
        length(q),
        noncentr = ncp,
        df = df,
        lower = as.logical(lower.tail),
        log.p = as.logical(log.p),
-       method = (variant == "f"))[[1]]
+       variant = ivariant)[[1]]
 }
