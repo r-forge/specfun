@@ -1,0 +1,143 @@
+
+options(digits=16)
+Aeq <- function(x,y) all.equal(x,y, tol = 1e-14)
+stopifnot(identical(ppois(1.5, 2), ppois(1, 2))
+          ,Aeq(ppois(1,2), sum(dpois(0:1, 2)))
+          )
+
+## From: Matthias Kohl <Matthias.Kohl@uni-bayreuth.de>
+## To: r-help <r-help@stat.math.ethz.ch>
+## Subject: [R] Exactness of ppois
+## Date: Thu, 15 Jan 2004 13:55:22 +0000
+
+##- by checking the precision of a convolution algorithm, we found the
+##- following "inexactness":
+##- We work with R Version 1.8.1 (2003-11-21) on Windows systems (NT, 2000, XP)
+
+## Try the code:
+
+## Kolmogorov distance between two methods to
+## determine P(Poisson(lambda)<=x)
+Kolm.dist <- function(lam, eps) {
+    x <- seq(0,qpois(1-eps, lambda = lam), by = 1)
+    max(abs(ppois(x, lambda = lam)-cumsum(dpois(x, lambda = lam))))
+}
+str(erg <- optimize(Kolm.dist, lower = 800, upper = 2000,
+                    maximum = TRUE, eps = 1e-15), digits=12)
+
+Kolm1.dist <- function(lam, eps) {
+  x <- seq(0,qpois(1-eps, lambda = lam), by = 1)
+  which.max(abs(ppois(x, lambda = lam)-cumsum(dpois(x, lambda = lam))))
+}
+Kolm1.dist(lam = erg$max, eps = 1e-15)
+1422 # was '1001' ## or '1301' or .. :  in any case ==  "alphlimit + 1" !!
+
+
+
+##- So for lambda=977.8 and x=1001 we get a distance of about 5.2e-06.
+##- (This inexactness seems to hold for all lambda values greater than
+##- about 900.)
+
+## MM:
+lam <- 977.8
+(p1 <- ppois(1001, lam))
+(p2 <- sum(dpois(0:1001, lam)))
+1 - p1/p2# 0, was -6.7e-6
+
+## new pgamma(alphalimit = 1300):
+lam <- 1274.487
+(p1 <- ppois(1301, lam))
+(p2 <- sum(dpois(0:1301, lam)))
+1 - p1/p2# -2.22e-16,  was -5.13e-6
+
+lam <- 1300
+
+
+## Also:
+lam <- 1274.487
+x <- 1301
+## This is by R's definition of  ppois() :
+stopifnot(
+    pgamma(lam, x+1, lower=FALSE) == print( ppois(x,lam) )
+)
+
+
+##- BUT, summing about 1000 terms of exactness around 1e-16,
+##- we would expect an error of order 1e-13.
+
+##- We suspect algorithm AS 239 (pgamma) to cause that flaw.
+##- Do you think this could cause other problems apart from
+##- that admittedly extreme example?
+
+##- Thanks for your attention!
+##- Matthias
+
+##--- More generally:
+library(DPQ)
+
+'now code is in
+
+  ~/R/Pkgs/DPQ/R/ppois-fn.R
+'
+## source("/u/maechler/R/MM/NUMERICS/dpq-functions/ppois-fn.R")
+##                                         #-> ...
+## dyn.load("/u/maechler/R/MM/NUMERICS/dpq-functions/ppois-direct.so")
+
+## FIXME: these *print* additionally -- ../R/ppois-fn.R
+err.lambd0(900)
+err.lambd1(900)
+
+## MM(2018-08):  'alphLim' below must have been a way to set 'alphlimit'  in pgamma()'s C code.
+## ----------
+##
+## alphLim <- 1000 # old
+alphLim <- 100000  # new --- in R's C code for pgamma() since R 1.8.0
+
+## when using err.lambda <- err.lambd1 {much slower ==> save here:
+## sfil <- "/u/maechler/R/MM/NUMERICS/dpq-functions/pgamma-al_1000-Direct.Rda"
+## sfil <- "/u/maechler/R/MM/NUMERICS/dpq-functions/pgamma-al_1000.Rda"
+## sfil <- "/u/maechler/R/MM/NUMERICS/dpq-functions/pgamma-al_1e5.Rda"
+## if(file.exists(sfil)) {
+##     load(sfil)
+## } else {
+    lams <- 2^seq(1, 20, length=101)
+    ##             2^20 is *large* --> the last few take time :
+    print(system.time(
+        errL <- sapply(lams, err.lambda)
+    ))
+##     save(lams,errL,alphLim, file=sfil)
+## }
+
+plot(lams, abs(errL), log = "xy", xaxt="n", xlab = "lambda",
+     main = paste("|rel.Error { ppois(x,lambda) } |    (alphlimit=",
+                  formatC(alphLim)," in pgamma)"))
+abline(v= alphLim, lty=3)
+at.l <- c(outer(c(1,2,5),10^pretty(log10(lams))))
+at.l <- at.l[10^par("usr")[1] < at.l & at.l < 10^par("usr")[2]]
+## Improve  axis(1, at=at.l, las=2)
+axis(1, at=at.l, labels=NA)
+u.y <- par("usr")[3:4]
+yA <- function(e) 10^c(c(1+e, -e) %*% u.y)
+for(ll in at.l) {
+    if(ll < 1e4) { # normal
+        yt <- yA(.03); srt <- 0 ;  adj <- 0.5
+    } else { # "schräg"
+        yt <- yA(.03); srt <- -30 ; adj <- c(0.25, 0.5)
+    }
+    text(ll, yt, formatC(ll), srt = srt, adj = adj, xpd = NA)
+}
+
+lm1 <- lm(log10(abs(errL)) ~ log10(lams), subset = lams < alphLim - 150)
+##                          # 855.1, 975.5 already bad  ^^^^^
+abline(lm1, col = "blue")
+lm2 <- lm(log10(abs(errL)) ~ log10(lams), subset = lams > alphLim)
+##                          # alphlimit :                 ^^^^
+abline(lm2, col = "purple")
+## where do the lines cross:
+c1 <- coef(lm1)
+c2 <- coef(lm2)
+x. <- 10^print(log10x <- (c1[1]-c2[1])/(c2[2]-c1[2]))
+x. # 684'300
+## draw segment to cross point:
+points(x., 10^predict(lm1, new=data.frame(lams=x.)), type = 'h', col=2)
+text(x., 1e-16, paste("lambda=",formatC(x.)), srt=90, adj = c(0,0), col = 2)
