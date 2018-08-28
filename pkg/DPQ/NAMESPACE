@@ -102,11 +102,12 @@ export(
   , ppoisD
   , qbeta.R
   , qbeta.appr, qbeta.appr.1, qbeta.appr.2, qbeta.appr.3, qbeta.appr.4
-  , qchisq.appr.R, qgamma.R
+  , qgamma.R
 
     ## from R/qchisqAppr.R :
+  , qchisq.appr.R, qchisq.appr.Kind ## <<- These are almost identical --- merge them (via attr(*,"kind")?)!
+  , qchisqAppr
   , bnd.qgamma.appr
-  , qchisq.appr.Kind, qchisqAppr
   , qchisqKG, qchisqWH
     ## from R/qnchisq.R
   , qchisq.appr.0, qchisq.appr.1, qchisq.appr.2, qchisq.appr.3

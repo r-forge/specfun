@@ -1,7 +1,7 @@
 Package: DPQ
 Title: Probability Distributions DPQ (Density, Probability, Quantile) Computations
-Version: 0.3-1
-Date: 2018-08-23
+Version: 0.3-2
+Date: 2018-08-29
 Authors@R: c(person("Martin","Maechler", role=c("aut","cre"),
   	   				 email="maechler@stat.math.ethz.ch")
   , person("R-core", email = "R-core@R-project.org", role = "ctb", comment = "src/dpq.h")

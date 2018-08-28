@@ -42,7 +42,9 @@ qchisq.appr.Kind <-
     function(p, nu, g = lgamma(nu/2), lower.tail = TRUE, log.p = FALSE,
              tol = 5e-7, maxit = 1000, verbose = getOption('verbose'))
 {
-    ## Purpose: Return information about the KIND of qchisq() computation
+    ## Purpose: Cheap fast "initial" approximation to qgamma()
+    ## --- also to explore the different kinds / cutoffs..
+    ## Return information about the KIND of qchisq() computation
     ## ----------------------------------------------------------------------
     ## Arguments: tol: tolerance with default = EPS2 of qgamma()
     ## ----------------------------------------------------------------------
@@ -59,12 +61,6 @@ qchisq.appr.Kind <-
     alpha <- 0.5 * nu ##/* = [pq]gamma() shape */
     c <- alpha-1
     force(g)
-
-    n <- length(p)
-    C7 <- 4.67
-    C8 <- 6.66
-    C9 <- 6.73
-    C10 <- 13.32
 
     Cat <- function(...) if(verbose > 0) cat(...)
 
@@ -99,6 +95,10 @@ qchisq.appr.Kind <-
                              - c*log(0.5*ch)+ g)
            },
            "nu.small" = { ##/* small  nu : 1.24*(-log(p)) <= nu <= 0.32 */
+               C7 <- 4.67
+               C8 <- 6.66
+               C9 <- 6.73
+               C10 <- 13.32
 
                ch <- 0.4
                a <- .DT_Clog(p, lower.tail, log.p) + g + c*M.LN2
@@ -106,7 +106,7 @@ qchisq.appr.Kind <-
 
                it <- 0; converged <- FALSE
                while(!converged && it < maxit) {
-                   q <- ch
+                   ## q <- ch
                    p1 <- 1. / (1+ch*(C7+ch))
                    p2 <- ch*(C9+ch*(C8+ch))
                    t <- -0.5 +(C7+2*ch)*p1 - (C9+ch*(C10+3*ch))/p2

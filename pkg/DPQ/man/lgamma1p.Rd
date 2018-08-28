@@ -59,8 +59,8 @@ curve(-lgamma( 1+x), add=TRUE, col="red2", lwd=1/2)# underflows even earlier
 curve(-lgamma1p (x), add=TRUE, col="blue")
 curve(-lgamma1p.(x), add=TRUE, col=adjustcolor("forest green",1/4),
       lwd = 5, lty = 2)
-for(k in 1:6)
- curve(-lgamma1p_series(x, k=k), add=TRUE, col=paste0("gray",20+k*10), lty = 3)
+for(k in 1:7)
+  curve(-lgamma1p_series(x, k=k), add=TRUE, col=paste0("gray",30+k*8), lty = 3)
 }
 \keyword{distribution}
 \keyword{math}

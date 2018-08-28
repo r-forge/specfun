@@ -302,8 +302,8 @@ axis(4, col.axis=2); mtext("log(1 - p)", 4, col=2)
 x <- x10 <- 10^(-300:300)#-> this is x-range is NOT plottable!
 x <- x10 <- 10^(-150:150)#-> *is* plottable
 
-unix.time(pch.x10  <- pchisq(x,x ))# 0.01 in R;  4.77 in Splus 3.4
-unix.time(pch.x10n <- pchisq(x,x,ncp=1e-10))#-- hangs for ever [R <= 0.63.3]
+system.time(pch.x10  <- pchisq(x,x ))# 0.01 in R;  4.77 in Splus 3.4
+system.time(pch.x10n <- pchisq(x,x,ncp=1e-10))#-- hangs for ever [R <= 0.63.3]
 ## R 1.2.x : 0.57
 ## in S-plus 3.4:
 ##- Error in .C("S_ncchisq_prob",: subroutine S_ncchisq_prob:
@@ -1282,7 +1282,7 @@ showProc.time()
 if(.do.ask <- dev.interactive() && !identical(source, sys.function())) par(ask=TRUE)
 mult.fig(2)$old.par -> op
 ## large NC -- still (2018-08) very expensive!!
-for(NC in 10^(3:8)) { ## 10^(3:10)  is (still!)  too expensive
+for(NC in 10^(3:7)) { ## 10^(3:10)  is (still!)  much too expensive, 10^8 alone costs 31.8 sec !
     plot(function(x) dchisq(x, df=1, ncp=NC), from=NC/10,to=NC*100,
          log='x', main=paste("Density ncp =",NC))
     try(

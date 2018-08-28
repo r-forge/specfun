@@ -19,7 +19,6 @@
 ## --> .DT_qIv() etc etc
 
 
-
 ### This is the R equivalent of the .C() calling
 ### qgammaAppr() in ../qchisqAppr.R
 ##                  ---------------
@@ -37,8 +36,6 @@ qchisq.appr.R <- function(p, nu, g = lgamma(nu/2),
     ## ----------------------------------------------------------------------
     ## Author: Martin Maechler, Date: 23 Mar 2004, 16:16
 
-    Cat <- function(...) if(verbose > 0) cat(...)
-
     if(length(nu) != 1 || length(g) != 1)
         stop("arguments must have length 1 !")
     n <- length(p)
@@ -48,7 +45,9 @@ qchisq.appr.R <- function(p, nu, g = lgamma(nu/2),
     c <- alpha-1
     force(g)
 
-    ## vectorizing the "rest"  ``in p'' :
+    Cat <- function(...) if(verbose > 0) cat(...)
+
+    ## vectorizing the "rest"  ``in p'' (including choice of 'kind' which depends on p):
     sapply(p, function(p) {
 
         ##/* test arguments and initialise */

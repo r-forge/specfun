@@ -358,10 +358,12 @@ lgamma1p_series <- function(x, k) {
     if(useM) {
         stopifnot(requireNamespace("Rmpfr"))
         prec <- max(Rmpfr::getPrec(x))
+        mpfr <- Rmpfr::mpfr
+        zeta <- Rmpfr::zeta
     }
     ## "Euler's constant" gamma
-    gamma <- if(useM) Const("gamma", prec) else 0.57721566490153286
-    if(useM) pi <- Const("pi", prec) # else use R's pi # 3.1415926535897932
+    gamma <- if(useM) Rmpfr::Const("gamma", prec) else 0.57721566490153286
+    if(useM) pi <- Rmpfr::Const("pi", prec) # else use R's pi # 3.1415926535897932
 
     if(k >= 2) {
         px <- (pi*x)^2 # = pi^2 x^2
@@ -392,14 +394,15 @@ lgamma1p_series <- function(x, k) {
            -gamma * x,
            -gamma * x + px4/3,    # k = 2
            -gamma * x + px4/3 - x*x2/3*z3,    # k = 3
-           -gamma * x + x^3/3*z3 + px4/3*(1 + px4/7.5),    # k = 4
+           -gamma * x - x*x2*(z3/3) + px4/3*(1 + px4/7.5),    # k = 4
            ##   pi^4/360 = (pi^2/4)^2 / 3 / 7.5  (3 * 16 * 7.5 == 360)
            ## k = 5 :
-           -gamma * x - x*x2*(z3/3 + x2*z5/5) + px4/3*(1 + px4/7.5),
+           -gamma * x - x*x2*(z3/3 + x2*(z5/5)) + px4/3*(1 + px4/7.5),
            ## k = 6 : (fractions: multiple of 2^-k are exact also in double prec)
            ##         360/16 = 22.5   5670/16 = 354.375
-           -gamma * x - x*x2*(z3/3 + x2*z5/5) + px4*(1/3 + px4*(I/22.5 + px/354.375)),
-           stop("Currently, only k <= 6  is implemented, but k=",k))
+           -gamma * x - x*x2*(z3/3 + x2*(z5/5))            + px4*(1/3 + px4*(I/22.5 + px/354.375)),
+           -gamma * x - x*x2*(z3/3 + x2*(z5/5+ x2*(z7/7))) + px4*(1/3 + px4*(I/22.5 + px/354.375)), # k = 7
+           stop("Currently, only k <= 7  is implemented, but k=",k))
 }
 
 

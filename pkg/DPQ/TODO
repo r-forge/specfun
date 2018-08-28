@@ -15,4 +15,7 @@
 ** TODO move C code to here
 ** TODO Find documentation / papers ==> for help pages about h() and g() in R/wienergerm_nchisq-fn.R
 * TODO src/qchisq_appr.c / init.c : change to .Call() version which vectorizes in both args
+* TODO qchisq.appr.R() in R/qgamma-fn.R and qchisq.appr.Kind() in R/qchisqAppr.R are almost identical >> merge ??
+  can we merge them?  the *.R() version is vectorized and used in qgamma.R()
+
 * DONE dcdflib -- ===> made into separate package (part of same R-forge project 'specfun')
