@@ -9,12 +9,11 @@ ppoisD <- function(q, lambda)
     if(length(lambda) != 1)
         stop("argument 'lambda' must have length 1 !")
     n <- length(x <- as.double(q))
-    .C("ppois_D",
+    .C(C_ppois_D,
        x,
        n,
        as.double(lambda),
-       pr = double(n),
-     , PACKAGE = "DPQ")$pr
+       pr = double(n))$pr
 }
 
 

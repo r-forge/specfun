@@ -184,8 +184,8 @@ pnchisq <- function(q, df, ncp = 0, lower.tail = TRUE,
         if(!lamSml && !tSml) {
             term <-  v * t
             if(verbose >= 2)
-                cat(" il: term=",formatC(term,wid=10),
-                    "rel.term=",formatC(term/ans, wid=10),"\n")
+                cat(" il: term=",formatC(term, width=10),
+                    "rel.term=", formatC(term/ans, width=10),"\n")
             ans <- ans + term
         } else if(verbose >= 2) cat(".")
         n <- n+1
@@ -265,7 +265,7 @@ pnchisq.Sankaran.d <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
           lower.tail=lower.tail, log.p=log.p)
 }
 
-rr <- function(i, lambda)
+r_pois <- function(i, lambda)
 {
     ## Purpose: r_v(i) :=  (v^i / i!) / e_{i-1}(v), where
     ##      e_n(x) := 1 + x + x^2/2! + .... + x^n/n! (n-th partial of exp(x))
@@ -278,16 +278,16 @@ rr <- function(i, lambda)
     if(lambda < -log(2)*.Machine$double.min.exp)
         dpois(i, lambda) / ppois(i-1, lambda)# << does vectorize in i
     else # large lambda
-        exp(i*log(lambda) - lgamma(i+1) +
-            -lambda- ppois(i-1, lambda, log = TRUE))
+        exp(i*log(lambda) - lgamma(i+1) + -lambda- ppois(i-1, lambda, log.p = TRUE))
 }
 
-titleR.exp <-
+r_pois_expr <- ## was  'titleR.exp'
     expression(rr[lambda](i) ==
         frac(lambda^i / i*"!",
              1+ lambda+ lambda^2/2*"!" +cdots+ lambda^{i-1}/(i-1)*"!"))
 
-plotRR <- function(lambda, iset = 1:(2*lambda), do.main=TRUE,
+## was plotRR()
+plRpois <- function(lambda, iset = 1:(2*lambda), do.main=TRUE,
                    log = 'xy', cex = 0.4, col = c("red","blue"))
 {
     ii <- sort(iset)
@@ -295,10 +295,10 @@ plotRR <- function(lambda, iset = 1:(2*lambda), do.main=TRUE,
         pmar <- par("mar"); on.exit(par(mar=pmar))
         par(mar=pmar + c(0,0,1.2,0))
     }
-    plot(ii, rr(ii, lambda=lambda), log = log, cex = cex, col = col[1],
+    plot(ii, r_pois(ii, lambda=lambda), log = log, cex = cex, col = col[1],
          type = 'o', xlab = "i", ylab = "r(i)",
          sub = substitute(lambda==l, list(l=lambda)),
-         main = if(do.main) titleR.exp)
+         main = if(do.main) r_pois_expr)
     lines(ii, lambda/ii, col = col[2])
     legend(ii[length(ii)], lambda, expression(rr[lambda](i), lambda / i),
            col = col, lty = 1, pch = c(1,NA), xjust = 1, bty = 'n')
@@ -442,7 +442,7 @@ pnchisqIT <- function(q, df, ncp = 0, errmax = 1e-12,
 {
     if(length(q) != 1 || length(df) != 1 || length(ncp) != 1)
         stop("arguments must have length 1 !")
-    r <- .C("Pnchisq_it",
+    r <- .C(C_Pnchisq_it,
             x = as.double(q),
             f = as.double(df),
             theta = as.double(ncp),
@@ -452,8 +452,7 @@ pnchisqIT <- function(q, df, ncp = 0, errmax = 1e-12,
             i0 = integer(1),
             n.terms = integer(1),
             terms = double(itrmax+1), ## !!
-            prob  = double(1)
-          , PACKAGE = "DPQ")
+            prob  = double(1))
     length(r$terms) <- r$n.terms
     r[c("prob", "i0", "n.terms", "terms")]
 }
@@ -470,18 +469,18 @@ ss2. <- function(q, df, ncp = 0, errmax = 1e-12,
 
     if(length(q) != 1 || length(df) != 1 || length(ncp) != 1)
         stop("arguments must have length 1 !")
-    r <- .C("Pnchisq_it",
+    r <- .C(C_Pnchisq_it,
             x = as.double(q),
             f = as.double(df),
             theta = as.double(ncp),
             errmax = as.double(errmax),
             reltol = as.double(reltol),
             itrmax = as.integer(itrmax),
-            i0 = integer(1),
-            n.terms = integer(1),
-            terms = double(itrmax+1), ## !!
-            prob  = double(1),
-          , PACKAGE = "DPQ")
+            i0 = integer(1L),
+            n.terms = integer(1L),
+            terms = double(itrmax+1L) ## !!
+          , prob  = double(1)
+            )
     length(r$terms) <- r$n.terms
     nT <- length(s <- r$terms)
 

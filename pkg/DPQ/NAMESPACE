@@ -1,3 +1,5 @@
+useDynLib(DPQ, .registration = TRUE, .fixes = "C_")
+                                        # <--> src/init.c
 
 importFrom("sfsmisc"
          , mult.fig
@@ -7,7 +9,7 @@ importFrom("stats"
          , dnorm, pnorm, qnorm
          , dbeta, pbeta, qbeta
          , dgamma, pgamma, qgamma
-         , dchisq, pchisq
+         , dchisq, pchisq, qchisq
          , df, pf, qf
          , dt, pt, qt
          , dpois, ppois, qpois
@@ -26,5 +28,101 @@ importFrom("utils"
 
 ### ----------------------- Exporting ----------------------------
 
-## For now export everything
-exportPattern("^[^.]")
+## For now export everything (but the C_*() C routines
+export(
+    ## R/dpq-h.R
+    ## ---------
+    ".D_0", ".D_1"
+  , ".D_Clog", ".D_Cval", ".D_exp"
+  , ".D_LExp", ".D_log", ".D_Lval", ".D_qIv", ".D_val"
+  , ".DT_0", ".DT_1"
+  , ".DT_Cexp", ".DT_CIv", ".DT_Clog", ".DT_Cval", ".DT_exp", ".DT_log", ".DT_Log"
+  , ".DT_qIv", ".DT_val"
+  , log1.Exp
+  , M.LN2, M_cutoff
+
+  , .dntJKBch, .dntJKBch1
+
+  , G.half # rename!
+
+  , Qab.terms
+
+  , all_mpfr, any_mpfr
+
+  , b_chi, b_chiAsymp
+  , lb_chi0, lb_chi00, lb_chiAsymp
+
+  , beta.n
+
+  , c_dt, c_dtAsymp, c_pt ## related to lb_chi*() above FIXME
+
+  , dchisqAsym
+  , dnchisqBessel, dnchisqR
+  , dnoncentchisq
+  , dntJKBf, dntJKBf1
+  , dntRwrong, dntRwrong1
+
+  , err.lambd0, err.lambd1, err.lambda # << FIXME, currently *print* and compute
+  , form01.prec
+  , g2, gnt
+  , h, h0, h1, h2, hnt
+
+  , lbeta.asy, lbeta.n, lbeta.n.half, lbetaM, lbetaMM
+
+  , lgamma1p., lgamma1p, lgamma1p_series
+  , log1pmx
+  , logQab.asy
+  , logcf, logr
+  , lssum, lsum
+
+  , newton # R/pnchisq.R
+  , nu.lam.expr
+  , p.dnchiB # plot -- rename ?
+  , plRpois
+
+  , pchisq.V
+  , pchisq.W, pchisqW, pchisqW.R
+
+  , pbetaRv1
+  , pnbeta.appr2, pnbeta.appr2.v1 ## rename?
+
+  ## Naming -fixme?
+  , pnchisq
+  , pnchisq.AbdelAty, pnchisq.Pat, pnchisq.Pea, pnchisq.Sankaran.d
+  , pnchisq.ss, pnchisqIT, pnchisqTerms, pnchisqV
+
+  ## Naming -fixme?
+  , pnt3150, pnt3150.1
+  , pntChShP94, pntChShP94.1
+  , pntJW39, pntJW39.0
+  , pntLrg
+  , pntP94, pntP94.1
+  , pntR, pntR1
+
+  , ppoisD
+  , qbeta.R
+  , qbeta.appr, qbeta.appr.1, qbeta.appr.2, qbeta.appr.3, qbeta.appr.4
+  , qchisq.appr.R, qgamma.R
+
+    ## from R/qchisqAppr.R :
+  , bnd.qgamma.appr
+  , qchisq.appr.Kind, qchisqAppr
+  , qchisqKG, qchisqWH
+    ## from R/qnchisq.R
+  , qchisq.appr.0, qchisq.appr.1, qchisq.appr.2, qchisq.appr.3
+  , qchisq.appr.CF1, qchisq.appr.CF2, qchisq.Cappr.2
+  , qchisq.Patn, qchisq2, qchisqA
+  , qnchisq.AbdelAty, qnchisq.Pea , qnchisq.Sankaran.d
+
+  , qgammaAppr, qgammaAppr.s.p, qgammaApprKG
+
+  , qnorm.appr, qnormU.appr
+  , qs ## ??
+  , qtAppr
+  , r_pois, r_pois_expr
+  , s  # rename !
+  , ss, ss2, ss2.
+  , scalefactor
+    ## no! titleR.exp (FIXME eventually: should not need such a global)
+  , z.f, z.s, z0
+)

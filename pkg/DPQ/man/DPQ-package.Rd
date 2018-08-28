@@ -2,36 +2,31 @@
 \alias{DPQ-package}
 \alias{DPQ}
 \docType{package}
-\title{
-\packageTitle{DPQ}
-}
+\title{\packageTitle{DPQ}}
 \description{
-\packageDescription{DPQ}
+  \packageDescription{DPQ}
 }
 \details{
-
-The DESCRIPTION file:
-\packageDESCRIPTION{DPQ}
-\packageIndices{DPQ}
-%% ~~ An overview of how to use the package, including the most important ~~
-%% ~~ functions ~~
+  The DESCRIPTION file:
+  \packageDESCRIPTION{DPQ}
+  \packageIndices{DPQ}
+  %% ~~ Overview of how to use the package, incl. the most important functions ~~
 }
 \author{
-\packageAuthor{DPQ}
-
-Maintainer: \packageMaintainer{DPQ}
+  Principal author and maintainer: \packageMaintainer{DPQ}
+  %% \packageAuthor{DPQ}
 }
 %% \references{
 %% ~~ Literature or other references for background information ~~
 %% }
 \seealso{
-  The package \code{\link[DPQmpfr:DPQmpfr-package]{DPQmpfr}}, which
+  The package \pkg{\link[DPQmpfr:DPQmpfr-package]{DPQmpfr}}, which
   builds on this package and on
-  \code{\link[Rmpfr:Rmpfr-package]{Rmpfr}}.
+  \pkg{\link[Rmpfr:Rmpfr-package]{Rmpfr}}.
 }
-%% \examples{
-TODO
-%% }
+\examples{
+"FIXME"
+}
 \keyword{ distribution }
 \keyword{ math }
 \keyword{ package }

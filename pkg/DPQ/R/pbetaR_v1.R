@@ -2,8 +2,11 @@
 ##
 ##  /usr/local.nfs/app/R/R-2.2.1/src/nmath/pbeta.c
 ##			 ------- ~~~~~~~~~~~~~~~~~
+## For consistency within R, we are using
+## R's argument names    (q, shape1, shape2)
+## instead of C code's   (x, pin,    qin   )
 ##
-pbetaRv1 <- function(x, pin, qin, lower.tail = TRUE,
+pbetaRv1 <- function(q, shape1, shape2, lower.tail = TRUE,
 		     eps = .5 * .Machine$double.eps, ## = 1.11e-16
 		     sml = .Machine$double.xmin,     ## = 2.22e-308
 		     verbose = 0)
@@ -14,8 +17,9 @@ pbetaRv1 <- function(x, pin, qin, lower.tail = TRUE,
   ## ----------------------------------------------------------------------
   ## Author: Martin Maechler, Date:  3 Apr 2004, 16:28
 
-    if(length(x) != 1 || length(pin) != 1 || length(qin) != 1)
+    if(length(q) != 1 || length(shape1) != 1 || length(shape2) != 1)
 	stop("arguments must have length 1 !")
+    x <- q; pin <- shape1; qin <- shape2 # back to "C-code compatible" argument names
     isN <- is.numeric(x) && is.numeric(pin) && is.numeric(qin)
     isMpfr <- !isN && any_mpfr(x, pin, qin)
     ## needed for printing mpfr numbers {-> pkg Rmpfr}, e.g.

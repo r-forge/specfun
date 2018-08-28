@@ -1,8 +1,11 @@
 Package: DPQ
 Title: Probability Distributions DPQ (Density, Probability, Quantile) Computations
-Version: 0.3-0
-Date: 2018-08-18
-Authors@R: person("Martin","Maechler", role=c("aut","cre"), email="maechler@stat.math.ethz.ch")
+Version: 0.3-1
+Date: 2018-08-23
+Authors@R: c(person("Martin","Maechler", role=c("aut","cre"),
+  	   				 email="maechler@stat.math.ethz.ch")
+  , person("R-core", email = "R-core@R-project.org", role = "ctb", comment = "src/dpq.h")
+  	     )
 Description: Computations for approximations and alternatives for the DPQ
   (Density (pdf), Probability (cdf) and Quantile) functions for probability
   distributions in R.
@@ -14,7 +17,7 @@ Description: Computations for approximations and alternatives for the DPQ
   qgamma(), ..., dpq-functions.
 Depends: R (>= 3.5.0)
 Imports: stats, graphics, methods, utils, sfsmisc
-Suggests: Rmpfr, DPQmpfr, Matrix
-SuggestsNote: Matrix only for its "test-tools-1.R"
+Suggests: Rmpfr, DPQmpfr, Matrix, mgcv, scatterplot3d, akima
+SuggestsNote: Matrix only for its "test-tools-1.R"; mgcv,scatt..,akima: some tests/
 License: GPL (>= 2)
 Encoding: UTF-8

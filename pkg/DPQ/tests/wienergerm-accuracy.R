@@ -47,7 +47,7 @@ p.pchisq <- function(x, df, ncp, log = "x",
     log.y <- length(grep("y", log))
     col <- 2:5
     lty <- 1:4
-    noR <- diff || relErr
+    noR <- diff || relErr # subtract from R's pchisq() -- TODO: rather use Rmpfr-ified pnchisq()!
     if(noR) {
          Pmat <- Pmat - Px
          if(relErr)

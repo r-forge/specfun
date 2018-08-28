@@ -4,6 +4,13 @@
 ##               ============
 library(DPQ)
 
+stopifnot(exprs = {
+    require(graphics)
+    require(sfsmisc) # lseq(), p.m(), mult.fig()
+})
+
+if(!dev.interactive(orNone=TRUE)) pdf("pnt-precision-2.pdf")
+
 x <- 10^seq(2,12, by= .25)
 px <- pt(x, df= 0.9, ncp = .01,
          lower.tail=FALSE, log=TRUE) ## 16 warnings
@@ -14,10 +21,6 @@ plot(x,px, log="x", type="o") #- show catastrophic behavior
 ## extend x  --> "the flattening" (at log(P[ ]) ~= -32) happens still
 curve(pt(x, df= 0.9, ncp = .01, lower.tail=FALSE, log=TRUE),
       100, 1e20, log="x")
-
-if(!require(sfsmisc)) # pkg 'sfsmisc'
-     lseq <- function (from, to, length)
-          2^seq(log2(from), log2(to), length.out = length)
 
 xs <- lseq(100, 1e6, len = 101)
 pxs <- pt(xs, df= 0.9, ncp = .01, lower.tail=FALSE, log=TRUE)
@@ -342,8 +345,8 @@ r35 <- ptRTailAsymp(df=3, ncp=5)
 
 ## for indexing etc:
 
-c.df <- formatC(df.,wid=1)
-c.nc <- formatC(nc.,wid=1)
+c.df <- formatC(df., width=1)
+c.nc <- formatC(nc., width=1)
 c.c <- outer(c.df, c.nc, paste, sep="_")
 
 if(names(r35)[1] == "") names(r35)[1] <- "intercpt"

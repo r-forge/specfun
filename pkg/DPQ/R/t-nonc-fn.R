@@ -48,21 +48,71 @@ b_chi <- function(nu, one.minus = FALSE, c1 = 341, c2 = 1000)
     r
 }
 
-b_chiAsymp <- function(nu, one.minus = FALSE)
+b_chiAsymp <- function(nu, order = 2, one.minus = FALSE)
 {
   ## Purpose: Compute  E[ chi_nu ] / sqrt(nu)  --- for "LARGE" nu
   ## ----------------------------------------------------------------------
   ## Arguments: nu >=0  (degrees of freedom)
   ## ----------------------------------------------------------------------
-  ## Author: Martin Maechler, Date: 11 Mar 1999, 15:11
+  ## Author: Martin Maechler, Date: 11 Mar 1999 (order = 2);  Aug 21 2018 (order in 1..5)
 
   ## Abramowitz & Stegun, 6.1.47 (p.257) for a= 1/2, b=0 : __ for  z --> oo ___
   ## gamma(z + 1/2) / gamma(z) ~ sqrt(z)*(1 - 1/(8z) + 1/(128 z^2) + O(1/z^3))
   ## i.e. for b_chi), z = nu/2;  b_chi) = sqrt(1/z)* gamma((nu+1)/2) / gamma(nu/2)
   ##  b_chi) = 1 - 1/(8z) + 1/(128 z^2) + O(1/z^3) ~ 1 - 1/8z * (1 - 1/(16z))
-  qq <- 1/(8*nu) # = 1/(16z)
-  qq <- 2*qq*(1- qq)
-  if(one.minus) qq else 1-qq
+  ##
+  ## For order >= 3, I've used Maple expansion etc ==> ~/maple/gamma-exp2.txt
+  stopifnot(length(order) == 1L, order == as.integer(order), order >= 1)
+  r <- 1/(4*nu)
+  r <- r * switch(order, # polynomial order
+                  1,			# 1
+                  1 - r/2,              # 2
+                  1 - r/2*(1+ r* 5),	# 3
+                  1 - r/2*(1+ r*(5 - r/4* 21)),	# 4
+                  1 - r/2*(1+ r*(5 - r/4*(21 + 399*r))),# 5
+                  stop("Need 'order <= 5', but order=",order))
+  if(one.minus) r else 1-r
+}
+
+## Direct log( sqrt(2/nu)*gamma(.5*(nu+1))/gamma(.5*nu) )
+lb_chi00 <- function(nu) {
+    n2 <- nu/2
+    log(gamma(n2 + 0.5)/ gamma(n2) / sqrt(n2))
+}
+lb_chi0 <- function(nu) {
+    n2 <- nu/2
+    lgamma(n2 + 0.5) - lgamma(n2) - log(n2)/2
+}
+
+##
+lb_chiAsymp <- function(nu, order)
+{
+    ## Purpose: Asymptotic expansion (nu -> Inf) of  log(b_chi(nu))
+    ## ----------------------------------------------------------------------
+    ## Arguments: nu >=0  (degrees of freedom)
+    ## ----------------------------------------------------------------------
+    ## Author: Martin Maechler, Date: Aug 23 2018.
+
+    stopifnot(length(order) == 1L, order == as.integer(order), order >= 1)
+    ## You can derive the first term from
+    ## Abramowitz & Stegun, 6.1.47 (p.257) for a= 1/2, b=0 , or probably
+    ## using the Stirling formula for log(Gamma(.))
+    if(order == 1)
+        return(- 1/4/nu )
+    r <- 1/(2*nu) # --> 0
+    ## I've used Maple expansion etc ==> ~/maple/gamma-exp2.mw or .tex
+    ## from *.tex export of Maple, have
+    ## cH := r/2*(-1+(2/3+(-16/5+(272/7+(-7936/9+(353792/11+(-22368256/13+1903757312*r^2*(1/15))*r^2)*r^2)*r^2)*r^2)*r^2)*r^2)
+    rr <- r*r # = r^2
+    O <- rr*0 # in correct (Rmpfr) precision
+    -r/2 *
+        switch(order, # polynomial order {written to use full prec w Rmpfr}
+               1,			      # 1  (degree 1)
+               1 - rr*2/3,                   # 2  (deg.   3)
+               1 - rr*((O+2)/3 - rr*16/5),   # 3  (deg.   5)
+               1 - rr*((O+2)/3 - rr*((O+16)/5 - rr*272/7)),   # 4  (deg. 7)
+               1 - rr*((O+2)/3 - rr*((O+16)/5 - rr*(O+272)/7 - rr*7936/9)),# 5 (deg. 9)
+               stop("Currently need 'order <= 5', but order=",order))
 }
 
 
@@ -86,12 +136,12 @@ pntLrg <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE) {
     t  [neg] <- -   t[neg]
     ncp[neg] <- - ncp[neg]
     s <- 1/(4*df)
-    pnorm(t*(1 - s), m = ncp, s = sqrt(1 + t*t*2*s),
+    pnorm(t*(1 - s), mean = ncp, sd = sqrt(1 + t*t*2*s),
           lower.tail = (lower.tail != neg), log.p=log.p)
 }
 
 ## was called 'pt.appr'
-pntJW39 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE)
+pntJW39.0 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE)
 {
   ## Purpose: Jennett & Welch (1939) approximation to non-central t
   ##          see Johnson, Kotz, Bala... Vol.2, 2nd ed.(1995)
@@ -105,7 +155,27 @@ pntJW39 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE)
 
   b <- b_chi(df)
   ##   =====
+  ## FIXME:  (1 - b^2) below suffers from severe cancellation!
   pnorm((t*b - ncp)/sqrt(1+ t*t*(1 - b*b)),
+        lower.tail = lower.tail, log.p = log.p)
+}
+
+pntJW39 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE)
+{
+  ## Purpose: Jennett & Welch (1939) approximation to non-central t
+  ##          see Johnson, Kotz, Bala... Vol.2, 2nd ed.(1995)
+  ##                                     p.520, after (31.26a)
+  ## -- still works FAST for huge ncp
+  ##    but has *wrong* asymptotic tail (for |t| -> oo)
+  ## ----------------------------------------------------------------------
+  ## Arguments: see  ?pt
+  ## ----------------------------------------------------------------------
+  ## Author: Martin Mächler, Date: Feb/Mar 1999; 1-b^2 improvement: Aug 2018
+  ._1_b <- b_chi(df, one.minus=TRUE)# == 1 - b -- needed for good (1 - b^2)
+  ##       =====
+  b <- 1 - ._1_b
+  ## (1 - b^2) == (1 - b)(1 + b) = ._1_b*(2 - ._1_b)
+  pnorm((t*b - ncp)/sqrt(1+ t*t * ._1_b*(1 + b)),
         lower.tail = lower.tail, log.p = log.p)
 }
 
@@ -116,6 +186,8 @@ c_dt <- function(nu) {
     ## Arguments: nu >=0  (degrees of freedom)
     ## ----------------------------------------------------------------------
     ## Author: Martin Maechler, Date:  1 Nov 2008, 14:26
+
+    warning("FIXME: current c_dt() is poor -- base it on lb_chi(nu) !")
 
     ## Limit nu -> Inf: c_{\nu} \to - \log(2\pi)/2 = -0.9189385
     r <- nu
@@ -134,17 +206,26 @@ c_dtAsymp <- function(nu)
     ## ----------------------------------------------------------------------
     ## Arguments: nu >=0  (degrees of freedom)
     ## ----------------------------------------------------------------------
+    ##
+    ## FIXME: This is trivially   -log(2*pi)/2  +  log(b_chi(nu))
+    ##        and I've computed good asymptotics for
+    ##    lb_chi(nu) := log(b_chi(nu))   above
+    ##
+    ##
     ## -log(2*pi)/2 -1/(4*nu) * (1 + 5/(96*nu^2))
     ##                               ^^^^^^^^^^^ not quite ok
-    -log(2*pi)/2 -1/(4*nu)
+    warning("this is poor -- use lb_chi(nu) !!")
+    -log(2*pi)/2 - 1/(4*nu)
 }
 
 c_pt <- function(nu)
 {
-  ## Purpose: the asymptotic constant in log F_nu(-x) = const(nu) - nu * log(x)
+  ## Purpose: the asymptotic constant in log F_nu(-x) ~= const(nu) - nu * log(x)
   ##          where F_nu(x) == pt(x, nu)
+### FIXME == Source / Reference for the above left tail statement?
   ## ----------------------------------------------------------------------
   ## Author: Martin Maechler, Date:  5 Nov 2008, 09:34
+  warning("use better c_dt()") ## ==> use lb_chi(nu) !!
   c_dt(nu) + (nu-1)/2 * log(nu)
 }
 
@@ -374,7 +455,7 @@ pnt3150.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE, M = 1000,
             getPrec <- Rmpfr::getPrec
             prec <- max(getPrec(t), getPrec(df), getPrec(ncp))
             pi <- Rmpfr::Const("pi", prec = max(64, prec))
-            pbeta <- Vectorize(pbetaRv1, "qin") # so pbeta(x, p, <vector q>) works
+            pbeta <- Vectorize(pbetaRv1, "shape2") # so pbeta(x, p, <vector q>) works
             dbeta <- function(x, a,b, log=FALSE) {
                 lval <- (a-1)*log(x) + (b-1)*log1p(-x) - lbeta(a, b)
                 if(log) lval else exp(lval)
@@ -417,7 +498,7 @@ pnt3150.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE, M = 1000,
 
     if(log.p) {
         if(lower.tail) ## log(1 - exp(-LS)) = log1mexp(LS)
-            R.Log1.Exp(-LS) ## = log1mexp(LS)
+            log1.Exp(-LS) ## = log1mexp(LS)
         else ## upper tail: log(1 - (1 - exp(-LS))) = -LS
             -LS
     } else {
@@ -528,7 +609,7 @@ pntP94.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
 
     if(log.p) {
         if(lower.tail) ## log(1 - exp(-L)* S/2) = log(1 - exp(-LS)) = log1mexp(LS)
-            R.Log1.Exp(-LS) ## = log1mexp(LS)
+            log1.Exp(-LS) ## = log1mexp(LS)
         else
             -LS
     } else {
@@ -562,7 +643,7 @@ pntChShP94 <- Vectorize(pntChShP94.1, c("t", "df", "ncp"))
 
 ## >> Just for historical reference :
 ##    =============================
-dntR.1 <- function(x, df, ncp, M = 1000, log = FALSE, check=FALSE, tol.check = 1e-7)
+dntRwrong1 <- function(x, df, ncp, log = FALSE, M = 1000, check=FALSE, tol.check = 1e-7)
 {
     ## R's source ~/R/D/r-devel/R/src/nmath/dnt.c  claims -- from 2003 till 2014 -- but *WRONGLY*
     ## *	   f(x, df, ncp) =
@@ -589,14 +670,14 @@ dntR.1 <- function(x, df, ncp, M = 1000, log = FALSE, check=FALSE, tol.check = 1
     lf <- lfac + lsum(lterms)
     if(log) lf else exp(lf)
 }
-dntR <- Vectorize(dntR.1, c("x", "df", "ncp"))
+dntRwrong <- Vectorize(dntRwrong1, c("x", "df", "ncp"))
 
 
 ### Johnson, Kotz and Balakrishnan (1995) [2nd ed.] have
 ###  (31.15) [p.516] and (31.15'), p.519 -- and they  contradict by a factor  (1 / j!)
 ###  in the sum
 ### ==> via the following: "prove" that (31.15) is correct, and  (31.15') is missing the "j!"
-dnt.1 <- function(x, df, ncp, M = 1000, log = FALSE, check=FALSE, tol.check = 1e-7)
+.dntJKBch1 <- function(x, df, ncp, log = FALSE, M = 1000, check=FALSE, tol.check = 1e-7)
 {
     stopifnot(length(x) == 1, length(df) == 1, length(ncp) == 1, length(M) == 1,
               ncp >= 0, df > 0,
@@ -617,14 +698,15 @@ dnt.1 <- function(x, df, ncp, M = 1000, log = FALSE, check=FALSE, tol.check = 1e
     lf <- lfac + lsum(lterms)
     if(log) lf else exp(lf)
 }
-dnt <- Vectorize(dnt.1, c("x", "df", "ncp"))
+.dntJKBch <- Vectorize(.dntJKBch1, c("x", "df", "ncp"))
 
-
+##-FIXME: have  exp(logr(.)) in one place - *clearly* suboptimal
+## MM: really optimal in the other cases?
 logr <- function(x, a) ## == log(x / (x + a)) -- but numerically smart; x > 0, a >= 0 > -x
     if(a < x) -log1p(a/x) else log(x / (x + a))
 
 ## New "optimized" and  "mpfr-aware" version:
-dnt.1 <- function(x, df, ncp, M = 1000, log = FALSE, verbose=FALSE, tol.check = 1e-7)
+dntJKBf1 <- function(x, df, ncp, log = FALSE, M = 1000)
 {
     stopifnot(length(x) == 1, length(df) == 1, length(ncp) == 1, length(M) == 1,
               df >= 0, is.numeric(M), M >= 1, M == round(M))
@@ -670,12 +752,12 @@ dnt.1 <- function(x, df, ncp, M = 1000, log = FALSE, verbose=FALSE, tol.check = 
     lf <- lfac + lSum
     if(log) lf else exp(lf)
 }
-dnt <- Vectorize(dnt.1, c("x", "df", "ncp"))
+dntJKBf <- Vectorize(dntJKBf1, c("x", "df", "ncp"))
 
 
 ###-- qnt() did not exist yet at the time I wrote this ...
 ##    ---
-qt.appr <- function(p, df, ncp, lower.tail = TRUE, log.p = FALSE,
+qtAppr <- function(p, df, ncp, lower.tail = TRUE, log.p = FALSE,
                     method = c("a","b","c"))
 {
   ## Purpose: Quantiles of approximate non-central t

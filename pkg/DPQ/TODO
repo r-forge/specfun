@@ -1,9 +1,18 @@
 ##-*- org -*-->  Emacs .. [Tab] key + [Org] menu; C-c C-o to follow links
 
-* t-distributions (notably *noncentral*, "pnt" etc):
+* TODO b_chi(): Now have higher order asymptotic expansion *and* confirmed via Rmpfr that it is
+  much better than internal b2(), we should use its higher order
+  down to ~200 and completely "drop" b2() and redefine an optimal c1.
+  see R/t-nonc-fn.R and notably man/b_chi.Rd
+** TODO in R/t-nonc-fn.R : also have c_dt() etc, based on lb_chi() which has nice series now
+* TODO t-distributions (notably *noncentral*, "pnt" etc):
 ** TODO extract some useful functions from our tests/pnt-precision-problem.R
 ** TODO extract functions (and "tests") from ~/R/MM/NUMERICS/dpq-functions/dt-ex.R
 ** TODO extract fns & tests   from ~/R/MM/NUMERICS/dpq-functions/pt-ex.R
 ** TODO extract fns & tests   from ~/R/MM/NUMERICS/dpq-functions/qt-ex.R
 
+* TODO chisq-Wienergerm approximations:
+** TODO move C code to here
+** TODO Find documentation / papers ==> for help pages about h() and g() in R/wienergerm_nchisq-fn.R
+* TODO src/qchisq_appr.c / init.c : change to .Call() version which vectorizes in both args
 * DONE dcdflib -- ===> made into separate package (part of same R-forge project 'specfun')

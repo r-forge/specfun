@@ -1,7 +1,7 @@
 #### Examples for non-central t
 #### ==========================
 ###
-### Johnson, Kotz, ...;  2nd ed, Vol2.  Chapter 31, around p.520
+### Johnson, Kotz, ...;  2nd ed, Vol 2.  Chapter 31, around p.520
 
 c({}## This stems from the two files
 , "/u/maechler/R/MM/NUMERICS/dpq-functions/pnt-ex.R"
@@ -336,60 +336,60 @@ plot(function(t)abs(pt(t,100,30)-pntJW39(t,100,30)), 17, 120, n=1001,
 par(o)
 
 
-### --------------------- qt() and qt.appr() ---------------------
+### --------------------- qt() and qtAppr() ---------------------
 
 ## df=1  is pretty bad...
 plot(function(t)qt(t,df=1))
-plot(function(t)qt.appr(t,df=1,ncp=0),col="blue",add=T)
+plot(function(t)qtAppr(t,df=1,ncp=0),col="blue",add=T)
 
 ## df=2  quite a bit better..
-plot(function(t)qt.appr(t,df=2,ncp=0),col="blue")
+plot(function(t)qtAppr(t,df=2,ncp=0),col="blue")
 plot(function(t)qt(t,df=2),add=T)
 
 ## df=4 a bit better.. still only for alpha ~ in  (.1, .9)
-plot(function(t)qt.appr(t,df=4,ncp=0),col="blue")
+plot(function(t)qtAppr(t,df=4,ncp=0),col="blue")
 plot(function(t)qt(t,df=4),add=T)
 
-plot(function(t)abs(1-qt(t,df=4)/qt.appr(t,df=4,ncp=0)), main="rel.Error")
-plot(function(t)abs(1-qt(t,df=10)/qt.appr(t,df=10,ncp=0)), main="rel.Error")
+plot(function(t)abs(1-qt(t,df=4)/qtAppr(t,df=4,ncp=0)), main="rel.Error")
+plot(function(t)abs(1-qt(t,df=10)/qtAppr(t,df=10,ncp=0)), main="rel.Error")
 
 ## max error: 10e-5,  however... still NaN's sqrt()
-plot(function(t)abs(1-qt(t,df=100)/qt.appr(t,df=100,ncp=0)))
+plot(function(t)abs(1-qt(t,df=100)/qtAppr(t,df=100,ncp=0)))
 
-plot(function(t)qt.appr(t,df=100,ncp=100))
+plot(function(t)qtAppr(t,df=100,ncp=100))
 ## catastrophe : !!!!
-plot(function(t)qt.appr(t,df=1,ncp=100))
+plot(function(t)qtAppr(t,df=1,ncp=100))
 
 
-plot(function(t) t - pt     (qt.appr(t,df=4,ncp=100),df=4,ncp=100))
+plot(function(t) t - pt     (qtAppr(t,df=4,ncp=100),df=4,ncp=100))
 
 ## --> pntJW39() uses MUCH better asymptotic than Abramowitz&Stegun (in pnt).
-plot(function(t) t - pntJW39(qt.appr(t,df=4,ncp=100),df=4,ncp=100),
+plot(function(t) t - pntJW39(qtAppr(t,df=4,ncp=100),df=4,ncp=100),
      col='red',add=T)
 ## Absolute Error: very small -- just proves that the two ".appr"  CORRESPOND!
-plot(function(t) t - pntJW39(qt.appr(t,df=4,ncp=100),df=4,ncp=100))
+plot(function(t) t - pntJW39(qtAppr(t,df=4,ncp=100),df=4,ncp=100))
 
 
-plot(function(t)qt.appr(t,df=10,ncp=1e5))
+plot(function(t)qtAppr(t,df=10,ncp=1e5))
 
 ## Shows that  pt(,, ncp=1e5)  uses asymptotic form alright:
-plot(function(t) t - pt     (qt.appr(t,df=10,ncp=1e5),df=10,ncp=1e5))
-## --> pntJW39()  MUCH better ========== fitting to qt.appr !!
+plot(function(t) t - pt     (qtAppr(t,df=10,ncp=1e5),df=10,ncp=1e5))
+## --> pntJW39()  MUCH better ========== fitting to qtAppr !!
 ## ------ not necessarily better asymptotic than Abramowitz&Stegun (in pnt).
-plot(function(t) t - pntJW39(qt.appr(t,df=10,ncp=1e5),df=10,ncp=1e5),
+plot(function(t) t - pntJW39(qtAppr(t,df=10,ncp=1e5),df=10,ncp=1e5),
      col='red',add=T)
 
 
 ###--- Diverse tests, some lifted from ../R/t-nonc-fn.R ------------------------
 
-(f. <- dntR(1:6, df=3, ncp=5, check=TRUE))
+(f. <- dntRwrong(1:6, df=3, ncp=5, check=TRUE))
 ## [1] 0.0032023 0.2728377 1.5174647 2.4481320 2.4106931 1.9481189 -- wrong "but sensible"
 
 x <- seq(-1,20, by=1/4)
-plot(x, dt(x, df=3, ncp=5) / dntR(x, df=3, ncp=5))
+plot(x, dt(x, df=3, ncp=5) / dntRwrong(x, df=3, ncp=5))
 ## ???
 
-(ft <- dnt(1:6, df=3, ncp=5))
+(ft <- dntJKBf(1:6, df=3, ncp=5))
 ## [1] 0.000508267 0.026060733 0.119137668 0.176104468 0.165771811 0.130541073
 ## correct !! *with* the factorial !
-stopifnot(all.equal(ft, dt(1:6, df=3, ncp=5)))
+stopifnot(all.equal(ft, dt(1:6, df=3, ncp=5), tol = 1e-11))
