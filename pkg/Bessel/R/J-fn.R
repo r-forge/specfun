@@ -26,7 +26,8 @@ besselJs <-
         return(if(!log)
                    (if(nu - na == 0.5) 0 else besselJs(x, -nu, nterm=nterm, Ceps=Ceps) * cospi(nu)) +
                    (if(nu      == na ) 0 else besselY (x, -nu                        ) * sinpi(nu))
-                ## (if(nu      == na ) 0 else besselYs(x, -nu, nterm=nterm, Ceps=Ceps) * sinpi(nu))
+               ## TODO: besselYs() series
+               ## (if(nu      == na ) 0 else besselYs(x, -nu, nterm=nterm, Ceps=Ceps) * sinpi(nu))
                else ## same on log scale  ==> need lsum() ?
                    stop("besselJs(*, nu < 0, log = TRUE)  not yet implemented")
                )
@@ -43,7 +44,7 @@ besselJs <-
     ##
     isNum <- is.numeric(x) || is.complex(x)
     ## improve accuracy for lgamma(j+1)  for "mpfr" numbers
-    ## -- this is very important [evidence: e.g. bJ(10000, 1)]
+    ## -- this is very important [evidence: e.g. besselJs(10000, 1)]
     if(is(l.s.j, "mpfr"))
 	j <- mpfr(j, precBits = max(sapply(l.s.j@.Data, slot, "prec")))
     else if(!isNum) j <- as(j, class(x))
@@ -62,7 +63,7 @@ besselJs <-
     if(log) {
 	if(any(lrgS <- log.s.j[1,] > log(Ceps) + s.j))
 	    lapply(x.[lrgS], function(x)
-		warning(sprintf("bJ(x=%g): 'nterm' may be too small", x),
+		warning(sprintf("besselJs(x=%g): 'nterm' may be too small", x),
 			call.=FALSE))
 	if(has0) {
 	    sj <- x
@@ -76,7 +77,7 @@ besselJs <-
 	    stop(sprintf("infinite s for x=%g", x.[!iFin][1]))
 	if(any(lrgS <- s.j[1,] > Ceps * s))
 	    lapply(x.[lrgS], function(x)
-		warning(sprintf("bJ(x=%g): 'nterm' may be too small", x),
+		warning(sprintf("besselJs(x=%g): 'nterm' may be too small", x),
 			call.=FALSE))
 	if(has0) {
 	    sj <- x

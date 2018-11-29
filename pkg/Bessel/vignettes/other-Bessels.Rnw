@@ -14,6 +14,7 @@
 % The index entry makes it into  build/vignette.rds :
 %%\VignetteIndexEntry{Bessel Functions in other CRAN Packages}
 %%\VignetteDepends{Bessel}
+%%\VignetteDepends{Rmpfr}
 %%\VignetteDepends{gsl}
 %%\VignetteDepends{sfsmisc}
 \SweaveOpts{engine=R,eps=FALSE,pdf=TRUE,width=7,height=4,strip.white=true,keep.source=TRUE}
@@ -87,7 +88,7 @@ Bessel functions:
 %% --> ~/R/Pkgs/Bessel/Bessel_in_CRAN_pkgs <== updated Oct. 2017 == TODO: %% UPDATE THIS!!!
 %%     -------------------------
 
-\item[gsl]
+\item[gsl] See Section~ref{sec:gsl} below
 
 \item[Rmpfr] provides arbitrary precision Bessel functions of
   \emph{integer} order $\nu =: n$ of the first kind only,
@@ -113,10 +114,20 @@ suppressPackageStartupMessages(require("Rmpfr"))
   Note that it calls different GSL routines for \emph{integer} $\nu$ ($=:
   n$ in that case) than for non-integer  which presumably has at least
   computational advantages. %% <<- MM: should learn more about this
+
+\item[GeneralizeHyperbolic] (todo)
+
+\item[ghyp] (todo)
+
+\item[CircularDDM] provides (a \pkg{Rcpp} and \pkg{gsl} based) function
+\code{besselzero(nu, k, kind)} to compute the first $k$ zeros of the
+$J_\nu()$ (\code{kind=1}) and $Y_\nu()$ (\code{kind=0}) functions
+ but fails to work for $I_\nu()$ (\code{kind=0}) where there is one zero for
+ negative $\nu \in [-2k, -2k+1]$,  $k=1,2,\dots$.
 \end{description}
 
 
-\section{Package `gsl'}%\section{\pkg{gsl}}% What is in the 'gsl' package
+\section{Package `gsl'}\label{sec:gsl}%\section{\pkg{gsl}}% What is in the 'gsl' package
 
 The \RR{} package \pkg{gsl} by Robin Hankin provides an \RR{} interface on a
 function-by-function basis to much of the GSL, the GNU Scientific Library.

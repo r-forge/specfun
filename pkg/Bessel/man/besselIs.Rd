@@ -54,16 +54,17 @@ stopifnot(all.equal(besselIs(1:10, 1), # our R code
 ## Large 'nu' ...
 x <- (0:20)/4
 (bx <- besselI(x, nu=200))# base R's -- gives (mostly wrong) warnings
-## Use high precision (notably large exponent rage) numbers:
-Bx <- besselIs(mpfr(x, 64), nu=200)
-all.equal(Bx, bx, tol = 1e-15)# TRUE -- the warning where mostly wrong; specifically:
-cbind(bx, Bx)
-signif(asNumeric(1 - (bx/Bx)[19:21]), 4) # only [19] had lost accuracy
+if(require("Rmpfr")) { ## Use high precision (notably large exponent rage) numbers:
+  Bx <- besselIs(mpfr(x, 64), nu=200)
+  all.equal(Bx, bx, tol = 1e-15)# TRUE -- warning were mostly wrong; specifically:
+  cbind(bx, Bx)
+  signif(asNumeric(1 - (bx/Bx)[19:21]), 4) # only [19] had lost accuracy
 
-## With*out* mpfr numbers -- using log -- is accurate (here)
-(lbx <- besselIs(     x,      nu=200, log=TRUE))
-lBx <-  besselIs(mpfr(x, 64), nu=200, log=TRUE)
-stopifnot(all.equal(asNumeric(log(Bx)), lbx, tol=1e-15),
-          all.equal(lBx, lbx, tol=4e-16))
+  ## With*out* mpfr numbers -- using log -- is accurate (here)
+  (lbx <- besselIs(     x,      nu=200, log=TRUE))
+  lBx <-  besselIs(mpfr(x, 64), nu=200, log=TRUE)
+  stopifnot(all.equal(asNumeric(log(Bx)), lbx, tol=1e-15),
+	    all.equal(lBx, lbx, tol=4e-16))
+} # Rmpfr
 }
 \keyword{math}

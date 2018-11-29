@@ -290,6 +290,7 @@ besselK.nuAsym <- function(x, nu, k.max, expon.scaled=FALSE, log=FALSE)
                                                            t2*(-446185740 + t2*185910725))))/39813120
                         if(k.max == 4)
                             (- u1.t + (u2.t + (-u3.t + u4.t/nu)/nu)/nu)/nu
+                        else stop("k.max >= 5 not yet implemented")
                     }
                 }
             }

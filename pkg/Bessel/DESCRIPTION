@@ -1,15 +1,14 @@
 Title: Computations and Approximations for Bessel Functions
 Package: Bessel
 Version: 0.6-0
-VersionNote: 0.5-5, on 2013-12-10
-Date: 2017-10-27
+VersionNote: Last CRAN: 0.5-5, on 2013-12-10
+Date: 2018-11-29
 Description: Computations for Bessel function for complex, real and partly
   'mpfr' (arbitrary precision) numbers; notably interfacing TOMS 644;
   approximations for large arguments, experiments, etc.
 Author: Martin Maechler
 Maintainer: Martin Maechler <maechler@stat.math.ethz.ch>
-Depends: Rmpfr
-Imports: methods
+Imports: methods, Rmpfr
 Suggests: gsl, sfsmisc
 SuggestsNote: only 'gsl' may be used in code; the others are for vignettes only
 License: GPL (>= 2)

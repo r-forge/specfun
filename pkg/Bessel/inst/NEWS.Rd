@@ -4,14 +4,15 @@
 \title{News for \R Package \pkg{Bessel}}
 \encoding{UTF-8}
 
-\section{Changes in version 0.6-0 (2017-10-27, svn r33)}{
+\section{Changes in version 0.6-0 (2018-11-29, svn r36)}{
   \subsection{New Features}{
     \itemize{
-      \item deprecate \code{bI()} to \code{besselSi()} -- enable
-      \code{log = TRUE} option and test it.
+      \item deprecate \code{bI()} to use \code{besselIs()} instead --
+      enable \code{log = TRUE} option and test it.
 
       \item new \code{besselJs()}, i.e., Taylor series for \eqn{J_n(x)};
-      using \code{lssum()} for alternating exp/log sum.
+      using \code{lssum()} for alternating exp/log sum, also works with
+      \CRANpkg{Rmpfr}'s \code{mpfr()} high precision numbers.
 
       \item use C routine registration, adding safety and a bit of speed.
 

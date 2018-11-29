@@ -19,8 +19,8 @@ besselJs(x, nu, nterm = 800, log = FALSE,
   \item{nu}{non-negative numeric (scalar).}
   \item{nterm}{integer indicating the number of terms to be used.
     Should be in the order of \code{abs(x)}, but can be smaller for
-    large x.  A warning is given, when \code{nterm} was chosen too
-    small.}
+    large x.  A warning is given, when \code{nterm} was \emph{possibly} too
+    small. (Currently, many of these warnings are wrong, as}
   \item{log}{logical indicating if the logarithm \eqn{log J.()} is
     required.}
   \item{Ceps}{a relative error tolerance for checking if \code{nterm}
@@ -51,17 +51,18 @@ stopifnot(all.equal(besselJs(1:10, 1), # our R code
 ## Large 'nu' ...
 x <- (0:20)/4
 (bx <- besselJ(x, nu=200))# base R's -- gives (mostly wrong) warnings
-## Use high precision (notably large exponent rage) numbers:
-Bx <- besselJs(mpfr(x, 64), nu=200)
-all.equal(Bx, bx, tol = 1e-15)# TRUE -- the warning where mostly wrong; specifically:
-cbind(bx, Bx)
-signif(asNumeric(1 - (bx/Bx)[19:21]), 4) # only [19] had lost accuracy
+if(require("Rmpfr")) { ## Use high precision, notably large exponent range, numbers:
+  Bx <- besselJs(mpfr(x, 64), nu=200)
+  all.equal(Bx, bx, tol = 1e-15)# TRUE -- warnings were mostly wrong; specifically:
+  cbind(bx, Bx)
+  signif(asNumeric(1 - (bx/Bx)[19:21]), 4) # only [19] had lost accuracy
 
-## With*out* mpfr numbers -- using log -- is accurate (here)
-lbx <- besselJs(     x,      nu=200, log=TRUE)
-lBx <- besselJs(mpfr(x, 64), nu=200, log=TRUE)
-cbind(x, lbx, lBx)
-stopifnot(all.equal(asNumeric(log(Bx)), lbx, tol=1e-15),
-          all.equal(lBx, lbx, tol=4e-16))
+  ## With*out* mpfr numbers -- using log -- is accurate (here)
+  lbx <- besselJs(     x,      nu=200, log=TRUE)
+  lBx <- besselJs(mpfr(x, 64), nu=200, log=TRUE)
+  cbind(x, lbx, lBx)
+  stopifnot(all.equal(asNumeric(log(Bx)), lbx, tol=1e-15),
+	    all.equal(lBx, lbx, tol=4e-16))
+} # Rmpfr
 }
 \keyword{math}
