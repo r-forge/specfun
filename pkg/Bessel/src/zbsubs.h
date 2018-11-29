@@ -1,27 +1,33 @@
-int zbesh_(double *zr, double *zi, double *fnu, int *kode, int *m, int *n, double *cyr, double *cyi, int *nz, int *ierr);
-int zbesi_(double *zr, double *zi, double *fnu, int *kode, int *n, double *cyr, double *cyi, int *nz, int *ierr);
-int zbesj_(double *zr, double *zi, double *fnu, int *kode, int *n, double *cyr, double *cyi, int *nz, int *ierr);
-int zbesk_(double *zr, double *zi, double *fnu, int *kode, int *n, double *cyr, double *cyi, int *nz, int *ierr);
-int zbesy_(double *zr, double *zi, double *fnu, int *kode, int *n, double *cyr, double *cyi, int *nz, double *cwrkr, double *cwrki, int *ierr);
-int zairy_(double *zr, double *zi, int *id, int *kode, double *air, double *aii, int *nz, int *ierr);
-int zbiry_(double *zr, double *zi, int *id, int *kode, double *bir, double *bii, int *ierr);
+// Toplevel Routines called from R :
 
-int zmlt_(double *ar, double *ai, double *br, double *bi, double *cr, double *ci);
-int zdiv_(double *ar, double *ai, double *br, double *bi, double *cr, double *ci);
+void zbesh(double *zr, double *zi, double *fnu, int *kode, int *m, int *n, double *cyr, double *cyi, int *nz, int *ierr);
+void zbesi(double *zr, double *zi, double *fnu, int *kode, int *n, double *cyr, double *cyi, int *nz, int *ierr);
+void zbesj(double *zr, double *zi, double *fnu, int *kode, int *n, double *cyr, double *cyi, int *nz, int *ierr);
+void zbesk(double *zr, double *zi, double *fnu, int *kode, int *n, double *cyr, double *cyi, int *nz, int *ierr);
+void zbesy(double *zr, double *zi, double *fnu, int *kode, int *n, double *cyr, double *cyi, int *nz, double *cwrkr, double *cwrki, int *ierr);
+void zairy(double *zr, double *zi, int *id, int *kode, double *air, double *aii, int *nz, int *ierr);
+void zbiry(double *zr, double *zi, int *id, int *kode, double *bir, double *bii, int *ierr);
+
+// Auxiliaries
+
+// TODO: declare all  'static void' / 'static <foo>' (not just void or 'int')
+void zmlt(double ar, double ai, double br, double bi, double *cr, double *ci);
+void zdiv(double ar, double ai, double br, double bi, double *cr, double *ci);
 int zsqrt_sub__(double *ar, double *ai, double *br, double *bi);
 int zexp_sub__(double *ar, double *ai, double *br, double *bi);
 int zlog_sub__(double *ar, double *ai, double *br, double *bi, int *ierr);
-double zabs_(double *zr, double *zi);
+double zabs(double zr, double zi);
 int zbknu_(double *zr, double *zi, double *fnu, int *kode, int *n, double *yr, double *yi, int *nz, double *tol, double *elim, double *alim);
 int zkscl_(double *zrr, double *zri, double *fnu, int *n, double *yr, double *yi, int *nz, double *rzr, double *rzi, double *ascle, double *tol, double *elim);
 int zshch_(double *zr, double *zi, double *cshr, double *cshi, double *cchr, double *cchi);
-int zrati_(double *zr, double *zi, double *fnu, int *n, double *cyr, double *cyi, double *tol);
+void zrati(double zr, double zi, double fnu, int n, double tol,
+	   double *cyr, double *cyi);
 int zs1s2_(double *zrr, double *zri, double *s1r, double *s1i, double *s2r, double *s2i, int *nz, double *ascle, double *alim, int *iuf);
 int zbunk_(double *zr, double *zi, double *fnu, int *kode, int *mr, int *n, double *yr, double *yi, int *nz, double *tol, double *elim, double *alim);
 int zmlri_(double *zr, double *zi, double *fnu, int *kode, int *n, double *yr, double *yi, int *nz, double *tol);
-int zwrsk_(double *zrr, double *zri, double *fnu, int *kode, int *n, double *yr, double *yi, int *nz, double *cwr, double *cwi, double *tol, double *elim, double *alim);
-int zseri_(double *zr, double *zi, double *fnu, int *kode, int *n, double *yr, double *yi, int *nz, double *tol, double *elim, double *alim);
-int zasyi_(double *zr, double *zi, double *fnu, int *kode, int *n, double *yr, double *yi, int *nz, double *rl, double *tol, double *elim, double *alim);
+void zwrsk_(double *zrr, double *zri, double *fnu, int *kode, int *n, double *yr, double *yi, int *nz, double *cwr, double *cwi, double *tol, double *elim, double *alim);
+void zseri_(double *zr, double *zi, double *fnu, int *kode, int *n, double *yr, double *yi, int *nz, double *tol, double *elim, double *alim);
+void zasyi_(double *zr, double *zi, double *fnu, int *kode, int *n, double *yr, double *yi, int *nz, double *rl, double *tol, double *elim, double *alim);
 int zuoik_(double *zr, double *zi, double *fnu, int *kode, int *ikflg, int *n, double *yr, double *yi, int *nuf, double *tol, double *elim, double *alim);
 int zacon_(double *zr, double *zi, double *fnu, int *kode, int *mr, int *n, double *yr, double *yi, int *nz, double *rl, double *fnul, double *tol, double *elim, double *alim);
 int zbinu_(double *zr, double *zi, double *fnu, int *kode, int *n, double *cyr, double *cyi, int *nz, double *rl, double *fnul, double *tol, double *elim, double *alim);

@@ -45,16 +45,16 @@ BesselI <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
     r <- if(isNum) numeric(nz * nSeq) else complex(nz * nSeq)
     if(nSeq > 1) r <- matrix(r, nz, nSeq)
     for(i in seq_len(nz)) {
-	ri <- .Fortran(zbesi,
-		       zr[i], zi[i],
-		       fnu = nu,
-		       kode= as.integer(1L + as.logical(expon.scaled)),
+	ri <- .C(zbesi,
+                 zr[i], zi[i],
+                 fnu = nu,
+                 kode= as.integer(1L + as.logical(expon.scaled)),
 					# 1 or 2, exactly as desired
-		       n = as.integer(nSeq),
-		       cyr = double(nSeq),
-		       cyi = double(nSeq),
-		       nz   = integer(1),
-		       ierr = integer(1))
+                 n = as.integer(nSeq),
+                 cyr = double(nSeq),
+                 cyi = double(nSeq),
+                 nz   = integer(1),
+                 ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zbesi(%g %s %gi, nu=%g)'", zr[i],
                            c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), nu)
@@ -106,16 +106,16 @@ BesselJ <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
     r <- if(isNum) numeric(nz * nSeq) else complex(nz * nSeq)
     if(nSeq > 1) r <- matrix(r, nz, nSeq)
     for(i in seq_len(nz)) {
-	ri <- .Fortran(zbesj,
-		       zr[i], zi[i],
-		       fnu = nu,
-		       kode= as.integer(1L + as.logical(expon.scaled)),
+	ri <- .C(zbesj,
+                 zr[i], zi[i],
+                 fnu = nu,
+                 kode= as.integer(1L + as.logical(expon.scaled)),
 					# 1 or 2, exactly as desired
-		       n = as.integer(nSeq),
-		       cyr = double(nSeq),
-		       cyi = double(nSeq),
-		       nz   = integer(1),
-		       ierr = integer(1))
+                 n = as.integer(nSeq),
+                 cyr = double(nSeq),
+                 cyi = double(nSeq),
+                 nz   = integer(1),
+                 ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zbesj(%g %s %gi, nu=%g)'", zr[i],
                            c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), nu)
@@ -163,16 +163,16 @@ BesselK <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
     r <- if(isNum) numeric(nz * nSeq) else complex(nz * nSeq)
     if(nSeq > 1) r <- matrix(r, nz, nSeq)
     for(i in seq_len(nz)) {
-	ri <- .Fortran(zbesk,
-		       zr[i], zi[i],
-		       fnu = nu,
-		       kode= as.integer(1L + as.logical(expon.scaled)),
+	ri <- .C(zbesk,
+                 zr[i], zi[i],
+                 fnu = nu,
+                 kode= as.integer(1L + as.logical(expon.scaled)),
 					# 1 or 2, exactly as desired
-		       n = as.integer(nSeq),
-		       cyr = double(nSeq),
-		       cyi = double(nSeq),
-		       nz   = integer(1),
-		       ierr = integer(1))
+                 n = as.integer(nSeq),
+                 cyr = double(nSeq),
+                 cyi = double(nSeq),
+                 nz   = integer(1),
+                 ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zbesk(%g %s %gi, nu=%g)'", zr[i],
                            c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), nu)
@@ -234,18 +234,18 @@ BesselY <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
             1/(0+0i)
         } else {
 ## 1182: zbesy(zr, zi, fnu, kode, n, cyr, cyi, nz, cwrkr, cwrki, ierr)
-            ri <- .Fortran(zbesy,
-                           zr[i], zi[i],
-                           fnu = nu,
-                           kode= as.integer(1L + as.logical(expon.scaled)),
+            ri <- .C(zbesy,
+                     zr[i], zi[i],
+                     fnu = nu,
+                     kode= as.integer(1L + as.logical(expon.scaled)),
 					# 1 or 2, exactly as desired
-                           n = as.integer(nSeq),
-                           cyr = double(nSeq),
-                           cyi = double(nSeq),
-                           nz   = integer(1),
-                           cwrkr= double(nSeq),
-                           cwrki= double(nSeq),
-                           ierr = integer(1))
+                     n = as.integer(nSeq),
+                     cyr = double(nSeq),
+                     cyi = double(nSeq),
+                     nz   = integer(1),
+                     cwrkr= double(nSeq),
+                     cwrki= double(nSeq),
+                     ierr = integer(1))
             if(ri$ierr) {
                 f.x <- sprintf("'zbesy(%g %s %gi, nu=%g)'", zr[i],
                                c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), nu)
@@ -322,17 +322,17 @@ BesselH <- function(m, z, nu, expon.scaled = FALSE, nSeq = 1)
     if(nSeq > 1) r <- matrix(r, nz, nSeq)
     for(i in seq_len(nz)) {
 	## zbesh(zr, zi, fnu, kode, m, n, cyr, cyi, nz, ierr)
-	ri <- .Fortran(zbesh,
-		       zr[i], zi[i],
-		       fnu = nu,
-		       kode= as.integer(1L + as.logical(expon.scaled)),
+	ri <- .C(zbesh,
+                 zr[i], zi[i],
+                 fnu = nu,
+                 kode= as.integer(1L + as.logical(expon.scaled)),
 					# 1 or 2, exactly as desired
-		       m = m,
-		       n = as.integer(nSeq),
-		       cyr = double(nSeq),
-		       cyi = double(nSeq),
-		       nz   = integer(1),
-		       ierr = integer(1))
+                 m = m,
+                 n = as.integer(nSeq),
+                 cyr = double(nSeq),
+                 cyi = double(nSeq),
+                 nz   = integer(1),
+                 ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zbesh(%g %s %gi, nu=%g)'", zr[i],
                            c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), nu)
@@ -378,15 +378,15 @@ AiryA <- function(z, deriv = 0, expon.scaled = FALSE)
     r <- if(isNum) numeric(nz) else complex(nz)
     for(i in seq_len(nz)) {
 	## zairy(zr, zi, id, kode, air, aii, nz, ierr)
-	ri <- .Fortran(zairy,
-		       zr[i], zi[i],
-		       id = deriv,
-		       kode= as.integer(1L + as.logical(expon.scaled)),
+	ri <- .C(zairy,
+                 zr[i], zi[i],
+                 id = deriv,
+                 kode= as.integer(1L + as.logical(expon.scaled)),
 					# 1 or 2, exactly as desired
-		       air = double(1),
-		       aii = double(1),
-		       nz   = integer(1),
-		       ierr = integer(1))
+                 air = double(1),
+                 aii = double(1),
+                 nz   = integer(1),
+                 ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zairy(%g %s %gi, deriv=%d)'", zr[i],
                            c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), deriv)
@@ -425,15 +425,15 @@ AiryB <- function(z, deriv = 0, expon.scaled = FALSE)
     r <- if(isNum) numeric(nz) else complex(nz)
     for(i in seq_len(nz)) {
 	## zairy(zr, zi, id, kode, air, aii, nz, ierr)
-	ri <- .Fortran(zbiry,
-		       zr[i], zi[i],
-		       id = deriv,
-		       kode= as.integer(1L + as.logical(expon.scaled)),
+	ri <- .C(zbiry,
+                 zr[i], zi[i],
+                 id = deriv,
+                 kode= as.integer(1L + as.logical(expon.scaled)),
 					# 1 or 2, exactly as desired
-		       bir = double(1),
-		       bii = double(1),
-		       nz   = integer(1),
-		       ierr = integer(1))
+                 bir = double(1),
+                 bii = double(1),
+                 nz   = integer(1),
+                 ierr = integer(1))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zairy(%g %s %gi, deriv=%d)'", zr[i],
                            c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), deriv)
