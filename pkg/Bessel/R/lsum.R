@@ -1,5 +1,7 @@
 ### From copula package [not yet exported there]. as of Dec.2014:
 
+Re_ <- function(z) if(is.complex(z)) Re(z) else z
+
 ##' Properly compute log(x_1 + .. + x_n) for a given (n x d)-matrix of n row
 ##' vectors log(x_1),..,log(x_n) (each of dimension d)
 ##' Here, x_i > 0  for all i
@@ -15,7 +17,7 @@
 ##'         = lx.max + log(sum(exp(lx-lx.max)))
 ##'         => VECTOR OF DIMENSION d
 ##' @author Marius Hofert, Martin Maechler
-lsum <- function(lx, l.off = apply(lx, 2, max)) {
+lsum <- function(lx, l.off = apply(Re_(lx), 2, max)) {
     ## do not use cbind or rbind here, since it is not clear if the user specified
     ## only one vector log(x) or several vectors of dimension 1 !!!
     stopifnot(length(dim(lx)) == 2L) # is.matrix(.) generalized
@@ -37,11 +39,10 @@ lsum <- function(lx, l.off = apply(lx, 2, max)) {
 ##'         = log(x0) + log(sum(signs* exp(log(|x|)-log(x0))))
 ##'         = l.off   + log(sum(signs* exp(lxabs -  l.off  )))
 ##' @author Marius Hofert and Martin Maechler
-lssum <- function (lxabs, signs, l.off = apply(lxabs, 2, max), strict = TRUE) {
+lssum <- function (lxabs, signs, l.off = apply(Re_(lxabs), 2, max), strict = TRUE) {
     stopifnot(length(dim(lxabs)) == 2L) # is.matrix(.) generalized
     sum. <- colSums(signs * exp(lxabs - rep(l.off, each=nrow(lxabs))))
-    if (any(is.nan(sum.) || sum. <= 0))
+    if(anyNA(sum.) || any(sum. <= 0))
         (if(strict) stop else warning)("lssum found non-positive sums")
     l.off + log(sum.)
 }
-
