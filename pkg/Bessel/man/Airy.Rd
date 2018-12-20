@@ -9,6 +9,21 @@
   derivatives,
   \eqn{\frac{d}{dz} Ai(z)}{d/dz Ai(z)} and
   \eqn{\frac{d}{dz} Bi(z)}{d/dz Bi(z)}.
+
+  The Airy functions are solutions of the differential equation
+  \deqn{w'' = z w}
+  for \eqn{w(z)}, and are related to each other and to the
+  (modified) Bessel functions via (many identities, see
+  \url{https://dlmf.nist.gov/9.6}), e.g., if
+  \eqn{\zeta := \frac{2}{3} z \sqrt{z} = \frac{2}{3} z^{\frac{3}{2}}}{%
+    zta := (2/3) z * sqrt(z) = 2/3 z^(3/2)},
+  \deqn{Ai(z) = \pi^{-1}\sqrt{z/3}K_{1/3}(\zeta) =
+            \frac{1}{3}\sqrt{z}\left(I_{-1/3}(\zeta) - I_{1/3}(\zeta)\right),}{%
+    Ai(z) = 1/pi sqrt(z/3) K[1/3](zta) =
+            1/3 sqrt(z) * (I[-1/3](zta) - I[1/3](zta)),}
+ and
+  \deqn{Bi(z) = \sqrt{z/3} \left(I_{-1/3}(\zeta) + I_{1/3}(\zeta)\right).}{%
+    Bi(z) = sqrt(z/3) * (I[-1/3](zta) + I[1/3](zta)).}
 }
 \usage{
 AiryA(z, deriv = 0, expon.scaled = FALSE)
@@ -26,19 +41,20 @@ AiryB(z, deriv = 0, expon.scaled = FALSE)
     \eqn{\frac{d}{dz} Ai(z)}{d/dz Ai(z)} on \code{deriv=0} or \code{deriv=1}
     respectively. \cr
     When \code{expon.scaled} is true, it returns
-    \eqn{exp(\zeta) Ai(z)}{exp(zta)*Ai(z)} or
-    \eqn{exp(\zeta) \frac{d}{dz} Ai(z)}{exp(zta)* d/dz Ai(z)},
+    \eqn{\exp(\zeta) Ai(z)}{exp(zta)*Ai(z)} or
+    \eqn{\exp(\zeta) \frac{d}{dz} Ai(z)}{exp(zta)* d/dz Ai(z)},
     effectively removing the exponential decay in
     \eqn{-\pi/3 < \arg(z) < \pi/3}{-pi/3 < arg(z) < pi/3} and
     the exponential growth in
     \eqn{\pi/3 < \left|\arg(z)\right| < \pi}{pi/3 < abs(arg(z)) < pi},
-    where \eqn{\zeta= \frac{2}{3} z \sqrt{z}}{zta=(2/3)*z*sqrt(z)}.
+    where \eqn{\zeta= \frac{2}{3} z \sqrt{z}}{zta=(2/3)*z*sqrt(z)}, and
+    \eqn{\arg(z) = }{arg(z) = }\code{\link{Arg}(z)}.
 
     While the Airy functions \eqn{Ai(z)} and \eqn{d/dz Ai(z)} are
     analytic in the whole \eqn{z} plane, the corresponding scaled
     functions (for \code{expon.scaled=TRUE}) have a cut along the
     negative real axis.
-% FIXME: Do we know an analogous factor for Bi() .. ??
+% FIXME: Do we know an analogous fact for Bi() .. ??
 
     By default, when \code{expon.scaled} is false, \code{AiryB()}
     computes the complex Airy function \eqn{Bi(z)} or its derivative
@@ -55,7 +71,10 @@ AiryB(z, deriv = 0, expon.scaled = FALSE)
 \value{
   a complex or numeric vector of the same length (and class) as \code{z}.
 }
-\references{see \code{\link{BesselI}}.
+\references{see \code{\link{BesselJ}}; notably for many results the
+
+    Digital Library of Mathematical Functions (DLMF), Chapter 9
+    \emph{Airy and Related Functions} at \url{https://dlmf.nist.gov/9}.
 }
 \author{
   Donald E. Amos, Sandia National Laboratories, wrote the original
@@ -64,17 +83,27 @@ AiryB(z, deriv = 0, expon.scaled = FALSE)
 }
 \seealso{
   \code{\link{BesselI}} etc; the Hankel functions \code{\link{Hankel}}.
+
+  The CRAN package \CRANpkg{Rmpfr} has \code{\link[Rmpfr]{Ai}(x)} for
+  arbitrary precise "mpfr"-numbers \code{x}.
 }
 \examples{
-## The AiryA() := Ai() function
+## The AiryA() := Ai() function -------------
 
 curve(AiryA, -20, 100, n=1001)
-curve(AiryA,  -1, 100, n=1001, log="y")
+curve(AiryA,  -1, 100, n=1011, log="y") -> Aix
 curve(AiryA(x, expon.scaled=TRUE), -1, 50, n=1001)
+## Numerically "proving" the 1st identity above :
+z <- Aix$x; i <- z > 0; head(z <- z[i <- z > 0])
+Aix <- Aix$y[i]; zeta <- 2/3*z*sqrt(z)
+stopifnot(all.equal(Aix, 1/pi * sqrt(z/3)* BesselK(zeta, nu = 1/3),
+                    tol = 1e-15)) # 64b Lnx: 7.9e-16
+
 \donttest{## This gives many warnings (248 on nb-mm4, F24) about lost accuracy, but on Windows takes ~ 4 sec:
 curve(AiryA(x, expon.scaled=TRUE),  1, 10000, n=1001, log="xy")}
 
-## The AiryB() := Bi() function
+## The AiryB() := Bi() function -------------
+
 curve(AiryB, -20, 2, n=1001); abline(h=0,v=0, col="gray",lty=2)
 curve(AiryB, -1, 20, n=1001, log = "y") # exponential growth (x > 0)
 

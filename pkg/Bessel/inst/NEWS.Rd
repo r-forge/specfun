@@ -4,7 +4,15 @@
 \title{News for \R Package \pkg{Bessel}}
 \encoding{UTF-8}
 
-\section{Changes in version 0.6-0 (2018-11-29, svn r36)}{
+\section{Changes in version 0.6-0 (2018-12-20, svn r62)}{
+  \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
+    \itemize{
+      \item The exponential rescaling for the asymptotic version of the
+      \eqn{I()} function has been changed (for non-real
+      complex arguments) to be compatible to the scaling for
+      \code{\link{BesselI}()}.
+    }
+  }
   \subsection{New Features}{
     \itemize{
       \item deprecate \code{bI()} to use \code{besselIs()} instead --
@@ -16,7 +24,12 @@
 
       \item use C routine registration, adding safety and a bit of speed.
 
-      \item improved documentation
+      \item improved documentation for Bessel functions Ai,Bi, H, I,J,K,Y.
+
+      \item \code{besselI.nuAsym()} and  \code{besselK.nuAsym()} now allow maximal
+      \code{k.max = 5} (instead of \code{4}).
+
+      \item new \code{besselKasym()} (9.7.2 of A.&S. p.378).
     }
   }
   \subsection{Bug Fixes}{
@@ -25,6 +38,19 @@
       to Hiroyuki Kawakatsu.
 
       \item better warning message (r29).
+
+      \item the TOMS 644 routines Bessel[HIYJK] and Airy[AB] now all
+      return \code{NaN} with a warning instead of stopping with an error
+      in case of low level error \code{ierr == 4}.
+
+      \item \code{BesselK(0,*)} is zero now, and \code{BesselH(m,
+      z=0,..)} returns Inf/NaN combinations.% possibly to be improved
+      Both no longer end with an error (from \code{ierr == 1}).
+
+      \item \code{BesselK(<negative>, 3)} and \code{BesselJ(*)} now also
+      return the correct imaginary part instead of just a numeric value.
+
+      \item \code{besselIs(z, nu)} now also works for \code{complex} \code{z}.
     }
   }
 }

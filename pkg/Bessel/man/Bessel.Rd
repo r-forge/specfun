@@ -19,8 +19,8 @@ BesselY(z, nu, expon.scaled = FALSE, nSeq = 1)
   \item{z}{complex or numeric vector.}
   \item{nu}{numeric (scalar).}
   \item{expon.scaled}{logical indicating if the result should be scaled
-    by an exponential factor (typically to avoid under- or over-flow),
-    as for \code{\link{besselI}()} etc.}
+    by an exponential factor, typically to avoid under- or over-flow.
+    See the \sQuote{Details} about the specific scaling.}
   \item{nSeq}{positive integer; if \eqn{> 1}, computes the result for
     a whole \emph{sequence} of \code{nu} values;\cr
     if \code{nu >= 0},\code{nu, nu+1, ..., nu+nSeq-1},\cr
@@ -29,6 +29,18 @@ BesselY(z, nu, expon.scaled = FALSE, nSeq = 1)
 \details{
   The case \code{nu < 0} is handled by using simple formula from
   Abramowitz and Stegun,  see details in \code{\link{besselI}()}.
+
+  The scaling activated by \code{expon.scaled = TRUE} depends on the
+  function and the scaled versions are  \describe{
+    \item{J():}{\code{BesselJ(z, nu, expo=TRUE)}\eqn{:= \exp(-\left|\Im(z)\right|) J_{\nu}(z)}{%
+	:= exp(-|Im(z)|) J[nu](z)}}
+    \item{Y():}{\code{BesselY(z, nu, expo=TRUE)}\eqn{ := \exp(-\left|\Im(z)\right|) Y_{\nu}(z)}{%
+	:= exp(-|Im(z)|) Y[nu](z)}}
+    \item{I():}{\code{BesselI(z, nu, expo=TRUE)}\eqn{ := \exp(-\left|\Re(z)\right|) I_{\nu}(z)}{%
+	:= exp(-|Re(z)|) I[nu](z)}}
+    \item{K():}{\code{BesselK(z, nu, expo=TRUE)}\eqn{ := \exp(z) K_{\nu}(z)}{%
+	:= exp(z) K[nu](z)}}
+  }
 }
 \value{
   a complex or numeric vector (or \code{\link{matrix}} with \code{nSeq}
@@ -39,7 +51,11 @@ BesselY(z, nu, expon.scaled = FALSE, nSeq = 1)
 \references{
   Abramowitz, M., and Stegun, I. A. (1955, etc).
   \emph{Handbook of mathematical functions}
-  (NBS AMS series 55, U.S. Dept. of Commerce).
+  (NBS AMS series 55, U.S. Dept. of Commerce),
+  \url{http://people.math.sfu.ca/~cbm/aands/}
+
+  Wikipedia (20nn). \emph{Bessel Function},
+  \url{https://en.wikipedia.org/wiki/Bessel_function}
 
   %% See also ../vignettes/Bessel.bib
   D. E. Amos (1986)
@@ -64,16 +80,23 @@ BesselY(z, nu, expon.scaled = FALSE, nSeq = 1)
 \author{
   Donald E. Amos, Sandia National Laboratories, wrote the original
   fortran code.
-  Martin Maechler did the \R interface.
+  Martin Maechler did the translation to C, and partial cleanup
+  (replacing \code{goto}'s), in addition to the \R interface.
 }
 \seealso{
   The base \R functions \code{\link{besselI}()}, \code{\link{besselK}()}, etc.
 
+  The Hankel functions (of first and second kind),
+  \eqn{H_{\nu}^{(1)}(z)} and \eqn{H_{\nu}^{(2)}(z)}: \code{\link{Hankel}}.
+
+  The Airy functions \eqn{Ai()} and \eqn{Bi()} and their first
+  derivatives, \code{\link{Airy}}.
+
   For large \code{x} and/or \code{nu} arguments, algorithm AS~644 is not
-  good enough, and the results may overflow to \code{Inf}or underflow
-  to zero, such that direct computation of \eqn{\log(I_\nu(x))} and
-  \eqn{\log(K_\nu(x))} are desirable.  For this, we provide
-  \code{\link{besselI.nuAsym}()} and
+  good enough, and the results may overflow to \code{Inf} or underflow
+  to zero, such that direct computation of \eqn{\log(I_\nu(x))}{log(I[nu](x))} and
+  \eqn{\log(K_\nu(x))}{log(K[nu](x))} are desirable.  For this, we provide
+  \code{\link{besselI.nuAsym}()}, \code{\link{besselIasym}()} and
   \code{\link{besselK.nuAsym}(*, log= *)}, based on asymptotic expansions.
 }
 \examples{

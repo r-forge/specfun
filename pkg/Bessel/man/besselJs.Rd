@@ -3,7 +3,7 @@
 \title{Bessel J() function Simple Series Representation}
 \description{
   Computes the modified Bessel \eqn{J} function, using one of its basic
-  definitions as an infinite series, e.g. A\&S, p.360, (9.1.10).  The
+  definitions as an infinite series, e.g. A. & S., p.360, (9.1.10).  The
   implementation is pure \R, working for \code{\link{numeric}},
   \code{\link{complex}}, but also e.g., for objects of class
   \code{"\link[Rmpfr:mpfr-class]{mpfr}"} from package \pkg{Rmpfr}.
@@ -13,7 +13,7 @@ besselJs(x, nu, nterm = 800, log = FALSE,
          Ceps = if (isNum) 8e-16 else 2^(-x@.Data[[1]]@prec))
 }
 \arguments{
-  \item{x}{numeric of complex vector, or of another \code{\link{class}}
+  \item{x}{numeric or complex vector, or of another \code{\link{class}}
     for which arithmetic methods are defined, notably
     objects of class \code{\linkS4class{mpfr}}.}
   \item{nu}{non-negative numeric (scalar).}

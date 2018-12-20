@@ -4,7 +4,7 @@ importMethodsFrom("methods", coerce)# for as(..) / setAs(.)
 importFrom("methods", as, is, slot)
 
 importMethodsFrom("Rmpfr", asNumeric, apply, colSums, rowSums)
-importFrom("Rmpfr", mpfr, .getPrec)
+importFrom("Rmpfr", mpfr, .getPrec, Const)
 
 ## These are the  TOMS 644  R-interface functions :
 
@@ -26,6 +26,6 @@ export(besselIs,
 
        besselJs,
 
-#not yet besselKasym,
+       besselKasym,
        besselK.nuAsym)
 

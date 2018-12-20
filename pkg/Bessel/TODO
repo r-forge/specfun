@@ -2,11 +2,25 @@
 
 * R bessel "Bugs": Wrong and correct "Lost precision" warnings in R's bessel[IJKY]()
 ** besselI*asym() and others => Where are they good enough?
-
+** DONE `expon.scaled = TRUE` notably for *complex* args to be documented
+** DONE `besselIs(z, nu)` should work for *complex* arg
+** TODO `besselIs(z, nu, log=TRUE)` for *complex* -- fails because `log1p(<cplx>)` fails !
+** TODO `expon.scaled = TRUE` notably for *complex* args needs to be compatible for the
+   *s*eries and asymptotic functions  besselIs(), besselIasym(), besselI.nuAsym(), besselK.nuAsym()
+  ---> ../R/I-fn.R || Mostly DONE, but
+ *Why* is `I.nuAsym(*, expon.scaled=TRUE, k.max)` not particularly good ??? see "why" in ./tests/IJKY.R
+* More Tests:
+** besselI.ftrms() has *NO* code coverage
+** DONE tests/IJKY.R -- add more, notably small |x|
 * Martin Maechler's plans and wish list for the  "Bessel" R package:
+** TODO Implement series besselYs() for Y() as we have besselJs() .. started in ./R/Y-fn.R  <<<
 ** TODO Vignette --> ./inst/doc/other-Bessels.Rnw
 ** TODO More docu in ./man/Bessel.Rd
-** TODO Implement simple series for Y() as we have besselJs() in R/J-fn.R
+** DONE More docu in ./man/Hankel.Rd and ./man/Airy.Rd
+** TODO besselKasym() - A.&S. 9.7.2 {parallel to besselIasym() which is A.&S. 9.7.1}
+** TODO *asym* formulas for J() and Y(): x → ∞ : A.&S. 9.2.{5--10}  and   ν → ∞ : A.&S. 9.3.x
+*** for now: ~/R/MM/NUMERICS/Bessel/bessel-fn.R has  besselJ.nuAsymp10.19()  from DLMF (10.19.1)
+      and also https://dlmf.nist.gov/10.17#i
 ** DONE bI() - renamed to besselIs() now works with  'log = TRUE'
 ** DONE Add (most / all) of ~/R/MM/NUMERICS/Bessel/bessel-fn.R
   R/I-fn.R already added; need to make these work with *complex* input

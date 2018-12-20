@@ -59,18 +59,27 @@ BesselI <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 	    f.x <- sprintf("'zbesi(%g %s %gi, nu=%g)'", zr[i],
                            c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), nu)
 	    if(ri$ierr == 3)
-		warning(sprintf(
-		"%s large arguments -> precision loss (of at least half machine accuracy)",
-				f.x))
+		warning(gettextf(
+                    "%s large arguments -> precision loss (of at least half machine accuracy)", f.x),
+                    domain = NA)
 	    else if(ri$ierr == 2) {
 		if(getOption("verbose"))
-                    message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
+                    message(gettextf("%s  -> overflow ; returning Inf\n", f.x))
                 ri$cyr <- ri$cyi <- Inf
             }
-	    else stop(sprintf("%s [Fortran] error ierr = %d", f.x, ri$ierr))
+	    else if(ri$ierr == 4) {
+		warning(gettextf("%s  -> ierr=4: |z| or nu too large\n", f.x),
+			domain = NA)
+		## FIXME: In some cases, the answer should just be 'Inf' without any warning
+		ri$cyr[] <- NaN
+		ri$cyi[] <- if(isNum) 0 else NaN
+	    }
+	    else stop(gettextf("%s unexpected error 'ierr = %d'", f.x, ri$ierr),
+		      domain = NA)
 	}
-	rz <- if(isNum) ri$cyr else complex(real = ri$cyr,
-					    imaginary = ri$cyi)
+	rz <- if(isNum && all(!is.na(ri$cyi) & ri$cyi == 0.)) ri$cyr
+	      else complex(real      = ri$cyr,
+			   imaginary = ri$cyi)
 	if(nSeq > 1) r[i,] <- rz else r[i] <- rz
     }
     r
@@ -128,10 +137,19 @@ BesselJ <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
                     message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
                 ri$cyr <- ri$cyi <- Inf
             }
-	    else stop(sprintf("%s [Fortran] error ierr = %d", f.x, ri$ierr))
+	    else if(ri$ierr == 4) {
+		warning(gettextf("%s  -> ierr=4: |z| or nu too large\n", f.x),
+			domain = NA)
+		## FIXME: In some cases, the answer should just be Inf or 0  (w/o warning!)
+		ri$cyr[] <- NaN
+		ri$cyi[] <- if(isNum) 0 else NaN
+	    }
+	    else stop(gettextf("%s unexpected error 'ierr = %d'", f.x, ri$ierr),
+		      domain = NA)
 	}
-	rz <- if(isNum) ri$cyr else complex(real = ri$cyr,
-					    imaginary = ri$cyi)
+	rz <- if(isNum) ri$cyr
+              else complex(real      = ri$cyr,
+                           imaginary = ri$cyi)
 	if(nSeq > 1) r[i,] <- rz else r[i] <- rz
     }
     r
@@ -185,10 +203,19 @@ BesselK <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
                     message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
                 ri$cyr <- ri$cyi <- Inf
             }
-	    else stop(sprintf("%s [Fortran] error ierr = %d", f.x, ri$ierr))
+	    else if(ri$ierr == 4) {
+		warning(gettextf("%s  -> ierr=4: |z| or nu too large\n", f.x),
+			domain = NA)
+		## FIXME: In some cases, the answer should just be Inf or 0  (w/o warning!)
+		ri$cyr[] <- NaN
+		ri$cyi[] <- if(isNum) 0 else NaN
+	    }
+	    else stop(gettextf("%s unexpected error 'ierr = %d'", f.x, ri$ierr),
+		      domain = NA)
 	}
-	rz <- if(isNum) ri$cyr else complex(real = ri$cyr,
-					    imaginary = ri$cyi)
+	rz <- if(isNum && all(!is.na(ri$cyi) & ri$cyi == 0.)) ri$cyr
+	      else complex(real      = ri$cyr,
+			   imaginary = ri$cyi)
 	if(nSeq > 1) r[i,] <- rz else r[i] <- rz
     }
     r
@@ -223,6 +250,7 @@ BesselY <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
     }
     ## else  nu >= 0 :
 
+    isNum <- isNum && all(zr >= 0)
     r <- if(isNum) numeric(nz * nSeq) else complex(nz * nSeq)
     if(nSeq > 1) r <- matrix(r, nz, nSeq)
     for(i in seq_len(nz)) {
@@ -258,10 +286,19 @@ BesselY <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
                         message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
                     ri$cyr <- ri$cyi <- Inf
                 }
-                else stop(sprintf("%s [Fortran] error ierr = %d", f.x, ri$ierr))
-            }
-            rz <- if(isNum) ri$cyr else complex(real = ri$cyr,
-                                                imaginary = ri$cyi)
+		else if(ri$ierr == 4) {
+		    warning(gettextf("%s  -> ierr=4: |z| or nu too large\n", f.x),
+			    domain = NA)
+		    ## FIXME: In some cases, the answer should just be Inf or 0  (w/o warning!)
+		    ri$cyr[] <- NaN
+		    ri$cyi[] <- if(isNum) 0 else NaN
+		}
+		else stop(gettextf("%s unexpected error 'ierr = %d'", f.x, ri$ierr),
+			  domain = NA)
+	    }
+            rz <- if(isNum) ri$cyr
+		  else complex(real      = ri$cyr,
+			       imaginary = ri$cyi)
         }
         if(nSeq > 1) r[i,] <- rz else r[i] <- rz
     }
@@ -345,10 +382,19 @@ BesselH <- function(m, z, nu, expon.scaled = FALSE, nSeq = 1)
                     message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
                 ri$cyr <- ri$cyi <- Inf
             }
-	    else stop(sprintf("%s [Fortran] error ierr = %d", f.x, ri$ierr))
+	    else if(ri$ierr == 4) {
+		warning(gettextf("%s  -> ierr=4: |z| or nu too large\n", f.x),
+			domain = NA)
+		## FIXME: In some cases, the answer should just be Inf or 0  (w/o warning!)
+		ri$cyr[] <- NaN
+		ri$cyi[] <- if(isNum) 0 else NaN
+	    }
+	    else stop(gettextf("%s unexpected error 'ierr = %d'", f.x, ri$ierr),
+		      domain = NA)
 	}
-	rz <- if(isNum) ri$cyr else complex(real = ri$cyr,
-					    imaginary = ri$cyi)
+	rz <- if(isNum && all(!is.na(ri$cyi) & ri$cyi == 0.)) ri$cyr
+	      else complex(real      = ri$cyr,
+			   imaginary = ri$cyi)
 	if(nSeq > 1) r[i,] <- rz else r[i] <- rz
     }
     r
@@ -399,7 +445,14 @@ AiryA <- function(z, deriv = 0, expon.scaled = FALSE)
                     message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
                 ri$air <- ri$aii <- Inf
             }
-	    else stop(sprintf("%s [Fortran] error ierr = %d", f.x, ri$ierr))
+	    else if(ri$ierr == 4) {
+		warning(gettextf("%s  -> ierr=4: |z| too large\n", f.x), domain = NA)
+		## FIXME: In some cases, the answer should just be Inf or 0 or .... (w/o warning!)
+		ri$air <- NaN
+		ri$aii <- if(isNum) 0 else NaN
+	    }
+	    else stop(gettextf("%s unexpected error 'ierr = %d'", f.x, ri$ierr),
+		      domain = NA)
 	}
 	r[i] <- if(isNum) ri$air else complex(real = ri$air, imaginary = ri$aii)
     }
@@ -446,7 +499,14 @@ AiryB <- function(z, deriv = 0, expon.scaled = FALSE)
                     message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
                 ri$bir <- ri$bii <- Inf
             }
-	    else stop(sprintf("%s [Fortran] error ierr = %d", f.x, ri$ierr))
+	    else if(ri$ierr == 4) {
+		warning(gettextf("%s  -> ierr=4: |z| too large\n", f.x), domain = NA)
+		## FIXME: In some cases, the answer should just be Inf or 0 or .... (w/o warning!)
+		ri$bir <- NaN
+		ri$bii <- if(isNum) 0 else NaN
+	    }
+	    else stop(gettextf("%s unexpected error 'ierr = %d'", f.x, ri$ierr),
+		      domain = NA)
 	}
 	r[i] <- if(isNum) ri$bir else complex(real = ri$bir, imaginary = ri$bii)
     }

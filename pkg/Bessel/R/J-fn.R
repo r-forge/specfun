@@ -19,6 +19,9 @@ besselJs <-
     ## Author: Martin Maechler, Date: Dec 2014
     if(length(nu) > 1)
         stop(" 'nu' must be scalar (length 1)!")
+    n <- length(x)
+    if(n == 0) return(x)
+    isNum <- is.numeric(x) || is.complex(x)
     if (nu < 0) {
 	## Using Abramowitz & Stegun  9.1.2
 	## this may not be quite optimal (CPU and accuracy wise)
@@ -35,14 +38,14 @@ besselJs <-
 
     j <- (nterm-1):0 # sum smallest first!
     sgns <- rep_len(if(nterm %% 2 == 0) c(-1,1) else c(1,-1), nterm)
-    n <- length(x)
-    if(n == 0) return(x)
     has0 <- any(i0 <- x == 0)
     x. <- if(has0) x[!i0] else x
-    if(is(nu, "mpfr")) x. <- mpfr(x., precBits = max(64, .getPrec(nu)))
+    if(is.numeric(x) && is(nu, "mpfr")) {
+	x. <- mpfr(x., precBits = max(64, .getPrec(nu)))
+	isNum <- FALSE
+    }
     l.s.j <- outer(j, x./2, function(X,Y) X*2*log(Y))##-> {nterm x n} matrix
     ##
-    isNum <- is.numeric(x) || is.complex(x)
     ## improve accuracy for lgamma(j+1)  for "mpfr" numbers
     ## -- this is very important [evidence: e.g. besselJs(10000, 1)]
     if(is(l.s.j, "mpfr"))
@@ -63,8 +66,8 @@ besselJs <-
     if(log) {
 	if(any(lrgS <- log.s.j[1,] > log(Ceps) + s.j))
 	    lapply(x.[lrgS], function(x)
-		warning(sprintf("besselJs(x=%g): 'nterm' may be too small", x),
-			call.=FALSE))
+		warning(gettextf(" 'nterm=%d' may be too small for x=%g", nterm, x),
+			domain=NA))
 	if(has0) {
 	    sj <- x
 	    sj[!i0] <- s.j
@@ -77,8 +80,8 @@ besselJs <-
 	    stop(sprintf("infinite s for x=%g", x.[!iFin][1]))
 	if(any(lrgS <- s.j[1,] > Ceps * s))
 	    lapply(x.[lrgS], function(x)
-		warning(sprintf("besselJs(x=%g): 'nterm' may be too small", x),
-			call.=FALSE))
+		warning(gettextf(" 'nterm=%d' may be too small for x=%g", nterm, x),
+			domain=NA))
 	if(has0) {
 	    sj <- x
 	    sj[!i0] <- s
@@ -87,4 +90,3 @@ besselJs <-
 	(x/2)^nu * s
     }
 }
-

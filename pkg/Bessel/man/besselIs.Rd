@@ -14,9 +14,9 @@ besselIs(x, nu, nterm = 800, expon.scaled = FALSE, log = FALSE,
          Ceps = if (isNum) 8e-16 else 2^(-x@.Data[[1]]@prec))
 }
 \arguments{
-  \item{x}{numeric of complex vector, or of another \code{\link{class}}
+  \item{x}{numeric or complex vector, or of another \code{\link{class}}
     for which arithmetic methods are defined, notably
-    objects of class \code{\linkS4class{mpfr}}.}
+    objects of class \code{\linkS4class{mpfr}} (package \CRANpkg{Rmpfr}).}
   \item{nu}{non-negative numeric (scalar).}
   \item{nterm}{integer indicating the number of terms to be used.
     Should be in the order of \code{abs(x)}, but can be smaller for
@@ -32,8 +32,8 @@ besselIs(x, nu, nterm = 800, expon.scaled = FALSE, log = FALSE,
     precision and also for
     multiprecision objects.}
 }
-% \details{ _____ FIXME
-% }
+% \details{ _____ FIXME: Give exact formula /citation of Abramowitz & Stegun
+% }                      and possibly also the DLMF formula + URL
 \value{
   a \dQuote{numeric} (or complex or \code{"\link[Rmpfr:mpfr-class]{mpfr}"})
   vector of the same class and length as \code{x}.
@@ -48,13 +48,27 @@ besselIs(x, nu, nterm = 800, expon.scaled = FALSE, log = FALSE,
   This package \code{\link{BesselI}}, \pkg{base} \code{\link{besselI}}, etc
 }
 \examples{
-stopifnot(all.equal(besselIs(1:10, 1), # our R code
-                    besselI (1:10, 1)))# internal C code w/ different algorithm
+(nus <- c(outer((0:3)/4, 1:5, `+`)))
+stopifnot(
+  all.equal(besselIs(1:10, 1), # our R code
+            besselI (1:10, 1)) # internal C code w/ different algorithm
+  ,
+  sapply(nus, function(nu)
+   all.equal(besselIs(1:10, nu, expon.scale=TRUE), # our R code
+             BesselI (1:10, nu, expon.scale=TRUE)) # TOMS644 code
+   )
+  ,
+  ## complex argument [gives warnings  'nterm=800' may be too small]
+  sapply(nus, function(nu)
+   all.equal(besselIs((1:10)*(1+1i), nu, expon.scale=TRUE), # our R code
+             BesselI ((1:10)*(1+1i), nu, expon.scale=TRUE)) # TOMS644 code
+   )
+)
 
 ## Large 'nu' ...
 x <- (0:20)/4
 (bx <- besselI(x, nu=200))# base R's -- gives (mostly wrong) warnings
-if(require("Rmpfr")) { ## Use high precision (notably large exponent rage) numbers:
+if(require("Rmpfr")) { ## Use high precision (notably large exponent range) numbers:
   Bx <- besselIs(mpfr(x, 64), nu=200)
   all.equal(Bx, bx, tol = 1e-15)# TRUE -- warning were mostly wrong; specifically:
   cbind(bx, Bx)
