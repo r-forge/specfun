@@ -30,12 +30,20 @@ form01.prec <- function(x, digits = getOption("digits"), width = digits + 2,
   if(eps < 0 || eps > .1) stop('eps must be in [0, .1]')
   i.swap <- 1-eps < x  &  x <= 1 #-- Use "1- ." if <~ 1,  normal 'fun' otherwise
   r <- character(length(x))
+  if(hasNA <- anyNA(i.swap)) {
+    iNA <- is.na(i.swap)
+    i.swap  <-  i.swap & !iNA
+    ni.swap <- !i.swap & !iNA
+  } else
+    ni.swap <- !i.swap
   if(any(i.swap))
-    r[i.swap] <-
-      paste("1-", fun(1-x[i.swap], digits=digits - 5, width=width-2, ...),
-            sep='')# -5: '1-' + 4 for exponent -1 for '0' (in other case)
-  if(any(!i.swap))
-    r[!i.swap] <- fun(x[!i.swap], digits=digits, width=width,...)
+    r[i.swap] <- paste0("1-", fun(1-x[i.swap],
+                                  ## -5: '1-' + 4 for exponent -1 for '0' (in other case)
+                                  digits=digits - 5, width=width-2, ...))
+  if(any(ni.swap))
+    r[ni.swap] <- fun(x[ni.swap], digits=digits, width=width,...)
+  if(hasNA)
+    r[iNA] <- "NA"
   attributes(r) <- attributes(x)
   r
 }
