@@ -46,3 +46,39 @@ lssum <- function (lxabs, signs, l.off = apply(Re_(lxabs), 2, max), strict = TRU
         (if(strict) stop else warning)("lssum found non-positive sums")
     l.off + log(sum.)
 }
+
+
+##' Compute sqrt(1 + z^2) in a numerical stable way,
+##' notably for |z| << 1  (|z| := Arg(z) = ph z  for complex z)
+##'
+##' This is a special case of the more general `hypot(u,v) := sqrt(u^2 + v^2)`
+##'  (more details)
+##' @title Compute sqrt(1 + z^2) in a numerical stable way,
+##' @param z numeric or complex (or "mpfr" ..) vector (or matrix, array ..)
+##' @return Numeric/complex/... vector (or array ..) with the same attributes as \code{z}
+##' @author Martin Maechler
+sqrt1pSqr <- function(z) {
+    if(!length(z)) return(z)
+    z2 <- z^2
+    u <- 1+z2
+    r <- sqrt(u) # direct form for normal case
+    if(length(sml <- which(1 - z2^2/8 == 1))) { # also "works" for mpfr
+        z22 <- z2[sml]/2
+        r[sml] <- 1 + z22*(1 - z22/2) # 2-term approx 1 + z^2/2 - z^4/8
+    }
+    r
+}
+## TODO: check etc !!!! ==> ~/R/MM/NUMERICS/sqrt1pSqr-hypot.R
+## ====                     ---------------------------------
+
+## "FIXME": From ~/R/MM/NUMERICS/complex.R ,  15 Jan 2000 ((c) Martin Maechler):
+##  -----   This will be better & faster __only__ in the  is.numeric() case
+hypot <- function(x,y) Mod(x + 1i*y)
+
+
+## NB: Binomial series of (1+u)^(1/2), exact coefficients  c_j / 2^(2j-1) :
+if(FALSE) {
+    k <- 0:14; noquote(formatC(choose(1/2, k) * 2^(2*k-1), w=1, format="fg"))
+    ##  [1] 0.5     1       -1      2       -5      14      -42     132     -429
+    ## [10] 1430    -4862   16796   -58786  208012  -742900
+}

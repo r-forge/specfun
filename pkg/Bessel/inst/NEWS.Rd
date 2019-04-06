@@ -4,7 +4,7 @@
 \title{News for \R Package \pkg{Bessel}}
 \encoding{UTF-8}
 
-\section{Changes in version 0.6-0 (2018-12-20, svn r62)}{
+\section{Changes in version 0.6-0 (2019-04-04, svn r64)}{
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
     \itemize{
       \item The exponential rescaling for the asymptotic version of the

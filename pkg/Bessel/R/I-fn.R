@@ -251,8 +251,8 @@ besselI.nuAsym <- function(x, nu, k.max, expon.scaled=FALSE, log=FALSE)
 		##  sz - |z| = sqrt(1 + z^2) - |z|  =!=  1/(sqrt(..) + |z|) = 1/(sz + |z|);
 		## in complex case sz - |x| =  w/(sz + |x|)  with w := 1-y^2 + 2xy i; z = x + iy
 		w <- if(is.complex(z)) {
-                         x. <- Re(z); y <- Im(z)
-                         complex(real=(1-y)*(1+y), imag=2*x.*y)
+			 x. <- Re(z); y <- Im(z)
+			 1-y^2 + 2i*x.*y # complex(real = 1-y^2, imaginary = 2*x.*y)
 		     } else 1
 		w/(sz + abs(if(is.complex(z)) x. else z))
 	    }
