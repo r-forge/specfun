@@ -1,6 +1,6 @@
 
-R version 3.5.2 Patched (2018-12-20 r75872) -- "Eggshell Igloo"
-Copyright (C) 2018 The R Foundation for Statistical Computing
+R version 3.6.0 alpha (2019-04-04 r76313)
+Copyright (C) 2019 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -177,7 +177,7 @@ Attaching package: 'gmp'
 
 The following objects are masked from 'package:base':
 
-    %*%, apply, crossprod, matrix, tcrossprod
+    %*%, apply, crossprod, matrix, outer, tcrossprod
 
 C code of R package 'Rmpfr': GMP using 64 bits per limb
 
@@ -4898,7 +4898,7 @@ Error in BesselI(x, nu, ...) :
 > 
 > 
 > cat('Time elapsed: ', proc.time(),'\n') # for ''statistical reasons''
-Time elapsed:  1.046 0.128 1.251 0 0.002 
+Time elapsed:  1.455 0.174 1.638 0.008 0.004 
 > 
 > proc.time()
    user  system elapsed 

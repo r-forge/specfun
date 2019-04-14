@@ -97,7 +97,7 @@ curve(AiryA(x, expon.scaled=TRUE), -1, 50, n=1001)
 z <- Aix$x; i <- z > 0; head(z <- z[i <- z > 0])
 Aix <- Aix$y[i]; zeta <- 2/3*z*sqrt(z)
 stopifnot(all.equal(Aix, 1/pi * sqrt(z/3)* BesselK(zeta, nu = 1/3),
-                    tol = 1e-15)) # 64b Lnx: 7.9e-16
+                    tol = 4e-15)) # 64b Lnx: 7.9e-16;  32b Win: 1.8e-15
 
 \donttest{## This gives many warnings (248 on nb-mm4, F24) about lost accuracy, but on Windows takes ~ 4 sec:
 curve(AiryA(x, expon.scaled=TRUE),  1, 10000, n=1001, log="xy")}
