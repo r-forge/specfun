@@ -12,7 +12,7 @@
 ## 1862: zbiry(zr, zi,	id, kode, bir, bii, ierr)
 
 ##  360: zbesi(zr, zi, fnu, kode, n, cyr, cyi, nz, ierr)
-BesselI <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
+BesselI <- function(z, nu, expon.scaled = FALSE, nSeq = 1, verbose = 0)
 {
     nz <- length(z)
     if(nz == 0) return(z)
@@ -25,20 +25,20 @@ BesselI <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 	zi <- Im(z)
     } else stop("'z' must be complex or numeric")
     nu <- as.double(nu)
-    stopifnot(length(nu) == 1,
+    stopifnot(length(nu) == 1, length(verbose) == 1,
 	      nSeq >= 1, nSeq == as.integer(nSeq))
 
     if(nu < 0) {
 	## I(-nu,z) = I(nu,z) + (2/pi)*sin(pi*nu)*K(nu,z)  [ = A.& S. 9.6.2, p.375 ]
 	if(nu == round(nu)) ## <==> sin(pi*nu) == 0
-	    return(BesselI(z, -nu, expon.scaled, nSeq=nSeq))
+	    return(BesselI(z, -nu, expon.scaled, nSeq=nSeq, verbose=verbose))
         ## else
 	nu. <- -nu + seq_len(nSeq) - 1
         kf <- rep(2/pi*sin(pi*nu.), each=nz)
         if (expon.scaled) kf <- kf * rep(exp(-z-abs(zr)), nSeq)
 
-	return(	  BesselI(z, -nu, expon.scaled, nSeq=nSeq) +
-	       kf*BesselK(z, -nu, expon.scaled, nSeq=nSeq))
+	return(	  BesselI(z, -nu, expon.scaled, nSeq=nSeq, verbose=verbose) +
+	       kf*BesselK(z, -nu, expon.scaled, nSeq=nSeq, verbose=verbose))
     }
     ## else  nu >= 0 :
 
@@ -54,7 +54,7 @@ BesselI <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
                  cyr = double(nSeq),
                  cyi = double(nSeq),
                  nz   = integer(1),
-                 ierr = integer(1))
+                 ierr = as.integer(verbose))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zbesi(%g %s %gi, nu=%g)'", zr[i],
                            c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), nu)
@@ -63,7 +63,7 @@ BesselI <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
                     "%s large arguments -> precision loss (of at least half machine accuracy)", f.x),
                     domain = NA)
 	    else if(ri$ierr == 2) {
-		if(getOption("verbose"))
+		if(verbose)
                     message(gettextf("%s  -> overflow ; returning Inf\n", f.x))
                 ri$cyr <- ri$cyi <- Inf
             }
@@ -86,7 +86,7 @@ BesselI <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 } ## I()
 
 ##  631: zbesj(zr, zi, fnu, kode, n, cyr, cyi, nz, ierr)
-BesselJ <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
+BesselJ <- function(z, nu, expon.scaled = FALSE, nSeq = 1, verbose = 0)
 {
     nz <- length(z)
     if(nz == 0) return(z)
@@ -99,16 +99,16 @@ BesselJ <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 	zi <- Im(z)
     } else stop("'z' must be complex or numeric")
     nu <- as.double(nu)
-    stopifnot(length(nu) == 1,
+    stopifnot(length(nu) == 1, length(verbose) == 1,
 	      nSeq >= 1, nSeq == as.integer(nSeq))
     if(nu < 0) {
 	## J(-fnu,z) = J(fnu,z)*cos(pi*fnu) - Y(fnu,z)*sin(pi*fnu)
 	if(expon.scaled)
 	    stop("'expon.scaled=TRUE' not yet implemented for nu < 0")
 	pnu <- rep(pi*(-nu + seq_len(nSeq) - 1), each=nz)
-	return(BesselJ(z, -nu, nSeq=nSeq)*cos(pnu) -
+	return(BesselJ(z, -nu, nSeq=nSeq, verbose=verbose)*cos(pnu) -
 	       if(nu == round(nu)) 0 else
-	       BesselY(z, -nu, nSeq=nSeq)*sin(pnu))
+	       BesselY(z, -nu, nSeq=nSeq, verbose=verbose)*sin(pnu))
     }
     ## else  nu >= 0 :
 
@@ -124,7 +124,7 @@ BesselJ <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
                  cyr = double(nSeq),
                  cyi = double(nSeq),
                  nz   = integer(1),
-                 ierr = integer(1))
+                 ierr = as.integer(verbose))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zbesj(%g %s %gi, nu=%g)'", zr[i],
                            c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), nu)
@@ -133,7 +133,7 @@ BesselJ <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 		"%s large arguments -> precision loss (of at least half machine accuracy)",
 				f.x))
 	    else if(ri$ierr == 2) {
-		if(getOption("verbose"))
+		if(verbose)
                     message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
                 ri$cyr <- ri$cyi <- Inf
             }
@@ -156,7 +156,7 @@ BesselJ <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 } ## J()
 
 ##  899: zbesk(zr, zi, fnu, kode, n, cyr, cyi, nz, ierr)
-BesselK <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
+BesselK <- function(z, nu, expon.scaled = FALSE, nSeq = 1, verbose = 0)
 {
     nz <- length(z)
     if(nz == 0) return(z)
@@ -169,12 +169,12 @@ BesselK <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 	zi <- Im(z)
     } else stop("'z' must be complex or numeric")
     nu <- as.double(nu)
-    stopifnot(length(nu) == 1,
+    stopifnot(length(nu) == 1, length(verbose) == 1,
 	      nSeq >= 1, nSeq == as.integer(nSeq))
 
     if(nu < 0) {
 	## K(-nu,z) = K(nu,z)
-	return(BesselK(z, -nu, expon.scaled, nSeq=nSeq))
+	return(BesselK(z, -nu, expon.scaled, nSeq=nSeq, verbose=verbose))
     }
     ## else  nu >= 0 :
 
@@ -190,7 +190,7 @@ BesselK <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
                  cyr = double(nSeq),
                  cyi = double(nSeq),
                  nz   = integer(1),
-                 ierr = integer(1))
+                 ierr = as.integer(verbose))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zbesk(%g %s %gi, nu=%g)'", zr[i],
                            c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), nu)
@@ -199,7 +199,7 @@ BesselK <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 		"%s large arguments -> precision loss (of at least half machine accuracy)",
 				f.x))
 	    else if(ri$ierr == 2) {
-		if(getOption("verbose"))
+		if(verbose)
                     message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
                 ri$cyr <- ri$cyi <- Inf
             }
@@ -223,7 +223,7 @@ BesselK <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 
 
 ## 1182: zbesy(zr, zi, fnu, kode, n, cyr, cyi, nz, cwrkr, cwrki, ierr)
-BesselY <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
+BesselY <- function(z, nu, expon.scaled = FALSE, nSeq = 1, verbose = 0)
 {
     nz <- length(z)
     if(nz == 0) return(z)
@@ -236,7 +236,7 @@ BesselY <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 	zi <- Im(z)
     } else stop("'z' must be complex or numeric")
     nu <- as.double(nu)
-    stopifnot(length(nu) == 1,
+    stopifnot(length(nu) == 1, length(verbose) == 1,
 	      nSeq >= 1, nSeq == as.integer(nSeq))
 
     if(nu < 0) {
@@ -244,9 +244,9 @@ BesselY <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 	if(expon.scaled)
 	    stop("'expon.scaled=TRUE' not yet implemented for nu < 0")
 	pnu <- rep(pi*(-nu + seq_len(nSeq) - 1), each=nz)
-	return(BesselY(z, -nu, nSeq=nSeq)*cos(pnu) +
+	return(BesselY(z, -nu, nSeq=nSeq, verbose=verbose)*cos(pnu) +
 	       if(nu == round(nu)) 0 else
-	       BesselJ(z, -nu, nSeq=nSeq)*sin(pnu))
+	       BesselJ(z, -nu, nSeq=nSeq, verbose=verbose)*sin(pnu))
     }
     ## else  nu >= 0 :
 
@@ -273,7 +273,7 @@ BesselY <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
                      nz   = integer(1),
                      cwrkr= double(nSeq),
                      cwrki= double(nSeq),
-                     ierr = integer(1))
+                     ierr = as.integer(verbose))
             if(ri$ierr) {
                 f.x <- sprintf("'zbesy(%g %s %gi, nu=%g)'", zr[i],
                                c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), nu)
@@ -282,7 +282,7 @@ BesselY <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 			"%s large arguments -> precision loss (of at least half machine accuracy)",
 			f.x))
                 else if(ri$ierr == 2) {
-                    if(getOption("verbose"))
+                    if(verbose)
                         message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
                     ri$cyr <- ri$cyi <- Inf
                 }
@@ -308,7 +308,7 @@ BesselY <- function(z, nu, expon.scaled = FALSE, nSeq = 1)
 ##---------------- Hankel function H() ------------------
 
 ##   10: zbesh(zr, zi, fnu, kode, m, n, cyr, cyi, nz, ierr)
-BesselH <- function(m, z, nu, expon.scaled = FALSE, nSeq = 1)
+BesselH <- function(m, z, nu, expon.scaled = FALSE, nSeq = 1, verbose = 0)
 {
 ## c***keywords	 H-bessel functions,bessel functions of complex argument,
 ## c		 bessel functions of third kind,hankel functions
@@ -342,7 +342,7 @@ BesselH <- function(m, z, nu, expon.scaled = FALSE, nSeq = 1)
 	zi <- Im(z)
     } else stop("'z' must be complex or numeric")
     nu <- as.double(nu)
-    stopifnot(length(nu) == 1,
+    stopifnot(length(nu) == 1, length(verbose) == 1,
 	      nSeq >= 1, nSeq == as.integer(nSeq))
 
     if(nu < 0) {
@@ -351,7 +351,7 @@ BesselH <- function(m, z, nu, expon.scaled = FALSE, nSeq = 1)
 	if(expon.scaled)
 	    stop("'expon.scaled=TRUE' not yet implemented for nu < 0")
 	pnu <- rep(c(1i,-1i)[m] * pi*(-nu + seq_len(nSeq) - 1), each=nz)
-	return(BesselH(m, z, -nu, nSeq=nSeq)* exp(pnu))
+	return(BesselH(m, z, -nu, nSeq=nSeq, verbose=verbose)* exp(pnu))
     }
     ## else  nu >= 0 :
 
@@ -369,7 +369,7 @@ BesselH <- function(m, z, nu, expon.scaled = FALSE, nSeq = 1)
                  cyr = double(nSeq),
                  cyi = double(nSeq),
                  nz   = integer(1),
-                 ierr = integer(1))
+                 ierr = as.integer(verbose))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zbesh(%g %s %gi, nu=%g)'", zr[i],
                            c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), nu)
@@ -378,7 +378,7 @@ BesselH <- function(m, z, nu, expon.scaled = FALSE, nSeq = 1)
 		"%s large arguments -> precision loss (of at least half machine accuracy)",
 				f.x))
 	    else if(ri$ierr == 2) {
-		if(getOption("verbose"))
+		if(verbose)
                     message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
                 ri$cyr <- ri$cyi <- Inf
             }
@@ -405,12 +405,12 @@ BesselH <- function(m, z, nu, expon.scaled = FALSE, nSeq = 1)
 ## 1471:  zairy(zr, zi, id, kode, air, aii, nz, ierr)
 ## 1867:  zbiry(zr, zi, id, kode, bir, bii, ierr)
 
-AiryA <- function(z, deriv = 0, expon.scaled = FALSE)
+AiryA <- function(z, deriv = 0, expon.scaled = FALSE, verbose = 0)
 {
 ## Purpose:  to compute airy functions ai(z) and dai(z) for complex z
 ##	     airy function : "Bessel functions of order one third"
     deriv <- as.integer(deriv)
-    stopifnot(length(deriv) == 1, deriv == 0 || deriv == 1)
+    stopifnot(length(deriv) == 1, deriv == 0 || deriv == 1, length(verbose) == 1)
     nz <- length(z)
     if(nz == 0) return(z)
     isNum <- is.numeric(z)
@@ -432,7 +432,7 @@ AiryA <- function(z, deriv = 0, expon.scaled = FALSE)
                  air = double(1),
                  aii = double(1),
                  nz   = integer(1),
-                 ierr = integer(1))
+                 ierr = as.integer(verbose))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zairy(%g %s %gi, deriv=%d)'", zr[i],
                            c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), deriv)
@@ -441,7 +441,7 @@ AiryA <- function(z, deriv = 0, expon.scaled = FALSE)
 		"%s large arguments -> precision loss (of at least half machine accuracy)",
 				f.x))
 	    else if(ri$ierr == 2) {
-		if(getOption("verbose"))
+		if(verbose)
                     message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
                 ri$air <- ri$aii <- Inf
             }
@@ -459,12 +459,12 @@ AiryA <- function(z, deriv = 0, expon.scaled = FALSE)
     r
 } ## AiryA()
 
-AiryB <- function(z, deriv = 0, expon.scaled = FALSE)
+AiryB <- function(z, deriv = 0, expon.scaled = FALSE, verbose = 0)
 {
 ## Purpose:  to compute airy functions bi(z) and dbi(z) for complex z
 ##	     airy function : "Bessel functions of order one third"
     deriv <- as.integer(deriv)
-    stopifnot(length(deriv) == 1, deriv == 0 || deriv == 1)
+    stopifnot(length(deriv) == 1, deriv == 0 || deriv == 1, length(verbose) == 1)
     nz <- length(z)
     if(nz == 0) return(z)
     isNum <- is.numeric(z)
@@ -486,7 +486,7 @@ AiryB <- function(z, deriv = 0, expon.scaled = FALSE)
                  bir = double(1),
                  bii = double(1),
                  nz   = integer(1),
-                 ierr = integer(1))
+                 ierr = as.integer(verbose))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zairy(%g %s %gi, deriv=%d)'", zr[i],
                            c("-","+")[1+(zi[i] >= 0)], abs(zi[i]), deriv)
@@ -495,7 +495,7 @@ AiryB <- function(z, deriv = 0, expon.scaled = FALSE)
 		"%s large arguments -> precision loss (of at least half machine accuracy)",
 				f.x))
 	    else if(ri$ierr == 2) {
-		if(getOption("verbose"))
+		if(verbose)
                     message(sprintf("%s  -> overflow ; returning Inf\n", f.x))
                 ri$bir <- ri$bii <- Inf
             }

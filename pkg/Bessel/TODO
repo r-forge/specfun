@@ -1,5 +1,13 @@
 -*- org -*-
 
+* array under-run in .C("zbesk") ..
+ > options(CBoundsCheck=TRUE)
+ > BesselK(664.87, nu = 2, verbose=TRUE)
+ [1] 8.68047e-291
+ > BesselK(664.88, nu = 2, verbose=TRUE)
+ Error in BesselK(664.88, nu = 2) :
+   array under-run in .C("zbesk") in double argument 6
+
 * R bessel "Bugs": Wrong and correct "Lost precision" warnings in R's bessel[IJKY]()
 ** besselI*asym() and others => Where are they good enough?
 ** DONE `expon.scaled = TRUE` notably for *complex* args to be documented

@@ -26,14 +26,16 @@
     Bi(z) = sqrt(z/3) * (I[-1/3](zta) + I[1/3](zta)).}
 }
 \usage{
-AiryA(z, deriv = 0, expon.scaled = FALSE)
-AiryB(z, deriv = 0, expon.scaled = FALSE)
+AiryA(z, deriv = 0, expon.scaled = FALSE, verbose = 0)
+AiryB(z, deriv = 0, expon.scaled = FALSE, verbose = 0)
 }
 \arguments{
   \item{z}{complex or numeric vector.}
   \item{deriv}{order of derivative; must be 0 or 1.}
   \item{expon.scaled}{logical indicating if the result should be scaled
     by an exponential factor (typically to avoid under- or over-flow).}
+  \item{verbose}{integer defaulting to 0, indicating the level of verbosity
+    notably from C code.}
 }
 \details{
     By default, when \code{expon.scaled} is false, \code{AiryA()}

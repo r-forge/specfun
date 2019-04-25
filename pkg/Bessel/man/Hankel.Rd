@@ -20,7 +20,7 @@
   \code{\link{BesselJ}}, etc.
 }
 \usage{
-BesselH(m, z, nu, expon.scaled = FALSE, nSeq = 1)
+BesselH(m, z, nu, expon.scaled = FALSE, nSeq = 1, verbose = 0)
 }
 \arguments{
   \item{m}{integer, either 1 or 2, indicating the kind of Hankel function.}
@@ -31,6 +31,8 @@ BesselH(m, z, nu, expon.scaled = FALSE, nSeq = 1)
   \item{nSeq}{positive integer; if \eqn{> 1}, computes the result for
     a whole \emph{sequence} of \code{nu} values of length \code{nSeq},
     see \sQuote{Details} below.}
+  \item{verbose}{integer defaulting to 0, indicating the level of verbosity
+    notably from C code.}
 }
 \details{% ../src/zbsubs.f --> zbesh()
   By default (when \code{expon.scaled} is false), the resulting sequence

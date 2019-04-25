@@ -10,6 +10,11 @@ paste0 <- function(...) paste(..., sep="")
 
 (options(width=max(99, getOption("width"))))
 
+isOSunix <- .Platform$OS.type == "unix"
+windows <- !isOSunix
+
+stop_or_w <- if(isOSunix) stop else warning
+
 ### --- For real arguments -- Comparisons with bessel[IJYK]()
 
 x <- c(1e-6, 0.1, 1:10, 20, 100, 200)# larger x : less (relative) accuracy (??)
@@ -35,7 +40,20 @@ for(F in c("I","J","K","Y")) {
     }; cat("\n")
 }
 
-zr[,1]
+zr0 <- if(file.exists(sf <- "zr_IJKY.rds")) { readRDS(sf)
+       } else { print(saveRDS(zr, file=sf, version=2)) ; zr }
+
+## Show:
+all.equal(zr, zr0, tol = 0)
+
+if(!isTRUE(ae <- all.equal(zr, zr0, tol = 1e-12)))
+    stop_or_w(ae)
+
+
+##  "limit  z -> 0  does not exist (there are many complex "Inf"s),
+##		    but for z = real, z >=0 is -Inf
+stopifnot(BesselY(0,1) == -Inf,# == besselY(0,1),
+	  is.nan(BesselY(0+0i, 1)))
 
 ### *Large* arguments ,
 ### However, base::bessel*(): only I() and K() have 'expon.scaled'
@@ -49,8 +67,21 @@ if(getRversion() >= "2.8.2") { ## besselI(), besselJ() with larger working range
     stopifnot(all.equal(rI[1:35,], ri2[1:35,], tol = 0.04))# base::besselI is underflowing to zero
 } ## R >= 2.8.2
 
-round (cbind(x, rI, ri2), 5)
-signif(cbind(x, rI, ri2)[x >= 16e4,], 7)
+rI0   <- if(file.exists(sf <- "r_I.rds")) { readRDS(sf)
+         } else { print(saveRDS(rI, sf, version=2)) ; rI }
+
+ri2.0 <- if(file.exists(sf <- "r_i2.rds")) { readRDS(sf)
+         } else { print(saveRDS(ri2, sf, version=2)); ri2 }
+
+## Show the closeness (on different platforms):
+all.equal(rI,  rI0,   tolerance = 0)
+all.equal(ri2, ri2.0, tolerance = 0)
+
+stopifnot(exprs = {
+    all.equal(rI,  rI0,   tolerance = if(windows) 1e-10 else 1e-14)
+    all.equal(ri2, ri2.0, tolerance = if(windows) 1e-10 else 1e-14)
+})
+
 
 ## e.g. this x is too large:
 x. <- 1310720000
@@ -87,7 +118,7 @@ cbind(k = 0:(k.max-1), err.k = asNumeric(bImp - bImp[k.max+1])[-(k.max+1)])
 
 ## K():  Bessel:: vs  R base:: ------------
 
-str(rK <- BesselK(x, 10, nSeq = 5, expon.scaled=TRUE))  # our Bessel pkg
+str(rK <- BesselK(x, 10, nSeq = 5, expon.scaled=TRUE))  # our Bessel pkg [=> 20 warnings !]
 rK2 <- outer(x, 10+seq_len(5)-1,
             besselK, expon.scaled=TRUE)                 # base R
 stopifnot(all.equal(rK[1:35,], rK2[1:35,], tol = 8e-16))
@@ -232,7 +263,7 @@ z0 <- round(c(c(.5, 1, 2, 5)/10, 1:10)*1000)
 z <- list(1, 2-1i, 1+1i, 1-2i)
 names(z) <- local({
     c <- format(lapply(z, function(.) if(Im(.)) . else Re(.)))
-    ifelse(c == "1", "N", paste0("N·(",c,")"))
+    ifelse(c == "1", "N", paste0("N*(",c,")")) # (no longer UTF multiplication dot)
 })
 z <- lapply(z, function(f) f*z0)
 
@@ -343,7 +374,7 @@ for(nu in nus) {
         "\n")
 }
 
-}# not for now
+}# not for now -- Bug ?
 
 
 ### Replicate some testing "ideas" from  zqcbi.f (TOMS 644 test program)
@@ -521,9 +552,9 @@ BesselI(-9e9, 1)# now NaN -- FIXME:  want 'Inf' (and *no* warning)!
 allBessel <- function(x, nu, ...) {
     cbind(x = x,
             I = BesselI(x, nu, ...),# many NaN, Inf + 29 warnings
-            J = BesselJ(x, nu, ...),#  ...
-            K = BesselK(x, nu, ...),
-            Y = BesselY(x, nu, ...),
+            J = BesselJ(x, nu, ...),#  ditto
+            K = BesselK(x, nu, ...),#    "
+            Y = BesselY(x, nu, ...),#    "
             H1 = BesselH(1, x, nu, ...),
             H2 = BesselH(2, x, nu, ...))
 }

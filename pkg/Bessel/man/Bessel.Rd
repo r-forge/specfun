@@ -10,10 +10,10 @@
   arguments \code{z} and real \code{nu},
 }
 \usage{
-BesselI(z, nu, expon.scaled = FALSE, nSeq = 1)
-BesselJ(z, nu, expon.scaled = FALSE, nSeq = 1)
-BesselK(z, nu, expon.scaled = FALSE, nSeq = 1)
-BesselY(z, nu, expon.scaled = FALSE, nSeq = 1)
+BesselI(z, nu, expon.scaled = FALSE, nSeq = 1, verbose = 0)
+BesselJ(z, nu, expon.scaled = FALSE, nSeq = 1, verbose = 0)
+BesselK(z, nu, expon.scaled = FALSE, nSeq = 1, verbose = 0)
+BesselY(z, nu, expon.scaled = FALSE, nSeq = 1, verbose = 0)
 }
 \arguments{
   \item{z}{complex or numeric vector.}
@@ -25,6 +25,8 @@ BesselY(z, nu, expon.scaled = FALSE, nSeq = 1)
     a whole \emph{sequence} of \code{nu} values;\cr
     if \code{nu >= 0},\code{nu, nu+1, ..., nu+nSeq-1},\cr
     if \code{nu < 0}, \code{nu, nu-1, ..., nu-nSeq+1}.}
+  \item{verbose}{integer defaulting to 0, indicating the level of verbosity
+    notably from C code.}
 }
 \details{
   The case \code{nu < 0} is handled by using simple formula from

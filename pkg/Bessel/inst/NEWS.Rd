@@ -4,7 +4,7 @@
 \title{News for \R Package \pkg{Bessel}}
 \encoding{UTF-8}
 
-\section{Changes in version 0.6-0 (2019-04-04, svn r64)}{
+\section{Changes in version 0.6-0 (2019-04-24, svn r67)}{
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
     \itemize{
       \item The exponential rescaling for the asymptotic version of the
@@ -30,6 +30,10 @@
       \code{k.max = 5} (instead of \code{4}).
 
       \item new \code{besselKasym()} (9.7.2 of A.&S. p.378).
+
+      \item All the TOMS 644 routines get an optional argument
+      \code{verbose} indicating the verbosity level of output notably from
+      C code.  The output itself may change and is \emph{not} part of the API.
     }
   }
   \subsection{Bug Fixes}{
