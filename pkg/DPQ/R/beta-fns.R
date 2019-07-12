@@ -1,9 +1,3 @@
-#### -- $Id: beta-fns.R,v 1.17 2014/05/28 14:55:58 maechler Exp maechler $
-
-##- if(exists('lbeta', mode='function', inherits=F)) rm(lbeta)
-##- lbeta0 <- lbeta
-
-## source("/u/maechler/R/MM/NUMERICS/dpq-functions/dpq-h.R")
 
 ##' Qab := Q(a,b) := Gamma(a+b) / Gamma(b)  =  Gamma(a) / Beta(a,b)
 ##' <==>
@@ -309,9 +303,13 @@ lgamma1p <- function(a, tol_logcf = 1e-14)
     r[a.lrg] <- lgamma(a[a.lrg] + 1)
     ## else {
     if(any(a.sml <- !a.lrg)) {
-        ##/* Abramowitz & Stegun 6.1.33,
-        ## * also  http://functions.wolfram.com/06.11.06.0008.01 */
         a. <- a[a.sml]
+        ## Abramowitz & Stegun 6.1.33 : for |x| < 2,
+        ## <==> log(gamma(1+x)) = -(log(1+x) - x) - gamma*x + x^2 * sum_{n=0..Inf} c_n (-x)^n
+        ## where c_n := (Zeta(n+2) - 1)/(n+2)  = coeffs[n]
+        ##
+        ## Continued fraction convergence acceleration is used to compute
+        ## lgam(x) :=  sum_{n=0..Inf} c_n (-x)^n
         lgam <- c * logcf(-a. / 2, N + 2, 1, tol_logcf)
         for (i in N:1)
             lgam <- coeffs[i] - a. * lgam
@@ -352,7 +350,6 @@ lgamma1p_series <- function(x, k) {
     ##         (Pi*Pi*Pi*Pi*Pi*Pi*Pi*Pi/75600+
     ##          (-Zeta(9)/9 +
     ##           Pi^10/935550 * x) * x) * x) * x) * x) * x) * x) * x) * x) * x
-
 
     useM <- (inherits(x, "mpfr"))
     if(useM) {
@@ -471,15 +468,15 @@ qbeta.appr.1 <- function(a, p, q, y = qnormU.appr(a, lower.tail=FALSE))
 
 qbeta.appr.3 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(p,q))
 {
-    ##  a=alpha
+   ##  a=alpha
     ## Purpose: Approximate  qbeta(a, p,q) -- for small a --
     ##  Inversion of   I_x(a,b) ~= x^a / (a B(a,b))
 
     ## CARE:  log(p) + logbeta == log(p * beta(p,q)) suffers from cancellation
     ## ----   for small p
     ## ---> look at Qab() above or *rather* also see experiments c12pBeta() , p.err.pBeta()
-    ##  in  ./qbeta-dist.R  <<<<
-    ##        ============  <<<<
+    ## in  ../tests/qbeta-dist.R
+    ##              ============
 
     ## log
     log.a <- if(lower.tail) .D_log(a, log.p=log.p) else .D_LExp(a, log.p=log.p)
