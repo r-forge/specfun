@@ -1,4 +1,4 @@
-\name{pchisqW.R}
+\name{pchisqW}
 \title{Wienergerm Approximations to pchisq() the Chisquare Distribution}
 \alias{pchisqV}
 \alias{pchisqW}
@@ -43,7 +43,9 @@ z.s(x, df, ncp, verbose = getOption("verbose"))
 }
 
 \arguments{
-  \item{x,df,ncp}{main arguments, see  \code{\link{pchisq}}.}
+  \item{q,x}{vector of quantiles (main argument, see  \code{\link{pchisq}}).}
+  \item{df}{degrees of freedom (non-negative, but can be non-integer).}
+  \item{ncp}{non-centrality parameter (non-negative).}
   \item{lower.tail,log.p}{\code{\link{logical}}, see \code{\link{pchisq}}.}
 
   \item{variant}{a \code{\link{character}} string, currently either

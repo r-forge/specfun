@@ -14,7 +14,7 @@ demo/.*.R\+
 tests/*pdf
 tests/*.Rout
 tests/*.Rout*[24]b
-TODO_man
+TODO-man
 TODO-merge-.*
 .*mail
 Rplots.pdf
