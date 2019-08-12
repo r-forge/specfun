@@ -1,13 +1,15 @@
 ## Convenient argument checking
 
 all_mpfr <- function(...) {
-    for(x in list(...)) if(!inherits(x, "mpfr")) return(FALSE)
+    ## Remain lazy ==> do *NOT* use list(...)  which evaluates all
+    for(i in ...length()) if(!inherits(...elt(i), "mpfr")) return(FALSE)
     ## else return
     TRUE
 }
 
 any_mpfr <- function(...) {
-    for(x in list(...)) if(inherits(x, "mpfr")) return(TRUE)
+    ## Remain lazy ==> do *NOT* use list(...)  which evaluates all
+    for(i in ...length()) if(inherits(...elt(i), "mpfr")) return(TRUE)
     ## else return
     FALSE
 }

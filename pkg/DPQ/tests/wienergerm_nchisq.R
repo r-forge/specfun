@@ -88,8 +88,8 @@ p.W.pchisq <- function(df, ncp, n = 513, x = NULL, do.log = TRUE,
     for(log in c('x', if(do.log)'xy')) {
         plot (x, pchisq (x, df=df, ncp=ncp), col = clr[1], log = log, cex = cex)
         abline(h = 0.5, col = "gray", lty=3)
-        lines(x, pchisqW(x, df=df, ncp=ncp, var = "f"), col = clr[2], lwd=3)
-        lines(x, pchisqW(x, df=df, ncp=ncp, var = "s"), col = clr[3], lwd=5)
+        lines(x,   pchisqW(x,  df=df, ncp=ncp, var = "f"), col = clr[2], lwd=3)
+        lines(x,   pchisqW(x,  df=df, ncp=ncp, var = "s"), col = clr[3], lwd=5)
         points(x0, pchisqW(x0, df=df, ncp=ncp), col = 1, pch=8, cex = 1.5)
         axis(3, at=x0, label=quote(x[0] == nu + lambda))
         if(log == 'x') {
@@ -98,7 +98,7 @@ p.W.pchisq <- function(df, ncp, n = 513, x = NULL, do.log = TRUE,
                    col=clr, pch= c(1,NA,NA), lty=c(NA,1,1), lwd=c(NA,3,5),
                    xjust=0, yjust=1.4, horiz=TRUE)
             op <- par(new=TRUE)
-            sx <- s(x, df=df, ncp=ncp)$s
+            sx <- sW(x, df=df, ncp=ncp)$s
             plot(x, sx, type = 'l', col= s.col, log=log, axes=FALSE, ylab='')
             x.mx <- 10^par("usr")[2]
             segments(x0, 1, x.mx, 1, col=s.col, lty=2)
@@ -165,7 +165,7 @@ p.z.s <- function(df, ncp, n = 513, x = NULL, p.pchi = FALSE)
   x <- x[ix]
   zmat <- zmat[ix, ,drop=FALSE]
   zfs  <- zfs [ix, ,drop=FALSE]
-  s <- s(x,df,ncp)$s
+  s <- sW(x,df,ncp)$s
 
   ## really interested in negative z's :
   ineg <- range(which(apply(zfs < 0,  1, any)))# << first and last x-index
@@ -173,7 +173,7 @@ p.z.s <- function(df, ncp, n = 513, x = NULL, p.pchi = FALSE)
   if(p.pchi) {
       op <- mult.fig(2, marP = c(0,0,0,1.5), quiet = TRUE)$old.par
       on.exit(par(op))
-      p.W.pchisq(df , ncp, do.log=FALSE)
+      p.W.pchisq(df, ncp, do.log=FALSE)
   }
   matplot(s, zmat, type='l', ylim = yl, xlab = 's(.)', ylab = 'z(.)',
           col = 2:4, lwd = c(1,2,1), lty = 1, main = nu.lam.expr(df,ncp))

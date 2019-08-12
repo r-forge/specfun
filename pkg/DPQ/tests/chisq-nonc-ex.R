@@ -341,15 +341,8 @@ summary(pch.x10[pch.x10 != 1 & is.finite(pch.x10)])
 
 rele.pch <- function(x) 1 - pchisq(x,x,ncp=1e-100) / pchisq(x,x)
 
-rele.pch(2^(-12:10))
-## S-plus 3.4 : all 0 -- much better than "old" R  (now all 0, too)
-stopifnot(rele.pch(2^(-12:10)) == 0)
-
-if(FALSE) # now all log(0) == -Inf
-round(log10(rele.pch(2^(-12:10))),1)
-## R 0.6x.y -- 1.2.3 :
-##-  [1] -12.5 -15.5 -14.6 -13.4 -12.2 -14.1 -12.6 -13.7 -14.3 -12.2 -12.0 -13.0
-##- [13] -13.0 -12.3 -12.0 -12.4 -12.2 -11.8 -11.8 -11.9 -11.8  -8.5  -4.8
+(rl <- rele.pch(2^(-12:10)))
+stopifnot(rl == 0)## << S-plus 3.4, later R
 
 ## The uniroot no longer works, but look at
 curve(1-pchisq(x,1,1), 69, 1500, n = 2001,
@@ -358,13 +351,16 @@ axis(1, at= c(69, 1500))
 abline(h=0, col="gray70")
 ##--> lots of noise -- but around correct value = 1
 ## now, all fine :
-curve(pchisq(x,1,1, lower.tail=FALSE), 69, 1500, n = 2001, log = "y",
+pc1 <-
+    curve(pchisq(x,1,1, lower.tail=FALSE), 69, 1500, n = 2001, log = "y",
       main="1-pchisq(x,1,1), x in [69, 1500]", sub = R.version.string)
 
 ## 1-P of course jumps to 0 *much* earlier:
-curve(pchisq(x,1,1, lower.tail=FALSE), 69, 1500, n = 2001,
+plot(pc1, type="l", log="y", yaxt="n", ylab="",
       main="1-pchisq(x,1,1), x in [69, 1500]", sub = R.version.string)
+sfsmisc::eaxis(2) ## whereas this underflows much much much earlier (at x ~ 100)
 curve(1-pchisq(x,1,1), add=TRUE, col=adjustcolor("red", 0.5), lwd=3, n = 2001)
+
 
 ## Older R versions (<= 1.6.2): bad problem around the following:
 if(FALSE)
@@ -381,52 +377,58 @@ p <- pchisq(x,1,1, lower=FALSE)
 stopifnot(0 <= p, p <= 2e-19)
 lp <- log(p)
 stopifnot(is.finite(lp), lp <= -43, abs(diff(lp) + 0.475) < 0.02)
+showProc.time()
 
 ### try other (df,ncp) -- compare with  Wienergerm approx.
 ## setwd("/u/maechler/R/MM/NUMERICS/dpq-functions/")
 ## source("wienergerm_nchisq-fn.R")
 ## dyn.load("wienergerm_nchisq.so")
 
-p.pchUp <- function(df, ncp, from, to, log=FALSE) {
+p.pchUp <- function(df, ncp, from, to, log.p=FALSE, n=2001) {
     c1 <-
-        curve(pchisq(x,df=df, ncp=ncp, lower.tail=FALSE, log.=log), from, to, n = 2001,
-              main = paste("pchisq(x, ",formatC(df),", ",formatC(ncp),
-                  ", lower= F..", if(log)", log=TRUE",
-                  "),  x in [",formatC(from),", ", formatC(to), "]", sep=''),
+        curve(pchisq(x, df=df, ncp=ncp, lower.tail=FALSE, log.p=log.p),
+              from=from, to=to, n=n,
+              main = paste0("pchisq(x, ",formatC(df),", ",formatC(ncp),
+                            ", lower=F", if(log.p)", log=T", "),",
+                            "  x in [",formatC(from),", ", formatC(to), "]"),
               sub = R.version.string)
     axis(1, at= c(from, to))
     abline(h=0, col="gray70", lty=3)
-    c2 <- curve(pchisqW(x,df=df, ncp=ncp, lower.tail=FALSE, log.=log), n = 2001,
+    c2 <- curve(pchisqW(x, df=df, ncp=ncp, lower.tail=FALSE, log.p=log.p), n=n,
                 add = TRUE, col = 2)
-    legend((from+to)/2, par("usr")[4], xjust = 1/2, yjust = 1.1,
+    legend("topright", xjust = 1/2, yjust = 1.1,
            c("normal", "Wienerg.approx"), col=1:2, lty=1)
     invisible(data.frame(x = c1$x, pchisq = c1$y, pchisqW = c2$y))
 }
 ## in all these, Wienerg.approx. looks very good: x >> df+ncp
 p.pchUp( 0.1,  0.1,     51, 1500)
 p.pchUp(   1,    1,     69, 1500)
-p.pchUp(   1,    1,     69, 1500, log=TRUE)
-p.pchUp( 2.5, 0.02,     61, 1500)
-p.pchUp(  25,   10,    150, 1600)
+p.pchUp(   1,    1,     69, 1500, log=TRUE)# small discrepancy for largish x
+p.pchUp( 2.5, 0.02,     61, 1500, log=TRUE)# (nothing visible)
+p.pchUp(  25,   10,    150, 1600, log=TRUE)# discrepancy largish x
 p.pchUp( 100,  500,    980, 1900)# normal:noise(and cutoff at 1); Wienerg: smooth
-p.pchUp( 100,  500,    980, 1900, log=TRUE)
+p.pchUp( 100,  500,    980, 1900, log=TRUE)# pchisq() breaks down
 p.pchUp( 500,  100,    897, 3000)
-p.pchUp( 500,  100,    897, 3000, log=TRUE)
-p.pchUp( 5e3,  100,   5795, 1.e4)  # another range of this:
+p.pchUp( 500,  100,    897, 3000, log=TRUE)# pchisq break down
+p.pchUp( 5e3,  100,   5795, 1.e4)  # zoom in..
 p.pchUp( 5e3,  100,   5777, 6000)  # --> Wiener has less noise long before!
 ## (but it also is systematically a bit larger - correct?)
 
-## Now have m + 5*s cutoff, these two don't show anything anymore:
-cc <- p.pchUp( 5e3,  5e3,  10400, 11e3)  # --> shows the  m + 3*s cutoff (too early!)
+## Now have m + 5*s cutoff, ...
+cc <- p.pchUp( 5e3,  5e3,  10400, 11e3) # still pchisq() jumps to 0 at 10866.2, too early
 p.m(cc, type="l", log="y", lwd=c(1,3), col=c("black", adjustcolor("red",0.5)))
-p.pchUp( 1e5,  2e4, 12.15e4, 12.25e4)# m + 3*s  __much__ too early
-## --> changing cutoff to   m + 5*w
-p.pchUp( 5e3,  5e3,  10800, 11e3)  # --> shows the  m + 5*s cutoff (too early!)
+## now (larger cutoff) "fine" but also too early to jump to zero:
+c2 <- p.pchUp( 1e5,  2e4, 11.6e4, 12.6e4, n=1001) # see Wienergerm-singularity !!
+p.m(c2, type="l", log="y", lwd=c(1,3), col=c("black", adjustcolor("red",0.5)))
+
+## Still shows that the   m + 5*s cutoff is too early!
+p.pchUp( 5e3,  5e3,  10800, 11e3)
 cc <- p.pchUp( 5e3,  5e3,  8000,  20e3)
 p.m(cc, type="l", log="y", lwd=c(1,3), col=c("black", adjustcolor("red",0.5)))
 p.pchUp( 1e5,  2e4, 12.25e4, 12.35e4)# m + 5*s  __much__ too early here..
 
-1
+showProc.time()
+
 ### NOTA BENE: We have the *big* problem when s ~= 1,  x <= ncp+df
 ### ---------  ---------------------------------------------------
 ### this is unsolved and the reason we have not yet ...
@@ -485,9 +487,9 @@ pnchisq(10e-5, df=100, ncp=1, verbose = TRUE)
 
 ### now (R 1.8.x at least) ok
 mult.fig(3, main = "pchisq(x >= 1497,*, ncp=)  BUG (no longer!)")$old.par -> op
-plot(function(x) pchisq(x, df=1, ncp=  1), from=1,to=1e4, log='x', main="ncp = 1")
-plot(function(x) pchisq(x, df=1, ncp=300), from=1,to=1e4, log='x', main="ncp = 300")
-plot(function(x) pchisq(x, df=1, ncp=0), from=1,to=1e4, log='x', main="ncp = 0")
+curve(pchisq(x, df=1, ncp=  1), from=1,to=1e4, log='x', main="ncp = 1")
+curve(pchisq(x, df=1, ncp=300), from=1,to=1e4, log='x', main="ncp = 300")
+curve(pchisq(x, df=1, ncp=0), from=1,to=1e4, log='x', main="ncp = 0")
 par(op)
 
 ## still (2004-01 ... 2014-01 !!) true:
@@ -599,6 +601,7 @@ plotrq(50)
 plotrq(100)
 plotrq(500)
 par(op)
+showProc.time()
 
 ## How well approximation from  difference point of view:
 ## Interesting i < ~ lambda  (ok, clearly improvable):
@@ -620,19 +623,19 @@ plotDr(100)
 plotDr(200)
 plotDr(500)
 plotDr(1000)
-plotDr(2000)## oops: problem
+plotDr(2000)## oops: problem (no longer !)
 par(op)
 
 ### Now back to the original problem:
 ### Using ss() terms and see where they are maximal, etc.
 (pR <-          pnchisq (1.2,df=1,ncp=3, verbose=FALSE))# iter = 12, now 13
-all.equal(c(pR), pnchisq.ss(1.2,df=1,ncp=3), tol=0)# 2.19e-12, now 9.61e-14
+all.equal(c(pR), pnchisq_ss(1.2,df=1,ncp=3), tol=0)# 2.19e-12, now 9.61e-14
 
 (pR <-          pnchisq (1.2,df=1,ncp=30, verbose=FALSE))# iter = 12, now 16
-all.equal(pR, pnchisq.ss(1.2,df=1,ncp=30), tol= 2e-13)
+all.equal(pR, pnchisq_ss(1.2,df=1,ncp=30), tol= 2e-13)
 ## was  2.616 e-8 (thanks to 'reltol'!)
 (pR <-          pnchisq (1.2,df=1,ncp=30, verbose=FALSE,reltol=3e-16))# 19 it.
-all.equal(pR, pnchisq.ss(1.2,df=1,ncp=30), tol= 2e-16)
+all.equal(pR, pnchisq_ss(1.2,df=1,ncp=30), tol= 2e-16)
 
 str(sss <- ss(1.2,df=1,ncp=30))# s[1:161], max = 3
 plot(sss$s, type="h", col=2)
@@ -653,7 +656,7 @@ stopifnot(sum(sss$s[ii]) == sum(sss$s))
 
 ### What about large df and x -- #{terms} ?
 str(sss <- ss(100,100, 1e-3))# 1 469
-pnchisq.ss(100,100,1e-3)
+pnchisq_ss(100,100,1e-3)
 pchisq    (100,100,1e-3)
 ((Ss <- sum(sss$s)) - sum(rev(sss$s)))/Ss # -1.9286 e-16
 
@@ -698,6 +701,8 @@ all( ss(100,100,5000)$s == 0) # TRUE -- no longer
 table( ss(100,100, ncp=5000)$s ) ## only values in {0, Inf}, mostly Inf !
 
 ##==> give up for these high ncp for the moment!
+
+showProc.time()
 
 ## Instead use C - code which parallels  pnchisq()'s in C:
 ## dyn.load("/u/maechler/R/MM/NUMERICS/dpq-functions/pnchisq-it.so")
@@ -832,16 +837,16 @@ for(iL in Sel(1:nL)) {
 par(op)
 ##--> 1st order, qualitatively "same" function (x)
 
-## Same plot, but using "Wienergerm's"  s(x,df,lam) instead of x
+## Same plot, but using "Wienergerm's"  sW(x,df,lam) instead of x
 ## source("/u/maechler/R/MM/NUMERICS/dpq-functions/wienergerm_nchisq-fn.R")
 mult.fig(mfrow=c(5,5), ## << since length(quantile()) == 5
-         marP = c(-1,-1,0,0), main = "iMax vs.  s()")$old.par -> op
+         marP = c(-1,-1,0,0), main = "iMax vs.  sW()")$old.par -> op
 for(iL in Sel(1:nL)) {
     lm <- lam[iL]
     for(iF in Sel(1:nF)) {
         f <- dfs[iF]
-        plot(s(x.[iL,iF,], df=f, ncp=lm)$s,
-             iM[iL,iF,], type = 'o', xlab = "s(x,...)", ylab = "iMax",
+        plot(sW(x.[iL,iF,], df=f, ncp=lm)$s,
+             iM[iL,iF,], type = 'o', xlab = "sW(x,...)", ylab = "iMax",
              main=paste("df=",formatC(f),", lam=",formatC(lm)))
     }
 }
@@ -1000,7 +1005,7 @@ plot(fitted(gam2.), fitted(lm3)) ; abline(0,1,col=3)
 
 showProc.time()
 ###---- 2nd "simulation": -- only go for one x = E[]
-ssFil2 <- "/u/maechler/R/MM/NUMERICS/dpq-functions/ssR2.rda"
+## ssFil2 <- "/u/maechler/R/MM/NUMERICS/dpq-functions/ssR2.rda"
 nSim <- if(doExtras) 5000 else 500
 ## if(file.exists(ssFil2)) {
 ##     load(ssFil2)
@@ -1024,7 +1029,7 @@ nSim <- if(doExtras) 5000 else 500
 
 showProc.time()
 ## 3rd simulation: --- this takes a little while (1 min ?)
-ssFil3 <- "/u/maechler/R/MM/NUMERICS/dpq-functions/ssR3.rda"
+## ssFil3 <- "/u/maechler/R/MM/NUMERICS/dpq-functions/ssR3.rda"
 ## if(file.exists(ssFil3)) {
 ##     load(ssFil3)
 ## } else {
@@ -1283,10 +1288,10 @@ if(.do.ask <- dev.interactive() && !identical(source, sys.function())) par(ask=T
 mult.fig(2)$old.par -> op
 ## large NC -- still (2018-08) very expensive!!
 for(NC in 10^(3:7)) { ## 10^(3:10)  is (still!)  much too expensive, 10^8 alone costs 31.8 sec !
-    plot(function(x) dchisq(x, df=1, ncp=NC), from=NC/10,to=NC*100,
+    curve(dchisq(x, df=1, ncp=NC), from=NC/10,to=NC*100,
          log='x', main=paste("Density ncp =",NC))
     try(
-    plot(function(x) pchisq(x, df=1, ncp=NC), from=NC/10,to=NC*100,
+    curve(pchisq(x, df=1, ncp=NC), from=NC/10,to=NC*100,
          log='x', main=paste("CDF    ncp =",NC))
         )
     showProc.time()
@@ -1632,8 +1637,8 @@ pars <- rbind(cbind(pnl, q = nl/2),
               cbind(pnl, q = nl  ),
               cbind(pnl, q = nl*2))
 pch   <- with(pars, pchisq(q=q, df=df, ncp=ncp))
-pchAA <- with(pars, pnchisq.AbdelAty  (q=q, df=df, ncp=ncp))
-pchSa <- with(pars, pnchisq.Sankaran.d(q=q, df=df, ncp=ncp))
+pchAA <- with(pars, pnchisqAbdelAty  (q=q, df=df, ncp=ncp))
+pchSa <- with(pars, pnchisqSankaran_d(q=q, df=df, ncp=ncp))
 cbind(pars, R = pch, AA = pchAA, San = pchSa)
 
 ## Reproducing part of  'Table 29.2' (p.464) of  Johnson, Kotz, Balakr.(1995) Vol.2
@@ -1738,10 +1743,10 @@ p.qappr <- function(p, df, ncp, main = NULL,
         stop("only one of the three argument should have length > 1")
     if(!(d.arg || n.arg || p.arg)) p.arg <- TRUE
     n <- max(l.d, l.n, l.p)
-    Fns <- c("qchisq", "qnchisq.Pea",
-             "qchisq.appr.CF1", "qchisq.appr.CF2",
-             "qchisq.Patn", "qchisq.Cappr.2",
-             "qchisq.appr.0", "qchisq.appr.1", "qchisq.appr.2", "qchisq.appr.3"
+    Fns <- c("qchisq", "qnchisqPearson",
+             "qchisqApprCF1", "qchisqApprCF2",
+             "qnchisqPatnaik", "qchisqCappr.2",
+             "qchisqAppr.0", "qchisqAppr.1", "qchisqAppr.2", "qchisqAppr.3"
              )
     if(is.null(nF))
         nF <- length(Fns)

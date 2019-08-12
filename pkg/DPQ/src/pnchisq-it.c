@@ -13,6 +13,12 @@
 
 #include "DPQpkg.h"
 
+/* --> below:  Pnchisq_it()  called from R
+ *             ------------
+ * FIXME:  1) additionally vectorize !?
+           2) add 'verbose' argument, instead of  '#ifdef ...' below  !!!
+ */
+
 double pnchisq_it(double x, double f, double theta,
 		  double errmax, double reltol, int itrmax,
 		  int *i_, int *n_terms, double *terms)
@@ -183,7 +189,7 @@ double pnchisq_it(double x, double f, double theta,
     return (ans);
 }
 
-// FIXME rather additionally vectorize ??
+// see 'FIXME' above !!
 void Pnchisq_it(double *x, double *f, double *theta,
 		double *errmax, double *reltol, int *itrmax,
 		int *i_0, int *n_terms, double *terms, double *prob)

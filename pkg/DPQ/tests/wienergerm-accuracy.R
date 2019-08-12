@@ -18,7 +18,7 @@ for(df in nuS) {
         r[,, formatC(df), formatC(ncp)] <-
             cbind(pchisq     (x, df=df, ncp=ncp),
                   pchisqW    (x, df=df, ncp=ncp),
-                  pnchisq.Pea(x, df=df, ncp=ncp))
+                  pnchisqPearson(x, df=df, ncp=ncp))
     }
     cat("done df=",formatC(df),"\n")
 }
@@ -35,8 +35,8 @@ p.pchisq <- function(x, df, ncp, log = "x",
     Px <- pchisq(x, df=df, ncp=ncp)
     pW  <- pchisqW(x, df=df, ncp=ncp) # "Wiener2"
     pW1 <- pchisqW(x, df=df, ncp=ncp, variant = 'f')
-    pP1 <- pnchisq.Pea(x, df=df, ncp=ncp)
-    pP2 <- pnchisq.Pat(x, df=df, ncp=ncp)
+    pP1 <- pnchisqPearson(x, df=df, ncp=ncp)
+    pP2 <- pnchisqPatnaik(x, df=df, ncp=ncp)
     Pmat <- cbind(pW,pW1,pP1,pP2)
 
     tit <- paste("pchisq[Appr](x, df=",formatC(df),", ncp=",formatC(ncp),")")

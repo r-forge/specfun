@@ -5,7 +5,7 @@
 ## source("/u/maechler/R/MM/NUMERICS/dpq-functions/dpq-h.R")
 
 .D_0 <- function(log.p) if(log.p) -Inf else 0
-.D_1 <- function(log.p) if(log.p)   0	 else 1
+.D_1 <- function(log.p) as.integer(!log.p) ## if(log.p) 0 else 1
 
 ##' == 0 when (lower.tail=TRUE, log.p=FALSE)
 .DT_0 <- function(lower.tail, log.p)
@@ -69,3 +69,6 @@ log1.Exp <- function(x) ifelse(x > -M.LN2, log(-expm1(x)), log1p(-exp(x)))
 ##  R_Q_P01_boundaries <- function(p, _LEFT_, _RIGHT_)
 ##  ------------------
 ##  cannot work: in C they are macros where return(.) is toplevel !
+
+##/* additions for density functions (C.Loader) */
+.D_fexp <- function(f, x, log.p) if(log.p) -0.5*log(f)+ x else exp(x)/sqrt(f)

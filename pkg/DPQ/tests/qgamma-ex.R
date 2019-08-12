@@ -163,8 +163,8 @@ p.qgammaSml <- function(from= 1e-110, to = 1e-5, ylim = c(0.4, 1000),
     oo <- options(warn = -1)
     lines.txt(a1[-1])
     lines.txt(a2, col= 2)
-    lines.txt(a3, col= rainbow(length(a3),.8,.8,
-                  start=(a3-min(a3))/(1+max(a3))))
+    lines.txt(a3, col= rainbow(length(a3), .8, .8,
+                               start = (max(a3)-min(a3))/(1+max(a3))))
     invisible(options(oo))
 }
 
@@ -284,6 +284,7 @@ p.qgammaLog(12,   1.2, 0.8)# small problem remaining
 p.qgammaLog(11,   1.2, 0.8)# even smaller
 p.qgammaLog(10.5, 1.1, 0.9)# even smaller
 p.qgammaLog(10.25, 1.1, 0.9)# even smaller
+## 2019-08: __nothing__ visible from here on:
 p.qgammaLog(10.18, 1.02, 0.98)# even smaller
 p.qgammaLog(10.15, 1.02, 0.98)# even smaller
 p.qgammaLog(10.14, 1.001, 0.999)# even smaller
@@ -399,34 +400,34 @@ matplot(x, abs(reMat), log="xy", type="l",lty=1,
         xlim=c(8e-9, 1e-3))
 abline(v= 3.47548562941137e-08, col = "gray80", lwd=3)#<- the cutoff value of  lgamma1p()
 
-## ../qchisqAppr.R -- talks about the "small shape" qgamma() approxmation
-## ---------------  --> bnd.qgamma.appr() :
-curve(bnd.qgamma.appr, 1e-18, 1e-15, col=2)
+## ../R/qchisqAppr.R -- talks about the "small shape" qgamma() approxmation
+## -----------------  --> .qgammaApprBnd() :
+curve(.qgammaApprBnd, 1e-18, 1e-15, col=2)
 abline(h=0, col="gray70", lty=2)
 eps.c <- .Machine$double.eps
 axis(3,at=(1:3)* eps.c,
      label=expression(epsilon[c], 2*epsilon[c], 3*epsilon[c]))
-(rt.b <- uniroot(bnd.qgamma.appr, c(1,3)*eps.c, tol=1e-12))
+(rt.b <- uniroot(.qgammaApprBnd, c(1,3)*eps.c, tol=1e-12))
 rt.b$root ## 3.954775e-16
 rt.b$root / eps.c ## 1.781072
 ##==> for a < 1.781*eps, bnd > 0 ==> we have  log(p) < bnd  for all p
 ## otherwise, we should effectively 'test'
-curve(bnd.qgamma.appr, 1e-16, 1e-10, log="x", col=2)
+curve(.qgammaApprBnd, 1e-16, 1e-10, log="x", col=2)
 showProc.time()
 
 
 ## source  ("/u/maechler/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/qgamma-fn.R")
-## ##--> qchisq.appr.R() -- which has 'kind = ' argument!
+## ##--> qchisqAppr.R() -- which has 'kind = ' argument!
 ## ##--> qgamma.R()
 
 p.qchi.appr <-
     function(x, qm= { m <- cbind(qchisq(x, df, log=TRUE),
                                  sapply(knds, function(kind)
-                                        qchisq.appr.R(x,df,log=TRUE,kind=kind)))
+                                        qchisqAppr.R(x,df,log=TRUE,kind=kind)))
                       colnames(m) <- c("True", "default", knds[-1])
                       m },
              df,
-             knds = list(NULL,"chi.small","WH","p1WH","nu.small"),
+             knds = list(NULL,"chi.small", "WH", "p1WH", "df.small"),
              call = match.call(), main = deparse(call), log = "y", ...)
 {
     ## Purpose:
@@ -495,16 +496,16 @@ pD.chi.appr <- function(pqr, err.kind=c("relative", "absolute"),
 showProc.time()
 x <- seq(-300, -.01, length=501)
 
-all.equal(qchisq.appr.R(x, 200, log=TRUE),
-          qchisqAppr   (x, 200, log=TRUE),tol=0)
+all.equal(qchisqAppr.R(x, 200, log=TRUE),
+          qchisqAppr  (x, 200, log=TRUE),tol=0)
 ## 4.48 e-16 / TRUE (Opteron)
 
-all.equal(qchisq.appr.R(x, 2, log=TRUE),
-          qchisqAppr   (x, 2, log=TRUE),tol=0)
+all.equal(qchisqAppr.R(x, 2, log=TRUE),
+          qchisqAppr  (x, 2, log=TRUE),tol=0)
 ## 3.90 e-16 / TRUE (Opteron)
 
-all.equal(qchisq.appr.R(x, 0.1, log=TRUE),
-          qchisqAppr   (x, 0.1, log=TRUE),tol=0)
+all.equal(qchisqAppr.R(x, 0.1, log=TRUE),
+          qchisqAppr  (x, 0.1, log=TRUE),tol=0)
 ## 7.15 e-15 / 1.179e-8 !!!!! (Opteron)
 
 pq200 <- p.qchi.appr(x = seq(-300, -.01, length=501), df = 200)
@@ -659,7 +660,7 @@ str(r.a <- uniroot(function(x) pgamma(x,a,lower.tail=FALSE) - Q,
                    int = c(0.01, 0.1), tol=1e-20))
 dput(x0 <- r.a$root) ## 0.0823720296207203
 (x1 <- exp(- (Q/a + gammaE)))## 0.07598528 .. not so good
-qgammaAppr.s.p(Q, a, lower.tail=FALSE)## ~= 0.07598528 -- the same!!
+qgammaApprSmallP(Q, a, lower.tail=FALSE)## ~= 0.07598528 -- the same!!
 
 pgamma(x0, a, lower.tail=FALSE) ## 1.00000e-100.
 pgamma(x1, a, lower.tail=FALSE) ## 1.03728e-100  ... hmm "close"

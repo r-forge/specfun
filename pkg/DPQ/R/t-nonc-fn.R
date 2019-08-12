@@ -230,7 +230,7 @@ c_pt <- function(nu)
 }
 
 
-## MM:  My conclusion of experiments in ./pnt-precision-problem.R :
+## MM:  My conclusion of experiments in ../tests/pnt-precision-problem.R :
 ## -------              --------------------------
 ## Large t (>0 or < 0)  *MUST* get a new algorithm !
 ## -------              --------------------------
@@ -272,10 +272,12 @@ pntR1  <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
         ## FIXME: test should depend on `df', `tt' AND `del' ! */
         ## /* Approx. from Abramowitz & Stegun 26.7.10 (p.949) */
 	s <- 1./(4.*df)
-        pnt.. <<- pnorm(tt*(1 - s), del, sqrt(1. + tt*tt*2.*s),
-                        lower.tail = (lower.tail != negdel), log.p=log.p)
-        cat("large 'df' or \"large\" 'ncp' -- C code would return pnorm(*) =: pnt.. =",
+        pnt.. <- pnorm(tt*(1 - s), del, sqrt(1. + tt*tt*2.*s),
+                       lower.tail = (lower.tail != negdel), log.p=log.p)
+        cat("large 'df' or \"large\" 'ncp' -- C code would return pnorm(*) =",
             format(pnt.., digits=16), "\n")
+        ### FIXME: see above !!
+        return(pnt..)
     }
 
     ## initialize twin series */
@@ -404,9 +406,15 @@ pntR  <- Vectorize(pntR1, c("t", "df", "ncp"))
 ##'         = log(x_max) + log(sum(exp(log(x)-log(x_max)))))
 ##'         = lx.max + log(sum(exp(lx-lx.max)))
 ##' @author Marius Hofert, Martin Maechler
-lsum <- function(lx, l.off = max(lx)) l.off + log(sum(exp(lx - l.off)))
-## FIXME: the case with lx == -Inf for all should give -Inf, but gives NaN
-## ==> fixed in copula pkg (R-forge)
+
+##' NB: If lx == -Inf for all should give -Inf, but gives NaN / if *one* is +Inf, give +Inf
+lsum <- function(lx, l.off = max(lx)) {
+    if (is.finite(l.off))
+        l.off + log(sum(exp(lx - l.off)))
+    else if(missing(l.off) || is.na(l.off) || l.off == max(lx))
+        l.off
+    else stop("'l.off  is infinite but not == max(.)")
+}
 
 
 ##' Simple vector version of  copula:::llsum() -- ~/R/Pkgs/copula/R/special-func.R
@@ -454,11 +462,13 @@ pnt3150.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE, M = 1000,
             ##     source("~/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/pbetaR.R")
             getPrec <- Rmpfr::getPrec
             prec <- max(getPrec(t), getPrec(df), getPrec(ncp))
-            pi <- Rmpfr::Const("pi", prec = max(64, prec))
             pbeta <- Vectorize(pbetaRv1, "shape2") # so pbeta(x, p, <vector q>) works
-            dbeta <- function(x, a,b, log=FALSE) {
-                lval <- (a-1)*log(x) + (b-1)*log1p(-x) - lbeta(a, b)
-                if(log) lval else exp(lval)
+            if(FALSE) {
+                pi <- Rmpfr::Const("pi", prec = max(64, prec))
+                dbeta <- function(x, a,b, log=FALSE) {
+                    lval <- (a-1)*log(x) + (b-1)*log1p(-x) - lbeta(a, b)
+                    if(log) lval else exp(lval)
+                }
             }
         }
     }
@@ -509,8 +519,8 @@ pnt3150  <- Vectorize(pnt3150.1, c("t", "df", "ncp"))
 
 ### New version of pntR1(), pntR() ----  Using the  Posten (1994) algorithm
 pntP94.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
-                   itrmax = 1000, errmax = 1e-12, verbose = TRUE) {
-
+                     itrmax = 1000, errmax = 1e-12, verbose = TRUE)
+{
     stopifnot(length(t) == 1, length(df) == 1, length(ncp) == 1,
               df > 0, ncp >= 0) ## ncp == 0 --> pt()
 
@@ -532,7 +542,7 @@ pntP94.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
                 if(log) lval else exp(lval)
             }
         }
-        ## needed for printing mpfr numbers {-> pkg Rmpfr}, e.g.
+        if(FALSE) ## needed for printing mpfr numbers {-> pkg Rmpfr}, e.g.
 	.N <- if(isMpfr) Rmpfr::asNumeric else as.numeric
         Cat("Some 'non-numeric arguments .. fine\n")
     }
@@ -540,9 +550,11 @@ pntP94.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
     neg.t <- (t < 0)
     if(neg.t) {
         if(verbose) cat("t < 0  ==> swap delta := -ncp\n")
-	tt <- -t; del <- -ncp
+	## tt <- -t
+        del <- -ncp
     } else {
-        tt <- t; del <- ncp
+        ## tt <- t
+        del <- ncp
     }
 
     x <- t * t
@@ -724,7 +736,7 @@ dntJKBf1 <- function(x, df, ncp, log = FALSE, M = 1000)
 	    if(!inherits(x,  "mpfr")) x   <- mpfr(x,  prec)
 	    if(!inherits(df, "mpfr")) df  <- mpfr(df, prec)
 	    if(!inherits(ncp,"mpfr")) ncp <- mpfr(ncp,prec)
-	    ln2 <- log(mpfr(2,prec))
+	    ln2 <- log(mpfr(2, prec))
 	    ._1.1..M <- mpfr(._1.1..M, prec)
         } else {
             warning(" Not 'numeric' but also not  'mpfr' -- untested, beware!!")
@@ -753,6 +765,41 @@ dntJKBf1 <- function(x, df, ncp, log = FALSE, M = 1000)
     if(log) lf else exp(lf)
 }
 dntJKBf <- Vectorize(dntJKBf1, c("x", "df", "ncp"))
+
+## Orig: ~/R/MM/NUMERICS/dpq-functions/noncentral-t-density-approx_WV.R
+##
+## From: Wolfgang Viechtbauer <wviechtb@s.psych.uiuc.edu>
+## To: <r-help@stat.math.ethz.ch>
+## Subject: Re: [R] Non-central distributions
+## Date: Fri, 18 Oct 2002 11:09:57 -0500 (CDT)
+## .......
+## This is an approximation based on Resnikoff & Lieberman (1957).
+## .. quite accurate. .....
+## .......
+## .......
+##
+## MM: added 'log' argument and implemented  log=TRUE
+## --- TODO: Completely untested by MM [but see Wolfgang's notes in *_WV.R !]
+## __FIXME__: rename  to 'dnt_VW??
+dtnc <- function(x, df, ncp=0, log=FALSE) {
+   dfx2 <- df + x^2 # << by MM; used almost only as df/dfx2
+   y <- -ncp*x/sqrt(dfx2)
+   a <- (-y + sqrt(y^2 + 4*df)) / 2 # << MM: cancellation for y >> df
+   ## MM(2):  df+a^2  is used several times below
+   if(log) {
+       lHhmy <- -lgamma(df+1) + df*log(a) + -0.5*(a+y)^2 +
+           0.5*log(2*pi*a^2/(df+a^2)) +
+           log1p( - 3*df/(4*(df+a^2)^2) + 5*df^2/(6*(df+a^2)^3))
+       lgamma(df + 1) - (((df-1)/2)*log(2) + lgamma(df/2) + .5*log(pi*df)) +
+           -0.5*df*ncp^2/dfx2 + ((df+1)/2)*log(df/dfx2) + lHhmy
+   } else {
+       Hhmy <- 1/gamma(df+1) * a^df * exp(-0.5*(a+y)^2) *
+           sqrt(2*pi*a^2/(df+a^2)) *
+           (1 - 3*df/(4*(df+a^2)^2) + 5*df^2/(6*(df+a^2)^3))
+       gamma(df + 1) / (2^((df-1)/2) * gamma(df/2) * sqrt(pi*df)) *
+           exp(-0.5*df*ncp^2/dfx2) * (df/dfx2)^((df+1)/2) * Hhmy
+   }
+}
 
 
 ###-- qnt() did not exist yet at the time I wrote this ...

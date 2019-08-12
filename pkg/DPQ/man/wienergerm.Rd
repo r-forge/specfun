@@ -1,28 +1,67 @@
 \name{pchisqW.R}
-\alias{pchisqW.R}
 \title{Wienergerm Approximations to pchisq() the Chisquare Distribution}
+\alias{pchisqV}
+\alias{pchisqW}
+\alias{pchisqW.}
+\alias{pchisqW.R}
+\alias{sW}
+\alias{qs}
+\alias{z0}
+\alias{z.f}
+\alias{z.s}
 \description{
   Compute Wienergerm approximations to \code{\link{pchisq}()}, the
   (non-central) chisquare distribution.
+
+  \bold{Auxiliary functions:}
+  \describe{
+    \item{\code{sW()}:}{The \eqn{s()} as in the Wienergerm approximation,
+    but using Taylor expansion when needed, i.e., \code{(x*ncp / df^2) << 1}.}
+
+    \item{\code{qs()}:}{ ... }
+    \item{\code{z0()}:}{ ... }
+    \item{\code{z.f()}:}{ ... }
+    \item{\code{z.s()}:}{ ... }
+  } % descr.
 }
 \usage{
-pchisqW.R(x, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
-          variant = c("s", "f"), verbose = getOption("verbose"))
+% R code in  ../R/wienergerm_nchisq-fn.R :
+%                 ----------------------
+pchisqW. (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
+          Fortran = TRUE, variant = c("s", "f"))
+pchisqV  (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
+          Fortran = TRUE, variant = c("s", "f"))
+pchisqW  (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE, variant = c("s", "f"))
+pchisqW.R(x, df, ncp = 0, lower.tail = TRUE, log.p = FALSE, variant = c("s", "f"),
+          verbose = getOption("verbose"))
+
+sW(x, df, ncp)
+qs(x, df, ncp, f.s = sW(x, df, ncp), eps1 = 1/2, sMax = 1e+100)
+z0(x, df, ncp)
+z.f(x, df, ncp)
+z.s(x, df, ncp, verbose = getOption("verbose"))
 }
 
 \arguments{
   \item{x,df,ncp}{main arguments, see  \code{\link{pchisq}}.}
   \item{lower.tail,log.p}{\code{\link{logical}}, see \code{\link{pchisq}}.}
 
-  \item{variant}{a string, currently either \code{"f"} for the \bold{f}irst or
+  \item{variant}{a \code{\link{character}} string, currently either
+    \code{"f"} for the \bold{f}irst or
     \code{"s"} for the \bold{s}econd Wienergerm approximation in
     Penev \& Raykov (2000).}
+  \item{Fortran}{logical specifying if the Fortran or the C version should
+    be used.}
   \item{verbose}{logical/integer ...}% FIXME
+  \item{f.s}{ .... }
+  \item{eps1}{ .... }
+  \item{sMax}{ .... }
 }
 \value{
   bla FIXME
 }
-\author{Martin Maechler}
+\author{Martin Maechler, 26 Jan 2004}
+
 %% \details{   TODO -- FIXME
 %%
 %% ==> info in header of ../src/wienergerm_nchisq.c
@@ -40,10 +79,11 @@ pchisqW.R(x, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
   \emph{Probability Theory and Related Fields}, \bold{83}, 5--57.
 }
 \seealso{
-  \code{\link{pchisq}}
+  \code{\link{pchisq}}, and other approximations for it:
+  \code{\link{pnchisq}()} etc.
 }
 \examples{
-"TODO"
+## see  example(pnchisqAppr)   which looks at all of the pchisq() approximating functions
 }
 \keyword{distribution}
 \keyword{math}

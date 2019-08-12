@@ -138,7 +138,7 @@ beta.n<- function(n, a)
   prod(ni) / prod(a+c(0,ni))
 }
 
-G.half <- 1.7724538509055160272981674833411451827974 # sqrt(pi) = Gamma(1/2)
+G_half <- 1.7724538509055160272981674833411451827974 # sqrt(pi) = Gamma(1/2)
 
 lbeta.n.half <- function(n, a)
 {
@@ -374,12 +374,12 @@ lgamma1p_series <- function(x, k) {
                     I <- if(useM) mpfr(1, prec) else 1 # use I/3 = 1/3 in high precision
                     if(k >= 7) {
                         z7 <- if(useM) zeta(mpfr(7, prec)) else 1.008349277381922827
-                        if(k >= 9) {
-                            z9 <- if(useM) zeta(mpfr(9, prec)) else 1.002008392826082214
-                            if(k >= 11) {
-                                z11 <- if(useM) zeta(mpfr(11, prec)) else 1.000494188604119464
-                            }
-                        }
+                        ## if(k >= 9) {
+                        ##     z9 <- if(useM) zeta(mpfr(9, prec)) else 1.002008392826082214
+                        ##     if(k >= 11) {
+                        ##         z11 <- if(useM) zeta(mpfr(11, prec)) else 1.000494188604119464
+                        ##     }
+                        ## }
 
                     }
                 }
@@ -405,7 +405,7 @@ lgamma1p_series <- function(x, k) {
 
 
 
-qnorm.appr <- function(p) {
+qnormAppr <- function(p) {
 ##' original (getting inaccurate when p --> 1)
   ## qnorm: normal quantile approximation for qnorm(p),  for p > 1/2
   ## -- to be used in  qbeta(.)
@@ -418,10 +418,10 @@ qnorm.appr <- function(p) {
   r - (C1 + C2 * r) / (1 + (C3 + C4 * r) * r)
 }
 
-qnormU.appr <- function(p,
-                        lp = .DT_Clog(p, lower.tail=lower.tail, log.p=log.p),
+qnormUappr <- function(p,
+                       lp = .DT_Clog(p, lower.tail=lower.tail, log.p=log.p),
                                         # ~= log(1-p) -- independent of lower.tail, log.p
-                        lower.tail=TRUE, log.p=FALSE)
+                       lower.tail=TRUE, log.p=FALSE)
 {
     ## qnorm: normal quantile approximation;
     ## -- to be used in  qbeta(.)
@@ -452,7 +452,7 @@ qnormU.appr <- function(p,
     R
 }
 
-qbeta.appr.1 <- function(a, p, q, y = qnormU.appr(a, lower.tail=FALSE))
+qbetaAppr.1 <- function(a, p, q, y = qnormUappr(a, lower.tail=FALSE))
 {
   ## Purpose: Approximate  qbeta(a, p,q) -- Abramowitz & Stegun (26.5.22)
   ##          qbeta(.) takes this only when  p>1 & q>1
@@ -466,7 +466,7 @@ qbeta.appr.1 <- function(a, p, q, y = qnormU.appr(a, lower.tail=FALSE))
   p / (p + q * exp(w + w))
 }
 
-qbeta.appr.3 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(p,q))
+qbetaAppr.3 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(p,q))
 {
    ##  a=alpha
     ## Purpose: Approximate  qbeta(a, p,q) -- for small a --
@@ -484,17 +484,17 @@ qbeta.appr.3 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(
     pmin(1, exp(log.a +  log(p) + logbeta) / p)
 }
 
-qbeta.appr.2 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(p,q))
+qbetaAppr.2 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(p,q))
 {
     ## Purpose: Approximate  qbeta(a, p,q)
 
     l1ma <- if(lower.tail) .D_LExp(a, log.p=log.p) else .D_log(a, log.p=log.p)
     ## pmax(0, ....) -- needed when  (l1ma + log(q) + logbeta) / q > 0, e.g., for
-    ## e.g. qbeta.appr.2(1/4, 1/2, 1/2)
+    ## e.g. qbetaAppr.2(1/4, 1/2, 1/2)
     -expm1((l1ma + log(q) + logbeta) / q)
 }
 
-qbeta.appr.4 <- function(a, p, q, y = qnormU.appr(a, lower.tail=FALSE),
+qbetaAppr.4 <- function(a, p, q, y = qnormUappr(a, lower.tail=FALSE),
                          verbose=getOption("verbose"))
 {
     ## Purpose: Approximate  qbeta(a, p,q); 'a' is only used via qnorm(a,..)
@@ -507,7 +507,7 @@ qbeta.appr.4 <- function(a, p, q, y = qnormU.appr(a, lower.tail=FALSE),
     1 - 2 / (t + 1)
 }
 
-qbeta.appr <- function(a, p, q, y = qnormU.appr(a, lower.tail=FALSE), logbeta= lbeta(p,q),
+qbetaAppr <- function(a, p, q, y = qnormUappr(a, lower.tail=FALSE), logbeta= lbeta(p,q),
                        verbose = getOption("verbose") && length(a) == 1)
 {
     ## Purpose: Approximate  qbeta(a, p,q) --- for  a <= 1/2
@@ -520,9 +520,9 @@ qbeta.appr <- function(a, p, q, y = qnormU.appr(a, lower.tail=FALSE), logbeta= l
     if(any(a > 1/2)) warning("a[.] > 1/2 (not thought for!)")
 
     if (p > 1 && q > 1) { ## Abramowitz & Stegun(26.5.22)
-        if(verbose) cat("p,q > 1: Using qbeta.appr.1(): Abramowitz-Stegun (26.5.22)\n")
+        if(verbose) cat("p,q > 1: Using qbetaAppr.1(): Abramowitz-Stegun (26.5.22)\n")
         ## 'a' is not needed here, just 'y' is
-        qbeta.appr.1(,p,q,y)
+        qbetaAppr.1(,p,q,y)
     } else {
         if(verbose) cat("p or q <= 1 : ")
         r <- q + q
@@ -545,7 +545,7 @@ qbeta.appr <- function(a, p, q, y = qnormU.appr(a, lower.tail=FALSE), logbeta= l
             if (any(L1 <- !neg & t <= 1)) {
                 if(verbose) cat("t > 0; t' <= 1: appr. 3 (beta, p)\n")
                 ## ans[L1] <- exp((log(a[L1] * p) + logbeta) / p)
-                ans[L1] <- qbeta.appr.3(a[L1], p, q, logbeta = logbeta)
+                ans[L1] <- qbetaAppr.3(a[L1], p, q, logbeta = logbeta)
                 ## ==> linear relationship on log-log scale:
                 ##   log(ans) = 1/p * log(a) + (log p + log beta(p,q))/p
             }
@@ -568,14 +568,14 @@ qbeta.R	 <-  function(alpha, p, q,
                       ## FIXME: (a,p,q) : and then uses (a, pp) .. hmm
 		      f.acu = function(a,p,q) max(1e-300, 10^(-13- 2.5/pp^2 - .5/a^2)),
 		      fpu = .Machine$ double.xmin,
-		      qnormU.fun = function(u, lu) qnormU.appr(p=u, lp=lu, lower.tail=FALSE),
+		      qnormU.fun = function(u, lu) qnormUappr(p=u, lp=lu, lower.tail=FALSE),
                       R.pre.2014 = FALSE,
 		      verbose = getOption("verbose") ## FALSE, TRUE, or 0, 1, 2, ..
 		      )
 {
 ### ----- following the C code in  ~/R/D/r-devel/R/src/nmath/qbeta.c
 ###
-### ----------> make use of 'log.p' in	qnormU.appr(* , log.p)	as well!
+### ----------> make use of 'log.p' in	qnormUappr(* , log.p)	as well!
 
     ## Purpose:	 qbeta(.) in R -- edited;  verbose output
     ## -------------------------------------------------------------------------
@@ -644,12 +644,12 @@ qbeta.R	 <-  function(alpha, p, q,
 		    "; acu=",formatC(acu, digits=6) ,"\n")
 
     ## calculate the initial approximation 'xinbta' [FIXME: never designed for log.p=TRUE]
-    xinbta <- qbeta.appr(a, pp,qq, y = qnormU.fun(u=a, lu=la), logbeta=logbeta,
+    xinbta <- qbetaAppr(a, pp,qq, y = qnormU.fun(u=a, lu=la), logbeta=logbeta,
                          verbose = verbose)
     xinbta0 <- xinbta # in case we want get back to it
     if(verbose) cat("initial 'xinbta' =", formatC(xinbta0, digits=18))
     if(!is.finite(xinbta)) {
-	warning("** qbeta.R(): qbeta.appr() was NOT finite!! **")
+	warning("** qbeta.R(): qbetaAppr() was NOT finite!! **")
         xinbta <- 0.5
     }
 

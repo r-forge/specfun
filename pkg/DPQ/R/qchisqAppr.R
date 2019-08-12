@@ -4,7 +4,7 @@
 ## source("/u/maechler/R/MM/NUMERICS/dpq-functions/dpq-h.R")
 
 ## NOTA BENE:
-## ---------  --> ./qgamma-fn.R for function  qchisq.appr.R()
+## ---------  --> ./qgamma-fn.R for function  qchisqAppr.R()
 ##                  ~~~~~~~~~~~               ---------------
 
 qchisqAppr <- function(p, df, lower.tail = TRUE, log.p = FALSE, tol = 5e-7)
@@ -35,9 +35,7 @@ qgammaAppr <- function(p, shape, lower.tail = TRUE, log.p = FALSE, tol = 5e-7)
     0.5* qchisqAppr(p, df=2*shape, lower.tail=lower.tail, log.p=log.p, tol=tol)
 
 
-### This is really very much linked to  qchisq.appr.R() in
-### ./qgamma-fn.R
-###   ~~~~~~~~~~~
+if(FALSE) ##=== really rather use qchisqAppr.R() in  ./qgamma-fn.R
 qchisq.appr.Kind <-
     function(p, nu, g = lgamma(nu/2), lower.tail = TRUE, log.p = FALSE,
              tol = 5e-7, maxit = 1000, verbose = getOption('verbose'))
@@ -143,9 +141,8 @@ qchisqWH <- function(p,df, lower.tail=TRUE, log.p=FALSE) {
 ##
 ## This is just a cheap version of "Phase I  Starting Approximation"
 ## used  in  R's  qgamma.c, i.e. AS 91 (JRSS, 1979) :
-qchisqKG <- function(p, df, ncp=0, lower.tail=TRUE, log.p=FALSE)
+qchisqKG <- function(p, df, lower.tail=TRUE, log.p=FALSE)
 {
-    if(ncp !=0) stop("'ncp' must be 0")
     ## u <- .DT_qIv(p, lower.tail, log.p)
     ## lu <- log(u)
     lu <- .DT_log(p, lower.tail, log.p)
@@ -166,10 +163,10 @@ qchisqKG <- function(p, df, ncp=0, lower.tail=TRUE, log.p=FALSE)
 }
 
 qgammaApprKG <- function(p, shape, lower.tail = TRUE, log.p = FALSE)
-    0.5* qchisqKG(p, df=2*shape, ncp=0, lower.tail=lower.tail, log.p=log.p)
+    0.5* qchisqKG(p, df=2*shape, lower.tail=lower.tail, log.p=log.p)
 ## in the case  ' small "p" ',
 ## this is
-qgammaAppr.s.p <- function(p, shape, lower.tail = TRUE, log.p = FALSE) {
+qgammaApprSmallP <- function(p, shape, lower.tail = TRUE, log.p = FALSE) {
     ##---- qgamma() approximation for small p -- particularly useful for small shape !
 
     ## u <- .DT_qIv(p, lower.tail, log.p)
@@ -194,9 +191,8 @@ qgammaAppr.s.p <- function(p, shape, lower.tail = TRUE, log.p = FALSE) {
 ## <==>  (log(p) + lgamma1p(a))/a < log(eps) + log((a+1)/a)
 ## <==>  log(p) + lgamma1p(a) < a*(-log(a)+ log(eps) + log1p(a))
 ## <==>  log(p) <  a*(-log(a)+ log(eps) + log1p(a)) - lgamma1p(a) =: bnd(a)
-bnd.qgamma.appr <- function(a) {
-    log.e <- -36.043653389117156 ## = log(.Machine$double.eps)
-    a*(log.e + log1p(a) - log(a)) - lgamma1p(a)
+.qgammaApprBnd <- function(a, logEps = -36.043653389117156) { # = log(.Machine$double.eps)
+    a*(logEps + log1p(a) - log(a)) - lgamma1p(a)
 }
 
 ## NOTA BENE:  ./beta-fns.R
@@ -216,8 +212,8 @@ lgamma1p. <- function(a, cutoff.a = 1e-6, k = 3) {
 ###  and that is actually simpler !!
 ###  In maple,         series(log(Gamma(1+x)), x, 9);
 ###  gives more good terms --> ~/maple/gamma-asympt.tex and
-### then ~/maple/gamma-asympt.R
-###      ----------------------
+### then ~/maple/gamma-asympt.R  ==> lgamma1p_series() here in ./beta-fns.R
+###
 
     ## Taylor-expansion:  Gamma(1+u) = 1 + u*(-gammaE + a_0*u + a_1*u^2 + O(u^3))
     ## psi(1) = digamma(1) = -(Euler's) gamma = -Const("gamma",200)

@@ -2,12 +2,12 @@
 #### ---------------------------------
 ### MM: ~/R/D/r-devel/R/src/nmath/qgamma.c
 
-## For using this, see ./qgamma-ex.R , for testing  ./pnchisq-tst.R
-##		       ~~~~~~~~~~~~~                ~~~~~~~~~~~~~~~
+## using this, see ../tests/qgamma-ex.R , for testing ../tests/chisq-nonc-ex.R
+##	                    ~~~~~~~~~~~                        ~~~~~~~~~~~~~~~
 
 ### Exports:
 ### -------
-###  qchisq.appr.R (p, nu, g=.., lower.tail,log.p, tol, verbose, kind)
+###  qchisqAppr.R (p, nu, g=.., lower.tail,log.p, tol, verbose, kind)
 ###
 ###  qchisq.appr.Kind (p, nu, g, lower.tail,log.p, tol, verbose)
 ###
@@ -22,11 +22,9 @@
 ### This is the R equivalent of the .C() calling
 ### qgammaAppr() in ../qchisqAppr.R
 ##                  ---------------
-qchisq.appr.R <- function(p, nu, g = lgamma(nu/2),
-                          lower.tail = TRUE, log.p = FALSE,
-                          tol = 5e-7, maxit = 1000,
-                          verbose = getOption('verbose'),
-                          kind = NULL)
+qchisqAppr.R <- function(p, df, lower.tail = TRUE, log.p = FALSE,
+                         tol = 5e-7, maxit = 1000, verbose = getOption('verbose'),
+                         kind = NULL)
 
 {
     ## Purpose: Cheap fast "initial" approximation to qgamma()
@@ -36,68 +34,64 @@ qchisq.appr.R <- function(p, nu, g = lgamma(nu/2),
     ## ----------------------------------------------------------------------
     ## Author: Martin Maechler, Date: 23 Mar 2004, 16:16
 
-    if(length(nu) != 1 || length(g) != 1)
-        stop("arguments must have length 1 !")
+    if(length(df) != 1 || length(lower.tail) != 1 || length(log.p) != 1)
+        stop("arguments 'df', 'lower.tail', and 'log.p' must have length 1")
+    if(log.p) stopifnot(p <= 0) else stopifnot(0 <= p, p <= 1)
     n <- length(p)
-    if (nu <= 0) return(rep(NaN,n))
+    if (df <= 0) return(rep(NaN,n))
 
-    alpha <- 0.5 * nu ##/* = [pq]gamma() shape */
+    alpha <- 0.5 * df ##/* = [pq]gamma() shape */
     c <- alpha-1
-    force(g)
+    g <- lgamma(df/2)
+    if(!is.null(kind))
+        kind <- match.arg(kind,
+                          c("chi.small", "WH", "WHchk", "p1WH", "df.small"))
 
     Cat <- function(...) if(verbose > 0) cat(...)
 
     ## vectorizing the "rest"  ``in p'' (including choice of 'kind' which depends on p):
-    sapply(p, function(p) {
+    vapply(p, FUN.VALUE = 1, function(p) {
 
-        ##/* test arguments and initialise */
-        if (is.na(p) || is.na(nu))
-            return(p + nu)
-
-        if(log.p) stopifnot(p <= 0) else stopifnot(0 <= p && p <= 1)
-
+        ## test arguments and initialise
+        if (is.na(p) || is.na(df))
+            return(p + df)
         p1 <- .DT_log(p, lower.tail, log.p)
-
         if(is.null(kind)) ## default
             kind <- {
-                if(nu < -1.24 * p1) "chi.small"
-                else if(nu > 0.32) {
-                    ## 'ch' not known! if(ch > 2.2*nu + 6) "p1WH" else "WH"
+                if(df < -1.24 * p1) "chi.small"
+                else if(df > 0.32) {
+                    ## 'ch' not known! if(ch > 2.2*df + 6) "p1WH" else "WH"
                     "WHchk"
                 }
-                else "nu.small"
+                else "df.small"
             }
-        ## else (and in any case):
-        kind <- match.arg(kind,
-                          c("chi.small", "WH", "WHchk", "p1WH", "nu.small"))
         switch(kind,
                "chi.small" = { ##/* for small chi-squared */
 
 		   ## log(alpha) + g = log(alpha) + log(gamma(alpha)) =
 		   ## = log(alpha*gamma(alpha)) = lgamma(alpha+1) suffers from
 		   ##  catastrophic cancellation when alpha << 1
-		   lgam1pa <- ifelse(alpha < 0.25, lgamma1p(alpha),
-				     log(alpha) + g)
+		   lgam1pa <- if(alpha < 0.25) lgamma1p(alpha) else log(alpha) + g
 		   ch <- exp((lgam1pa + p1)/alpha + M.LN2)
-		   Cat(sprintf("(p1,nu)=(%g,%g) ==> small chi-sq., ch0 = %g\n",
-			       p1,nu,ch))
+		   Cat(sprintf("(p1,df)=(%g,%g) ==> small chi-sq., ch0 = %g\n",
+			       p1,df,ch))
                },
                "WH" = ,
                "WHchk" = ,
                "p1WH" = { ##/*  using Wilson and Hilferty estimate */
 
                    x <- qnorm(p, 0, 1, lower.tail, log.p)
-                   p1 <- 2./(9*nu)
-                   ch <- nu* (x*sqrt(p1) + 1-p1)^3
+                   p1 <- 2./(9*df)
+                   ch <- df* (x*sqrt(p1) + 1-p1)^3
 
-                   Cat(sprintf(" nu=%g: Wilson-Hilferty; x = %.12g\n",nu,x))
+                   Cat(sprintf(" df=%g: Wilson-Hilferty; x = %.12g\n",df,x))
 
                    ##/* approximation for p tending to 1: */
-                   if(kind == "p1WH" || (kind == "WHchk" && ch > 2.2*nu + 6))
+                   if(kind == "p1WH" || (kind == "WHchk" && ch > 2.2*df + 6))
                        ch <- -2*(.DT_Clog(p, lower.tail,log.p)
                                  - c*log(0.5*ch)+ g)
                },
-               "nu.small" = { ##/* small  nu : 1.24*(-log(p)) <= nu <= 0.32 */
+               "df.small" = { ##/* small  df : 1.24*(-log(p)) <= df <= 0.32 */
 
                    C7 <- 4.67
                    C8 <- 6.66
@@ -107,11 +101,11 @@ qchisq.appr.R <- function(p, nu, g = lgamma(nu/2),
                    ch <- 0.4
                    a <- .DT_Clog(p, lower.tail, log.p) + g + c*M.LN2
 
-                   Cat(sprintf("'nu.small', nu=%g, a(p,nu) = %19.13g ", nu,a))
+                   Cat(sprintf("'df.small', df=%g, a(p,df) = %19.13g ", df,a))
 
                    it <- 0; converged <- FALSE
                    while(!converged && it < maxit) {
-                       q <- ch
+                       ## q <- ch
                        p1 <- 1. / (1+ch*(C7+ch))
                        p2 <- ch*(C9+ch*(C8+ch))
                        t <- -0.5 +(C7+2*ch)*p1 - (C9+ch*(C10+3*ch))/p2
@@ -126,15 +120,14 @@ qchisq.appr.R <- function(p, nu, g = lgamma(nu/2),
                                paste(if(!converged)"NOT", "converged")))
 
                }) ## end{ switch( kind ) }
-
-        return(ch)
-    })# sapply(p, *)
-} ## end qchisq.appr.R()
+        ch
+    })# vapply(p, *)
+} ## end qchisqAppr.R()
 
 ## qchisq.appr.Kind() is currently in ../qchisqAppr.R
 ## ==================                   ~~~~~~~~~~~~~
 
-qgamma.R <- function(p, alpha,  scale = 1, lower.tail = TRUE, log.p = FALSE,
+qgamma.R <- function(p, alpha, scale = 1, lower.tail = TRUE, log.p = FALSE,
                      EPS1 = 1e-2,
                      EPS2 = 5e-7,##/* final precision of AS 91 */
                      epsN= 1e-15, ##/* precision of Newton step / iterations */
@@ -145,6 +138,23 @@ qgamma.R <- function(p, alpha,  scale = 1, lower.tail = TRUE, log.p = FALSE,
                      )
 
 {
+    ## test arguments
+
+    if(length(p) != 1 || length(alpha) != 1 || length(scale) != 1 ||
+       length(lower.tail) != 1 || length(log.p) != 1)
+        stop("all arguments but 'p'  must have length 1")
+
+    if (is.na(p) || is.na(alpha) || is.na(scale))
+	return(p + alpha + scale)
+    ## R.Q.P01.check(p):
+    if(log.p) stopifnot(p <= 0) else stopifnot(0 <= p && p <= 1)
+    if (alpha < 0) stop("alpha < 0")
+    if (scale <= 0) stop("scale <= 0")
+
+    if (alpha == 0) return(0)
+
+    ## initialize
+
     i420  <- 1./ 420
     i2520 <- 1./ 2520
     i5040 <- 1./ 5040
@@ -152,22 +162,6 @@ qgamma.R <- function(p, alpha,  scale = 1, lower.tail = TRUE, log.p = FALSE,
     max.it.Newton <- 1
 
     Cat <- function(...) if(verbose > 0) cat(...)
-
-    ##/* test arguments and initialise */
-
-    if(length(p) != 1 || length(alpha) != 1 || length(scale) != 1)
-        stop("arguments must have length 1 !")
-
-    if (is.na(p) || is.na(alpha) || is.na(scale))
-	return(p + alpha + scale)
-
-    ## R.Q.P01.check(p):
-    if(log.p) stopifnot(p <= 0) else stopifnot(0 <= p && p <= 1)
-
-    if (alpha < 0) stop("alpha < 0")
-    if (scale <= 0) stop("scale <= 0")
-    if (alpha == 0) return(0)
-
     p. <- .DT_qIv(p, lower.tail, log.p)
 
     Cat(sprintf("qgamma(p=%7g, alpha=%7g, scale=%7g, l.t.=%2d, log.p=%2d): ",
@@ -176,8 +170,8 @@ qgamma.R <- function(p, alpha,  scale = 1, lower.tail = TRUE, log.p = FALSE,
     g <- lgamma(alpha)##/* log Gamma(v/2) */
 
     ##/*----- Phase I : Starting Approximation */
-    ch <- qchisq.appr.R(p, nu= 2*alpha, g = g,##/* = lgamma(nu/2) */
-                        lower.tail, log.p, tol= EPS1, verbose=verbose)
+    ch <- qchisqAppr.R(p, df = 2*alpha, ## g = g,##/* = lgamma(nu/2) */
+                       lower.tail, log.p, tol= EPS1, verbose=verbose)
     do.phaseII <- TRUE
     if(!is.finite(ch)) {
 	##/* forget about all iterations! */
@@ -208,10 +202,10 @@ qgamma.R <- function(p, alpha,  scale = 1, lower.tail = TRUE, log.p = FALSE,
         s6 <- (120+c*(346+127*c)) * i5040; ##/* used below, is "const" */
 
         do.break <- FALSE
-        ch0 <- ch; ##/* save initial approx. */
+        ch0 <- ch ##/* save initial approx. */
         for(i in 1:maxit) {
-            q <- ch;
-            p1 <- 0.5*ch;
+            q <- ch
+            p1 <- 0.5*ch
             p2 <- p. - pgamma(p1, alpha, 1, lower.tail=TRUE, log.p=FALSE)
 
             if(i == 1) Cat(sprintf(" Ph.II iter; ch=%g, p2=%g\n", ch, p2))
@@ -223,7 +217,7 @@ qgamma.R <- function(p, alpha,  scale = 1, lower.tail = TRUE, log.p = FALSE,
                 do.break <- TRUE ; break
             }
 
-            t <- p2*exp(alpha*M.LN2+g+p1-c*log(ch));
+            t <- p2*exp(alpha*M.LN2 + g + p1 - c*log(ch));
             b <- t/ch;
             a <- 0.5*t - b*c;
             s1 <- (210+ a*(140+a*(105+a*(84+a*(70+60*a))))) * i420;

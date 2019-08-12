@@ -1,7 +1,12 @@
 useDynLib(DPQ, .registration = TRUE, .fixes = "C_")
                                         # <--> src/init.c
 
+## We do *NOT* import from  Rmpfr here,
+## as we only __suggest__ the package in ./DESCRIPTION
+##  ==> where we use it we check every time if it's load()able ...
+
 importFrom("sfsmisc"
+         , eaxis
          , mult.fig
      )
 
@@ -40,14 +45,14 @@ export(
   , ".DT_qIv", ".DT_val"
   , log1.Exp
   , M.LN2, M_cutoff
+  , G_half
 
   , .dntJKBch, .dntJKBch1
 
-  , G.half # rename!
 
   , Qab.terms
 
-  , all_mpfr, any_mpfr
+  , all_mpfr, any_mpfr # simple wrappers in  R/utils.R
 
   , b_chi, b_chiAsymp
   , lb_chi0, lb_chi00, lb_chiAsymp
@@ -61,6 +66,7 @@ export(
   , dnoncentchisq
   , dntJKBf, dntJKBf1
   , dntRwrong, dntRwrong1
+  , dtnc # RENAME!  from Wolfgang Viechtbauer, 2002 -- => add to DESCRIPTION Authors as 'ctb'
 
   , err.lambd0, err.lambd1, err.lambda # << FIXME, currently *print* and compute
   , form01.prec
@@ -80,16 +86,15 @@ export(
   , p.dnchiB # plot -- rename ?
   , plRpois
 
-  , pchisq.V
-  , pchisq.W, pchisqW, pchisqW.R
+  , pchisqV, pchisqW., pchisqW, pchisqW.R
 
   , pbetaRv1
-  , pnbeta.appr2, pnbeta.appr2.v1 ## rename?
+  , pnbetaAppr2, pnbetaAppr2v1 ## rename?
 
   ## Naming -fixme?
   , pnchisq
-  , pnchisq.AbdelAty, pnchisq.Pat, pnchisq.Pea, pnchisq.Sankaran.d
-  , pnchisq.ss, pnchisqIT, pnchisqTerms, pnchisqV
+  , pnchisqAbdelAty, pnchisqPatnaik, pnchisqPearson, pnchisqSankaran_d
+  , pnchisq_ss, pnchisqIT, pnchisqTerms, pnchisqV
 
   ## Naming -fixme?
   , pnt3150, pnt3150.1
@@ -100,30 +105,33 @@ export(
   , pntR, pntR1
 
   , ppoisD
-  , qbeta.R
-  , qbeta.appr, qbeta.appr.1, qbeta.appr.2, qbeta.appr.3, qbeta.appr.4
+
+  , qbetaAppr, qbetaAppr.1, qbetaAppr.2, qbetaAppr.3, qbetaAppr.4, qbeta.R
   , qgamma.R
 
+  , dgamma.R
+  , dpois_raw, bd0, stirlerr
+
     ## from R/qchisqAppr.R :
-  , qchisq.appr.R, qchisq.appr.Kind ## <<- These are almost identical --- merge them (via attr(*,"kind")?)!
+  , qchisqAppr.R
   , qchisqAppr
-  , bnd.qgamma.appr
   , qchisqKG, qchisqWH
+  , .qgammaApprBnd
+
     ## from R/qnchisq.R
-  , qchisq.appr.0, qchisq.appr.1, qchisq.appr.2, qchisq.appr.3
-  , qchisq.appr.CF1, qchisq.appr.CF2, qchisq.Cappr.2
-  , qchisq.Patn, qchisq2, qchisqA
-  , qnchisq.AbdelAty, qnchisq.Pea , qnchisq.Sankaran.d
+  , qchisqAppr.0, qchisqAppr.1, qchisqAppr.2, qchisqAppr.3
+  , qchisqApprCF1, qchisqApprCF2, qchisqCappr.2
+  , qchisq2, qchisqA
+  , qnchisqAbdelAty, qnchisqPatnaik, qnchisqPearson, qnchisqSankaran_d
 
-  , qgammaAppr, qgammaAppr.s.p, qgammaApprKG
+  , qgammaAppr, qgammaApprSmallP, qgammaApprKG
 
-  , qnorm.appr, qnormU.appr
-  , qs ## ??
+  , qnormAppr, qnormUappr
   , qtAppr
   , r_pois, r_pois_expr
-  , s  # rename !
-  , ss, ss2, ss2.
+  , qs ## ??
+  , sW, ss, ss2, ss2.
+  , z.f, z.s, z0
   , scalefactor
     ## no! titleR.exp (FIXME eventually: should not need such a global)
-  , z.f, z.s, z0
 )

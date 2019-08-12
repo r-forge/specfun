@@ -8,20 +8,20 @@ Aeq <- function(x,y) all.equal(x,y, tol = 1e-10)
 for (Ftn in c(TRUE,FALSE)) {
     cat("Fortran =",Ftn, "\n")
     stopifnot(
-              Aeq(pchisq.W(print(7), df=1, ncp=2, Fort=Ftn)[[1]]$p,
+              Aeq(pchisqW.(print(7), df=1, ncp=2, Fort=Ftn)[[1]]$p,
                   0.890202842),
-              Aeq(pchisq.W(7, df=1, ncp=2, Fort=Ftn, vari=print('f'))[[1]]$p,
+              Aeq(pchisqW.(7, df=1, ncp=2, Fort=Ftn, vari=print('f'))[[1]]$p,
                   0.8908801586),
         ##
-              Aeq(pchisq.W(print(44), df=4, ncp=16, Fort=Ftn)[[1]]$p,
+              Aeq(pchisqW.(print(44), df=4, ncp=16, Fort=Ftn)[[1]]$p,
                   0.99045176549),
         ##
-              Aeq(pchisq.W(44, df=4, ncp=16, Fort=Ftn, vari=print('f'))[[1]]$p,
+              Aeq(pchisqW.(44, df=4, ncp=16, Fort=Ftn, vari=print('f'))[[1]]$p,
                   0.9904601514265),
         ##
-              Aeq(pchisq.W(print(50), df=3.5, ncp=20, Fort=Ftn)[[1]]$p,
+              Aeq(pchisqW.(print(50), df=3.5, ncp=20, Fort=Ftn)[[1]]$p,
                   0.9912862375384),
-              Aeq(pchisq.W(50, df=3.5,ncp=20, Fort=Ftn, vari=print('f'))[[1]]$p,
+              Aeq(pchisqW.(50, df=3.5,ncp=20, Fort=Ftn, vari=print('f'))[[1]]$p,
                   0.9912928203989)
               )
 }

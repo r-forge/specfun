@@ -19,23 +19,23 @@
 ## MM: Where is this approx. from?
 
 ##- The function is as follows:
-qchisq.appr.0 <-
+qchisqAppr.0 <-
     function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 {
     z.p <- qnorm(p, lower.tail=lower.tail, log.p = log.p)
     df + ncp + z.p * (2 * df + 4 * ncp)^0.5
 }
 
-qchisq.appr.1 <-
+qchisqAppr.1 <-
     function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 {
     z.p <- qnorm(p, lower.tail=lower.tail, log.p = log.p)
     ## (1+b) * q^chisq(x,df);
-    ## better (?) to use q^chisq(x, df*); -> qchisq.appr.2
+    ## better (?) to use q^chisq(x, df*); -> qchisqAppr.2
     (1 + ncp/(ncp +df))* df * (1 - 2/(9*df) + z.p*sqrt(2/(9*df)))^3
 }
 
-qchisq.appr.2 <-
+qchisqAppr.2 <-
     function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 {
     z.p <- qnorm(p, lower.tail=lower.tail, log.p = log.p)
@@ -47,7 +47,7 @@ qchisq.appr.2 <-
     a * (1 - alp + z.p *sqrt(alp))^3
 }
 
-qchisq.appr.3 <-
+qchisqAppr.3 <-
     function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 {
     z.p <- qnorm(p, lower.tail=lower.tail, log.p = log.p)
@@ -60,7 +60,7 @@ qchisq.appr.3 <-
 
 
 ## -- Cornish-Fisher (inverse Edgeworth) Expansions:
-qchisq.appr.CF1 <-
+qchisqApprCF1 <-
     function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 {
     z.p <- qnorm(p, lower.tail=lower.tail, log.p = log.p)
@@ -71,7 +71,7 @@ qchisq.appr.CF1 <-
     mu + sqrt(sig2)* (z.p + gam1/6 * (z.p^2 - 1))
 }
 
-qchisq.appr.CF2 <-
+qchisqApprCF2 <-
     function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 {
     z.p <- qnorm(p, lower.tail=lower.tail, log.p = log.p)
@@ -88,7 +88,7 @@ qchisq.appr.CF2 <-
 
 ###-- 2 -- Chisq (Central) Approximations ---------------------------
 
-qchisq.Patn <- function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
+qnchisqPatnaik <- function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 {
     ## Basically Abramowitz & Stegun "nu > 30" formula  (26.4.30)
     ## Also == Patnaik(1949)'s as reported in Johnson,Kotz,Bala.. p.462
@@ -98,7 +98,7 @@ qchisq.Patn <- function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
     b1 * qchisq(p, df = nu., lower.tail= lower.tail, log.p= log.p)
 }
 
-qnchisq.Pea <- function(p, df, ncp = 0,
+qnchisqPearson <- function(p, df, ncp = 0,
                        lower.tail = TRUE, log.p = FALSE)
 {
     ## Purpose: Pearson(1959) approximation to pnchisq() - using pchisq()
@@ -112,7 +112,7 @@ qnchisq.Pea <- function(p, df, ncp = 0,
         qchisq(p, df = n2^3/(n3*n3), lower.tail=lower.tail, log.p=log.p)
 }
 
-qchisq.Cappr.2 <- function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
+qchisqCappr.2 <- function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 {
     ## Johnson,Kotz,Bala.. p.466  (29.66)
     ## is  *VERY* bad for small df or small df/ncp  (df = 0.1; df/ncp < 1};
@@ -124,13 +124,13 @@ qchisq.Cappr.2 <- function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 
 ## Nice inversions of Normal approximations in ./pnchisq.R :
 ## Abdel-Aty (1954) .. Biometrika
-qnchisq.AbdelAty <-  function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
+qnchisqAbdelAty <-  function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 {
     ## Purpose: Abdel-Aty(1954) "first approx." (Wilson-Hilferty) approximation to pnchisq()
     ## Johnson,Kotz,...: Has it *WRONGLY*  in eq. (29.61a), p.463
     ## ----------------------------------------------------------------------
     ## Author: Martin Maechler, Date: 2018-08-16
-    ## Explicit inversion of pnchisq.AbdelAty()
+    ## Explicit inversion of pnchisqAbdelAty()
     r <- df + ncp # = ν + λ  ( = k + λ  on Wikip.)
     n2 <- r + ncp # = ν + 2λ
     V <- 2*n2 / (9*r^2)
@@ -138,18 +138,18 @@ qnchisq.AbdelAty <-  function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
     r * qNp^3
 }
 
-qnchisq.Sankaran.d <- function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
+qnchisqSankaran_d <- function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 {
     ## Purpose: Sankaran(1959,1963) according to Johnson et al. p.463, (29.61d):
-    ## Explicit inversion of pnchisq.Sankaran.d()
+    ## Explicit inversion of pnchisqSankaran_d()
     r <- df + ncp  #              = ν + λ
     n2 <- r + ncp  # = df + 2*ncp = ν + 2λ
     n3 <- n2 + ncp # = df + 3*ncp = ν + 3λ
     q1 <- n2/r^2   # = (n + 2λ)/(n+λ)²
     h1 <- - 2/3 * r*n3/n2^2 # =  h - 1
     h <- 1 + h1
-    mu <- 1 + h*h1*q1(1 + (h-2)*(1-3*h)*q1/2)
-    V  <- 2*h^2*q1 * (1 +  h1 * (1-3*h)*q1)
+    mu <- 1 + h*h1*q1*(1 + (h-2)*(1-3*h)*q1/2)
+    V  <- 2*h^2 * q1 *(1 +  h1 * (1-3*h)*q1)
     qNp <- qnorm(p, mean = mu, sd = sqrt(V), lower.tail=lower.tail, log.p=log.p)
     r * qNp^(1/h)
 }
@@ -166,13 +166,13 @@ qnchisq.Sankaran.d <- function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 ##  df degrees of freedom and noncentrality parameter delta = ncp.
 qchisq2 <- function(p, df, ncp = 0, eps = 0.0001)
 {
-    newton(x0 = qchisq.appr.0(p, df, ncp),
+    newton(x0 = qchisqAppr.0(p, df, ncp),
            G = function(x, z) pchisq(x, df = z[2], ncp = z[3]) - z[1],
            g = function(x, z) dchisq(x, df = z[2], ncp = z[3]),
            eps = eps, z = c(p, df, ncp))[1]
 }
 
-qchisqA <- function(p, df, ncp = 0, eps = 0.0001, qIni = qchisq.appr.0)
+qchisqA <- function(p, df, ncp = 0, eps = 0.0001, qIni = qchisqAppr.0)
 {
     ## same as qchisq2() but returning  "all"
     newton(x0 = qIni(p, df=df, ncp=ncp),

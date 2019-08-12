@@ -1,5 +1,5 @@
-pnbeta.appr2.v1 <-
-pnbeta.appr2 <- function(x, a, b, ncp = 0, lower.tail=TRUE, log.p=FALSE)
+pnbetaAppr2v1 <- ## pnbeta.appr2 <-
+    function(x, a, b, ncp = 0, lower.tail=TRUE, log.p=FALSE)
 {
   ## Purpose: "Approximation 2" of
   ## Chattamvelli, R. \& Shanmugam, F.  (1997), `Algorithm {AS 310}: ...
@@ -22,7 +22,7 @@ pnbeta.appr2 <- function(x, a, b, ncp = 0, lower.tail=TRUE, log.p=FALSE)
     pnorm( - mu.L / si.L, lower.tail=lower.tail, log.p = log.p)
 }
 
-pnbeta.appr2 <- function(x, a, b, ncp = 0, lower.tail=TRUE, log.p=FALSE)
+pnbetaAppr2 <- function(x, a, b, ncp = 0, lower.tail=TRUE, log.p=FALSE)
 {
   ## Purpose: "Approximation 2" of
   ## Chattamvelli, R. \& Shanmugam, F.  (1997), `Algorithm {AS 310}: ...

@@ -106,7 +106,7 @@ nu.lam.expr <- function(df, ncp)
                list(df = df, ncp = ncp))
 
 ##
-s <- function(x, df, ncp)
+sW <- function(x, df, ncp)
 {
     ## Purpose: s(x, df, ncp) as in Wienergerm approx.
     ## -------  but using Taylor expansion when needed: (x*ncp / df^2) << 1
@@ -125,7 +125,7 @@ s <- function(x, df, ncp)
     list(ff = ff, s = s)
 }
 
-qs <- function(x,df,ncp, f.s = s(x,df,ncp), eps1 = 1/2, sMax = 1e100)
+qs <- function(x,df,ncp, f.s = sW(x,df,ncp), eps1 = 1/2, sMax = 1e100)
 {
     ## Purpose:
     ##     q(s) := (f - 2*h(1-s)) / s
@@ -153,7 +153,7 @@ z0 <- function(x, df, ncp)
     ## ----------------------------------------------------------------------
     ## Author: Martin Mächler, Date: 26 Jan 2004, 21:09
 
-    f.s <- s(x, df, ncp)
+    f.s <- sW(x, df, ncp)
     ff <- f.s$ff
     s  <- f.s$s
     s1 <- s - 1
@@ -179,7 +179,7 @@ z.s <- function(x, df, ncp, verbose = getOption("verbose"))
     ## Author: Martin Mächler, Date: 26 Jan 2004, 21:17
 
     ## the same as z0():
-    f.s <- s(x, df, ncp)
+    f.s <- sW(x, df, ncp)
     ff <- f.s$ff
     s  <- f.s$s
     s1 <- s - 1
@@ -217,7 +217,7 @@ pchisqW.R <- function(x, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
 {
 ###---- R version of 'pchisq.W' --------
 
-    f.s <- s(x, df, ncp)
+    f.s <- sW(x, df, ncp)
     ##     =
     ff <- f.s$ff
     s  <- f.s$s
@@ -277,8 +277,8 @@ pchisqW.R <- function(x, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
 
 ##' Fortran/C version: ---> below for  pchisqW() -- the C only version
 ##'                                    =========
-pchisq.W <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
-                     Fortran, variant = c("s", "f"))
+pchisqW. <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
+                     Fortran = TRUE, variant = c("s", "f"))
 {
     ## Purpose: Wiener germ approximation to pchisq(*, ncp=.)
     ## ----------------------------------------------------------------------
@@ -318,9 +318,9 @@ pchisq.W <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
 }
 
 ##' a more usefully vectorized -- in 'q' --- version
-pchisq.V <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
-                     Fortran, variant = c("s", "f")) {
-    vapply(pchisq.W(q, df=df, ncp=ncp, lower.tail=lower.tail, log.p=log.p,
+pchisqV <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
+                     Fortran = TRUE, variant = c("s", "f")) {
+    vapply(pchisqW.(q, df=df, ncp=ncp, lower.tail=lower.tail, log.p=log.p,
                     Fortran=Fortran, variant=variant),
            `[[`, numeric(1), "p")
 }
@@ -333,7 +333,6 @@ pchisqW <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
     ## Purpose: Wiener germ approximation to pchisq(*, ncp=.)
     ## ----------------------------------------------------------------------
     ## Arguments: ... as for pchisq()
-    ##		Fortran: logical: use Fortran or C
     ## ----------------------------------------------------------------------
     ## Author: Martin Maechler, Date: 26 Jan 2004, 10:10
 

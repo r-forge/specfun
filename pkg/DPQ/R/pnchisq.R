@@ -207,8 +207,7 @@ pnchisq <- function(q, df, ncp = 0, lower.tail = TRUE,
 pnchisqV <- function(x, ..., verbose = 0)
     sapply(x, pnchisq, ..., verbose = verbose)
 
-pnchisq.Pat <- function(q, df, ncp = 0,
-                       lower.tail = TRUE, log.p = FALSE)
+pnchisqPatnaik <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 {
     ## Purpose: Patnaik(1949)'s approximation to pnchisq() - using pchisq()
     ##    This is also the one in Abramowitz & Stegun, p.942, 26.4.27
@@ -221,8 +220,7 @@ pnchisq.Pat <- function(q, df, ncp = 0,
     pchisq(q*ic, df=e*ic, lower.tail=lower.tail, log.p=log.p)
 }
 
-pnchisq.Pea <- function(q, df, ncp = 0,
-                       lower.tail = TRUE, log.p = FALSE)
+pnchisqPearson <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 {
     ## Purpose: Pearson(1959) approximation to pnchisq() - using pchisq()
     ## Johnson,Kotz,...: Error is O(1/ncp) for ncp -> Inf --
@@ -237,7 +235,7 @@ pnchisq.Pea <- function(q, df, ncp = 0,
 }
 
 ## Abdel-Aty (1954) .. Biometrika
-pnchisq.AbdelAty <-  function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
+pnchisqAbdelAty <-  function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 {
     ## Purpose: Abdel-Aty(1954) "first approx." (Wilson-Hilferty) approximation to pnchisq()
     ## Johnson,Kotz,...: Has it *WRONGLY*  in eq. (29.61a), p.463
@@ -250,7 +248,7 @@ pnchisq.AbdelAty <-  function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
           lower.tail=lower.tail, log.p=log.p)
 }
 
-pnchisq.Sankaran.d <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
+pnchisqSankaran_d <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 {
     ## Purpose: Sankaran(1959,1963) according to Johnson et al. p.463, (29.61d):
     r <- df + ncp  #              = ν + λ
@@ -336,7 +334,7 @@ pnchisqTerms <-  function(x, df, ncp, lower.tail = TRUE, i.max = 1000)
 }## {pnchisqTerms}
 
 
-## Approach for ...
+## Summands for pnchisq() series approximation, see pnchisq_ss() [below]
 ss <- function(x, df, ncp, i.max = 10000)
 {
     ## Purpose:
@@ -426,7 +424,7 @@ ss2 <- function(x, df, ncp, i.max = 10000, eps = .Machine$double.eps)
 }
 
 
-pnchisq.ss <- function(x, df, ncp, i.max = 10000) {
+pnchisq_ss <- function(x, df, ncp, i.max = 10000) {
     ## Using ss() for the non-central chisq prob.
     si <- ss(x=x, df=df, ncp=ncp, i.max = i.max)
     ## old version: had exp(-ncp/2)*
@@ -435,7 +433,7 @@ pnchisq.ss <- function(x, df, ncp, i.max = 10000) {
 
 ## Instead of limited (overflow!) ss(),
 ## use C - code which parallels  pnchisq()'s in C:
-dyn.load("/u/maechler/R/MM/NUMERICS/dpq-functions/pnchisq-it.so")
+## dyn.load("/u/maechler/R/MM/NUMERICS/dpq-functions/pnchisq-it.so")
 
 pnchisqIT <- function(q, df, ncp = 0, errmax = 1e-12,
                       reltol = 2*.Machine$double.eps, itrmax = 1e5)

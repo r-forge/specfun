@@ -14,7 +14,7 @@
 \usage{
 lgamma1p (a, tol_logcf = 1e-14)     % ../R/beta-fns.R
 lgamma1p.(a, cutoff.a = 1e-6, k = 3)% ../R/qchisqAppr.R
-lgamma1p_series(x, k)% ../R/qchisqAppr.R
+lgamma1p_series(x, k)% ../R/beta-fns.R
 }
 \arguments{
   \item{a, x}{a numeric vector.}
@@ -35,19 +35,22 @@ lgamma1p_series(x, k)% ../R/qchisqAppr.R
 \value{
   a numeric vector with the same attributes as \code{a}.
 }
-\references{
-  Didonato, A. and Morris, A., Jr, (1992)
-  Algorithm 708: Significant digit computation of the incomplete beta function ratios.
-  \emph{ACM Transactions on Mathematical Software}, \bold{18}, 360--373;
-  see also \code{\link{pbeta}}.
-}
-\author{Martin Maechler, for \code{lgamma1p()}, translated from the
-  C/Fortran code of algorithm 708 by Didonato and Morris.
+%% \references{
+%%   Didonato, A. and Morris, A., Jr, (1992)
+%%   Algorithm 708: Significant digit computation of the incomplete beta function ratios.
+%%   \emph{ACM Transactions on Mathematical Software}, \bold{18}, 360--373;
+%%   see also \code{\link{pbeta}}.
+%% }
+\author{Morten Welinder (C code of Jan 2005, see R's bug issue
+  \PR{7307}) for \code{lgamma1p()}.
+
+  Martin Maechler, notably for \code{lgamma1p_series()}.% which works
+  % with Rmpfr but otherwise may be *much* less accurate than Morten's 40 term series!
 }
 %% \note{
 %% }
 \seealso{
-  \code{\link{log1p}}, \code{\link{pbeta}}.
+  \code{\link{log1pmx}}, \code{\link{log1p}}, \code{\link{pbeta}}.
 }
 \examples{
 curve(-log(x*gamma(x)), 1e-30, .8, log="xy", col="gray50", lwd = 3,

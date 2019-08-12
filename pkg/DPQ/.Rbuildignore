@@ -1,8 +1,10 @@
 DESCRIPTION_Author
+[a-z]_README
 do-now\.org
 ^Misc
 ^old$
 auto
+.*/.*,v.*
 R/*.R\+
 src/.*\+
 svn-.*
@@ -12,6 +14,7 @@ demo/.*.R\+
 tests/*pdf
 tests/*.Rout
 tests/*.Rout*[24]b
+TODO_man
 TODO-merge-.*
 .*mail
 Rplots.pdf

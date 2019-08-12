@@ -1,11 +1,14 @@
 \name{b_chi}
+\title{Compute \eqn{E[\chi_\nu] / \sqrt{\nu}}{E[chi_nu]/sqrt(nu)}
+  useful for t- and chi-Distributions}
 \alias{b_chi}
 \alias{b_chiAsymp}
 \alias{lb_chi00}
 \alias{lb_chi0}
 \alias{lb_chiAsymp}
-\title{Compute \eqn{E[\chi_\nu] / \sqrt{\nu}}{E[chi_nu]/sqrt(nu)}
-  useful for t- and chi-Distributions}
+\alias{c_dt}
+\alias{c_dtAsymp}
+\alias{c_pt}
 \description{
   \deqn{b_\chi(\nu) := E[\chi(\nu)] / \sqrt{\nu} = \frac{\sqrt{2/\nu}\Gamma((\nu+1)/2)}{\Gamma(\nu/2)},}{%
     b_chi(nu) := E[chi(nu)] / sqrt(nu) = sqrt(2/nu) Gamma((nu+1)/2) / Gamma(nu/2),}
@@ -32,6 +35,10 @@ b_chi     (nu, one.minus = FALSE, c1 = 341, c2 = 1000)
 b_chiAsymp(nu, order = 2, one.minus = FALSE)
 #lb_chi    (nu, ......) # not yet
 lb_chiAsymp(nu, order)
+
+c_dt(nu)       # warning("FIXME: current c_dt() is poor -- base it on lb_chi(nu) !")
+c_dtAsymp(nu)  # deprecated in favour of lb_chi(nu)
+c_pt(nu)       # warning("use better c_dt()") %---> FIXME deprecate even stronger ?
 }
 
 \arguments{

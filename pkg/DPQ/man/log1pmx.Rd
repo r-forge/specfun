@@ -23,12 +23,25 @@ log1pmx(x, tol_logcf = 1e-14)
     \item{\eqn{x \in [ml,1]}, and \eqn{|x| >= 0.01}:}{use \eqn{t(2y logcf(y, 3, 2) - x)},}
   }
   where \eqn{t := \frac{x}{2 + x}}{t := x/(2+x)}, and \eqn{y := t^2}.
+
+  Note that the formulas based on \eqn{t} are based on the (fast
+  converging) formula
+  \deqn{\log(1+x) = 2\left(r + \frac{r^3}{3}+ \frac{r^5}{5} + \ldots\right),}{%
+    log(1+x) = 2(r + r^3/3  + r^5/5 + ...),}
+  where \eqn{r := x/(x+2)}, see the reference.
 }
 \value{a numeric vector (with the same attributes as \code{x}).
 }
-%% \references{
-%% }
-\author{Martin Maechler, based on ...}% FIXME
+\references{
+  Abramowitz, M. and Stegun, I. A. (1972)
+  \emph{Handbook of Mathematical Functions}. New York: Dover.
+  \url{https://en.wikipedia.org/wiki/Abramowitz_and_Stegun} provides
+  links to the full text which is in public domain.\cr
+  Formula (4.1.29), p.68.
+}
+\author{A translation of Morten Welinder's C code of Jan 2005, see R's bug
+  issue \PR{7307}.
+}
 \seealso{
   \code{\link{logcf}}, the auxiliary function,
   \code{\link{lgamma1p}} which calls \code{log1pmx}, \code{\link{log1p}}
