@@ -142,8 +142,11 @@ n <- c(102,104); round(qt(.995,n-1,-qnorm(.0001)*sqrt(n))/sqrt(n),3)
 ## MM: graphically convincing is e.g.
 n <- seq(80,120, by=0.5)
 summary(ncp.n <- -qnorm(.0001)*sqrt(n))
-qt995 <- qt(.995, n-1, ncp=ncp.n) / sqrt(n)# 45 warnings
-plot(n, qt995, type = "l", col=2, lwd=2)
+qt995 <- qt(.995, n-1, ncp=ncp.n) / sqrt(n)
+summary(warnings())# 45 identical warnings:
+## full precision may not have been achieved in 'pnt{final}'
+plot(n, qt995, type = "l", col=2, lwd=2) ## => visual kink in {102, 103}:
+abline(v = 102:103, lty=3, col="gray")
 
 qtSc <- function(n, p = 0.995, delta = .0001)  {
     stopifnot(length(p) == 1, length(delta) == 1, n > 1, delta > 0,
@@ -382,14 +385,31 @@ plot(function(t) t - pntJW39(qtAppr(t,df=10,ncp=1e5),df=10,ncp=1e5),
 
 ###--- Diverse tests, some lifted from ../R/t-nonc-fn.R ------------------------
 
-(f. <- dntRwrong(1:6, df=3, ncp=5, check=TRUE))
-## [1] 0.0032023 0.2728377 1.5174647 2.4481320 2.4106931 1.9481189 -- wrong "but sensible"
+##		[MM: the next 2 'dntJKBch(.)' were 'dntRwrong(.)' originally ]
 
-x <- seq(-1,20, by=1/4)
-plot(x, dt(x, df=3, ncp=5) / dntRwrong(x, df=3, ncp=5))
-## ???
+print(f. <- .dntJKBch(1:6, df=3, ncp=5, check=TRUE), digits = 4)
+## now:[1] 0.0005083 0.0260607 0.1191377 0.1761045 0.1657718 0.1305411
+## was:[1] 0.0032023 0.2728377 1.5174647 2.4481320 2.4106931 1.9481189 -- wrong "but sensible"
 
-(ft <- dntJKBf(1:6, df=3, ncp=5))
-## [1] 0.000508267 0.026060733 0.119137668 0.176104468 0.165771811 0.130541073
+
+x <- seq(-1,12, by=1/16)
+
+if(FALSE) ## FIXME ?! -- internal logic error:
+.dntJKBch(x, df=3, ncp=5, check=TRUE)
+## Error in (function (x, df, ncp, log = FALSE, M = 1000, check = FALSE,  :
+##   exp(lterms[ii]) and terms[ii] are not equal:
+##   'is.NA' value mismatch: 0 in current 340 in target
+fx <- dt(x, df=3, ncp=5)
+re1 <- 1 - .dntJKBch(x, df=3, ncp=5) / fx # with warnings
+re2 <- 1 -  dntJKBf (x, df=3, ncp=5) / fx
+summary(warnings()) ## "In log(x * ncp * sqrt(2)/sqrt(df + x^2)) : NaNs produced"
+          all.equal(re1[!is.na(re1)], re2[!is.na(re1)], tol=0)##  Mean relative ...: 2.068..e-5
+stopifnot(all.equal(re1[!is.na(re1)], re2[!is.na(re1)], tol=1e-6))
+matplot(x, log10(abs(cbind(re1, re2))), type = "o", cex = 1/4)
+
+
+print(ft <- .dntJKBch(1:6, df=3, ncp=5), digits = 4)
+## [1] 0.0005083 0.0260607 0.1191377 0.1761045 0.1657718 0.1305411
 ## correct !! *with* the factorial !
+          all.equal(ft, dt(1:6, df=3, ncp=5), tol = 0) # 1.4959e-12
 stopifnot(all.equal(ft, dt(1:6, df=3, ncp=5), tol = 1e-11))

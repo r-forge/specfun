@@ -421,7 +421,7 @@ qnormAppr <- function(p) {
 qnormUappr <- function(p,
                        lp = .DT_Clog(p, lower.tail=lower.tail, log.p=log.p),
                                         # ~= log(1-p) -- independent of lower.tail, log.p
-                       lower.tail=TRUE, log.p=FALSE)
+                       lower.tail=FALSE, log.p=FALSE)
 {
     ## qnorm: normal quantile approximation;
     ## -- to be used in  qbeta(.)
@@ -440,7 +440,7 @@ qnormUappr <- function(p,
         p. <- .D_qIv(p, log.p)
         ## swap p <--> 1-p -- so we are where approximation is better
         swap <- if(lower.tail) p. < 1/2 else p. > 1/2 # logical vector
-        p[swap] <- if(log.p) log1.Exp(p[swap]) else 1 - p[swap]
+        p[swap] <- if(log.p) log1mexp(-p[swap]) else 1 - p[swap]
     }
     R <- r <- sqrt(-2 * lp)
     r.ok <- r < 1e10 ## e.g., for p == 1, r = Inf would give R = NaN
@@ -452,7 +452,7 @@ qnormUappr <- function(p,
     R
 }
 
-qbetaAppr.1 <- function(a, p, q, y = qnormUappr(a, lower.tail=FALSE))
+qbetaAppr.1 <- function(a, p, q, y = qnormUappr(a))
 {
   ## Purpose: Approximate  qbeta(a, p,q) -- Abramowitz & Stegun (26.5.22)
   ##          qbeta(.) takes this only when  p>1 & q>1
@@ -494,8 +494,7 @@ qbetaAppr.2 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(p
     -expm1((l1ma + log(q) + logbeta) / q)
 }
 
-qbetaAppr.4 <- function(a, p, q, y = qnormUappr(a, lower.tail=FALSE),
-                         verbose=getOption("verbose"))
+qbetaAppr.4 <- function(a, p, q, y = qnormUappr(a), verbose=getOption("verbose"))
 {
     ## Purpose: Approximate  qbeta(a, p,q); 'a' is only used via qnorm(a,..)
     r <- q + q
@@ -507,8 +506,8 @@ qbetaAppr.4 <- function(a, p, q, y = qnormUappr(a, lower.tail=FALSE),
     1 - 2 / (t + 1)
 }
 
-qbetaAppr <- function(a, p, q, y = qnormUappr(a, lower.tail=FALSE), logbeta= lbeta(p,q),
-                       verbose = getOption("verbose") && length(a) == 1)
+qbetaAppr <- function(a, p, q, y = qnormUappr(a), logbeta = lbeta(p,q),
+                      verbose = getOption("verbose") && length(a) == 1)
 {
     ## Purpose: Approximate  qbeta(a, p,q) --- for  a <= 1/2
     ## -------------------------------------------------------------------------
@@ -568,7 +567,7 @@ qbeta.R	 <-  function(alpha, p, q,
                       ## FIXME: (a,p,q) : and then uses (a, pp) .. hmm
 		      f.acu = function(a,p,q) max(1e-300, 10^(-13- 2.5/pp^2 - .5/a^2)),
 		      fpu = .Machine$ double.xmin,
-		      qnormU.fun = function(u, lu) qnormUappr(p=u, lp=lu, lower.tail=FALSE),
+		      qnormU.fun = function(u, lu) qnormUappr(p=u, lp=lu),
                       R.pre.2014 = FALSE,
 		      verbose = getOption("verbose") ## FALSE, TRUE, or 0, 1, 2, ..
 		      )

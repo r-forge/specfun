@@ -1,10 +1,10 @@
 \name{lbeta}
+\title{Log Beta Approximations}
 \alias{lbetaM}
 \alias{lbeta.asy}
 \alias{lbetaMM}
 \alias{lbeta.n}
 \alias{lbeta.n.half}
-\title{Log Beta Approximations}
 \description{
   Compute \code{log(\link{beta}(a,b))} in a simple (fast) or asymptotic way.
 }

@@ -27,11 +27,12 @@
 
 M.LN2 <- log(2)
 
-## log(1 - exp(x))  in more stable form than log1p(- R_D_qIv(x))  == log1mexp(-x)
-log1.Exp <- function(x) ifelse(x > -M.LN2, log(-expm1(x)), log1p(-exp(x)))
+##' log(1 - exp(-x))  in more stable form than log1p(- R_D_qIv(-x))
+##' NB: copula::log1mexp() is slightly more sophisticated
+log1mexp <- function(x) ifelse(x <= M.LN2, log(-expm1(-x)), log1p(-exp(-x)))
 
 ## log(1-exp(x)): R_D_LExp(x) == (log1p(- .D_qIv(x))) but even more stable:
-.D_LExp <- function(x, log.p) if(log.p) log1.Exp(x) else log1p(-x)
+.D_LExp <- function(x, log.p) if(log.p) log1mexp(-x) else log1p(-x)
 
 .DT_val  <- function(x, lower.tail, log.p)
     .D_val(.D_Lval(x, lower.tail), log.p) #	x   in pF
@@ -63,7 +64,7 @@ log1.Exp <- function(x) ifelse(x > -M.LN2, log(-expm1(x)), log1p(-exp(x)))
     if(lower.tail) .D_LExp(p, log.p) else .D_log(p, log.p)
 
 .DT_Log <- function(p, lower.tail)		# == .DT_log when we "know" log.p=TRUE
-    if(lower.tail) p else log1.Exp(p)		# log(p) in qF	[for log_p = TRUE ]
+    if(lower.tail) p else log1mexp(-p)		# log(p) in qF	[for log_p = TRUE ]
 
 
 ##  R_Q_P01_boundaries <- function(p, _LEFT_, _RIGHT_)

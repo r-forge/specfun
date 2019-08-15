@@ -45,6 +45,17 @@ dntJKBf (x, df, ncp, log = FALSE, M = 1000)
 }
 \details{
   How to choose \code{M} optimally has not been investigated yet.
+
+  Note that relatedly,
+
+  \R's source code \file{R/src/nmath/dnt.c} has claimed from 2003 till 2014
+  but \bold{wrongly} that the noncentral t density \eqn{f(x, *)} is \preformatted{
+    f(x, df, ncp) =
+ 	df^(df/2) * exp(-.5*ncp^2) /
+ 	(sqrt(pi)*gamma(df/2)*(df+x^2)^((df+1)/2)) *
+ 	   sum_{k=0}^Inf  gamma((df + k + df)/2)*ncp^k / prod(1:k)*(2*x^2/(df+x^2))^(k/2) .}
+
+  These functions (and this help page prove that it was wrong.
 }
 \value{
   a number for \code{dntJKBf1()} and \code{.dntJKBch1()}.
@@ -67,6 +78,14 @@ ncp <- seq(0, 6, len = 31)
 dt3R   <- outer(tt, ncp, dt,     df = 3)
 dt3JKB <- outer(tt, ncp, dntJKBf, df = 3)
 all.equal(dt3R, dt3JKB)
+
+% This is already in ../tests/t-nonc-tst.R --- TODO: drop here or there ?!
+x <- seq(-1,12, by=1/16)
+fx <- dt(x, df=3, ncp=5)
+re1 <- 1 - .dntJKBch(x, df=3, ncp=5) / fx # with warnings
+re2 <- 1 -  dntJKBf (x, df=3, ncp=5) / fx
+stopifnot(all.equal(re1[!is.na(re1)], re2[!is.na(re1)], tol=1e-6))
+matplot(x, log10(abs(cbind(re1, re2))), type = "o", cex = 1/4)
 }
 \keyword{distribution}
 \keyword{math}

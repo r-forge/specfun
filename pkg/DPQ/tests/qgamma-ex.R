@@ -18,7 +18,7 @@ for(p in runif(100)) for(df in rlnorm(100)) {
     if(abs(r) > 1e-11) res <- rbind(res, c(p,df,r))
 }
 
-### use df in U[0,1]: finds two case with bound 1e-11
+### use df in U[0,1]: finds two cases with bound 1e-11
 for(p in runif(100)/2) for(df in runif(100)) {
     qq <- qchisq(p, df)
     if(qq > 0 && p > 0) {
@@ -90,10 +90,10 @@ print(dN, digits=10)
 showProc.time()
 
 
-## Oops: another  qgamma() / qchisq() problem:  mostly NaN's !!
+## Oops: another  qgamma() / qchisq() problem:  mostly NaN's == all solved now
 curve(qgamma(x, 20), 1e-16,  1e-10, log='x')
-curve(qgamma(x, 20), 1e-300, .99 , log='xy')
-abline(v=c(1e-16,1e-10),col="light blue")
+curve(qgamma(x, 20), 1e-300, .99 , log='xy') # and add the critical region from above:
+           abline(v=c(1e-16, 1e-10), col="light blue")
 curve(qgamma(x, 20), 1e-26,  1e-07, log='x')
 ##-> now using  log=TRUE in same region:
 curve(qgamma(x,      20, log=TRUE), -38, -16)## no problem!!
@@ -110,7 +110,7 @@ stopifnot(
 )
 
 
-## --- Nice graphic : --- but amszingly *S..L..O..W*
+## --- Nice graphic : --- but amazingly *S..L..O..W*
 
 p.qgammaSml <- function(from= 1e-110, to = 1e-5, ylim = c(0.4, 1000),
                         n = 201, k.lab = 3,
@@ -311,9 +311,9 @@ p.qgammaLog(10.13695, 1.0000001, 0.9999999)#
 p.qgammaLog(10.1368, 1.000001, 0.999999)#
 p.qgammaLog(10.1365, 1.000001, 0.999999)#
 p.qgammaLog(10.136, 1.000001, 0.999999)#
-p.qgammaLog(10.125, 1.1, 0.9)# no more
-p.qgammaLog(10, 1.2, 0.8)# no problem anymore
-p.qgammaLog(9)# no problem
+p.qgammaLog(10.125, 1.1, 0.9)# --- see it now
+p.qgammaLog(10, 1.2, 0.8)
+p.qgammaLog(9)
 
 showProc.time()
 

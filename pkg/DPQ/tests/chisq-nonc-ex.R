@@ -87,17 +87,17 @@ showProc.time()
 ## source("~/R/MM/NUMERICS/dpq-functions/dnchisq-fn.R")# dnoncentchisq() etc
 
 ## R
-curve(dnoncentchisq(x, df=3, del=0), 0, 10)
+curve(dnoncentchisq(x, df=3, ncp=0), 0, 10)
 curve(dchisq       (x, df=3),        0, 10, add=TRUE, col='purple')
 ## ok
-curve(dnoncentchisq(x, df=3, del=1), 0, 10)
+curve(dnoncentchisq(x, df=3, ncp=1), 0, 10)
 curve(dchisq       (x, df=3, ncp=1), 0, 10, add=TRUE, col='purple') #ditto
 
 x  <- seq(0, 10, length=101)
 del <- c(0:4,10,40)
 res <- matrix(NA, nr=length(x), nc=length(del))
 for(id in seq(along=del))
-    res[,id] <- dnoncentchisq(x=x, df=3, del=del[id])
+    res[,id] <- dnoncentchisq(x=x, df=3, ncp=del[id])
 
 matplot(x, res)
 

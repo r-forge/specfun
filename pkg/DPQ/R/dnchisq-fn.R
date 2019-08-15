@@ -7,23 +7,22 @@
 
 ## R's builtin  dchisq(x, df, ncp) is now {since P.Dalgaards improvement}
 ## -----------                     definitely better than this:
-dnoncentchisq <- function(x, df, del)
+dnoncentchisq <- function(x, df, ncp, kmax = floor(ncp/2 + 5 * (ncp/2)^0.5))
 {
     ## The noncentral-chisquare density at x
-    ## for df degrees of freedom, noncentrality parameter del.
+    ## for df degrees of freedom, noncentrality parameter ncp.
     ## (Only) x may be a vector.
     ##
-    if(length(del) > 1 || del < 0)
-        stop("noncentrality parameter del must be scalar >= 0!")
+    if(length(ncp) > 1 || ncp < 0)
+        stop("noncentrality parameter ncp must be scalar >= 0!")
     if(length(df) > 1 || df <= 0)
         stop("df must be scalar > 0!")
-    upper <- floor(del/2 + 5 * (del/2)^0.5)
-    kv <- 0:upper
-    poiv <- if(del == 0) 1 else dpois(kv, del/2)
+    kv <- 0:kmax
+    poiv <- if(ncp == 0) 1 else dpois(kv, ncp/2)
     n <- length(x)
-    fv <- matrix(rep(0, n * (1 + upper)), n)
-    for(k in kv)
-        fv[, 1 + k] <- dchisq(x, 2 * k + df)
+    fv <- matrix(0, n, 1 + kmax)
+    for(k in kv) ## FIXME: compute with one dchisq() call, outer(kv, x, dchisq(.)) ?!!
+        fv[, 1L + k] <- dchisq(x, 2 * k + df)
     c(fv %*% poiv)
 }
 
@@ -50,7 +49,7 @@ dnchisqBessel <- function(x, df, ncp, log = FALSE)
     ## ----------------------------------------------------------------------
     ## Author: Martin Maechler, Date: 11 Apr 2008, 21:09
 
-    if (any(is.na(x)) || any(is.na(df)) || any(is.na(ncp)))
+    if (anyNA(x) || anyNA(df) || anyNA(ncp))
 	return(x + df + ncp)
     if (any(ncp <= 0) || any(df < 0))
 	stop("must have ncp > 0 (here), df >= 0")
@@ -96,76 +95,75 @@ p.dnchiB <- function(df, ncp, log=FALSE, from=0, to = 2*ncp, p.log="", ...)
            col = 2:1, lwd=2:1, lty=c(3,1), inset = .02)
 }
 
-###--- Now, the R version of the C implementation
-## -->  ~/R/D/r-devel/R/src/nmath/dnchisq.c
+###-- The R version of R's C implementation ~/R/D/r-devel/R/src/nmath/dnchisq.c
 
-dnchisqR <- function(x, df, ncp, log = FALSE)
+## TODO: add 'verbose' or 'info = FALSE'; if true, return info about i_upper, i_max, i_lower, etc
+dnchisqR <- function(x, df, ncp, log = FALSE,
+                     eps = 5e-15, termSml = 1e-10, ncpLarge = 1000)
 {
-    stopifnot(length(x) == 1, length(df) == 1,
-              length(ncp) == 1, length(log) == 1,
-              is.numeric(x), is.numeric(df),
-              is.numeric(ncp), is.logical(log))
+    ## allow x to be "general" (potentially "mpfr" here)
+    stopifnot(length(df) == 1, length(ncp) == 1, length(log) == 1,
+              is.numeric(df), is.numeric(ncp), is.logical(log))
 
-    if(is.na(x) || is.na(df) || is.na(ncp))
+    if(is.na(df) || is.na(ncp) || length(x) == 0)
 	return(x + df + ncp)
-
     if (ncp < 0 || df <= 0 || !is.finite(df) || !is.finite(ncp))
-	return(NaN)
-
-    if(x < 0) return(.D_0(log))
-    if(x == 0 && df < 2.)
-	return(Inf)
-##     if(ncp == 0)
-## 	return(dchisq(x, df, log=log))
-
-    eps <- 5e-15
+	return(x + NaN)
     ncp2 <- 0.5 * ncp
 
-    ##/* find max element of sum */
-    imax  <- ceiling((-(2+df) +sqrt((2-df) * (2-df) + 4 * ncp * x))/4)
-    if (imax < 0)
-        imax <- 0
-    if(is.finite(imax)) {
-        dfmid  <- df + 2 * imax
-        ## mid = dpois_raw(imax, ncp2, FALSE) * dchisq(x, dfmid, FALSE)
-        mid <- dpois(imax, ncp2, log=FALSE) * dchisq(x, dfmid, log=FALSE)
-    } else mid <- 0
+    vapply(x, FUN.VALUE = x[[1L]], function(x) {
+	if(is.na(x)) return(x)
+	if(x < 0) return(.D_0(log))
+	if(x == 0 && df < 2.)
+	    return(Inf)
+	##     if(ncp == 0)
+	## 	return(dchisq(x, df, log=log))
 
-    if(mid == 0) {
-	##/* underflow to 0 -- maybe numerically correct; maybe can be more accurate,
-        ## particularly when  give_log = TRUE */
-        ##/* Use  central-chisq approximation formula when appropriate;
-        ##    * ((FIXME: the optimal cutoff also depends on (x,df);  use always here? )) */
-        if(log || ncp > 1000.) {
-            nl <- df + ncp; ic <- nl/(nl + ncp) ##/* = "1/(1+b)" Abramowitz & St.*/
-            return(dchisq(x*ic, nl*ic, log=log))
-        } else return(.D_0(log))
-    }
+	##/* find max element of sum */
+	imax <- ceiling((-(2+df) + sqrt((2-df) * (2-df) + 4 * ncp * x)) / 4)
+	if (imax < 0)
+	    imax <- 0
+	if(is.finite(imax)) {
+	    dfmid  <- df + 2 * imax
+	    ## mid = dpois_raw(imax, ncp2, FALSE) * dchisq(x, dfmid, FALSE)
+	    mid <- dpois(imax, ncp2, log=FALSE) * dchisq(x, dfmid, log=FALSE)
+	} else mid <- 0
 
-    sum <- mid
+	if(mid == 0) {
+	    ##/* underflow to 0 -- maybe numerically correct; maybe can be more accurate,
+	    ## particularly when  give_log = TRUE */
+	    ##/* Use  central-chisq approximation formula when appropriate;
+	    ##    * ((FIXME: the optimal cutoff also depends on (x,df);  use always here? )) */
+	    if(log || ncp > ncpLarge) {
+		nl <- df + ncp; ic <- nl/(nl + ncp) ##/* = "1/(1+b)" Abramowitz & St.*/
+		return(dchisq(x*ic, nl*ic, log=log))
+	    } else return(.D_0(log))
+	}
+	sum <- mid
 
-    ##/* errorbound := term * q / (1-q)  now subsumed in while() / if() below: */
+	##/* errorbound := term * q / (1-q)  now subsumed in while() / if() below: */
 
-    ##/* upper tail */
-    term <- mid; df <- dfmid; i <- imax
-    repeat {
-	i <- i+1
-	q <-  x * ncp2 / i / df;
-	df <- df+2
-	term <- term*q
-	sum <- sum + term
-        if(!(q >= 1 || term * q > (1-q)*eps)) break
-    }
-    ##/* lower tail */
-    term <- mid; df <- dfmid; i <- imax
-    while(i) {
-	df <- df - 2
-	q <- i * df / x / ncp2
-	i <- i-1
-	term <- term * q
-	sum <- sum + term
-	if (q < 1 && term * q <= (1-q)*eps) break
-    }
-    ## return
-    .D_val(sum, log)
+	##/* upper tail */
+	term <- mid; df <- dfmid; i <- imax
+	repeat {
+	    i <- i+1
+	    q <-  x * ncp2 / i / df;
+	    df <- df+2
+	    term <- term*q
+	    sum <- sum + term
+	    if(!(q >= 1 || term * q > (1-q)*eps || term > termSml*sum)) break
+	}
+	##/* lower tail */
+	term <- mid; df <- dfmid; i <- imax
+	while(i) {
+	    df <- df - 2
+	    q <- i * df / x / ncp2
+	    i <- i-1
+	    term <- term * q
+	    sum <- sum + term
+	    if (q < 1 && term * q <= (1-q)*eps) break
+	}
+	## return
+	.D_val(sum, log)
+    }) # vapply(*, function(x) { ... })
 }

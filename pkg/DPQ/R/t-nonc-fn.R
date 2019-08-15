@@ -508,7 +508,7 @@ pnt3150.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE, M = 1000,
 
     if(log.p) {
         if(lower.tail) ## log(1 - exp(-LS)) = log1mexp(LS)
-            log1.Exp(-LS) ## = log1mexp(LS)
+            log1mexp(LS)
         else ## upper tail: log(1 - (1 - exp(-LS))) = -LS
             -LS
     } else {
@@ -621,7 +621,7 @@ pntP94.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
 
     if(log.p) {
         if(lower.tail) ## log(1 - exp(-L)* S/2) = log(1 - exp(-LS)) = log1mexp(LS)
-            log1.Exp(-LS) ## = log1mexp(LS)
+            log1mexp(LS)
         else
             -LS
     } else {
@@ -653,8 +653,8 @@ pntChShP94 <- Vectorize(pntChShP94.1, c("t", "df", "ncp"))
 ###  in the sum ---> see below
 
 
-## >> Just for historical reference :
-##    =============================
+if(FALSE) {## Just for historical reference :
+           ## =============================
 dntRwrong1 <- function(x, df, ncp, log = FALSE, M = 1000, check=FALSE, tol.check = 1e-7)
 {
     ## R's source ~/R/D/r-devel/R/src/nmath/dnt.c  claims -- from 2003 till 2014 -- but *WRONGLY*
@@ -683,7 +683,7 @@ dntRwrong1 <- function(x, df, ncp, log = FALSE, M = 1000, check=FALSE, tol.check
     if(log) lf else exp(lf)
 }
 dntRwrong <- Vectorize(dntRwrong1, c("x", "df", "ncp"))
-
+}##-- just for historical reference
 
 ### Johnson, Kotz and Balakrishnan (1995) [2nd ed.] have
 ###  (31.15) [p.516] and (31.15'), p.519 -- and they  contradict by a factor  (1 / j!)
@@ -780,8 +780,7 @@ dntJKBf <- Vectorize(dntJKBf1, c("x", "df", "ncp"))
 ##
 ## MM: added 'log' argument and implemented  log=TRUE
 ## --- TODO: Completely untested by MM [but see Wolfgang's notes in *_WV.R !]
-## __FIXME__: rename  to 'dnt_VW??
-dtnc <- function(x, df, ncp=0, log=FALSE) {
+dtWV <- function(x, df, ncp=0, log=FALSE) {
    dfx2 <- df + x^2 # << by MM; used almost only as df/dfx2
    y <- -ncp*x/sqrt(dfx2)
    a <- (-y + sqrt(y^2 + 4*df)) / 2 # << MM: cancellation for y >> df

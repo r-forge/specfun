@@ -43,7 +43,7 @@ export(
   , ".DT_0", ".DT_1"
   , ".DT_Cexp", ".DT_CIv", ".DT_Clog", ".DT_Cval", ".DT_exp", ".DT_log", ".DT_Log"
   , ".DT_qIv", ".DT_val"
-  , log1.Exp
+  , log1mexp
   , M.LN2, M_cutoff
   , G_half
 
@@ -61,12 +61,10 @@ export(
 
   , c_dt, c_dtAsymp, c_pt ## related to lb_chi*() above FIXME
 
-  , dchisqAsym
-  , dnchisqBessel, dnchisqR
-  , dnoncentchisq
+  , dchisqAsym, dnchisqBessel, dnchisqR, dnoncentchisq
   , dntJKBf, dntJKBf1
-  , dntRwrong, dntRwrong1
-  , dtnc # RENAME!  from Wolfgang Viechtbauer, 2002 -- => add to DESCRIPTION Authors as 'ctb'
+  # , dntRwrong, dntRwrong1
+  , dtWV
 
   , err.lambd0, err.lambd1, err.lambda # << FIXME, currently *print* and compute
   , form01.prec
@@ -89,7 +87,8 @@ export(
   , pchisqV, pchisqW., pchisqW, pchisqW.R
 
   , pbetaRv1
-  , pnbetaAppr2, pnbetaAppr2v1 ## rename?
+  , pnbetaAS310
+  , pnbetaAppr2, pnbetaAppr2v1
 
   ## Naming -fixme?
   , pnchisq

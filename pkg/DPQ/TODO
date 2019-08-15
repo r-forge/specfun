@@ -1,7 +1,6 @@
 ##-*- org -*-->  Emacs .. [Tab] key + [Org] menu; C-c C-o to follow links
 
-* TODO Easy: qnormU*(): is "upper tail" qnorm ==>  use default arg  lower.tail=FALSE (but keep log.p=FALSE)
-* TODO `s()1 is too short, not ok.  Maybe s_() or s.() or ??
+* TODO lbeta.n(), lbeta.asy() .. __rename__;  add the two  *Qab*() functions to help page  man/lbeta.Rd
 * TODO Document all these (or do _not_ export):
 
  'Qab.terms'
@@ -10,7 +9,7 @@
  'dchisqAsym'
  'dgamma.R'
  'dnchisqBessel' 'dnchisqR' 'dnoncentchisq'
- 'dntRwrong' 'dntRwrong1' 'dtnc'
+  'dtnc'
 
    'err.lambd0' 'err.lambd1' 'err.lambda'
   'form01.prec' 'g2' 'gnt' 'h' 'h0' 'h1' 'h2' 'hnt' 'lbeta.asy'
@@ -36,9 +35,6 @@
  's' 'ss' 'ss2' 'ss2.'
   'z.f' 'z.s' 'z0'
 
----> now ./man-single-files/*.Rd  contains an Rd file for *each* of these
--- which  is silly
-
 * TODO b_chi(): Now have higher order asymptotic expansion *and* confirmed via Rmpfr that it is
   much better than internal b2(), we should use its higher order
   down to ~200 and completely "drop" b2() and redefine an optimal c1.
@@ -54,6 +50,8 @@
 ** TODO move C code to here
 ** TODO Find documentation / papers ==> for help pages about h() and g() in R/wienergerm_nchisq-fn.R
 * TODO src/qchisq_appr.c / init.c : change to .Call() version which vectorizes in both args
+* DONE qnormU*(): is "upper tail" qnorm ==>  use default arg  lower.tail=FALSE (but keep log.p=FALSE)
+* DONE s() is too short, not ok.  Maybe s_() or s.() ? --> using sW() now
 * DONE qchisq.appr.R() in R/qgamma-fn.R and qchisq.appr.Kind() are almost identical:
   kept qchisq.appr.R(), renamed to qchisqAppr.R(); the *.R() version is vectorized and used in qgamma.R()
 * DONE dcdflib -- ===> made into separate package (part of same R-forge project 'specfun')

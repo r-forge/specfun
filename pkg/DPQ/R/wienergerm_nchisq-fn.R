@@ -304,7 +304,7 @@ pchisqW. <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
                         ifault = integer(1L))
                )
     else
-        ## "nonc_chi" is not callable by .C() anymore
+        ## "nonc_chi" is not callable by .C() anymore, but C_p.. is vectorized in q
         ## we simulate the (Fortran) behavior for easier testing
 	lapply(.C(C_pchisqV,
 		  q, #    ^ vectorized

@@ -121,7 +121,7 @@ yA <- function(e) 10^c(c(1+e, -e) %*% u.y)
 for(ll in at.l) {
     if(ll < 1e4) { # normal
         yt <- yA(.03); srt <- 0 ;  adj <- 0.5
-    } else { # "schräg"
+    } else { # sloping
         yt <- yA(.03); srt <- -30 ; adj <- c(0.25, 0.5)
     }
     text(ll, yt, formatC(ll), srt = srt, adj = adj, xpd = NA)
@@ -141,3 +141,5 @@ x. # 684'300
 ## draw segment to cross point:
 points(x., 10^predict(lm1, new=data.frame(lams=x.)), type = 'h', col=2)
 text(x., 1e-16, paste("lambda=",formatC(x.)), srt=90, adj = c(0,0), col = 2)
+
+options(digits=7)# back to normal
