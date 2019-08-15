@@ -1,0 +1,175 @@
+%%%% -- $Id$
+\documentclass[a4paper,11pt,twoside]{article}
+\usepackage{a4}
+\usepackage{umlaute}
+%
+\usepackage{sfspaper}
+\usepackage{sfsbib}
+\usepackage{texab}
+%
+\usepackage{parskip}
+\usepackage{subfig-M}%-- subfigures 'M': less space than standard
+%%
+\usepackage[dvips]{epsfig}
+\usepackage{amsbsy} % for \boldsymbol:  only a small part of \usepackage{amstex}
+
+%%%------------------------------------------------------------
+
+\begin{document}
+\bibliographystyle{sfsbib}\citationstyle{dcu}
+
+\Title{Computing the Beta Function for Large Arguments}
+\Author{Martin B. Mächler}
+
+\Resrep{83} % > 82
+\maketitle
+
+\begin{abstract} %maybe  \normalsize
+\end{abstract}
+
+\section{Introduction}
+The beta distribution function and its inverse are widely used in
+statistical software, since, e.g., the critical values of the $F$ and $t$
+distributions can be expressed using the inverse beta distribution, see, e.g.,
+\citeasnoun[sec.~5.5]{KenWG80}.
+
+Whereas sophisticated algorithms are available for computing
+the beta distribution function and its inverse (\cite{MajKB73-AS63} and
+\citeyear{MajKB73-AS64}, \cite{CraGMT77,BerKMC90}, \cite[ch.~25]{JohNKB95}),
+these algorithms rely on
+the computation of the beta function itself which is not a problem in most
+cases.  However, for large arguments  $p$, the usual formula of the beta
+which uses the gamma function can suffer severely from ``extinction'' when
+two almost identical numbers are subtracted or divided.
+
+The beta function $B$ is defined as
+\begin{equation} \label{def.Beta}
+   B(p,q) = \frac{\Gamma (p)\Gamma (q)} {\Gamma (p + q)},
+\end{equation}
+where $p$ and $q$ must be positive, and
+$\Gamma$ is the widely used gamma function which for positive arguments $x$
+is defined by Euler's integral,
+\begin{equation}  \label{def.Gamma}
+  \Gamma(x) = \int_0^\infty t^{x-1} e^{-t} \;dt.
+\end{equation}
+For $x>0$, $\Gamma(x)$ is positive and analytical, i.e. infinitely many
+times continuously differentiable.
+From (\ref{def.Gamma}), integrating by parts gives $\Gamma(x+1) = x
+\Gamma(x)$, and hence the recursion formula
+\begin{equation}  \label{Gamma.rec}
+  \Gamma(x+n) = \Gamma(x) \cdot x  \cdot (x+1)\cdots (x+n-1).
+\end{equation}
+This entails the best-known  property of the gamma function, i.e., the fact
+that it  generalizes the factorial $n!$. Namely, for \emph{integer} arguments
+$n \in \Nat$, one has $ \Gamma(n+1) =  n!$.
+For this and many more properties, see, e.g., \citeasnoun[ch.~6]{AbrMS70}.
+
+For the beta function $B(p,q)$, it is well known that
+for larger values of $p,q$ the corresponding $\Gamma$ values may become
+larger than the maximal (floating point) number on the computer, even
+though $B(p,q)$ itself may remain relatively small.
+For this and other numerical reasons, one usually works with the (natural)
+logarithms of beta and gamma functions, i.e.,
+\begin{equation}  \label{log.B}
+   \log B(p,q) = \log\Gamma (p)  + \log\Gamma(q) - \log\Gamma(p + q).
+\end{equation}
+For the beta function $B(p,q)$ which is symmetric in $p,q$ we assume
+without loss of generality that
+\ $ p < q $, \
+and now consider the situation where $q$ is very large, or more generally
+ $q$ is large compared to $p$,
+\begin{equation}  \label{p<<q}
+  p \ll q.
+\end{equation}
+For convenience, we write
+\begin{equation}  \label{def.Q}
+  B(p,q) = \Gamma(p) \ / \ Q_{pq}
+  \qquad  \mbox{where} \quad\  Q_{pq} := \frac{\Gamma (p + q)}{\Gamma (q)}.
+\end{equation}
+The beta function is closely related to the binomial
+binomial coefficient $\vecII N n$,
+\begin{equation}  \label{bincoef}
+  \vecII{N}{n} = \frac{N!}{n! \; (N-n)!}
+               = \frac{\Gamma(N+1)}{n!\ \Gamma(N-n+1)}
+               = \frac{Q_{n,N-n+1}}{n!}.
+\end{equation}
+where we need $Q_{pq}$ for integers $p=n$ and $q=N-n+1$.
+
+Note that for $p \ll q$, or $q/p \to\infty$, the ratio in (\ref{def.Q})
+will become more and more imprecise, since
+$\log Q_{pq} = \log\Gamma(p+q) - \log\Gamma(q)$ tends to the difference of
+two almost identical numbers which extinguishes most significant digits.
+%%
+The goal of this paper can be restated as finding numerically useful
+asymptotic formula for $Q_{pq}$ when $q\to\infty$.
+
+For the problem of the binomial coefficient when $N\to\infty$ and
+because $Q_{pq}$ is a smooth (infinitely continuous) function in both
+arguments,
+% it suffices to
+we will consider the special case
+of $p = n \in \Nat$.
+%%
+Using the recursion (\ref{Gamma.rec}) for the numerator of $Q_{nq}$ , we get
+\begin{eqnarray}
+  Q_{n,q} &=&   q \cdot (q+1)\cdots (q+n-1)
+           =  q^n \cdot\left(1+ \frac 1 q\right)
+                       \left(1+ \frac 2 q\right) \cdots
+                       \left(1+ \frac{n-1}q\right) \nonumber \\
+          &=& q^n \prod_{k=1}^{n-1} (1 + k/q)
+       \ \ =  \ q^n \cdot f_n(1 / q),   \label{Qnq}
+\end{eqnarray}
+where % we let
+\begin{equation}\label{def.fn}
+  f_n(x) = \prod_{k=1}^{n-1} (1+kx) \
+         = \sum_{k=0}^{n-1} a_{kn} x^k, \qquad \where a_{0n} \equiv 1,
+\end{equation}
+and from (\ref{Qnq}),
+\begin{equation}  \label{Qnq.akn}
+    Q_{n,q} =   q^n \cdot \left(1 + \frac{a_{1n}}{q} + \frac{a_{2n}}{q^2} +
+                                \dots + \frac{a_{n-1,n}}{q^{n-1}}\right).
+\end{equation}
+In the following section, I will derive closed formulas (in $n$) for $a_{kn}$.
+
+\section{Series Expansions}
+If we apply (\ref{def.fn}) for $n+1$, we get
+\begin{eqnarray*}
+  f_{n+1}(x) &=& \sum_{k=0}^{n} a_{k,n+1} x^k =\prod_{k=1}^{n} (1+kx) \
+                   = (1+nx)\prod_{k=1}^{n-1} (1+kx)
+                   = (1+nx)\cdot f_n(x)  \\
+             &=& (1+nx)\sum_{k=0}^{n-1} a_{kn} x^k
+                  = 1 + \sum_{k=1}^{n-1} \left(a_{kn}+n a_{k-1,n}\right) x^k
+                      + na_{n-1,n}x^n.
+\end{eqnarray*}
+Comparison of coefficients gives
+\begin{eqnarray}  \label{akn.rec1}
+                a_{k,n+1} &=& a_{kn}+n a_{k-1,n} \ \ \ \ (k=1,\dots,n),
+                                                        \hspace*{8em}\\
+ \mbox{where}\qquad \ \ a_{n,n} &:=& 0.\nonumber
+\end{eqnarray}
+If we set $n=k$, and let $\tilde a_n := a_{n,n+1}$, we get $\tilde a_n =
+a_nn + n \tilde{a}_{n-1}$ from which we conclude that $\tilde a_n = n!$,
+since $a_nn=0$ and $\tilde{a}_0 = a_{0,1} = 1$ by definition
+(\ref{def.fn}).
+Hence,
+\begin{equation}  \label{ak.k+1} a_{k,k+1} = k! \ ,
+\end{equation}
+and applying (\ref{akn.rec1}) successively for $n$, $n-1,\dots$ \  yields
+\begin{equation}  \label{akn.rec}
+  a_{k,n} = \sum_{m=1}^{n-1} m \cdot a_{k-1,m} \ \ \ \ (k=1,\dots,n-1).
+\end{equation}
+Hence, we can compute $a_{k,n}$ if $a_{k-1,n}$ are
+known and therefore may compute all $a_{k,n}$ starting with $k=0$
+where $a_{0,n} \equiv 1$. To derive useful \emph{direct} formulae, we consider
+$a_{kn}$ for given $k$ as a polynomial in $n$.
+It is now useful, to apply  (\ref{akn.rec}) for \emph{all}
+$n=1,2,\dots$, instead of only for $n>k$, i.e., $k \le n-1$.
+
+\bibliography{Assbib,master,Ibeta-dist-mm}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
