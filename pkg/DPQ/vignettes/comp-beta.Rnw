@@ -1,32 +1,38 @@
-%%%% -- $Id$
 \documentclass[a4paper,11pt,twoside]{article}
 
-\usepackage{a4}
-%\usepackage{/u/sfs/tex/tex/latex/a4}
-\usepackage{umlaute}
+\usepackage[a4paper, text={15cm,24cm}]{geometry}
+
+% \usepackage{umlaute}
 %
-\usepackage{sfspaper}
+% \usepackage{sfspaper}
 \usepackage{sfsbib}
 \usepackage{texab}
 %
-\usepackage{parskip}
-\usepackage{subfig-M}%-- subfigures 'M': less space than standard
+% \usepackage{parskip}
+% \usepackage{subfig-M}%-- subfigures 'M': less space than standard
 %%
-\usepackage[dvips]{epsfig}
+% \usepackage[dvips]{epsfig}
 \usepackage{amsbsy} % for \boldsymbol:  only a small part of \usepackage{amstex}
 
+%\VignetteIndexEntry{Computing Beta(a,b) for Large Arguments}
+%\VignetteDepends{DPQ}
+\SweaveOpts{engine=R,eps=FALSE,pdf=TRUE,width=7,height=5,strip.white=true,keep.source=TRUE}
 %%%------------------------------------------------------------
 
 \begin{document}
 \bibliographystyle{sfsbib}\citationstyle{dcu}
 
-\Title{Computing the Beta Function for Large Arguments}
-\Author{Martin B. Mächler}
+\title{Computing the Beta Function for Large Arguments}
+\author{Martin M\"achler\\ Seminar f\"ur Statistik \\ ETH Zurich}
 
-\Resrep{83} % > 82
+\date{1997, 2002, 2019 ff}
 \maketitle
 
 \begin{abstract} %maybe  \normalsize
+  I was exited about having derived very nice asymptotic formulas enabling
+  to accurately compute $\log B(a,b)$ for very large $b$ etc,  but then
+  realized there were other existing solutions, partly applied already
+  e.g.. in TOMS 708 ...
 \end{abstract}
 
 \section{Introduction}
@@ -41,7 +47,7 @@ the beta distribution function and its inverse (\cite{MajKB73-AS63} and
 these algorithms rely on
 the computation of the beta function itself which is not a problem in most
 cases.  However, for large arguments  $p$, the usual formula of the beta
-which uses the gamma function can suffer severely from ``extinction'' when
+which uses the gamma function can suffer severely from cancellation when
 two almost identical numbers are subtracted or divided.
 
 The beta function $B$ is defined as
@@ -150,8 +156,8 @@ Comparison of coefficients gives
  \mbox{where}\qquad \ \ a_{n,n} &:=& 0.\nonumber
 \end{eqnarray}
 If we set $n=k$, and let $\tilde a_n := a_{n,n+1}$, we get $\tilde a_n =
-a_nn + n \tilde{a}_{n-1}$ from which we conclude that $\tilde a_n = n!$,
-since $a_nn=0$ and $\tilde{a}_0 = a_{0,1} = 1$ by definition
+a_{n,n} + n \tilde{a}_{n-1}$ from which we conclude that $\tilde a_n = n!$,
+since $a_{n,n}=0$ and $\tilde{a}_0 = a_{0,1} = 1$ by definition
 (\ref{def.fn}).
 Hence,
 \begin{equation}  \label{ak.k+1} a_{k,k+1} = k! \ ,
@@ -167,11 +173,12 @@ $a_{kn}$ for given $k$ as a polynomial in $n$.
 It is now useful, to apply  (\ref{akn.rec}) for \emph{all}
 $n=1,2,\dots$, instead of only for $n>k$, i.e., $k \le n-1$.
 
+............  (hand written pages by M.M..r)
+
+............
+
+............
+
 \bibliography{Assbib,master,Ibeta-dist-mm}
 
 \end{document}
-
-%%% Local Variables:
-%%% mode: latex
-%%% TeX-master: t
-%%% End:
