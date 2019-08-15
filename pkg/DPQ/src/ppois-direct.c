@@ -6,13 +6,6 @@
  *    ppois(x, lambda, low, log_p) := pgamma(lambda, x + 1, 1., !low, log_p)
  */
 
-#include <math.h>
-
-#include <R_ext/Arith.h>
-#include <R_ext/Error.h>
-#include <R_ext/Utils.h>
-#include <Rmath.h>
-
 #ifdef DEBUG_p2
 # define DEBUG_p
 #endif

@@ -6,7 +6,8 @@
 source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
 ##--> showProc.time(), assertError(), relErrV(), ...
 
-doExtras <- FALSE # (TRUE for "real" simulations)
+(doExtras <- DPQ:::doExtras())
+## FIXME: As R package tests should be fast -- *must* skip most of those here !
 
 if(!dev.interactive(orNone=TRUE)) pdf("qbeta-dist.pdf")
 .O.P. <- par(no.readonly=TRUE)
@@ -264,19 +265,20 @@ for(qq in q.set2) {
   for (p in p.set2) {
     cat("p=",p,"\n~~~~")
     for (qn in qb.names) {
-      cat("\n> ",qn," ", sep = '')
+      cat("\n: ",qn," ", sep = '')
       st <- system.time(
           r <- qf[[qn]](.05, p, qq))[ind_ct]
       cta[, qn2[qq == q.set2], qn, pn2[p == p.set2]] <- st
       ra [  qn2[qq == q.set2], qn, pn2[p == p.set2]] <- r
     };  cat("\n")
   }
-  showProc.time()
+  showProc.time() ## -- similar for all q
 }
 summary(warnings()) # many warnings from qbeta() inaccuracies
 
-apply(cta, 2:3,    mean)
-apply(cta, c(2,4), mean)
+## Timings :
+1e4*apply(cta, 2:3,    mean)
+1e4*apply(cta, c(2,4), mean)
 
 noquote(form01.prec(aperm(ra)))
 showProc.time()
@@ -335,56 +337,10 @@ summary(warnings())
 showProc.time()
 
 
-if(FALSE) { ##----------------------------- qbeta109() etc not yet available ------------
+## Had tests for qbeta() built on AS 109 --- but now R *does* use  AS 109 !
+## This will probably all be irrelevant now, see also
 ## ==> ~/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/qbeta109.R
 
-dyn.load("/u/maechler/src/ApStat/109-InvIBeta.o")
-dyn.load("/u/maechler/src/ApStat/63-IBeta.o")
-dyn.load("/u/maechler/src/ApStat/qbeta109.o")
-## For R : --- Fortran
-dyn.load("/u/maechler/src/ApStat/qbeta.so")# works but still missing symbols
-dyn.load("/usr/local/lib/libf2c.a")# fails
-###--> Make -lf2c  superfluous, by editing the C-code!
-
-## For Splus (Solaris):
-dyn.load.shared("/u/maechler/src/ApStat/qbeta.so")
-## For R:
-dyn.load       ("/u/maechler/src/ApStat/109.so")
-source("./qbeta109.R")
-qbeta109(.1, 2,3)
-qbeta109(.1, 20000,3)
-qbeta109(.9, 20000,3)
-
-for(df in 10^(0:7))
-   cat(formatC(df,w = 8),
-       1- qbeta109(p = df/2, q = 1/2, alpha = .99),
-       1- qbeta   (.99, df/2, 1/2),
-       "\n")
-
-### fcat(.) :
-fcat(3,pi)
-fcat(3,LETTERS[1:7],pi)
-
-form01.prec(1 - runif(20)*10^(-1:-20), digits = 12)
-form01.prec(exp(- rnorm(20)))
-
-
-# If necessary
-dyn.load       ("/u/maechler/src/ApStat/109.so")
-
-for(df in 10^(0:10)) fcat(df, 1- qbeta109(p = df/2, q = 1/2, alpha = .99))
-## --- 0.0001 "always" for df >= 10 ?????
-##-- Linux was ok:
-##-        1 0.00024672
-##-       10 1.65127e-05
-##-      100 1.57875e-06
-##-     1000 1.57166e-07
-##-    10000 1.57096e-08
-##-   100000 1.57089e-09
-##-    1e+06 1.57088e-10
-##-    1e+07 1.57088e-11
-
-}##----------------------------- qbeta109() etc not yet available ------------
 
 
 pr.val <- c(.2,.4, 10^(-1:-5)); pr.val <- sort(c(pr.val, 1/2, 1-pr.val))
@@ -490,17 +446,17 @@ qbeta(.95, 0, 20)# gave '1' instead of 0 --> now 0  {as for dbeta(*, a=0, *)
 x. <- seq(0,1,len=1001); plot(x., pbeta(x., 1e-20,20), type="l")
 ## but if you log-zoom in ,
 ## the precision problem is already in pbeta():  ----- fixed on 2009-10-16  (in Skafidia, Greece)
-##-- toms708: 'a0 small .. -> apser()
+##-- TOMS 708: 'a0 small .. -> apser()
 curve(pbeta(exp(x), 1e-16, 10, log=TRUE), -10, 0, n=1000)
 curve(pbeta(exp(x), 1e-16, 10, log=TRUE), -900, 0, n=1000)
-                                        # _jumps_ to 0 - because exp() *must* [no bug in pbeta !]
+                             ## _jumps_ to 0 - because exp() *must* [no bug in pbeta !]
 ## but this is somewhat similar, *not* using  apser(), but L20, then
 ## a) (x < 0.29): bup() + L131 bgrat() & w = 1-w1 ~= 1 -- now fixed
 ## b)  x >=0.29:  bpser()
 curve(pbeta(exp(x), 2e-15, 10, log=TRUE), -21, 0, n=1000)
 
 
-u <- seq(-10, 3, length=501)
+u <- seq(-16, 1.25, length=501)
 mult.fig(mfrow=c(3,5), main = expression(pbeta(e^u, alpha, beta, ~~ log=='TRUE')),
          marP=c(0,-1.5,-1,-.8))
 for(b in c(.5, 2, 5))
@@ -561,7 +517,7 @@ plot(p,qp, ylab = "qbeta(p, .01, 5)", type="l", log = "xy")
 ## p --> 0 even closer -- next problem {but that's easier forgivable ..}
 p <- lseq(.0005,1, len = 500)
 a <- .01 ; b <- 5
-## gives 36 warnings "qbeta: ..precision not reached .."
+## nomore (gave 36 warnings "qbeta: ..precision not reached ..")
 plot(p, (qp <- qbeta(p, a,b)), ylab = expression(qbeta(p, alpha, beta)),
      type="l", log = "xy", main = substitute(list(alpha == a, beta == b), list(a=a,b=b)))
 
@@ -569,7 +525,7 @@ plot(p, (qp <- qbeta(p, a,b)), ylab = expression(qbeta(p, alpha, beta)),
 mult.fig(mfrow=c(3,5), main = 'p = qbeta(x, .) for p --> 0',
          marP=c(0,-.8,-1,-.8))
 for(b in c(.5, 2, 5))
-    for(a in c(.1, .2, .5, 1, 2)/100) {
+    for(a in c(.1, .2, .5, 1, 2)/100) { # last one, a = 0.02 does not underflow
         plot(p, (qp <- qbeta(p, a,b)), ylab = expression(qbeta(p, alpha, beta)),
              type="l", log = "xy", main = substitute(list(alpha == a, beta == b), list(a=a,b=b)))
     }

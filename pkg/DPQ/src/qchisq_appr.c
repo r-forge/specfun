@@ -7,11 +7,6 @@
  * Goal: Investigate use of becoming it part of RMathlib -- for other packages to use
  */
 
-#include <math.h>
-#include <float.h> /* DBL_MIN etc */
-
-#include <Rmath.h>
-
 #include "DPQpkg.h"
 
 
@@ -65,29 +60,6 @@
 #include "nmath.h"
 #include "dpq.h"
 #else // MM_R our substitute for the above R/src/nmath-internal headers :
-
-// -------- excerpt from  nmath.h ---------------------------------
-
-#include <R_ext/Error.h>
-# define MATHLIB_ERROR(fmt,x)		error(fmt,x);
-# define MATHLIB_WARNING(fmt,x)		warning(fmt,x)
-# define MATHLIB_WARNING2(fmt,x,x2)	warning(fmt,x,x2)
-# define MATHLIB_WARNING3(fmt,x,x2,x3)	warning(fmt,x,x2,x3)
-# define MATHLIB_WARNING4(fmt,x,x2,x3,x4) warning(fmt,x,x2,x3,x4)
-# define MATHLIB_WARNING5(fmt,x,x2,x3,x4,x5) warning(fmt,x,x2,x3,x4,x5)
-
-#include <R_ext/Arith.h>
-#define ML_POSINF	R_PosInf
-#define ML_NEGINF	R_NegInf
-#define ML_NAN		R_NaN
-
-#ifdef ENABLE_NLS
-#include <libintl.h>
-#define _(String) gettext (String)
-#else
-#define _(String) (String)
-#endif
-
 
 #define ML_VALID(x)	(!ISNAN(x))
 

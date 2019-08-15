@@ -4,7 +4,8 @@
 \description{
   \code{pbetaRv1()} is an implementation of the original
   (\dQuote{version 1} \code{\link{pbeta}()} function in \R (versions <=
-  2.2.x), before we started using TOMS 708 \command{bratio()} instead.
+  2.2.x), before we started using TOMS 708 \command{bratio()} instead, see
+  that help page also for references.
 
   \code{pbetaRv1()} is basically a manual translation from C to \R of the
   underlying \code{pbeta_raw()} C function, see in \R's source tree at

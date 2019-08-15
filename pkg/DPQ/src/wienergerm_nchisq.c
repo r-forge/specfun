@@ -39,12 +39,8 @@ Computational Statistics \bold{15}, 219--228. \doi{10.1007/s001800000029}
    translated by f2c (version 20031025) and by f2c-clean,v 1.10;
    and simplified by Martin Maechler, Jan.2004
 */
-#include <math.h>
 #include <float.h> /* DBL_MIN etc */
 
-#include <Rmath.h>
-
-#include <R_ext/Arith.h>
 #include <R_ext/Print.h>
 
 #include "DPQpkg.h"
@@ -56,7 +52,7 @@ static double h(double y)
 /* h(y) := ( (1-y)* log(1-y) + y - y^2/2) / y^2
  *  --
  * numerically stable; Martin Maechler (2004) */
-    static const double
+    static const double // -pedantic warns about sqrt(.) , pow(.) not being const.
 	E_2 = sqrt((10./3.) * DBL_EPSILON),// ~= 2.72  e-8
 	E_3 = pow(5. * DBL_EPSILON, 1./3.);// ~= 1.035 e-5
 

@@ -1,3 +1,9 @@
+## Not exported, and only used because CRAN checks must be faster
+doExtras <- function(int = interactive()) {
+    int || nzchar(Sys.getenv("R_DPQ_check_extra")) ||
+        identical("true", unname(Sys.getenv("R_PKG_CHECKING_doExtras")))
+}
+
 ## Convenient argument checking
 
 all_mpfr <- function(...) {
