@@ -1,6 +1,8 @@
 %%%% -- $Id$
 \documentclass[a4paper,11pt,twoside]{article}
+
 \usepackage{a4}
+%\usepackage{/u/sfs/tex/tex/latex/a4}
 \usepackage{umlaute}
 %
 \usepackage{sfspaper}
