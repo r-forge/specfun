@@ -43,3 +43,42 @@ pnbetaAppr2 <- function(x, a, b, ncp = 0, lower.tail=TRUE, log.p=FALSE)
     si.L <- sqrt(s1.2  + d^2 * s2.2)
     pnorm( - mu.L / si.L, lower.tail=lower.tail, log.p = log.p)
 }
+
+pnbetaAS310 <- function(x, a, b, ncp = 0, lower.tail=TRUE, log.p=FALSE,
+                        errmax = 1e-6, itrmax = 100)
+{
+    stopifnot(length(lower.tail) == 1, length(log.p) == 1,
+              length(errmax) == 1, length(itrmax) == 1)
+    ## Two cases:
+    ##  1)  length(a) == length(b) == length(ncp) == n := length(x)   <<  all_n <- TRUE
+    ##  2)  length(a) == length(b) == length(ncp) == 1                <<  all_n <- FALSE
+    n <- length(x <- as.numeric(x))
+    all_n  <- length(a) > 1
+    if(all_n) {
+        ## recycle the first 4 arguments to common length
+        ## [... yes, would be nicer with .Call() where the C code could nicely "wrap around" via (i % n) -- FIXME?
+        n <- max(n,
+                 length(a <- as.numeric(a)),
+                 length(b <- as.numeric(b)),
+                 length(ncp <- as.numeric(ncp)))
+        if(n != length(x)) x <- rep_len(x, n)
+        if(n != length(a)) a <- rep_len(a, n)
+        if(n != length(b)) b <- rep_len(b, n)
+        if(n != length(ncp)) ncp <- rep_len(ncp, n)
+    } else { ## only x[] is of length n .. the other three of length 1
+        stopifnot(length(a <- as.numeric(a)) == 1,
+                  length(b <- as.numeric(b)) == 1,
+                  length(ncp <- as.numeric(ncp)) == 1)
+    }
+    r <- .C(C_ncbeta, # ../src/310-pnbeta.c
+            a, b, ncp, x,
+            as.integer(n),
+            as.double(errmax),
+            as.integer(itrmax),
+            ifault = as.integer(all_n),# input/output
+            res = double(n))[c("ifault","res")]
+    if(r$ifault) ## TODO: switch(r$ifault, ....) for different error messages
+        stop(sprintf("ifault=%d from error in C code ncbeta()", r$ifault))
+    else
+        r$res
+}

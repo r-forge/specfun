@@ -50,6 +50,12 @@ void Pnchisq_it(double *x, double *f, double *theta,
 		int *i_0, int *n_terms, double *terms, double *prob)
     ;
 
+// 310-pnbeta.c : --------------------------------------------------------------
+
+void ncbeta(double *a, double *b, double *lambda, double *x, int *n,
+	    double *errmax, int *itrmax, int *ifault, double *res)
+    ;
+
 // ppois-direct.c : ------------------------------------------------------------
 
 void ppois_D(double *X, int *n, double *lambda, /* result: */ double *prob)

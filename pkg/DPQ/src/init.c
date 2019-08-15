@@ -22,6 +22,12 @@ static R_NativePrimitiveArgType Pnchisq_it_t[] = {
     /* errmax: */ REALSXP, REALSXP, INTSXP,
     /* i_0, n_terms: */ INTSXP,  INTSXP,
     REALSXP, REALSXP };
+static R_NativePrimitiveArgType ncbeta_t[] = {
+    REALSXP, REALSXP, REALSXP, REALSXP,
+    /* n: */ INTSXP,
+    /* errmax: */ REALSXP, INTSXP, INTSXP,
+    /* res: */ REALSXP };
+
 // ppois-direct.c :
 static R_NativePrimitiveArgType ppois_D_t[] = { REALSXP, INTSXP, REALSXP, REALSXP };
 
@@ -35,6 +41,7 @@ static R_NativePrimitiveArgType pchisqV_t[] = {
 static const R_CMethodDef CEntries[] = {
     CDEF(qchisq_appr_v),
     CDEF(Pnchisq_it),
+    CDEF(ncbeta),
     CDEF(ppois_D),
     CDEF(pchisqV),
 
