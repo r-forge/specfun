@@ -48,6 +48,12 @@ static const R_CMethodDef CEntries[] = {
     {NULL, NULL, 0}
 };
 
+static R_CallMethodDef CallEntries[] = {
+    CALLDEF(R_algdiv, 2),
+
+    {NULL, NULL, 0}
+};
+
 static R_FortranMethodDef FortEntries[] = {
     {"noncechi", (DL_FUNC) &F77_SUB(noncechi), 6}, // <- ./wienergerm_nchisq_F.f
     {NULL, NULL, 0}
@@ -56,6 +62,6 @@ static R_FortranMethodDef FortEntries[] = {
 
 void R_init_DPQ(DllInfo *dll)
 {
-    R_registerRoutines(dll, CEntries, NULL, FortEntries, NULL);
+    R_registerRoutines(dll, CEntries, CallEntries, FortEntries, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

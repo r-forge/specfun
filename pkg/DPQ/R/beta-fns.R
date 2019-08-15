@@ -4,7 +4,7 @@
 ##' log(Q(a,b)) = logQab(a,b)
 ##'             = lgamma(a+b) - lgamma(b) =
 ##'             = lgamma(a)   - lbeta(a,b)
-logQab.asy <- function(a,b, k.max = 5, give.all = FALSE)
+logQab_asy <- function(a,b, k.max = 5, give.all = FALSE)
 {
   ## Purpose:  log(Q(a,b)) asymptotically when max(a,b) -> Inf  &  a^2/b -> C
   ## -------------------------------------------------------------------------
@@ -17,7 +17,7 @@ logQab.asy <- function(a,b, k.max = 5, give.all = FALSE)
   else if(any(a>b)) stop('Require a <= b  or  a > b   for  ALL vector elements')
   if(length(b)>1) stop("this function only works for SCALAR b (> a)")
   na <- length(a)
-  pa <- rbind(Qab.terms(a, k.max)) ##  --> pa = matrix   na  x  (k.max+1)
+  pa <- rbind(Qab_terms(a, k.max)) ##  --> pa = matrix   na  x  (k.max+1)
   ##          ~~~~~~~~~
   ki <- if(k.max >= 1) k.max:1 else numeric(0)
   if(give.all) {
@@ -31,7 +31,7 @@ logQab.asy <- function(a,b, k.max = 5, give.all = FALSE)
   a*log(b) + log(1 + a*(a-1)/b * r)
 }
 
-Qab.terms <- function(a, k)
+Qab_terms <- function(a, k)
 {
   ## Purpose: Compute the terms used for  Qab, and beta function
   ## 		Qab := Q(a,b) := Gamma(a+b) / Gamma(b)
@@ -43,7 +43,7 @@ Qab.terms <- function(a, k)
 
   k <- as.integer(k)
   if(!is.numeric(a)) a <- as.numeric(a) #- leave integers alone..
-  if(length(k)!=1 || k > 5 || k < 0)
+  if(length(k) != 1 || k > 5 || k < 0)
     stop("'k' must be 1 number in { 0, 1,..,5 }")
   na <- length(a)
   Qab.trms <- expression(
@@ -60,18 +60,18 @@ Qab.terms <- function(a, k)
 ### NOTA BENE: All these  lbeta*() are -- I think -- not better than the
 ##  ---------  builtin  lbeta()  [which exists only since 1998]
 
-lbeta.asy <- function(a,b, k.max = 5, give.all = FALSE)
+lbeta_asy <- function(a,b, k.max = 5, give.all = FALSE)
 {
   ## Purpose:  log(beta( a, b))  which also works for HUGE  a / b or b/a
   ## -------------------------------------------------------------------------
   ## Arguments: a,b: as for  lbeta(.)
   ##  log(B(a,b)) = log(G(a) G(b) / G(a+b)) =
   ##              = log(G(a)) - log( G(a+b)/G(b) ) = log(G(a)) - log(Q(a,b))
-  lgamma(a) - logQab.asy(a,b, give.all = give.all)
+  lgamma(a) - logQab_asy(a,b, give.all = give.all)
 }
 
 ## MM: this is unused (why ??)
-lbetaMM <- function(a,b, Cut.asy = 1e-2, verbose = FALSE)
+lbetaMM <- function(a,b, cutAsy = 1e-2, verbose = FALSE)
 {
   ## Purpose:  log(beta( a, b))  which also works for HUGE  a / b or b/a
   ## -------------------------------------------------------------------------
@@ -81,12 +81,12 @@ lbetaMM <- function(a,b, Cut.asy = 1e-2, verbose = FALSE)
   if(a <= 0 || b <= 0) stop("a & b must be > 0")
   if(length(a)>1 || length(b) > 1)
     stop("this function only works for SCALAR arguments")
-  stopifnot(is.numeric(Cut.asy), length(Cut.asy) == 1, Cut.asy >= 0)
+  stopifnot(is.numeric(cutAsy), length(cutAsy) == 1, cutAsy >= 0)
   if(a>b) { cc <- b; b <- a; a <- cc } #- Now: a <= b
-  if(a*a < b*Cut.asy) {
+  if(a*a < b*cutAsy) {
     if(verbose)
       message("a=",formatC(a)," b=",formatC(b), " -- using asymptotic  lbeta(.)")
-    lgamma(a) - logQab.asy(a,b)
+    lgamma(a) - logQab_asy(a,b)
   } else
     lgamma(a)+lgamma(b)-lgamma(a+b) ## was =: lbeta00(a, b)
 }
@@ -103,15 +103,15 @@ lbetaM <-  function(a,b, k.max = 5, give.all = FALSE)
   nb <- length(b)
   if(nb == 1 || nb == na) {
     r <- numeric(na)
-    for(i in 1:na) r[i] <- lbeta.asy(a[i], b[if(nb>1)i else 1],
+    for(i in 1:na) r[i] <- lbeta_asy(a[i], b[if(nb>1)i else 1],
                                      k.max= k.max, give.all = give.all)
   } else { ##--- return  outer(..)
     r <- matrix(0, nrow = nb, ncol = na)
-    for(i in 1:na)r[,i] <- lbeta.asy(a[i], b, k.max= k.max, give.all = give.all)
+    for(i in 1:na)r[,i] <- lbeta_asy(a[i], b, k.max= k.max, give.all = give.all)
   }
   r
 }
-lbeta.n <- function(n, a)
+lbetaI <- function(a, n)
 {
   ## Purpose:  log(beta(a, n)) for (small) INTEGER n.
   ##    beta(a,n) = G(a) G(n) / G(a+n) = (n-1)! / (a*(a+1)*...*(a+n-1))
@@ -125,7 +125,7 @@ lbeta.n <- function(n, a)
   r
 }
 
-beta.n<- function(n, a)
+betaI <- function(a, n)
 {
   ## Purpose: beta(a, n) for (small) INTEGER n.
   ##    beta(a,n) = G(a) G(n) / G(a+n) = 1*2*...*(n-1) / (a*(a+1)*...*(a+n-1))
@@ -140,7 +140,8 @@ beta.n<- function(n, a)
 
 G_half <- 1.7724538509055160272981674833411451827974 # sqrt(pi) = Gamma(1/2)
 
-lbeta.n.half <- function(n, a)
+if(FALSE) ## not closed form smart formula I think (2019-08)
+lbetaIhalf <- function(a, n)
 {
   ## Purpose:  log(beta(a, n + 1/2)) for (small) INTEGER n.
   ##    beta(a,n + h) = G(a) G(n+h) / G(a+n+h) = (n-1)! / (a*(a+1)*...*(a+n-1))
@@ -149,7 +150,7 @@ lbeta.n.half <- function(n, a)
   if(length(n) > 1) stop("'n' must have length 1.")
   if(is.na(n <- as.integer(n)) || n <= 0)
     stop("'n' must be positive (not too large) integer")
-  #............
+
   stop("unfinished -- FIXME")
 }
 
@@ -222,7 +223,6 @@ logcf <- function (x, i, d, eps, maxit=10000) ##/* ~ relative tolerance */)
     ## return
     (A2 / B2)
 }
-
 
 ## Accurate calculation of log(1+x)-x, particularly for small x.
 log1pmx <- function(x, tol_logcf = 1e-14) {
@@ -402,6 +402,7 @@ lgamma1p_series <- function(x, k) {
            stop("Currently, only k <= 7  is implemented, but k=",k))
 }
 
+algdiv <- function(a,b) .Call(C_R_algdiv, as.double(a), as.double(b))
 
 
 

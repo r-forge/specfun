@@ -1,9 +1,13 @@
+
 #include <Rmath.h>
 // for F77_NAME() :
 #include <R_ext/RS.h>
 
+// for SEXP:
+#include <Rinternals.h>
+
 // From R's source
-// -------- excerpt from  nmath.h ---------------------------------------
+// -------- excerpt from  nmath.h ---------------------------------
 #include <R_ext/Error.h>
 # define MATHLIB_ERROR(fmt,x)		error(fmt,x);
 # define MATHLIB_WARNING(fmt,x)		warning(fmt,x)
@@ -78,3 +82,10 @@ int F77_NAME(noncechi)(int *variant,
 		       double *argument, double *noncentr, double *df, double *p,
 		       int *ifault);
 
+
+// algdiv.c: --------------------------------------------------------------------
+
+double algdiv(double a, double b);
+// .Call()ed :
+SEXP R_algdiv(SEXP a_, SEXP b_)
+    ;

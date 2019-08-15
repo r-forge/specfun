@@ -50,14 +50,14 @@ export(
   , .dntJKBch, .dntJKBch1
 
 
-  , Qab.terms
+  , Qab_terms
 
   , all_mpfr, any_mpfr # simple wrappers in  R/utils.R
 
   , b_chi, b_chiAsymp
   , lb_chi0, lb_chi00, lb_chiAsymp
 
-  , beta.n
+  , betaI
 
   , c_dt, c_dtAsymp, c_pt ## related to lb_chi*() above FIXME
 
@@ -71,11 +71,13 @@ export(
   , g2, gnt
   , h, h0, h1, h2, hnt
 
-  , lbeta.asy, lbeta.n, lbeta.n.half, lbetaM, lbetaMM
+  , lbeta_asy, lbetaI, lbetaM, lbetaMM
+  ## , lbetaIhalf
+  , algdiv # name as in TOMS 708 .. but really?
 
   , lgamma1p., lgamma1p, lgamma1p_series
   , log1pmx
-  , logQab.asy
+  , logQab_asy
   , logcf, logr
   , lssum, lsum
 
