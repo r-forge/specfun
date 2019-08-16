@@ -74,6 +74,7 @@ stopifnot(
 
 ##--- More generally:
 library(DPQ)
+(doExtras <- DPQ:::doExtras())
 
 'now code is in
 
@@ -83,9 +84,9 @@ library(DPQ)
 ##                                         #-> ...
 ## dyn.load("/u/maechler/R/MM/NUMERICS/dpq-functions/ppois-direct.so")
 
-## FIXME: these *print* additionally -- ../R/ppois-fn.R
-err.lambd0(900)
-err.lambd1(900)
+## NB these *print* additionally -- ../R/ppois-fn.R
+ppoisErr(900)
+ppoisErr(900, ppFUN = function(x, lambda) cumsum(dpois(x,lambda)))
 
 ## MM(2018-08):  'alphLim' below must have been a way to set 'alphlimit'  in pgamma()'s C code.
 ## ----------
@@ -93,18 +94,25 @@ err.lambd1(900)
 ## alphLim <- 1000 # old
 alphLim <- 100000  # new --- in R's C code for pgamma() since R 1.8.0
 
-## when using err.lambda <- err.lambd1 {much slower ==> save here:
+## when using ppoisErr <- ppoisErr1 {much slower ==> save here:
 ## sfil <- "/u/maechler/R/MM/NUMERICS/dpq-functions/pgamma-al_1000-Direct.Rda"
 ## sfil <- "/u/maechler/R/MM/NUMERICS/dpq-functions/pgamma-al_1000.Rda"
 ## sfil <- "/u/maechler/R/MM/NUMERICS/dpq-functions/pgamma-al_1e5.Rda"
 ## if(file.exists(sfil)) {
 ##     load(sfil)
 ## } else {
-    lams <- 2^seq(1, 20, length=101)
-    ##             2^20 is *large* --> the last few take time :
-    print(system.time(
-        errL <- sapply(lams, err.lambda)
-    ))
+    ##             2^20 is much too large and the last few take much time!
+    l2ex <- if(doExtras) seq(1, 15, by=1/8) else seq(1, 12, by=1/4)
+    errL <- lams <- 2^l2ex
+    ## Use for() loop instead of *apply() to see progress and time of each:
+    cat(head <- "  lambda |  user  system elapsed
+  -------------------------------\n")
+    for(i in seq_along(lams)) {
+        st <- system.time(errL[i] <- ppoisErr(lams[i]))
+        cat(sprintf("%8.2f |", lams[i]),
+            paste(sprintf("%5.3f", as.vector(st)[1:3]), collapse="   "),
+            "\n")
+    } ; cat(head)
 ##     save(lams,errL,alphLim, file=sfil)
 ## }
 
@@ -114,7 +122,7 @@ plot(lams, abs(errL), log = "xy", xaxt="n", xlab = "lambda",
 abline(v= alphLim, lty=3)
 at.l <- c(outer(c(1,2,5),10^pretty(log10(lams))))
 at.l <- at.l[10^par("usr")[1] < at.l & at.l < 10^par("usr")[2]]
-## Improve  axis(1, at=at.l, las=2)
+## Improve  axis(1, at=at.l, las=2) :
 axis(1, at=at.l, labels=NA)
 u.y <- par("usr")[3:4]
 yA <- function(e) 10^c(c(1+e, -e) %*% u.y)
@@ -130,6 +138,10 @@ for(ll in at.l) {
 lm1 <- lm(log10(abs(errL)) ~ log10(lams), subset = lams < alphLim - 150)
 ##                          # 855.1, 975.5 already bad  ^^^^^
 abline(lm1, col = "blue")
+## -----------------------
+cat("#{lams > alphLim} : ", sum(lams > alphLim),"\n")
+##
+if(sum(lams > alphLim) >= 2) { ## always FALSE nowadays
 lm2 <- lm(log10(abs(errL)) ~ log10(lams), subset = lams > alphLim)
 ##                          # alphlimit :                 ^^^^
 abline(lm2, col = "purple")
@@ -141,5 +153,6 @@ x. # 684'300
 ## draw segment to cross point:
 points(x., 10^predict(lm1, new=data.frame(lams=x.)), type = 'h', col=2)
 text(x., 1e-16, paste("lambda=",formatC(x.)), srt=90, adj = c(0,0), col = 2)
+} # cannot draw these here-----------------------------
 
 options(digits=7)# back to normal

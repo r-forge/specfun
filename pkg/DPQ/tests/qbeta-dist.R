@@ -25,28 +25,28 @@ fcat <- function(..., f.dig= 4, f.wid = f.dig +5, f.flag = ' ', nl = TRUE,
   cat(l, if(nl)"\n", file=file, sep=sep, fill=fill,labels=labels, append=append)
 }
 
-form01.prec <- function(x, digits = getOption("digits"), width = digits + 2,
+format01prec <- function(x, digits = getOption("digits"), width = digits + 2,
                         eps = 1e-6, ...,
-                        fun = function(x,...) formatC(x, flag='-',...))
+                        FUN = function(x,...) formatC(x, flag='-',...))
 {
   ## Purpose: format numbers in [0,1] with "precise" result,
   ##          using "1-.." if necessary.
   ## -------------------------------------------------------------------------
   ## Arguments: x:      numbers in [0,1]; (still works if not)
-  ##            digits, width: number of digits, width to use with 'fun'
+  ##            digits, width: number of digits, width to use with 'FUN'
   ##            eps:    Use '1-' iff  x in  (1-eps, 1] -- 1e-6 is OPTIMAL
   ## -------------------------------------------------------------------------
   ## Author: Martin Maechler, Date: 14 May 97, 18:07
   if(as.integer(digits) < 4) stop('digits must be >= 4')
   if(eps < 0 || eps > .1) stop('eps must be in [0, .1]')
-  i.swap <- is.na(x) | (1-eps < x  &  x <= 1) #-- Use "1- ." if <~ 1,  normal 'fun' otherwise
+  i.swap <- is.na(x) | (1-eps < x  &  x <= 1) #-- Use "1- ." if <~ 1,  normal 'FUN' otherwise
   r <- character(length(x))
   if(any(i.swap))
     r[i.swap] <-
-      paste("1-", fun(1-x[i.swap], digits=digits - 5, width=width-2, ...),
+      paste("1-", FUN(1-x[i.swap], digits=digits - 5, width=width-2, ...),
             sep='')# -5: '1-' + 4 for exponent -1 for '0' (in other case)
   if(any(!i.swap))
-    r[!i.swap] <- fun(x[!i.swap], digits=digits, width=width,...)
+    r[!i.swap] <- FUN(x[!i.swap], digits=digits, width=width,...)
   attributes(r) <- attributes(x)
   r
 }
@@ -280,7 +280,7 @@ summary(warnings()) # many warnings from qbeta() inaccuracies
 1e4*apply(cta, 2:3,    mean)
 1e4*apply(cta, c(2,4), mean)
 
-noquote(form01.prec(aperm(ra)))
+noquote(format01prec(aperm(ra)))
 showProc.time()
 
 DEBUG <- 2 ## FIXME
@@ -351,7 +351,7 @@ p.seq <- c(1e5^c(-4:-1), 10^c(-2:2,10:18))
 
 ## q = 1  ---------- know exact formula ...
 for(x in pr.val) {
-  cat("-----------\nx=", form01.prec(x, digits = 6),":\n~~~~~~~~~~\n")
+  cat("-----------\nx=", format01prec(x, digits = 6),":\n~~~~~~~~~~\n")
   for(p in p.seq) {
     t0 <- proc.time()[1]
     qb <- qbeta(x, p, 1)  # takes forever
@@ -362,7 +362,7 @@ for(x in pr.val) {
         ## NO Debug:
         paste0(formatC(p,w = 9), "|",formatC(C1, digits = 2, wid = 5),"|"),
         ## In any case:
-        form01.prec(qb, digits = 10),
+        format01prec(qb, digits = 10),
         qb - x^(1/p), qb /( x^(1/p))-1, pb - x
 	 ##, f.dig=3, f.wid=8 # << Debug
     )
@@ -377,7 +377,7 @@ showProc.time()
 ## qt(x,n) := - sqrt((1  / qbeta( 2*x    , n/2, 1/2) - 1) * n)  ## for x <= 1/2
 ## qt(x,n) :=   sqrt((1  / qbeta( 2*(1-x), n/2, 1/2) - 1) * n)  ## for x >  1/2
 for(x in pr.val) {
-  cat("-----------\nx=", form01.prec(x, digits = 6),":\n~~~~~~~~~~\n")
+  cat("-----------\nx=", format01prec(x, digits = 6),":\n~~~~~~~~~~\n")
   for(p in p.seq[p.seq >= 1/2]) {
     qb0 <- 1/(1+ qt(x/2, df = 2*p)^2/(2*p))
     t0 <- proc.time()[1]
@@ -386,8 +386,8 @@ for(x in pr.val) {
     pb <- pbeta(qb, p, 1/2)
     C2 <- (t2 <- proc.time()[1]) - t1
     ## NO Debug:
-    fcat(p,paste("|",t2-t0,"|",sep = ''),form01.prec(c(qb,qb0),digits = 10),
-    ## Debug: fcat(form01.prec(qb,digits=10),
+    fcat(p,paste("|",t2-t0,"|",sep = ''),format01prec(c(qb,qb0),digits = 10),
+    ## Debug: fcat(format01prec(qb,digits=10),
 	 paste("|",formatC(qb0-qb,dig = 8,w = 12)),
 	 qb/qb0 - 1,  pb/x - 1, f.wid = 12)
   }
@@ -398,7 +398,7 @@ showProc.time()
 
 ###  q = p  !!
 for(x in pr.val) {
-  cat("-----------\nx=", form01.prec(x, digits = 6),":\n~~~~~~~~~~\n")
+  cat("-----------\nx=", format01prec(x, digits = 6),":\n~~~~~~~~~~\n")
   for(p in p.seq[p.seq >= 1/2]) { #-- otherwise, qt(.) is not defined
     y <- 1/(1+ qt(1-x, 2*p)^2/(2*p))
     qb0 <- 1/2 + ifelse(x < 1/2, -1, 1)* sqrt(1-y)/2  #-- should be = qbeta(..)
@@ -409,10 +409,10 @@ for(x in pr.val) {
     pb <- pbeta(qb, p,p)
     C2 <- (t2 <- proc.time()[1]) - t1
     ## NO Debug:
-    fcat(p,paste("|",t2-t0,"|",sep = ''),form01.prec(qb,digits = 10),
+    fcat(p,paste("|",t2-t0,"|",sep = ''),format01prec(qb,digits = 10),
 	 paste("|",formatC(qb0-qb,dig = 8,w = 12)), qb/qb0 - 1,  pb/x - 1, f.wid = 12)
     ## Debug:
-    ##fcat(form01.prec(qb,digits=10,flag='-'),paste("|",formatC(qb0-qb,dig=8,w=12)),
+    ##fcat(format01prec(qb,digits=10,flag='-'),paste("|",formatC(qb0-qb,dig=8,w=12)),
     ##     qb/qb0 - 1,  pb/x - 1, f.wid=12)
   }
 }

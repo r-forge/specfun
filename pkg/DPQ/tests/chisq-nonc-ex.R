@@ -16,7 +16,8 @@ stopifnot(exprs = {
 source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
 ##--> showProc.time(), assertError(), relErrV(), ...
 
-doExtras <- FALSE # (TRUE for "real" simulations)
+(doExtras <- DPQ:::doExtras())
+## FIXME: As R package tests should be fast -- *must* skip most of those here !
 
 if(!dev.interactive(orNone=TRUE)) pdf("chisq-nonc-1.pdf")
 .O.P. <- par(no.readonly=TRUE)
@@ -1287,7 +1288,10 @@ showProc.time()
 if(.do.ask <- dev.interactive() && !identical(source, sys.function())) par(ask=TRUE)
 mult.fig(2)$old.par -> op
 ## large NC -- still (2018-08) very expensive!!
-for(NC in 10^(3:7)) { ## 10^(3:10)  is (still!)  much too expensive, 10^8 alone costs 31.8 sec !
+## 10^(3:10)  is (still!)  much too expensive, 10^8 alone costs 31.8 sec !
+NC2 <- if(doExtras) 10^(2:7) else 10^(2:6)
+for(NC in NC2) {
+    cat("ncp=",NC,":\n")
     curve(dchisq(x, df=1, ncp=NC), from=NC/10,to=NC*100,
          log='x', main=paste("Density ncp =",NC))
     try(
@@ -1360,7 +1364,6 @@ lines(x, pchisq(x, df=0.1, ncp = 1.2), col=3)
 lines(x, pchisq(x, df=0.1, ncp = 1.1), col=4)
 lines(x, pchisq(x, df=0.1, ncp = 0.1), col=5)
 
-
 showProc.time()
 ## MM: from something *not* put into ~/R/D/r-devel/R/tests/d-p-q-r-tests.R
 ## 1) PR#14216 (r51179, 2010-02-25)
@@ -1379,9 +1382,9 @@ x <- 250; pchisq(x, 1.01, ncp = 80, log=TRUE)
 
 ## R-2.10.0 and earlier --> quite a noisy picture ! --
 ## note that log P > 0  <==>  P > 1    --- of course nonsense!
-curve(pchisq(x, 1.01, ncp = 80, log=TRUE), 250, 600,
-      n=1001, ylim = c(-1,1)*5e-14)
-## still noisy, but cut off at 0
+xy <- curve(pchisq(x, 1.01, ncp = 80, log=TRUE), 250, 600,
+            n=1001, ylim = c(-1,1)*8e-14); abline(h=0, lty=3)
+## still noisy, and still slightly (5e-14) above 0 !
 
 ## bigger picture: for theta = ncp < 80, it works by using the other tail
 plot(p1 <- -pchisq(1:400, 1.01, ncp = 80*(1-.Machine$double.eps), log=TRUE),

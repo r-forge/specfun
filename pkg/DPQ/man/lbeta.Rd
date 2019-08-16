@@ -40,7 +40,15 @@ Qab_terms(a, k)
   which is numerically challenging when \eqn{b} becomes large compared to
   \code{a}, or \eqn{a \ll b}{a << b}.
 
-  Typically everything has to be computed in log scale, as both \eqn{\Gamma(b)}
+  With the beta function
+  \deqn{B(a,b) = \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)} = \frac{\Gamma(a)}{Qab},}{%
+        B(a,b) = \Gamma(a)\Gamma(b)/\Gamma(a+b) = \Gamma(a) / Qab,}
+  and hence
+  \deqn{\log B(a,b) = \log\Gamma(a) + \log\Gamma(b) - \log\Gamma(a+b) = \log\Gamma(a) - \log Qab,}{%
+        log  B(a,b) =  log\Gamma(a) + log\Gamma(b)  -  log\Gamma(a+b) = log\Gamma(a) -  log Qab,}
+  or in \R, \code{lBeta(a,b) := lgamma(a) - logQab(a,b)}.
+
+  Indeed, typically everything has to be computed in log scale, as both \eqn{\Gamma(b)}
   and \eqn{\Gamma(a+b)} would overflow numerically for large \eqn{b}.
   Consequently, we use \code{logQab*()}, and for the large \eqn{b} case
   \code{logQab_asy()} specifically,
@@ -48,6 +56,10 @@ Qab_terms(a, k)
 
   Note this is related to trying to get asymptotic formula for
   \eqn{\Gamma} ratios, notably formula (6.1.47) in Abramowitz and Stegun.
+
+  Note how this is related to computing \code{\link{qbeta}()} in boundary
+  cases, and see \code{\link{algdiv}()} \sQuote{Details} about this.
+
 
   We also have a vignette % ../vignettes/comp-beta.Rnw
   about this, but really the problem has been adressed pragmatically

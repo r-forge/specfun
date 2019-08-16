@@ -1,4 +1,4 @@
-## Not exported, and only used because CRAN checks must be faster
+## Not exported, used to make  'R CMD check <pkg>'  be faster *or* more extensive:
 doExtras <- function(int = interactive()) {
     int || nzchar(Sys.getenv("R_DPQ_check_extra")) ||
         identical("true", unname(Sys.getenv("R_PKG_CHECKING_doExtras")))
@@ -21,22 +21,22 @@ any_mpfr <- function(...) {
 }
 
 
-### form01.prec  was in  source("~/R/MM/MISC/Util.R")
-form01.prec <- function(x, digits = getOption("digits"), width = digits + 2,
+### was as 'form01.prec' in  source("~/R/MM/MISC/Util.R")
+format01prec <- function(x, digits = getOption("digits"), width = digits + 2,
                         eps = 1e-6, ...,
-                        fun = function(x,...) formatC(x, flag='-',...))
+                        FUN = function(x,...) formatC(x, flag='-',...))
 {
   ## Purpose: format numbers in [0,1] with "precise" result,
   ##          using "1-.." if necessary.
   ## -------------------------------------------------------------------------
   ## Arguments: x:      numbers in [0,1]; (still works if not)
-  ##            digits, width: number of digits, width to use with 'fun'
+  ##            digits, width: number of digits, width to use with 'FUN'
   ##            eps:    Use '1-' iff  x in  (1-eps, 1] -- 1e-6 is OPTIMAL
   ## -------------------------------------------------------------------------
   ## Author: Martin Maechler, Date: 14 May 97, 18:07
   if(as.integer(digits) < 4) stop('digits must be >= 4')
   if(eps < 0 || eps > .1) stop('eps must be in [0, .1]')
-  i.swap <- 1-eps < x  &  x <= 1 #-- Use "1- ." if <~ 1,  normal 'fun' otherwise
+  i.swap <- 1-eps < x  &  x <= 1 #-- Use "1- ." if <~ 1,  normal 'FUN' otherwise
   r <- character(length(x))
   if(hasNA <- anyNA(i.swap)) {
     iNA <- is.na(i.swap)
@@ -45,11 +45,12 @@ form01.prec <- function(x, digits = getOption("digits"), width = digits + 2,
   } else
     ni.swap <- !i.swap
   if(any(i.swap))
-    r[i.swap] <- paste0("1-", fun(1-x[i.swap],
-                                  ## -5: '1-' + 4 for exponent -1 for '0' (in other case)
-                                  digits=digits - 5, width=width-2, ...))
+      r[i.swap] <- paste0("1-",
+                          FUN(1-x[i.swap],
+                              ## -5: '1-' + 4 for exponent -1 for '0' (in other case)
+                              digits=digits - 5, width=width-2, ...))
   if(any(ni.swap))
-    r[ni.swap] <- fun(x[ni.swap], digits=digits, width=width,...)
+    r[ni.swap] <- FUN(x[ni.swap], digits=digits, width=width,...)
   if(hasNA)
     r[iNA] <- "NA"
   attributes(r) <- attributes(x)

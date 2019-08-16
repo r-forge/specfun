@@ -28,8 +28,6 @@ static R_NativePrimitiveArgType ncbeta_t[] = {
     /* errmax: */ REALSXP, INTSXP, INTSXP,
     /* res: */ REALSXP };
 
-// ppois-direct.c :
-static R_NativePrimitiveArgType ppois_D_t[] = { REALSXP, INTSXP, REALSXP, REALSXP };
 
 // wienergerm_nchisq.c :
 static R_NativePrimitiveArgType pchisqV_t[] = {
@@ -42,14 +40,14 @@ static const R_CMethodDef CEntries[] = {
     CDEF(qchisq_appr_v),
     CDEF(Pnchisq_it),
     CDEF(ncbeta),
-    CDEF(ppois_D),
     CDEF(pchisqV),
 
     {NULL, NULL, 0}
 };
 
 static R_CallMethodDef CallEntries[] = {
-    CALLDEF(R_algdiv, 2),
+    CALLDEF(R_algdiv, 2), // <-- ./algdiv.c
+    CALLDEF(ppoisD,   2), // <-- ./ppois-direct.c
 
     {NULL, NULL, 0}
 };

@@ -16,7 +16,17 @@ algdiv(a, b)
   \item{a, b}{numeric vectors which will be recycled to the same length.}
 }
 \details{
- ....
+  Note that this is also useful to compute the Beta function
+  \deqn{B(a,b) = \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)}.}{B(a,b) = \Gamma(a)\Gamma(b)/\Gamma(a+b).}
+  Clearly,  \deqn{\log B(a,b) = \log\Gamma(a) + algdiv(a,b) = \log\Gamma(a) - logQab(a,b)}
+
+\preformatted{
+ In our ../tests/qbeta-dist.R  we look into computing  log(p*Beta(p,q)) accurately for p << q
+        ---------------------
+ We are proposing a nice solution there.
+
+ How is this related to algdiv() ?
+ }
 }
 \value{
   a numeric vector of length \code{max(length(a), length(b))} (if neither

@@ -1,11 +1,14 @@
 ##-*- org -*-->  Emacs .. [Tab] key + [Org] menu; C-c C-o to follow links
 
+* TODO Rename 'err.lambd*()' to 'ppoisErr*()';  put on same help page as ppoisD(); further
+** FIXME those, they currently *print* and compute;
+** use files  R/ppois-fn.R tests/ppois-ex.R man/ppoisErr.Rd NAMESPACE
 * TODO Document all these (or do _not_ export):
-
-  ‘betaI’ ‘err.lambd0’ ‘err.lambd1’ ‘err.lambda’ ‘form01.prec’ ‘g2’
-  ‘gnt’ ‘h’ ‘h0’ ‘h1’ ‘h2’ ‘hnt’ ‘newton’ ‘nu.lam.expr’ ‘p.dnchiB’
-  ‘ppoisD’ ‘scalefactor’ ‘ss’ ‘ss2’ ‘ss2.’
-
+ ‘g2’ ‘gnt’ ‘h’ ‘h0’ ‘h1’ ‘h2’ ‘hnt’ ‘newton’ ‘nu.lam.expr’ ‘p.dnchiB’ ‘scalefactor’ ‘ss’ ‘ss2’ ‘ss2.’
+* TODO tests/chisq-nonc-ex.R : move "things" to a vignette / demo // use result file in inst/test // only if(doExtras)
+* TODO tests/qbeta-dist.R    : move "things" to a vignette / demo // use result file in inst/test // only if(doExtras)
+* TODO tests/qgamma-ex.R     : some parts only if(doExtras)
+* TODO tests/pnt-precision-problem.R : some parts only if(doExtras)
 * TODO b_chi(): Now have higher order asymptotic expansion *and* confirmed via Rmpfr that it is
   much better than internal b2(), we should use its higher order
   down to ~200 and completely "drop" b2() and redefine an optimal c1.
@@ -23,6 +26,9 @@
 * TODO src/qchisq_appr.c / init.c : change to .Call() version which vectorizes in both args
 * TODO tests/qbeta-dist.R : Demonstrates clear *bug* in R's qbeta() incl 'NOTIFY R-core!'
 
+* TODO tests/qbeta-dist.R (2): Shows how to compute  log(p*Beta(p,q)) accurately for p << q  very nice plots <=??=> Qab(), algdiv()??
+
+* TODO tests/qPoisBinom-ex.R:  *FIX* Bug in qpois / qbinom / qnbinom upper.tail|log.p
 * DONE lbeta.n(), lbeta.asy() .. __rename__;  add the two  *Qab*() functions to help page  man/lbeta.Rd
 * DONE qnormU*(): is "upper tail" qnorm ==>  use default arg  lower.tail=FALSE (but keep log.p=FALSE)
 * DONE s() is too short, not ok.  Maybe s_() or s.() ? --> using sW() now

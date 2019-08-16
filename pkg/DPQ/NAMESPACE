@@ -66,8 +66,8 @@ export(
   # , dntRwrong, dntRwrong1
   , dtWV
 
-  , err.lambd0, err.lambd1, err.lambda # << FIXME, currently *print* and compute
-  , form01.prec
+  , ppoisErr
+  , format01prec
   , g2, gnt
   , h, h0, h1, h2, hnt
 

@@ -565,12 +565,14 @@ qbeta.R	 <-  function(alpha, p, q,
 		      logbeta = lbeta(p,q),
 		      low.bnd = 3e-308, up.bnd = 1-2.22e-16,
                       method = c("AS109", "Newton-log"),
+                      tol.outer = 1e-15,
                       ## FIXME: (a,p,q) : and then uses (a, pp) .. hmm
 		      f.acu = function(a,p,q) max(1e-300, 10^(-13- 2.5/pp^2 - .5/a^2)),
 		      fpu = .Machine$ double.xmin,
-		      qnormU.fun = function(u, lu) qnormUappr(p=u, lp=lu),
-                      R.pre.2014 = FALSE,
-		      verbose = getOption("verbose") ## FALSE, TRUE, or 0, 1, 2, ..
+		      qnormU.fun = function(u, lu) qnormUappr(p=u, lp=lu)
+		    , R.pre.2014 = FALSE
+		    , verbose = getOption("verbose") ## FALSE, TRUE, or 0, 1, 2, ..
+		    , non.finite.report = verbose
 		      )
 {
 ### ----- following the C code in  ~/R/D/r-devel/R/src/nmath/qbeta.c
@@ -649,7 +651,7 @@ qbeta.R	 <-  function(alpha, p, q,
     xinbta0 <- xinbta # in case we want get back to it
     if(verbose) cat("initial 'xinbta' =", formatC(xinbta0, digits=18))
     if(!is.finite(xinbta)) {
-	warning("** qbeta.R(): qbetaAppr() was NOT finite!! **")
+	warning("** qbeta.R(): qbetaAppr() was not finite!   xinbta := 0.5")
         xinbta <- 0.5
     }
 
@@ -673,20 +675,23 @@ qbeta.R	 <-  function(alpha, p, q,
     o.it <- 0
     method <- match.arg(method)
 
-    if(method == "AS109")
+    switch(method,
+           "AS109" =
     while(!finish) { ##-- Outer Loop
 	y <- pbeta(xinbta, pp, qq)
 	if(verbose) cat("y=pbeta(x..)=", formatC(y, digits=15, width=18, flag='-'))
 	if(!is.finite(y)) {
+            if(non.finite.report)
 	    cat("  y=pbeta(): not finite: 'DOMAIN_ERROR'\n",
-		"  xinbta =",form01.prec(xinbta, digits=18),"\n")
+		"  xinbta =", format01prec(xinbta, digits=18),"\n")
 	    return(xinbta) ##browser()
 	}
 	y <- (y - a) * exp(logbeta + r * log(xinbta) + t * log1p(-xinbta))
 	if(verbose) cat(" y.n=(y-a)*e^..=", formatC(y))
 	if(!is.finite(y)) {
+            if(non.finite.report)
 	    cat("  y = (y-a)*exp(...) not finite:\n",
-		"  xinbta =", form01.prec(xinbta, digits=18),"\n")
+		"  xinbta =", format01prec(xinbta, digits=18),"\n")
  	    return(xinbta) ##browser()
 	}
 
@@ -708,17 +713,18 @@ qbeta.R	 <-  function(alpha, p, q,
 	    } else if(verbose>=2) cat(".")
 	    if(!finish) g <- g / 3
 	} ##-- end inner loop
-	if(verbose>=2) cat(if(in.it>10)"\n" else " ")
-	if(verbose) cat(" ",in.it,"it --> adj=g*y=",formatC(adj),"\n")
-	if (abs(tx - xinbta) < 1e-15*xinbta) break # goto L_converged;
+	if(verbose>=2) cat(if(in.it>10) "\n" else " ")
+	if(verbose) cat(" ", in.it,"it --> adj=g*y=", formatC(adj),"\n")
+	if (abs(tx - xinbta) <= tol.outer * xinbta) break # goto L_converged;
 	if(verbose >= 2)
             cat("--Outer Loop: |tx - xinbta| > eps; tx=",formatC(tx, digits=18),
                 " tx-xinbta =", formatC(tx-xinbta),"\n")
 	xinbta <- tx
 	yprev <- y
 	o.it <- o.it + 1
-    } ##- end outer loop
-    else if(method == "Newton-log") #--------------------------------- new --------
+    }, ##- end outer loop {method "AS109"}
+
+    "Newton-log" = #--------------------------------- new --------
         ## but really, I want  Newton on   log-*log* scale --
     while(!finish) { ##-- Outer Loop
 	y <- pbeta(xinbta, pp, qq, log.p = TRUE)
@@ -761,14 +767,15 @@ qbeta.R	 <-  function(alpha, p, q,
 ## 	if(verbose) cat(" ",in.it,"it --> adj=g*y=",formatC(adj),"\n")
  	if(verbose) cat("\n")
         tx <- xinbta - y
-	if (abs(tx - xinbta) < 1e-15*xinbta) break # goto L_converged;
+	if (abs(tx - xinbta) < tol.outer * xinbta) break # goto L_converged;
 	if(verbose>=2) cat("--Outer Loop: |tx - xinbta| > eps; tx=",formatC(tx, digits=18),
-	   " tx-xinbta =", formatC(tx-xinbta),"\n")
+                           " tx-xinbta =", formatC(tx-xinbta),"\n")
 	xinbta <- tx
 ## 	yprev <- y
 	o.it <- o.it + 1
-    } ##- end outer loop
-    else stop("unknown method ", dQuote(method))
+    }, ##- end outer loop, method = "Newton-log"
+    ## otherwise:
+    stop("unknown method ", dQuote(method)))
 
     ## L_converged:
     if(verbose) cat(" ", o.it,"outer iterations\n")
