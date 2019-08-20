@@ -100,12 +100,6 @@ g2 <- function(u, eps = .Machine$double.eps)
 
 
 
-nu.lam.expr <- function(df, ncp)
-    ## a 'title' string
-    substitute(list(nu == df, lambda == ncp),
-               list(df = df, ncp = ncp))
-
-##
 sW <- function(x, df, ncp)
 {
     ## Purpose: s(x, df, ncp) as in Wienergerm approx.

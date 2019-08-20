@@ -78,6 +78,41 @@ dnchisqBessel <- function(x, df, ncp, log = FALSE)
     }
 }
 
+.checkFun4 <- function(F, chF) {
+    if(!is.function(F))
+        stop(chF, "is not a function")
+    nff <- names(formals(F))
+    if(!(("..." %in% nff) || length(nff) >= 4L))
+        stop(chF, "() must allow 4 arguments (*, df, ncp, log)")
+    ## else NULL
+}
+
+pl2curves <- function(fun1, fun2, df, ncp, log = FALSE,
+                      from = 0, to = 2*ncp, p.log = "", n = 2001,
+                      leg = TRUE,
+                      col2 = 2, lwd2 = 2, lty2 = 3, ...)
+{
+    ## Purpose: Comparison plot of two curves to compare them,
+    ##    e.g.  dchisq() and its Bessel-approximation
+    ## ----------------------------------------------------------------------
+    ## Arguments:
+    ## ----------------------------------------------------------------------
+    ## Author: Martin Maechler, Date: Aug 2019
+    cF1 <- deparse(substitute(fun1)); .checkFun4(fun1, cF1)
+    cF2 <- deparse(substitute(fun2)); .checkFun4(fun2, cF2)
+    x <- NULL # -Wall(codetools)
+    curve(fun1(x, df=df, ncp=ncp, log=log), from=from, to=to, n=n,
+          ylab = paste0(paste0(c(cF1,cF2),"(x, *)", collapse = " vs. ")),
+          main = deparse(sys.call()), log=p.log, ...)
+    curve(fun2(x, df=df, ncp=ncp, log=log), n=n, ##=
+          col=col2, lty=lty2, lwd=lwd2, add=TRUE)
+    if(leg)
+        legend("topright", paste0(c(cF1,cF2),"()"),
+               col = c(col2,1L), lwd=c(lwd2,1L), lty=c(lty2,1L), inset = .02)
+}
+
+if(FALSE) ## previously -- now just use
+    ## pl2curves(dnchisqBessel, dchisq, df, ncp, log,  from, to, ....)
 p.dnchiB <- function(df, ncp, log=FALSE, from=0, to = 2*ncp, p.log="", ...)
 {
     ## Purpose: Comparison plot of dchisq() and its Bessel-approximation
@@ -94,6 +129,8 @@ p.dnchiB <- function(df, ncp, log=FALSE, from=0, to = 2*ncp, p.log="", ...)
     legend("topright", c("dchisq()", "dnchisqBessel()"),
            col = 2:1, lwd=2:1, lty=c(3,1), inset = .02)
 }
+
+
 
 ###-- The R version of R's C implementation ~/R/D/r-devel/R/src/nmath/dnchisq.c
 

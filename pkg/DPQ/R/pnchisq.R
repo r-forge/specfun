@@ -205,7 +205,7 @@ pnchisq <- function(q, df, ncp = 0, lower.tail = TRUE,
 
 ## Cheaply Vectorized version:
 pnchisqV <- function(x, ..., verbose = 0)
-    sapply(x, pnchisq, ..., verbose = verbose)
+    vapply(x, pnchisq, FUN.VALUE = 0.5, ..., verbose = verbose)
 
 pnchisqPatnaik <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 {

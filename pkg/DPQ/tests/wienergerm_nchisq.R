@@ -65,6 +65,11 @@ for(log in c('', "x")) {
 ### ==> ./wienergerm-pchisq-tst.R
 ###       =======================
 
+nu.lam.expr <- function(df, ncp)
+    ## a 'title' string
+    substitute(list(nu == df, lambda == ncp),
+               list(df = df, ncp = ncp))
+
 ### ---> from now on checking  C version only ==> pchisqW() <<<<<
 ###                            --------------     ---------
 
@@ -214,7 +219,10 @@ z.s(16.001, 6,10, verbose=TRUE)
 
 p.zs1 <- function(df, ncp,
                   r.ex = c(-8, -5),# depends on (df, ncp) [not much though]
-                  n = 513, signs = c(-1,1), type = 'l')
+                  n = 513, signs = c(-1,1), type = 'l',
+                  xlab = '', ylab = paste("z.s(x0  +/- exp(x)"),
+                  main = nu.lam.expr(df,ncp)
+                  )
 {
   ## Purpose: problematic of z.s() when s --> 1 :
   ## ----------------------------------------------------------------------
@@ -249,8 +257,8 @@ p.zs1 <- function(df, ncp,
       z[[is]] <- z.s(x0 + sig*exo, df, ncp)
   }
   yl <- sfsmisc::rrange(unlist(z), r = 2) # y-limits
-  plot(NA,NA, xlim = xl, ylim= yl, type = "n", xaxt = "n", xlab = '',
-       main = nu.lam.expr(df,ncp), ylab = paste("z.s(x0  +/- exp(x)"))
+  plot(NA,NA, xlim = xl, ylim= yl, type = "n", xaxt = "n",
+       xlab=xlab, ylab=ylab, main=main)
   uy <- par('usr')[3:4]
   polygon(x= rx[1]+c(-e,-e,0,0),
           y= uy[c(1:2,2:1)], col = 'gray70', xpd = FALSE)

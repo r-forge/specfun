@@ -198,6 +198,13 @@ sum(dchisqAsym(x, df=3, ncp=30000, log=TRUE)) ## larger (less negative) <-> bett
 ## p.dnchiB(df, ncp, log=FALSE, from=0, to = 2*ncp, p.log="", ...)  --> ./dnchisq-fn.R
 ## --------                                                               ~~~~~~~~~~~~
 
+## From ?pl2curves()  [ == ../man/pl2curves.Rd ] :
+p.dnchiB <- function(df, ncp, log=FALSE, from=0, to = 2*ncp, p.log="", ...)
+{
+    pl2curves(dnchisqBessel, dchisq, df=df, ncp=ncp, log=log,
+              from=from, to=to, p.log=p.log, ...)
+}
+
 ## simple check
 stopifnot(all.equal(dchisq(1:30, df=3, ncp=1:30),
                     dnchisqBessel(1:30, df = 3, ncp = 1:30),

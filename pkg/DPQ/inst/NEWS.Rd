@@ -4,16 +4,26 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.3-3 [2019-08-16]}{
+\section{Version 0.3-3 [2019-08-20]}{
   \subsection{NEW FEATURES}{
     \itemize{
-      \item Renamed many functions to have less "." in names.
+      \item Renamed (and generalized / merged) many functions to have less "." in names.
 
       \item New \code{pnbetaAS310()} function interfacing to my
       \emph{corrected} C version of 'ASA 310' (2007).
 
       \item New \code{algdiv()} function interfacing to TOMS 708 version of
       our \code{logQab}.
+
+      \item New \code{pl2curves()} which generalizes (somewhat) previous
+      function \code{p.dnchiB()}.
+
+      \item Made \code{newton()} more flexible with new \code{xMin} and
+      \code{xMax} arguments which are notably useful for \code{q*()}
+      (quantile function) computations.
+
+      Correspondingly replaced previous \code{qchisq2()} and
+      \code{qchisqA()} with new \code{qchisqN()} (\sQuote{N}ewton).
     }
   }
 }

@@ -159,64 +159,79 @@ qnchisqSankaran_d <- function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 ###-- 3 -- Inversion Algorithms ---------------------------------------
 
 
-##-- The next ones all build on using  Newton() on pchisq() / dchisq();
+##-- The next build on using  Newton's method newton() on pchisq() / dchisq();
 
 ## This function finds the quantile corresponding to p
 ## for the noncentral-chisquare distribution with
 ##  df degrees of freedom and noncentrality parameter delta = ncp.
-qchisq2 <- function(p, df, ncp = 0, eps = 0.0001)
+qchisqN <- function(p, df, ncp = 0, qIni = qchisqAppr.0, ...)
 {
-    newton(x0 = qchisqAppr.0(p, df, ncp),
-           G = function(x, z) pchisq(x, df = z[2], ncp = z[3]) - z[1],
-           g = function(x, z) dchisq(x, df = z[2], ncp = z[3]),
-           eps = eps, z = c(p, df, ncp))[1]
-}
-
-qchisqA <- function(p, df, ncp = 0, eps = 0.0001, qIni = qchisqAppr.0)
-{
-    ## same as qchisq2() but returning  "all"
+    ## FIXME: implement log.p=TRUE  and also lower.tail=FALSE
     newton(x0 = qIni(p, df=df, ncp=ncp),
            G = function(x, z) pchisq(x, df = z[2], ncp = z[3]) - z[1],
            g = function(x, z) dchisq(x, df = z[2], ncp = z[3]),
-           z = c(p, df, ncp), eps = eps, max.iter = 100, give.all = TRUE)
+           z = c(p, df, ncp),
+           xMin = 0, xMax = 1, dxMax = 1, ## <== (log.p = FALSE)
+           ...)
 }
 
-newton <- function(x0, G, g, z = 0, eps = 0.001, max.dx = 1, max.iter = 20,
-                   give.all = FALSE)
+## >>> ../man/newton.Rd <<<
+newton <- function(x0, G, g, z,
+                   xMin = -Inf, xMax = Inf, warnRng = TRUE,
+                   dxMax = 1000, eps = 0.0001, maxiter = 1000L,
+                   keepAll = NA) # FALSE, NA, TRUE
 {
     ## Given the function G and its derivative g,
     ## newton uses the Newton method, beginning at x0,
     ## to find a point xp at which G is zero. G and g
-    ## may each depend on a parameter z. The result is the
-    ##  3-component vector of an approximation x0 of xp,
-    ##  G(x0, z), and the number ("iter") of max.iter.
-    ##  x0 satisfies  abs(G(x0, z)) < eps.
+    ## may each depend on a parameter z.
 
-    ##  give.all = TRUE  to also get  the vectors of consecutive values of
-    ##  x0 and G(x0, z);
+    ## The result is the 3-component vector of an approximation x* of xp,
+    ## G(x*, z), and the number ("iter") of maxiter.
+    ## x* satisfies  abs(G(x*, z)) < eps.
 
-    iter <- 0
+    ##  keepAll = TRUE  to also get  the vectors of consecutive values of
+    ##  x and G(x, z);
+
+    stopifnot(length(x0) == 1L,
+              length(xM <- xMax - xMin) == 1L, xM >= 0,
+              length(dxMax) == 1L, dxMax > 0,
+              is.logical(keepAll), length(keepAll) == 1L)
+    if(is.finite(xMin) && x0 < xMin) {
+        if(warnRng) warning(sprintf("x0 < xMin(=%g) --> setting x0:=xMin", xMin))
+        x0 <- xMin
+    }
+    if(is.finite(xMax) && x0 > xMax) {
+        if(warnRng) warning(sprintf("x0 > xMax(=%g) --> setting x0:=xMax", xMax))
+        x0 <- xMax
+    }
     Gx <- G(x0, z)
-    if(give.all) {
+    if((give.all <- isTRUE(keepAll))) {
         x0vec <- x0
         Gxvec <- Gx
     }
+    iter <- 0L
     conv <- TRUE
-##-     while(abs(Gx) > eps) {
-##-         r <- Gx/g(x0, z)
-    while(abs(r <- Gx/g(x0, z)) > eps) {
-        d <- min(abs(r), max.dx) * sign(r)
+    while(abs(r <- Gx/g(x0, z)) > eps) { # often ok, even if g(x0,z) == 0
+        ## d := r, unless |r| is too large:
+        d <- min(abs(r), dxMax) * sign(r)
         x0 <- x0 - d
+        if(is.finite(xMin) && x0 < xMin) x0 <- xMin
+        if(is.finite(xMax) && x0 > xMax) x0 <- xMax
         Gx <- G(x0, z)
         if(give.all) {
             Gxvec <- c(Gxvec, Gx)
             x0vec <- c(x0vec, x0)
         }
-        if((iter <- iter + 1) > max.iter) {
-            warning("iter >", format(max.iter)) ; conv <- FALSE; break
+        if((iter <- iter + 1L) > maxiter) {
+            warning("iter >", format(maxiter)) ; conv <- FALSE; break
         }
     }
     if(give.all)
-        list(x = x0, x.vec = x0vec, G.vec = Gxvec, it = iter, converged = conv)
-    else c(x = x0, G = Gx, it =iter, converged = conv)
+        list(x = x0, G = Gx, it = iter, converged = conv,
+             x.vec = x0vec, G.vec = Gxvec)
+    else if(is.na(keepAll))
+        list(x = x0, G = Gx, it = iter, converged = conv)
+    else x0
 } ## newton()
+

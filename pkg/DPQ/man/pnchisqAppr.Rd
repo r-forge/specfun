@@ -1,7 +1,9 @@
+%%------------ = Part 1 of  "pnchisq Approximations"  [part 2 : ==> ./pnchisqWienergerm.Rd]
 \name{pnchisqAppr}
 \title{Approximate Probabilities of Non-Central Chisquared Distribution}
 %%     ----------------------------------------------------------------
 \alias{pnchisq}
+\alias{pnchisqV}% with "n" (--> ./pnchisqWienergerm.Rd has {pchisqV}  w/o "n" )
 \alias{pnchisq_ss}
 \alias{pnchisqAbdelAty}
 \alias{pnchisqIT}
@@ -9,10 +11,9 @@
 \alias{pnchisqPearson}
 \alias{pnchisqSankaran_d}
 \alias{pnchisqTerms}
-\alias{pnchisqV}
 \description{
   Compute (approximate) probabilities for the non-central chi squared distribution.
-  using Johnson,Kotz,.. ............
+  using Johnson, Kotz,.. ............
 }
 \usage{
 %% R code in  ../R/pnchisq.R :
@@ -20,19 +21,19 @@
 pnchisq          (q, df, ncp = 0, lower.tail = TRUE, %% TODO?!? log.p = FALSE,
                   cutOffncp = 80, itSimple = 110, errmax = 1e-12, reltol = 1e-11,
                   itrmax = 10* 10000, verbose = 1, xLrg.sigma = 5)
+pnchisqV(x, \dots, verbose = 0)
+
 pnchisqPatnaik   (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchisqPearson   (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchisqAbdelAty  (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchisqSankaran_d(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchisq_ss       (x, df, ncp, i.max = 10000)
-pnchisqV(x, ..., verbose = 0) %% <<< ?????
-
 pnchisqTerms     (x, df, ncp, lower.tail = TRUE, i.max = 1000)
 }
 \arguments{%--> ~/R/D/r-devel/R/src/library/stats/man/Chisquare.Rd :
 %% ===>  pchisq(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
-  \item{x}{number ( \sQuote{quantile}, i.e., abscissa value.)}
-  \item{q}{numeric vector (of \sQuote{quantiles}, i.e., abscissa values).}
+  \item{x}{numeric vector (of \sQuote{quantiles}, i.e., abscissa values).}
+  \item{q}{number ( \sQuote{quantile}, i.e., abscissa value.)}
   \item{df}{degrees of freedom \eqn{> 0}, maybe non-integer.}
   \item{ncp}{non-centrality parameter \eqn{\delta}{delta}; ....}
   \item{lower.tail, log.p}{logical, see, e.g., \code{\link{pchisq}()}.}
@@ -47,7 +48,7 @@ pnchisqTerms     (x, df, ncp, lower.tail = TRUE, i.max = 1000)
   \item{xLrg.sigma}{positive number ...}% ... TODO
   \item{verbose}{logical or integer specifying if or how much the algorithm
     progress should be monitored.}
-  \item{\dots}{...}% TODO
+  \item{\dots}{further arguments passed from \code{pnchisqV()} to \code{pnchisq()}.}
 }
 %% \details{
 %% }

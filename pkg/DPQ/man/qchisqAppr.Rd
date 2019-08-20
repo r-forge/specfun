@@ -1,11 +1,11 @@
 \name{qchisqAppr}
-\title{Compute Approximate Quantiles of the Chisquared Distribution}
+\title{Compute Approximate Quantiles of the Chi-Squared Distribution}
 \alias{qchisqKG}
 \alias{qchisqWH}
 \alias{qchisqAppr}
 \alias{qchisqAppr.R}
 \description{
-  Compute quantiles (inverse distribution values) for the chisquared distribution.
+  Compute quantiles (inverse distribution values) for the chi-squared distribution.
   using Johnson,Kotz,.. ............TODO.......
 }
 \usage{
@@ -55,7 +55,8 @@ qchisqAppr.R(p, df, lower.tail = TRUE, log.p = FALSE, tol = 5e-07,
 %% }
 \author{Martin Maechler}
 \seealso{
- \code{\link{qchisq}}.
+  \code{\link{qchisq}}.   Further, our approximations to the
+  \emph{non-central} chi-squared quantiles, \code{\link{qnchisqAppr}}
 }
 \examples{
   ## TODO

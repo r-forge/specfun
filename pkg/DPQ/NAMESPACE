@@ -68,8 +68,17 @@ export(
 
   , ppoisErr
   , format01prec
+ ## R/wienergerm_nchisq-fn.R : -----
   , g2, gnt
-  , h, h0, h1, h2, hnt
+  , h, h0, h1, h2, hnt  # h := h2
+  , sW
+  , qs ## ??
+  , z0, z.f, z.s
+  , ss, ss2, ss2.
+  , pchisqW.R
+  , pchisqV, pchisqW., pchisqW # man/pnchisqAppr.Rd
+  ## , scalefactor
+ ## --------------------------------
 
   , lbeta_asy, lbetaI, lbetaM, lbetaMM
   ## , lbetaIhalf
@@ -82,11 +91,8 @@ export(
   , lssum, lsum
 
   , newton # R/pnchisq.R
-  , nu.lam.expr
-  , p.dnchiB # plot -- rename ?
-  , plRpois
-
-  , pchisqV, pchisqW., pchisqW, pchisqW.R
+  , pl2curves
+  , plRpois  # another plot ... keep ?
 
   , pbetaRv1
   , pnbetaAS310
@@ -122,7 +128,7 @@ export(
     ## from R/qnchisq.R
   , qchisqAppr.0, qchisqAppr.1, qchisqAppr.2, qchisqAppr.3
   , qchisqApprCF1, qchisqApprCF2, qchisqCappr.2
-  , qchisq2, qchisqA
+  , qchisqN
   , qnchisqAbdelAty, qnchisqPatnaik, qnchisqPearson, qnchisqSankaran_d
 
   , qgammaAppr, qgammaApprSmallP, qgammaApprKG
@@ -130,9 +136,5 @@ export(
   , qnormAppr, qnormUappr
   , qtAppr
   , r_pois, r_pois_expr
-  , qs ## ??
-  , sW, ss, ss2, ss2.
-  , z.f, z.s, z0
-  , scalefactor
     ## no! titleR.exp (FIXME eventually: should not need such a global)
 )
