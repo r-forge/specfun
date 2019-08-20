@@ -1,6 +1,7 @@
-\name{pchisqW}
-\title{Wienergerm Approximations to pchisq() the Chisquare Distribution}
-\alias{pchisqV}
+\name{pnchisqWienergerm}
+\title{Wienergerm Approximations to (Non-Central) Chisquare Probabilities}
+%% TODO: also read/use >>>>  ../wienergerm_README <<<<<<<<<<<<<<<
+\alias{pchisqV}% w/o "n" -- NB:  --> ./pnchisqAppr.Rd for 'pnchisqV() % *with* "n"
 \alias{pchisqW}
 \alias{pchisqW.}
 \alias{pchisqW.R}
@@ -9,9 +10,29 @@
 \alias{z0}
 \alias{z.f}
 \alias{z.s}
-\description{
-  Compute Wienergerm approximations to \code{\link{pchisq}()}, the
-  (non-central) chisquare distribution.
+%-
+\alias{g2}
+\alias{gnt}
+\alias{h}
+\alias{h0}
+\alias{h1}
+\alias{h2}
+\alias{hnt}
+\alias{scalefactor}% ? no longer exported
+\alias{ss}
+\alias{ss2}
+\alias{ss2.}
+\description{%%--> ../R/wienergerm_nchisq-fn.R <--
+
+  Functions implementing the two Wiener germ approximations to
+  \code{\link{pchisq}()}, the (non-central) chisquare distribution, and to
+  \code{\link{qchisq}()} its inverse, the quantile function.
+
+  These have been proposed by Penev and Raykov (2000) who also listed a
+  Fortran implementation.
+
+  In order to use them in numeric boundary cases, Martin Maechler has
+  improved the original formulas.
 
   \bold{Auxiliary functions:}
   \describe{
@@ -22,6 +43,10 @@
     \item{\code{z0()}:}{ ... }
     \item{\code{z.f()}:}{ ... }
     \item{\code{z.s()}:}{ ... }
+
+    ..................
+    ..................
+
   } % descr.
 }
 \usage{
@@ -40,6 +65,14 @@ qs(x, df, ncp, f.s = sW(x, df, ncp), eps1 = 1/2, sMax = 1e+100)
 z0(x, df, ncp)
 z.f(x, df, ncp)
 z.s(x, df, ncp, verbose = getOption("verbose"))
+
+%%------
+
+ss   (x, df, ncp, i.max = 10000)
+ss2  (x, df, ncp, i.max = 10000, eps = .Machine$double.eps)
+ss2. (q, df, ncp = 0, errmax = 1e-12, reltol = 2 * .Machine$double.eps,
+      itrmax = 1e+05, eps = reltol)
+
 }
 
 \arguments{
@@ -54,21 +87,33 @@ z.s(x, df, ncp, verbose = getOption("verbose"))
     Penev \& Raykov (2000).}
   \item{Fortran}{logical specifying if the Fortran or the C version should
     be used.}
-  \item{verbose}{logical/integer ...}% FIXME
+  \item{verbose}{logical (or integer) indicating if or how much diagnostic
+    output should be printed to the console during the computations.}
   \item{f.s}{ .... }
   \item{eps1}{ .... }
   \item{sMax}{ .... }
+
+  \item{i.max}{ .. }
+  \item{eps}{ .. }
+  \item{errmax}{ .. }
+  \item{reltol}{ .. }
+  \item{itrmax}{ .. }
+}
+\note{
+  The exact auxiliary function names etc, are still considered
+  \emph{provisional}; currently they are exported for easier documentation
+  and use, but may well all disappear from the exported functions or even
+  completely.
+}
+\details{
+  ....TODO... or write vignette
+%% ==> info in header of ../src/wienergerm_nchisq.c
+%% but also in Martin's extensive example scripts, and hand notes
 }
 \value{
   bla FIXME
 }
-\author{Martin Maechler, 26 Jan 2004}
-
-%% \details{   TODO -- FIXME
-%%
-%% ==> info in header of ../src/wienergerm_nchisq.c
-%% but also in Martin's extensive example scripts, and hand notes
-%% }
+\author{Martin Maechler, mostly end of Jan 2004}% <--> ../wienergerm_README <<<<
 \references{
   Penev, Spiridon and Raykov, Tenko (2000)
   A Wiener Germ approximation of the noncentral chi square
@@ -86,6 +131,9 @@ z.s(x, df, ncp, verbose = getOption("verbose"))
 }
 \examples{
 ## see  example(pnchisqAppr)   which looks at all of the pchisq() approximating functions
+% ../tests/wienergerm-accuracy.R
+% ../tests/wienergerm-pchisq-tst.R
+% ../tests/wienergerm_nchisq.R
 }
 \keyword{distribution}
 \keyword{math}
