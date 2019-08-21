@@ -5,9 +5,17 @@
 
 source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
 ##--> showProc.time(), assertError(), relErrV(), ...
+list_ <- function(...)
+   `names<-`(list(...), vapply(sys.call()[-1L], as.character, ""))
+
+##' load a named list
+loadList <- function(L, envir = .GlobalEnv)
+    invisible(lapply(names(L), function(nm) assign(nm, L[[nm]], envir=envir)))
+
 
 (doExtras <- DPQ:::doExtras())
-## FIXME: As R package tests should be fast -- *must* skip most of those here !
+## save directory (to read from):
+(sdir <- system.file("safe", package="DPQ"))
 
 if(!dev.interactive(orNone=TRUE)) pdf("qbeta-dist.pdf")
 .O.P. <- par(no.readonly=TRUE)
@@ -241,7 +249,6 @@ qbeta  (.05 ,  10/2, 1/2) #-==  0.6682436
 qbeta  (.05 , 100/2, 1/2) #-==  0.9621292
 qbeta  (.05 ,1000/2, 1/2) #-==  0.996164
 
-
 qb.names <- paste0("qbeta", c('', '.R', 'Appr', 'Appr.1'))
 qf <- lapply(setNames(,qb.names), get)
 str(qf) ## for (qn in qb.names) cat(qn,":", deparse(args(get(qn))),"\n\n")
@@ -252,9 +259,18 @@ p.set2 <- c(1:5,10,20,50,100,500,1000, 10^c(4:18,20,30,100))
 p.set2 <- c(1e-10,1e-5,1e-3,.1,.3,.5, .8, 1,10, 10^c(6:18,20,30,100))
 q.set2 <- c(1e-4, 1/2, 1, 3/2, 2, 5, 1e4)
 
-
 pn2 <- paste("p=",formatC(p.set2,wid = 1),sep = '')
 qn2 <- paste("q=",formatC(q.set2,wid = 1),sep = '')
+
+sfil1 <- file.path(sdir, "tests_qbeta-d-ssR.rds")
+if(!doExtras && file.exists(sfil1)) {
+  ssR_l <- readRDS(sfil1)
+  cat("Read ssR_l from ", sfil1," :\n ")
+  str(ssR_l)
+  loadList(ssR_l)
+
+} else { ## do run the simulation [always if(doExtras)] :
+
 ra <- array(dim = c(length(q.set2), length(qb.names), length(p.set2)),
 	    dimnames = list(qn2, qb.names, pn2))
 ind_ct <- names(system.time(1))[ c(1,3) ] # "user" and "elapsed"
@@ -263,9 +279,9 @@ cta <- array(dim = c(length(ind_ct), dim(ra)),
 for(qq in q.set2) {
   cat("\nq=",qq,"\n======\n")
   for (p in p.set2) {
-    cat("p=",p,"\n~~~~")
+    cat(sprintf("p=%-7g : >> ",p))
     for (qn in qb.names) {
-      cat("\n: ",qn," ", sep = '')
+      cat(" ",qn,": ", sep = '')
       st <- system.time(
           r <- qf[[qn]](.05, p, qq))[ind_ct]
       cta[, qn2[qq == q.set2], qn, pn2[p == p.set2]] <- st
@@ -274,19 +290,25 @@ for(qq in q.set2) {
   }
   showProc.time() ## -- similar for all q
 }
-summary(warnings()) # many warnings from qbeta() inaccuracies
+
+    print(summary(warnings())) # many warnings from qbeta() inaccuracies
+
+    saveRDS(list_(ra, cta), file = sfil1)
+
+}## {run simulations} -------------------------------------------------------
 
 ## Timings :
 1e4*apply(cta, 2:3,    mean)
 1e4*apply(cta, c(2,4), mean)
 
 noquote(format01prec(aperm(ra)))
-showProc.time()
 
 DEBUG <- 2 ## FIXME
 qbeta.R(.05 ,  10/2, 1/2)
 qbeta.R(.05 , 100/2, 1/2)
 qbeta.R(.05 ,1000/2, 1/2)
+
+showProc.time()#-----------------------------------------------------------------------------
 
 DEBUG <- TRUE ## FIXME
 nln <- "\n----------------\n"
@@ -929,6 +951,7 @@ p.err.pBeta(21, , 1e-3)
 summary(warnings())
 showProc.time()
 
+if(doExtras) { # each plot is somewhat large & expensive  ..-------------------
 ## hmm, with q >> 1,  the  log1p() approx. are *worse* ..
 p.err.pBeta(q = 2.1, kind="absErr")
 p.err.pBeta(q = 2.1, 1e-13, kind="absErr")
@@ -947,8 +970,9 @@ p.err.pBeta(2^-10, p.max = 2^-10); abline(v=2^-12, lty=3, col="gray20")
 ##  in both cases:  The quadratic term is an order of magnitude better
 ##  the above  p.cut is "order-of-magnitude" correct, but not really numerically ok!
 
-summary(warnings())
+print(summary(warnings()))
 showProc.time()
+}# only if(doExtras) ----------------------------------------------------------------------
 
 pBeta <- function(p, q)
 {
@@ -980,7 +1004,6 @@ pBeta <- function(p, q)
     }
     r
 }
-
 
 showProc.time()
     ## x <- qbeta((0:100)/100,0.01,5)

@@ -9,7 +9,14 @@ stopifnot(exprs = {
     require(sfsmisc) # lseq(), p.m(), mult.fig()
 })
 
+source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
+##--> showProc.time(), assertError(), relErrV(), ...
+(doExtras <- DPQ:::doExtras())
+## save directory (to read from):
+(sdir <- system.file("safe", package="DPQ"))
+
 if(!dev.interactive(orNone=TRUE)) pdf("pnt-precision-2.pdf")
+op <- options(nwarnings = 1e5)
 
 x <- 10^seq(2,12, by= .25)
 px <- pt(x, df= 0.9, ncp = .01,
@@ -87,8 +94,9 @@ p.t.vs.F(3, 1)   ## no visible problem
 ## but here, for x -> 0: pf() is systematically larger :
 p.t.vs.F(3, 1, 1e-2,100)
 
-## source("/u/maechler/R/MM/NUMERICS/dpq-functions/t-nonc-fn.R")
-##                                              -----------
+showProc.time()
+
+### ---------------------------------------------------------------------------------
 
 ## -> pntR() is R-level pnt() function
 pt (1e10, df=.9, ncp=1e-10, lower.tail=FALSE, log=TRUE) # >> -Inf
@@ -127,7 +135,6 @@ plot(log(x), px, type="o")
 pntR(20, df=0.9, ncp=30, lower.tail=FALSE, log=TRUE, errmax=1e-15)
 pntR(20, df=  2, ncp=30, lower.tail=FALSE, log=TRUE, errmax=1e-15)
 
-
 ### "Solve this problem":  Find tail formula empirically
 ### ----------------------------------------
 ### log(1 - P(x)) ~= alpha - beta * log(x)
@@ -136,6 +143,8 @@ pntR(20, df=  2, ncp=30, lower.tail=FALSE, log=TRUE, errmax=1e-15)
 ## Empirically:  alpha = g(ncp) ;  beta = h(df) << see below:  beta == df ( = nu) !!
 
 summary(lm(px ~ log(x), subset=x > 7 & x < 35000))# seems clear, R^2 = 0.9999
+
+showProc.time()
 
 ptRTailAsymp <- function(df,ncp, f.x1 = 1e5, f.x0 = 1, nx = 1000,
                               do.plot=FALSE, verbose = do.plot,
@@ -336,24 +345,32 @@ p.tailAsymp(r2.30 <- ptRTailAsymp(df= 2, ncp=30)) # very nice
 ## "Large" ncp  :
 p.tailAsymp(r2.50 <- ptRTailAsymp(df= 2, ncp=50, do.plot=TRUE))
 
+showProc.time()
+
 ## Now do a larger set:
 
 nd <- length(df. <- c(.1, .8, 1, 1.5, 2, 4, 10))
 nc <- length(nc. <- c(.01, .1, 1, 2, 5))
-
-r35 <- ptRTailAsymp(df=3, ncp=5)
-
 ## for indexing etc:
-
 c.df <- formatC(df., width=1)
 c.nc <- formatC(nc., width=1)
 c.c <- outer(c.df, c.nc, paste, sep="_")
+indR <- function(i.df, i.nc) paste(c.df[i.df], c.nc[i.nc], sep="_")
+
+sfil1 <- file.path(sdir, "pnt-prec-sim1.rds")
+if(!doExtras && file.exists(sfil1)) {
+
+    Res <- readRDS(sfil1)
+    cat("Read  'Res' from ", sfil1," :\n ") ; str(Res)
+
+} else { ## do run the simulation [always if(doExtras)] : ---------------
+
+r35 <- ptRTailAsymp(df=3, ncp=5)
 
 if(names(r35)[1] == "") names(r35)[1] <- "intercpt"
 Res <- matrix(NA_real_, nrow = length(r35), ## <-- length of output
               ncol = nd*nc,
               dimnames=list(names(r35), c.c))
-indR <- function(i.df, i.nc) paste(c.df[i.df], c.nc[i.nc], sep="_")
 for(i.df in seq_along(df.)) {
   df <- df.[i.df]
   cat("\ndf = ", formatC(df)," : \n----------\n")
@@ -365,11 +382,10 @@ for(i.df in seq_along(df.)) {
   }
 }
 attr(Res, "version") <- list(R.version)
-if(FALSE) { ## maybe manually to save time
-    save(Res, df., nc., c.df, c.nc, indR,
-         file="~/R/MM/NUMERICS/dpq-functions/pnt-tail-coef.rda")
-    load("~/R/MM/NUMERICS/dpq-functions/pnt-tail-coef.rda")
-}
+
+    saveRDS(Res, file=sfil1)
+}##-- end{ run simulation } --------------------------------------------
+
 dR <- as.data.frame(t(Res))
 
 op <- mult.fig(mfrow=c(nd,nc),marP=-1)$old.par
@@ -379,7 +395,7 @@ for(i.df in seq_along(df.))
     if(is.na(r["df"])) { frame() } else p.tailAsymp(r)
   }
 par(op)
-
+showProc.time()
 
 
 ### ====>  Theorem:    slope == -df
@@ -414,6 +430,7 @@ for(n. in c(1:8))
 for(n. in 10*c(1:8))
     curve(pt(x, df=5, ncp=n., log=TRUE), add=TRUE, n=2001, col="green2")
 
+showProc.time()
 
 1
 ## From: Michael E Meredith <meredith@easynet.co.uk>

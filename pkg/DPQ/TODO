@@ -4,6 +4,8 @@
 * TODO tests/qbeta-dist.R    : move "things" to a vignette / demo // use result file in inst/test // only if(doExtras)
 * TODO tests/qgamma-ex.R     : some parts only if(doExtras)
 * TODO tests/pnt-precision-problem.R : some parts only if(doExtras)
+* TODO vignettes/comp-beta.Rnw: change to use same 'jss' * \cite*{} etc as ~/R/Pkgs/lme4/vignettes/lme4.Rnw
+* TODO ppoisErr() should use 'long double'; get an 'all_from_0' option that works like cumsum(dpois(0:n))
 * TODO b_chi(): Now have higher order asymptotic expansion *and* confirmed via Rmpfr that it is
   much better than internal b2(), we should use its higher order
   down to ~200 and completely "drop" b2() and redefine an optimal c1.

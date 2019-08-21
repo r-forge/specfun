@@ -1,9 +1,10 @@
 
 options(digits=16)
 Aeq <- function(x,y) all.equal(x,y, tol = 1e-14)
-stopifnot(identical(ppois(1.5, 2), ppois(1, 2))
-          ,Aeq(ppois(1,2), sum(dpois(0:1, 2)))
-          )
+stopifnot(exprs = {
+    identical(ppois(1.5, 2), ppois(1, 2)) # by internal code definition
+    Aeq(ppois(1,2), sum(dpois(0:1, 2)))
+})
 
 ## From: Matthias Kohl <Matthias.Kohl@uni-bayreuth.de>
 ## To: r-help <r-help@stat.math.ethz.ch>
@@ -19,18 +20,21 @@ stopifnot(identical(ppois(1.5, 2), ppois(1, 2))
 ## Kolmogorov distance between two methods to
 ## determine P(Poisson(lambda)<=x)
 Kolm.dist <- function(lam, eps) {
-    x <- seq(0,qpois(1-eps, lambda = lam), by = 1)
-    max(abs(ppois(x, lambda = lam)-cumsum(dpois(x, lambda = lam))))
+    x <- 0:qpois(eps, lambda = lam, lower.tail=FALSE)
+    max(abs(ppois(x, lambda = lam) - cumsum(dpois(x, lambda = lam))))
 }
 str(erg <- optimize(Kolm.dist, lower = 800, upper = 2000,
                     maximum = TRUE, eps = 1e-15), digits=12)
+## max at  lambda = 1262.6, but value is simply 2.22e-16 ...
+## i.e. very small! ==> no problem anymore
+Kolm.dist(lam = erg$max, eps = 1e-14)
 
 Kolm1.dist <- function(lam, eps) {
-  x <- seq(0,qpois(1-eps, lambda = lam), by = 1)
-  which.max(abs(ppois(x, lambda = lam)-cumsum(dpois(x, lambda = lam))))
+    x <- 0:qpois(eps, lambda = lam, lower.tail=FALSE)
+    which.max(abs(ppois(x, lambda = lam) - cumsum(dpois(x, lambda = lam))))
 }
-Kolm1.dist(lam = erg$max, eps = 1e-15)
-1422 # was '1001' ## or '1301' or .. :  in any case ==  "alphlimit + 1" !!
+(x. <- Kolm1.dist(lam = erg$max, eps = 1e-15))
+## 1360,  was  1422 # was '1001' ## or '1301' or .. :  in any case ==  "alphlimit + 1" !!
 
 
 
@@ -43,15 +47,14 @@ lam <- 977.8
 (p1 <- ppois(1001, lam))
 (p2 <- sum(dpois(0:1001, lam)))
 1 - p1/p2# 0, was -6.7e-6
+stopifnot(abs(1 - p1/p2) < 1e-12)
 
 ## new pgamma(alphalimit = 1300):
 lam <- 1274.487
 (p1 <- ppois(1301, lam))
 (p2 <- sum(dpois(0:1301, lam)))
 1 - p1/p2# -2.22e-16,  was -5.13e-6
-
-lam <- 1300
-
+stopifnot(abs(1 - p1/p2) < 1e-12)
 
 ## Also:
 lam <- 1274.487
@@ -76,15 +79,8 @@ stopifnot(
 library(DPQ)
 (doExtras <- DPQ:::doExtras())
 
-'now code is in
-
-  ~/R/Pkgs/DPQ/R/ppois-fn.R
-'
-## source("/u/maechler/R/MM/NUMERICS/dpq-functions/ppois-fn.R")
-##                                         #-> ...
 ## dyn.load("/u/maechler/R/MM/NUMERICS/dpq-functions/ppois-direct.so")
 
-## NB these *print* additionally -- ../R/ppois-fn.R
 ppoisErr(900)
 ppoisErr(900, ppFUN = function(x, lambda) cumsum(dpois(x,lambda)))
 
@@ -95,26 +91,26 @@ ppoisErr(900, ppFUN = function(x, lambda) cumsum(dpois(x,lambda)))
 alphLim <- 100000  # new --- in R's C code for pgamma() since R 1.8.0
 
 ## when using ppoisErr <- ppoisErr1 {much slower ==> save here:
-## sfil <- "/u/maechler/R/MM/NUMERICS/dpq-functions/pgamma-al_1000-Direct.Rda"
-## sfil <- "/u/maechler/R/MM/NUMERICS/dpq-functions/pgamma-al_1000.Rda"
-## sfil <- "/u/maechler/R/MM/NUMERICS/dpq-functions/pgamma-al_1e5.Rda"
-## if(file.exists(sfil)) {
-##     load(sfil)
-## } else {
+(sdir <- system.file("safe", package="DPQ"))
+sfil <- file.path(sdir, "tests_ppoisErr.rda")
+if(!doExtras && file.exists(sfil)) {
+    load(sfil)
+} else {
     ##             2^20 is much too large and the last few take much time!
     l2ex <- if(doExtras) seq(1, 15, by=1/8) else seq(1, 12, by=1/4)
     errL <- lams <- 2^l2ex
     ## Use for() loop instead of *apply() to see progress and time of each:
-    cat(head <- "  lambda |  user  system elapsed
-  -------------------------------\n")
+    cat(head <- paste(
+            "  lambda |     errLam |  user  system elapsed [x 1000, i.e. ms]",
+            "---------+------------+---------------------\n", sep="\n"))
     for(i in seq_along(lams)) {
         st <- system.time(errL[i] <- ppoisErr(lams[i]))
-        cat(sprintf("%8.2f |", lams[i]),
-            paste(sprintf("%5.3f", as.vector(st)[1:3]), collapse="   "),
+        cat(sprintf("%8.2f | %10.4g |", lams[i], errL[i]),
+            paste(sprintf("%5.0f", 1000*as.vector(st)[1:3]), collapse="   "),
             "\n")
     } ; cat(head)
-##     save(lams,errL,alphLim, file=sfil)
-## }
+    save(lams,errL,alphLim,  file = sfil)
+}
 
 plot(lams, abs(errL), log = "xy", xaxt="n", xlab = "lambda",
      main = paste("|rel.Error { ppois(x,lambda) } |    (alphlimit=",

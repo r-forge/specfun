@@ -2,10 +2,8 @@
 
 \usepackage[a4paper, text={15cm,24cm}]{geometry}
 
-% \usepackage{umlaute}
-%
 % \usepackage{sfspaper}
-\usepackage{sfsbib}
+\usepackage{harvard}% for biblio, wa \usepackage{sfsbib}
 \usepackage{texab}
 %
 % \usepackage{parskip}
@@ -20,7 +18,8 @@
 %%%------------------------------------------------------------
 
 \begin{document}
-\bibliographystyle{sfsbib}\citationstyle{dcu}
+\bibliographystyle{alpha}% was {sfsbib}
+\citationstyle{dcu}
 
 \title{Computing the Beta Function for Large Arguments}
 \author{Martin M\"achler\\ Seminar f\"ur Statistik \\ ETH Zurich}
@@ -29,10 +28,11 @@
 \maketitle
 
 \begin{abstract} %maybe  \normalsize
-  I was exited about having derived very nice asymptotic formulas enabling
+  I was excited about having derived nice asymptotic formulas enabling
   to accurately compute $\log B(a,b)$ for very large $b$ etc,  but then
   realized there were other existing solutions, partly applied already
-  e.g.. in TOMS 708 ...
+  e.g., in TOMS 708 \texttt{algdiv()} (which I now also provide as R function in
+  package \texttt{DPQ}).% FIXME \newcommand{\pkg}[1]{.....}
 \end{abstract}
 
 \section{Introduction}
@@ -86,7 +86,7 @@ without loss of generality that
 \ $ p < q $, \
 and now consider the situation where $q$ is very large, or more generally
  $q$ is large compared to $p$,
-\begin{equation}  \label{p<<q}
+\begin{equation}  \label{p.much.LT.q}
   p \ll q.
 \end{equation}
 For convenience, we write
@@ -179,6 +179,7 @@ $n=1,2,\dots$, instead of only for $n>k$, i.e., $k \le n-1$.
 
 ............
 
-\bibliography{Assbib,master,Ibeta-dist-mm}
+\bibliography{R-numerics}% ~/bib/R-numerics.bib --> "here"
+% also needed \bibliography{Assbib,master}
 
 \end{document}

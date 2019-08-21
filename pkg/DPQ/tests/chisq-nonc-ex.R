@@ -15,9 +15,25 @@ stopifnot(exprs = {
 })
 source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
 ##--> showProc.time(), assertError(), relErrV(), ...
+## to be used in saveRDS(list.(nam1, nam2, ...),  file=*) :
+list_ <- function(...) {
+    ## nms <- vapply(sys.call()[-1L], deparse, "", width.cutoff=500L, backtick=FALSE)
+    nms <- vapply(sys.call()[-1L], as.character, "")
+    `names<-`(list(...), nms)
+}
+## even faster
+list_ <- function(...)
+   `names<-`(list(...), vapply(sys.call()[-1L], as.character, ""))
+
+##' load a named list
+loadList <- function(L, envir = .GlobalEnv)
+    invisible(lapply(names(L), function(nm) assign(nm, L[[nm]], envir=envir)))
+
 
 (doExtras <- DPQ:::doExtras())
-## FIXME: As R package tests should be fast -- *must* skip most of those here !
+## save directory (to read from):
+(sdir <- system.file("safe", package="DPQ"))
+
 
 if(!dev.interactive(orNone=TRUE)) pdf("chisq-nonc-1.pdf")
 .O.P. <- par(no.readonly=TRUE)
@@ -527,6 +543,7 @@ pnchisq(1e18, df=1e18, ncp=1)
 ## case I -- underflow protection large x --> 1
 pnchisq(1e18*(1+1e-8), df=1e18, ncp=1)
 ## (also "problematic" with Wienergerm: s=0)
+showProc.time()#-----------------
 
 
 ### largish f and ncp   {no problem visible here, but see below}
@@ -567,7 +584,8 @@ rV <- curve(pnchisqV(x, df= 10000, ncp=3e5), n = 49,
 ## current R version -- also slow *and* non-convergence!
 rr <- curve(pnchisqV(x, df= 10000, ncp=3e5),
             add = TRUE, col=2, n = 49)
-warnings()
+summary(warnings()) ## many non-convergences!
+showProc.time()#-----------------
 
 
 ### NOTA BENE:  dnchisq() has a similar sum and the following  i.Max
@@ -576,7 +594,6 @@ imaxD <- function(x,df,lambda)
 ## A few test comparisons with  ssR4[,,] :
 ## ==> imaxD() is too small (has correct order of magnitude, unless for
 ##     p(x) > 1-1e-4
-
 
 ### Investigate pnchisq() algorithm  sum(v[i] * t[i]) :
 ###
@@ -792,14 +809,19 @@ set.seed(635)
 nL <- 20
 nF <- 16
 nX <- length(pX <- c(0.01, (1:9)/10, 0.99, 0.9999))
-## ssFile <- "/u/maechler/R/MM/NUMERICS/dpq-functions/ssR.rda"
-## if(file.exists(ssFile)) {
-##     attach(ssFile)
-##     ls.str(pos=2)
-##     ## dfs :  num [1:16] 15.9 20.7 21 29.5 47.8 ...
-##     ## lam :  num [1:20] 5.74 8.26 8.34 8.64 10.12 ...
-##     ## ssR :  num [1:4, 1:20, 1:16, 1:12] 8.08 1 25 2 9.24 ...
-## } else {
+
+sfil1 <- file.path(sdir, "tests_chisq-nonc-ssR.rds")
+if(!doExtras && file.exists(sfil1)) {
+  ssR_l <- readRDS(sfil1)
+  cat("Read ssR_l from ", sfil1," :\n ")
+  str(ssR_l)
+  ## dfs :  num [1:16] 15.9 20.7 21 29.5 47.8 ...
+  ## lam :  num [1:20] 5.74 8.26 8.34 8.64 10.12 ...
+  ## ssR :  num [1:4, 1:20, 1:16, 1:12] 8.08 1 25 2 9.24 ...
+  loadList(ssR_l)
+
+} else { ## do run the simulation always  if(doExtras) :
+
 lam <- sort(rlnorm(nL, 3, 1))
 dfs <- sort(rlnorm(nF, 4, 1))
 ssR <- array(NA, dim=c(1+3, nL,nF,nX),
@@ -818,13 +840,13 @@ for(iL in 1:nL) {
         cat(".")
     }; cat("\n")
 }
-## save(lam,dfs,ssR, file=ssFile)
-##
-## } # {run simulation}
+saveRDS(list_(lam, dfs, ssR), file = sfil1)
+
+} # {run simulation}
 showProc.time()
 
-x. <- ssR["x",,,]
-iM <- ssR["iMax",,,]
+x. <-  ssR["x"   ,,,]
+iM <-  ssR["iMax",,,]
 iN1 <- ssR["iN1" ,,,]
 iN2 <- ssR["iN2" ,,,]
 iS <- iN2 - iN1 # the "index Spread": how many terms need to be summed
@@ -920,14 +942,20 @@ fCont(kind="iN2", cex=.25)## practically == "spread" (i.e. iN1 ~= 0 !)
 fCont(12, kind="iN2")
 
 showProc.time()
+
+##
+## 4th simulation: ----------------------------------------------------
 ##
 ## pX: at these quantiles(), compute pnchisq()
 nx <- length(pX <- c(0.01, (1:9)/10, 0.99, 0.9999, 1-1e-6, 1-1e-9))
-## 4th simulation:
-## ssFil4 <- "/u/maechler/R/MM/NUMERICS/dpq-functions/ssR4.rda"
-## if(file.exists(ssFil4)) {
-##     load(ssFil4)
-## } else {
+
+sfil4 <- file.path(sdir, "tests_chisq-nonc-ssR4.rds")
+if(!doExtras && file.exists(sfil4)) {
+    ssR_l <- readRDS(sfil4)
+    cat("Read ssR_l from ", sfil4," :\n ")
+    str(ssR_l)
+    loadList(ssR_l)
+} else {
     set.seed(41)
     ## smallish (lam,df) -- use several x --- ideally all these give "iN1"=1
     ss <- c(.1, .2, .5, 1:5, 7,10,15,c(2:6,8,10,12,15,20,30,50)*10)
@@ -952,14 +980,14 @@ nx <- length(pX <- c(0.01, (1:9)/10, 0.99, 0.9999, 1-1e-6, 1-1e-9))
         }; cat(il,"")
     }; cat("\n")
 
-##     save(lam4, dfs4, ssR4, file=ssFil4)
-## }
+    saveRDS(list_(lam4, dfs4, ssR4), file=sfil4)
+}
 showProc.time()
 
 ## Compute the 'iMax' value that corresponds to x = E[X] = df + ncp
 ## from that, with the above 'general f(x)', we can hopefully
 ## get a good estimated   iMax(x, df, ncp) ...
-iM.E <- iM[,,1]
+str(iM.E <- iM[,,1])
 for(iL in 1:nL) {
     lm <- lam[iL]
     for(iF in 1:nF) {
@@ -969,6 +997,8 @@ for(iL in 1:nL) {
                               iM[iL,iF,], xout = E)$y
     }
 }
+
+str(iM.E)
 
 
 
@@ -1012,12 +1042,13 @@ plot(fitted(gam2.), fitted(lm3)) ; abline(0,1,col=3)
 ## a simple 2d- regression spline instead of quadratic?
 
 showProc.time()
+
 ###---- 2nd "simulation": -- only go for one x = E[]
-## ssFil2 <- "/u/maechler/R/MM/NUMERICS/dpq-functions/ssR2.rda"
 nSim <- if(doExtras) 5000 else 500
-## if(file.exists(ssFil2)) {
-##     load(ssFil2)
-## } else {
+sfil2 <- file.path(sdir, "tests_chisq-nonc-ssR2.rds")
+if(!doExtras && file.exists(sfil2)) {
+    ssR2 <- readRDS(sfil2)
+} else {
     set.seed(2)
     lam <- rlnorm(nSim, 5, 2)
     dfs <- rlnorm(nSim, 6, 1.5)
@@ -1032,15 +1063,18 @@ nSim <- if(doExtras) 5000 else 500
     dimnames(ssR2) <- list(c("lam","df","iN1","iN2", "iMax"),NULL)
     ssR2 <- t(ssR2)
     ssR2 <- ssR2[sort.list(ssR2[,"lam"]),]
-##     save(ssR2, file=ssFil2)
-## }
-
+    saveRDS(ssR2, file=sfil2)
+}
 showProc.time()
+
 ## 3rd simulation: --- this takes a little while (1 min ?)
-## ssFil3 <- "/u/maechler/R/MM/NUMERICS/dpq-functions/ssR3.rda"
-## if(file.exists(ssFil3)) {
-##     load(ssFil3)
-## } else {
+sfil3 <- file.path(sdir, "tests_chisq-nonc-ssR3.rds")
+if(!doExtras && file.exists(sfil3)) {
+    ssR3_l <- readRDS(sfil3)
+    cat("Read ssR3_l from ", sfil3," :\n ")
+    str(ssR3_l)
+    loadList(ssR3_l)
+} else {
     set.seed(31)
     ss <- c(20,50, c(1:8,10,13,18,25)*100, 3000)
     nl <- length(lam3 <- c(ss, seq(5000, 100000, length=1+ 4*19)))
@@ -1056,12 +1090,11 @@ showProc.time()
             ssR3[, il,id] <- ss2.(x, df=f, ncp=lm)[5:7]
         }; cat(il,"")
     }; cat("\n")
-##     save(lam3, dfs3, ssR3, file=ssFil3)
-## }
+    saveRDS(list_(lam3, dfs3, ssR3), file=sfil3)
+}
 showProc.time()
 
 ### now change these "3" values into a data.frame as this one:
-
 dsR2 <- as.data.frame(ssR2)
 
 ##
@@ -1322,24 +1355,28 @@ df <- .05  ; curve((df+x) - qchisq(1/2, df, ncp=x), add=TRUE, col=4)
 ## These are all quite close (and quite CPU-costly !!) :
 df <- 1e-4; curve((df+x) - qchisq(1/2, df, ncp=x), 0.5, 40, col=2)
 abline(h=1, col='gray')
-df <- 1e-4; curve((df+x) - qchisq(1/2, df, ncp=x), 1,   2, col=2)
+df <- 1e-4; curve((df+x) - qchisq(1/2, df, ncp=x), 1.2,   2, col=2)
+if(doExtras) {
 df <- 2e-4; curve((df+x) - qchisq(1/2, df, ncp=x), add=TRUE,col=3)
 df <- 4e-4; curve((df+x) - qchisq(1/2, df, ncp=x), add=TRUE,col=4)
 df <- 8e-4; curve((df+x) - qchisq(1/2, df, ncp=x), add=TRUE,col=5)
+}
 df <-16e-4; curve((df+x) - qchisq(1/2, df, ncp=x), add=TRUE,col=6)
-
 showProc.time()
+
 df <- 1e-100; curve((df+x) - qchisq(1/2, df, ncp=x), 1.38, 1.40, col=2)
-for(df in c(2^seq(-300,-2, length=21))) {
+dfs <- 2^(if(doExtras) seq(-300,-2, length=21) else -2) # as they are costly
+for(df in dfs) {
     curve((df+x) - qchisq(1/2, df, ncp=x), add=TRUE,col=3)
     cat(formatC(df)," ")
-}
+}; cat("\n")
+showProc.time()
 
 df <- 1e-300; curve((df+x) - qchisq(1/2, df, ncp=x), 1.38628, 1.38630, col=2)
-for(df in c(2^seq(-300,-2, length=21))) {
+for(df in dfs) {
     curve((df+x) - qchisq(1/2, df, ncp=x), add=TRUE,col=3)
     cat(formatC(df)," ")
-}
+}; cat("\n")
 curve((0+x) - qchisq(1/2, df=0, ncp=x), 1.386294, 1.386295, col=2)
 showProc.time()
 
@@ -1662,7 +1699,10 @@ showProc.time()
 ### -------------------------------
 
 ### Bug 875 {see also ~/R/r-devel/R/tests/d-p-q-r-tests.R
-qchisq(0.025,31,ncp=1,lower.tail=FALSE)## now ok: 49.7766
+(q49.7 <- qchisq(0.025, 31, ncp=1, lower.tail=FALSE))## now ok: 49.7766
+pb     <- pchisq(q49.7, 31, ncp=1, lower.tail=FALSE)
+all.equal(pb, 0.025, tol=0) # 2.058e-13 [Lnx 64b]
+stopifnot(all.equal(pb, 0.025, tol= 1e-12))
 
 ##  Ensuing things I tried :
 x <- seq(0, 20, len = 101)
@@ -1700,36 +1740,39 @@ str(pars <- expand.grid(ncp=lam, df=nu., p= p., KEEP.OUT.ATTRS=FALSE)[,3:1])
 ##  $ ncp: num  1 4 16 25 1 4 16 25 1 4 ...
 
 qch <- with(pars, qchisq(p=p, df=df, ncp=ncp))
-cbind(pars, qch)
-##       p df ncp        qch
-## 1  0.95  2   1  8.6422039
-## 2  0.95  2   4 14.6402116
-## 3  0.95  2  16 33.0542126
-## 4  0.95  2  25 45.3082281
-## 5  0.95  4   1 11.7072278
-## 6  0.95  4   4 17.3093229
-## 7  0.95  4  16 35.4270110
-## 8  0.95  4  25 47.6127674
-## 9  0.95  7   1 16.0039003
-## 10 0.95  7   4 21.2280338
-## 11 0.95  7  16 38.9700904
-## 12 0.95  7  25 51.0605938
-## 13 0.05  2   1  0.1683911
-## 14 0.05  2   4  0.6455990
-## 15 0.05  2  16  6.3216416
-## 16 0.05  2  25 12.0802051
-## 17 0.05  4   1  0.9087447
-## 18 0.05  4   4  1.7650116
-## 19 0.05  4  16  7.8843284
-## 20 0.05  4  25 13.7329249
-## 21 0.05  7   1  2.4937057
-## 22 0.05  7   4  3.6642526
-## 23 0.05  7  16 10.2573190
-## 24 0.05  7  25 16.2267524
+p.q <- with(pars, pchisq(qch, df=df, ncp=ncp))
 
+cbind(pars, qch, p.q, relE = signif(1 - p.q / pars$p, 4)) ## very accurate
+##       p df ncp        qch  p.q       relE
+## 1  0.95  2   1  8.6422039 0.95  3.331e-16
+## 2  0.95  2   4 14.6402116 0.95  3.442e-15
+## 3  0.95  2  16 33.0542126 0.95 -8.882e-15
+## 4  0.95  2  25 45.3082281 0.95  2.887e-15
+## 5  0.95  4   1 11.7072278 0.95  5.662e-15
+## 6  0.95  4   4 17.3093229 0.95  5.995e-15
+## 7  0.95  4  16 35.4270110 0.95 -1.199e-14
+## 8  0.95  4  25 47.6127674 0.95  8.771e-15
+## 9  0.95  7   1 16.0039003 0.95 -5.551e-15
+## 10 0.95  7   4 21.2280338 0.95  6.661e-15
+## 11 0.95  7  16 38.9700904 0.95  1.110e-14
+## 12 0.95  7  25 51.0605938 0.95 -1.488e-14
+## 13 0.05  2   1  0.1683911 0.05 -2.398e-14
+## 14 0.05  2   4  0.6455990 0.05  3.020e-14
+## 15 0.05  2  16  6.3216416 0.05  5.673e-14
+## 16 0.05  2  25 12.0802051 0.05 -1.477e-13
+## 17 0.05  4   1  0.9087447 0.05  5.385e-14
+## 18 0.05  4   4  1.7650116 0.05  6.106e-14
+## 19 0.05  4  16  7.8843284 0.05 -7.105e-15
+## 20 0.05  4  25 13.7329249 0.05  8.271e-14
+## 21 0.05  7   1  2.4937057 0.05 -6.128e-14
+## 22 0.05  7   4  3.6642526 0.05 -2.420e-14
+## 23 0.05  7  16 10.2573190 0.05  1.066e-14
+## 24 0.05  7  25 16.2267524 0.05  3.775e-14
+all.equal(pars$p, p.q, tol=0)# Lnx 64b: 9.2987e-15
+stopifnot(all.equal(pars$p, p.q, tol=1e-14))
 showProc.time()
 
-if(FALSE) # ??
+if(FALSE) # ?? FIXME ?!
 newton(1, G= function(x,...) x^2 -3 , g = function(x,...) 2*x, eps = 1e-10)
 
 ### New comparison -- particularly for right tail:
