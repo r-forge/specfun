@@ -19,9 +19,6 @@
 \alias{h2}
 \alias{hnt}
 \alias{scalefactor}% ? no longer exported
-\alias{ss}
-\alias{ss2}
-\alias{ss2.}
 \description{%%--> ../R/wienergerm_nchisq-fn.R <--
 
   Functions implementing the two Wiener germ approximations to
@@ -65,14 +62,6 @@ qs(x, df, ncp, f.s = sW(x, df, ncp), eps1 = 1/2, sMax = 1e+100)
 z0(x, df, ncp)
 z.f(x, df, ncp)
 z.s(x, df, ncp, verbose = getOption("verbose"))
-
-%%------
-
-ss   (x, df, ncp, i.max = 10000)
-ss2  (x, df, ncp, i.max = 10000, eps = .Machine$double.eps)
-ss2. (q, df, ncp = 0, errmax = 1e-12, reltol = 2 * .Machine$double.eps,
-      itrmax = 1e+05, eps = reltol)
-
 }
 
 \arguments{

@@ -11,6 +11,10 @@
 \alias{pnchisqPearson}
 \alias{pnchisqSankaran_d}
 \alias{pnchisqTerms}
+%
+\alias{ss}
+\alias{ss2}
+\alias{ss2.}
 \description{
   Compute (approximate) probabilities for the non-central chi squared distribution.
   using Johnson, Kotz,.. ............
@@ -29,6 +33,11 @@ pnchisqAbdelAty  (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchisqSankaran_d(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchisq_ss       (x, df, ncp, i.max = 10000)
 pnchisqTerms     (x, df, ncp, lower.tail = TRUE, i.max = 1000)
+
+ss   (x, df, ncp, i.max = 10000)
+ss2  (x, df, ncp, i.max = 10000, eps = .Machine$double.eps)
+ss2. (q, df, ncp = 0, errmax = 1e-12, reltol = 2 * .Machine$double.eps,
+      itrmax = 1e+05, eps = reltol)
 }
 \arguments{%--> ~/R/D/r-devel/R/src/library/stats/man/Chisquare.Rd :
 %% ===>  pchisq(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
@@ -64,7 +73,10 @@ pnchisqTerms     (x, df, ncp, lower.tail = TRUE, i.max = 1000)
 }
 \seealso{
  \code{\link{pchisq}} and the wienergerm approximations for it:
-  \code{\link{pchisqW}()} etc.
+ \code{\link{pchisqW}()} etc.
+
+ \code{\link{r_pois}()} and its plot function, for an aspect of the series
+ approximations we use in \code{pnchisq_ss()}.
 }
 \examples{
  qq <- c(.001, .005, .01, .05, (1:9)/10, 2^seq(0, 10, by= 0.5))
