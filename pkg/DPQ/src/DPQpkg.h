@@ -62,7 +62,7 @@ void ncbeta(double *a, double *b, double *lambda, double *x, int *n,
 
 // ppois-direct.c : ------------------------------------------------------------
 
-SEXP ppoisD(SEXP X, SEXP lambda_)
+SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0_)
     ;
 
 // wienergerm_nchisq.c : -------------------------------------------------------

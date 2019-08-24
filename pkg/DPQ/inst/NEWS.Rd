@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.3-3 [2019-08-20]}{
+\section{Version 0.3-3 [2019-08-24]}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item Renamed (and generalized / merged) many functions to have less "." in names.

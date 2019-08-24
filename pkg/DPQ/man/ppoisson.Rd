@@ -1,7 +1,7 @@
 \name{ppoisson}
 \alias{ppoisErr}
 \alias{ppoisD}
-\title{Direct Computation and Errors of 'ppois()' Poisson Distribution Probabilities}
+\title{Direct Computation of 'ppois()' Poisson Distribution Probabilities}
 \description{
   Direct computation and errors of \code{\link{ppois}} Poisson distribution
   probabilities.
@@ -10,8 +10,10 @@
 %%  ......
 }
 \usage{% --------> ../R/ppois-fn.R
-ppoisD(q, lambda)
-ppoisErr (lambda, ppFUN = ppoisD, iP = 1e-15, verbose = FALSE)
+ppoisD(q, lambda, all.from.0 = TRUE)
+ppoisErr (lambda, ppFUN = ppoisD, iP = 1e-15,
+          xM = qpois(iP, lambda=lambda, lower.tail=FALSE),
+          verbose = FALSE)
 }
 \arguments{
   \item{q}{numeric vector of non-negative integer values,
@@ -20,11 +22,18 @@ ppoisErr (lambda, ppFUN = ppoisD, iP = 1e-15, verbose = FALSE)
   \item{lambda}{positive parameter of the Poisson distribution,
     \code{lambda}\eqn{= \lambda = E[X] = Var[X]} where
     \eqn{X \sim Pois(\lambda)}{X ~ Pois(\lambda)}.}
+  \item{all.from.0}{\code{\link{logical}} indicating if \code{q} is
+    positive integer, and the probabilities should computed for all
+    quantile values of \code{0:q}.}
   \item{ppFUN}{alternative \code{\link{ppois}} evaluation, by default the
     \bold{d}irect summation of \code{\link{dpois}(k, lambda)}.}
   \item{iP}{small number, \code{iP << 1}, used to construct the abscissa values
-    \code{x} at which to evaluate and compare \code{ppois()} and \code{ppFUN()}:
-    \code{x <- 0:qpois(1-iP, lambda = lambda)}.}
+    \code{x} at which to evaluate and compare \code{ppois()} and
+    \code{ppFUN()}, see \code{xM}:}
+  \item{xM}{(specified instead of \code{iP}: ) the maximal x-value to be
+    used, i.e., the values used will be \code{x <- 0:iM}.  The default,
+    \code{qpois(1-iP, lambda = lambda)} is the upper tail
+    \code{iP}-quantile of \code{Poi(lambda)}.}
   \item{verbose}{\code{\link{logical}} indicating if extra information
     should be printed.}
 }
@@ -53,17 +62,31 @@ e1 / .Machine$double.eps
 
 ## Try another 'ppFUN' :---------------------------------
 ## this relies on the fact that it's *only* used on an 'x' of the form  0:M :
-ppD0 <- function(x, lambda) cumsum(dpois(x, lambda=lambda))
+ppD0 <- function(x, lambda, all.from.0=TRUE)
+            cumsum(dpois(if(all.from.0) 0:x else x, lambda=lambda))
 ## and test it:
-p0 <- ppD0 (0:1000, lambda=10)
+p0 <- ppD0 (  1000, lambda=10)
 p1 <- ppois(0:1000, lambda=10)
 stopifnot(all.equal(p0,p1, tol=8*.Machine$double.eps))
 
-## Note that it is "infinitely" much faster but possibly less accurate
-##  ("possibly": need a {pkg 'Rmpfr'}-enabled version to get that) :
-system.time(p15     <- ppoisErr(2^15))               ## 3.8.. sec !
-system.time(p15.0.  <- ppoisErr(2^15, ppFUN = ppD0)) ## 0.009
-c(p15, p15.0.) / .Machine$double.eps # on Lnx 64b, see  (-10  2.5)
+system.time(p0.slow <- ppoisD(0:1000, lambda=10, all.from.0=FALSE))# not very slow, here
+p0.1 <- ppoisD(1000, lambda=10)
+if(requireNamespace("Rmpfr")) {
+ ppoisMpfr <- function(x, lambda) cumsum(Rmpfr::dpois(x, lambda=lambda))
+ p0.best <- ppoisMpfr(0:1000, lambda = Rmpfr::mpfr(10, precBits = 256))
+ AllEq. <- Rmpfr::all.equal
+ AllEq <- function(target, current, ...)
+    AllEq.(target, current, ...,
+           formatFUN = function(x, ...) Rmpfr::format(x, digits = 9))
+ print(AllEq(p0.best, p0,      tol = 0)) # 2.06e-18
+ print(AllEq(p0.best, p0.slow, tol = 0)) # the "worst" (4.44e-17)
+ print(AllEq(p0.best, p0.1,    tol = 0)) # 1.08e-18
+}
+
+## Now (with 'all.from.0 = TRUE',  it is fast too):
+p15    <- ppoisErr(2^13)
+p15.0. <- ppoisErr(2^13, ppFUN = ppD0)
+c(p15, p15.0.) / .Machine$double.eps # on Lnx 64b, see (-10  2.5), then (-2 -2)
 
 ## lapply(), so you see "x0" values :
 str(e0. <- lapply(lams, ppoisErr, ppFUN = ppD0))
@@ -72,13 +95,7 @@ str(e0. <- lapply(lams, ppoisErr, ppFUN = ppD0))
 ## NOTE: It is *stil* much faster, as it relies on special  x == 0:M  relation
 ## Author: Martin Maechler, Date:  1 Mar 2004, 17:40
 ##
-## Recreate that version as  'ppoisErr0()'
-## (and learn about smart use of `formals<-` and `environment<-`) :
-ppoisErr0 <- ppoisErr
-formals(ppoisErr0)[["ppFUN"]] <- function(x, lambda) cumsum(dpois(x, lambda=lambda))
-environment(ppoisErr0) <- asNamespace("DPQ")
-e0 <- sapply(lams, ppoisErr0)
-stopifnot(e0 == unlist(e0.))
+e0 <- sapply(lams, function(lamb) ppoisErr(lamb, ppFUN = ppD0))
 all.equal(e1, e0) # typically TRUE,  though small "random" differences:
 cbind(e1, e0) * 2^53 # on Lnx 64b, seeing integer values in {-24, .., 33}
 }

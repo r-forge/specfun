@@ -20,8 +20,9 @@
 %% ~~ Literature or other references for background information ~~
 %% }
 \seealso{
-  The package \pkg{\link[DPQmpfr:DPQmpfr-package]{DPQmpfr}}, which
-  builds on this package and on
+  The package %\pkg{\link[DPQmpfr:DPQmpfr-package]{DPQmpfr}},
+  \pkg{DPQmpfr} (not yet on CRAN),
+  which builds on this package and on
   \pkg{\link[Rmpfr:Rmpfr-package]{Rmpfr}}.
 }
 \examples{

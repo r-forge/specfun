@@ -286,7 +286,8 @@ r_pois_expr <- ## was  'titleR.exp'
 
 ## was plotRR()
 plRpois <- function(lambda, iset = 1:(2*lambda), do.main=TRUE,
-                   log = 'xy', cex = 0.4, col = c("red","blue"))
+                    log = 'xy', type = "o", cex = 0.4, col = c("red","blue"),
+                    do.eaxis = TRUE, sub10 = "10")
 {
     ii <- sort(iset)
     if(do.main) {
@@ -294,9 +295,11 @@ plRpois <- function(lambda, iset = 1:(2*lambda), do.main=TRUE,
         par(mar=pmar + c(0,0,1.2,0))
     }
     plot(ii, r_pois(ii, lambda=lambda), log = log, cex = cex, col = col[1],
-         type = 'o', xlab = "i", ylab = "r(i)",
+         type = type, xlab = "i", ylab = quote(rr[lambda](i)),
          sub = substitute(lambda==l, list(l=lambda)),
+         yaxt = if(do.eaxis) "n" else par("yaxt"),
          main = if(do.main) r_pois_expr)
+    if(do.eaxis) eaxis(2, sub10=sub10)
     lines(ii, lambda/ii, col = col[2])
     legend(ii[length(ii)], lambda, expression(rr[lambda](i), lambda / i),
            col = col, lty = 1, pch = c(1,NA), xjust = 1, bty = 'n')
@@ -410,7 +413,7 @@ ss <- function(x, df, ncp, i.max = 10000)
     i2 <- i.max+1 - which.min(rev(d))
     ## [i2] -> [i2+1]: last change from >0 to 0
     r <- r[1:i2]
-    return(list(s = r, i1 = i1, max = which.max(r)))
+    list(s = r, i1 = i1, max = which.max(r))
 }
 
 ss2 <- function(x, df, ncp, i.max = 10000, eps = .Machine$double.eps)

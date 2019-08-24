@@ -81,8 +81,58 @@ library(DPQ)
 
 ## dyn.load("/u/maechler/R/MM/NUMERICS/dpq-functions/ppois-direct.so")
 
-ppoisErr(900)
-ppoisErr(900, ppFUN = function(x, lambda) cumsum(dpois(x,lambda)))
+## "TODO": currently quite a few checks already happen in the examples in
+## >> ../man/ppoisson.Rd <<
+ppD0 <- function(x, lambda, all.from.0 = TRUE)
+    cumsum(dpois(if(all.from.0) 0:x else x,
+                 lambda=lambda))
+
+(pE  <- ppoisErr(900))
+(pEd <- ppoisErr(900, ppFUN = ppD0))
+options(digits = 7)# back to normal
+all.equal(pE, pEd) # not quite: 'x0' differs slightly
+
+## Large Lam  where  exp(-lambda) underflows to 0 (even in 'long double'):
+
+## "the minimal" large lambda is
+Lam  <- 11400 ## but we choose a slightly larger, where one sees more
+set.seed(12)
+for(Lam in c(11400 + c(0, sort(round(rlnorm(10, 4, 2), 1))))) {
+    M    <- ceiling((Lam + 4*sqrt(Lam))/50)*50
+    tit <- sprintf("Lam = %g; M = %7.0f", Lam, M)
+    cat(tit, ":\n")
+    kM <- 0:M
+    pp. <- ppoisD(M, lambda=Lam) ## with current DEBUG output vives
+    ## ppoisD(*, lambda=11600): expl(-ldlam)=0= 0 ==> llam=9.35876, exp_arg=-11600
+    ##  .. i=30, finally new f = expl(exp_arg = -11393.9) = 4.95747e-4949 > 0
+    ## ____________or________________
+    ## ppoisD(lambda=11444, expl(-ldlam)=0= 0 ==> llam=9.34522, exp_arg=-11444
+    ##  .. i=6, finally new f = expl(exp_arg = -11394.5) = 2.69745e-4949 > 0
+    pp <-  ppois(kM, lambda=Lam)
+    pp0 <- cumsum(dp <- dpois(kM, lambda=Lam))
+    if(doExtras)
+        print(system.time(
+            ppSL <- ppoisD(kM, lambda=Lam, all.from.0=FALSE)
+        ))
+    ip <- dp > 0
+    plot(kM[ip], pp[ip], type="l", main = tit)
+    plot(kM[ip], pp[ip], type="l", main = tit, log = "y")# LOG: here *no* warnings
+    lines(kM[ip], pp0[ip], col=2)
+    lines(kM[ip], pp.[ip], col=adjustcolor("blue", 1/2), lwd=4)
+    abline(v = Lam, lty=2, col="gray")
+    ##
+    plot (kM[ip], pp.[ip] - pp[ip], xlab = "k", type="l", main = tit)
+    lines(kM[ip], pp0[ip] - pp[ip], col = adjustcolor("red", 1/2), lwd = 2)
+    if(doExtras) lines(kM[ip], ppSL[ip] - pp[ip], col = adjustcolor(3, 1/2), lwd=3)
+    abline(v = Lam, lty=2, col="gray")
+    stopifnot(exprs = {
+        all.equal(pp, pp., tol = 1e-12)
+        !doExtras || all.equal(pp,  ppSL, tol = 1e-12)
+        !doExtras || all.equal(pp., ppSL, tol = 1e-14)# both ppoisD()  "fast" or "slow" should be very close
+    })
+}
+
+
 
 ## MM(2018-08):  'alphLim' below must have been a way to set 'alphlimit'  in pgamma()'s C code.
 ## ----------
@@ -94,7 +144,7 @@ alphLim <- 100000  # new --- in R's C code for pgamma() since R 1.8.0
 (sdir <- system.file("safe", package="DPQ"))
 sfil <- file.path(sdir, "tests_ppoisErr.rda")
 if(!doExtras && file.exists(sfil)) {
-    load(sfil)
+    cat(sprintf("load(%s) creates ", sfil), load(sfil), "\n")
 } else {
     ##             2^20 is much too large and the last few take much time!
     l2ex <- if(doExtras) seq(1, 15, by=1/8) else seq(1, 12, by=1/4)
@@ -131,8 +181,8 @@ for(ll in at.l) {
     text(ll, yt, formatC(ll), srt = srt, adj = adj, xpd = NA)
 }
 
-lm1 <- lm(log10(abs(errL)) ~ log10(lams), subset = lams < alphLim - 150)
-##                          # 855.1, 975.5 already bad  ^^^^^
+lm1 <- lm(log10(abs(errL)) ~ log10(lams), subset = errL != 0 & lams < alphLim - 150)
+##                                       # 855.1, 975.5 already bad  ^^^^^
 abline(lm1, col = "blue")
 ## -----------------------
 cat("#{lams > alphLim} : ", sum(lams > alphLim),"\n")
@@ -151,4 +201,3 @@ points(x., 10^predict(lm1, new=data.frame(lams=x.)), type = 'h', col=2)
 text(x., 1e-16, paste("lambda=",formatC(x.)), srt=90, adj = c(0,0), col = 2)
 } # cannot draw these here-----------------------------
 
-options(digits=7)# back to normal
