@@ -179,6 +179,7 @@ qchisqN <- function(p, df, ncp = 0, qIni = qchisqAppr.0, ...)
 newton <- function(x0, G, g, z,
                    xMin = -Inf, xMax = Inf, warnRng = TRUE,
                    dxMax = 1000, eps = 0.0001, maxiter = 1000L,
+                   warnIter = missing(maxiter) || maxiter >= 10L,
                    keepAll = NA) # FALSE, NA, TRUE
 {
     ## Given the function G and its derivative g,
@@ -224,7 +225,8 @@ newton <- function(x0, G, g, z,
             x0vec <- c(x0vec, x0)
         }
         if((iter <- iter + 1L) > maxiter) {
-            warning("iter >", format(maxiter)) ; conv <- FALSE; break
+            if(warnIter) warning("iter >", maxiter)
+            conv <- FALSE; break
         }
     }
     if(give.all)
@@ -234,4 +236,3 @@ newton <- function(x0, G, g, z,
         list(x = x0, G = Gx, it = iter, converged = conv)
     else x0
 } ## newton()
-
