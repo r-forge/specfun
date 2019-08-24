@@ -52,12 +52,13 @@ ss2. (q, df, ncp = 0, errmax = 1e-12, reltol = 2 * .Machine$double.eps,
   \item{cutOffncp}{a positive number, the cutoff value for \code{ncp}...}%% FIXME
   \item{itSimple}{ ...}
   \item{errmax}{absolute error tolerance.}% ...
-  \item{reltol}{relative tolerance.}% ...
+  \item{reltol}{convergence tolerance for \emph{rel}ative error.}%... TODO
   \item{itrmax}{maximal number of iterations.}% ...
   \item{xLrg.sigma}{positive number ...}% ... TODO
   \item{verbose}{logical or integer specifying if or how much the algorithm
     progress should be monitored.}
   \item{\dots}{further arguments passed from \code{pnchisqV()} to \code{pnchisq()}.}
+  \item{eps}{convergence tolerance, a positive number.}
 }
 %% \details{
 %% }
