@@ -1,9 +1,10 @@
 %%------------ = Part 1 of  "pnchisq Approximations"  [part 2 : ==> ./pnchisqWienergerm.Rd]
 \name{pnchisqAppr}
-\title{Approximate Probabilities of Non-Central Chisquared Distribution}
+\title{(Approximate) Probabilities of Non-Central Chisquared Distribution}
 %%     ----------------------------------------------------------------
 \alias{pnchisq}
 \alias{pnchisqV}% with "n" (--> ./pnchisqWienergerm.Rd has {pchisqV}  w/o "n" )
+\alias{pnchisqRC}
 \alias{pnchisq_ss}
 \alias{pnchisqAbdelAty}
 \alias{pnchisqIT}
@@ -16,28 +17,89 @@
 \alias{ss2}
 \alias{ss2.}
 \description{
-  Compute (approximate) probabilities for the non-central chi squared distribution.
-  using Johnson, Kotz,.. ............
+  Compute (approximate) probabilities for the non-central chi squared
+  distribution.
+
+  The non-central chi-squared distribution with \code{df}\eqn{= n}
+  degrees of freedom and non-centrality parameter \code{ncp}
+  \eqn{= \lambda} has density
+  \deqn{
+    f(x) = f_{n,\lambda}(x) = e^{-\lambda / 2}
+      \sum_{r=0}^\infty \frac{(\lambda/2)^r}{r!}\, f_{n + 2r}(x)}{f(x) = exp(-\lambda/2) SUM_{r=0}^\infty ((\lambda/2)^r / r!) dchisq(x, df + 2r)
+  }
+  for \eqn{x \ge 0}; for more, see \R's help page for \code{\link{pchisq}}.
+  % ~/R/D/r-devel/R/src/library/stats/man/Chisquare.Rd
+
+  \itemize{
+    \item \R's own historical and current versions, but with more tuning parameters;
+  }
+  Historical relatively simple approximations listed in Johnson, Kotz, and Balakrishnan (1995):
+  \itemize{
+    \item Patnaik(1949)'s approximation to the non-central via central
+    chi-squared.  Is also the formula \eqn{26.4.27} in Abramowitz & Stegun, p.942.
+    Johnson et al mention that the approxmation error is \emph{
+      \eqn{O(1/\sqrt(\lambda))}{O(1/sqrt(ncp))} for \eqn{\lambda \to \infty}{ncp -> Inf}}.
+
+    \item Abdel-Aty(1954)'s \dQuote{first approximation} based on
+    Wilson-Hilferty via Gaussian (\code{\link{pnorm}}) probabilities, is
+    partly \emph{wrongly} cited in Johnson et al., p.463, eq.\eqn{(29.61a)}.
+
+    \item Pearson(1959) is using 3 moments instead of 2 as Patnaik (to
+    approximate via a central chi-squared), and therefore better than
+    Patnaik for the right tail; further (in Johnson et al.), the
+    approxmation error is \emph{\eqn{O(1/\lambda)}{O(1/ncp)} for \eqn{\lambda \to \infty}{ncp -> Inf}}.
+
+    \item Sankaran(1959, 1963) proposes several further approximations base
+    on Gaussian probabilities, according to Johnson
+    et al., p.463. \code{pnchisqSankaran_d()} implements its formula \eqn{(29.61d)}.
+  }
+
+  \describe{
+    \item{\code{pnchisq()}:}{an R implementation of \R's own C \code{pnchisq_raw()},
+      but almost only up to Feb.27, 2004, long before the \code{log.p=TRUE}
+      addition there, including \emph{logspace arithmetic} in April 2014,
+      its finish on 2015-09-01.  Currently for historical reference only.}
+    %% but we could add the log space computations from C to the R code
+    \item{\code{pnchisqV()}:}{a \code{\link{Vectorize}()}d \code{\link{pnchisq}}.}
+
+    \item{\code{pnchisqRC()}:}{\R's C implementation as of Aug.2019; but
+      with many more options.}
+
+    \item{\code{pnchisqIT}:}{ .... }
+    \item{\code{pnchisqTerms}:}{ .... }
+    %
+    \item{\code{pnchisq_ss()}:}{ .... }
+    %
+    \item{\code{ss}:}{ .... }
+    \item{\code{ss2}:}{ .... }
+    \item{\code{ss2.}:}{ .... }
+  }% end{descr}
 }
 \usage{
 %% R code in  ../R/pnchisq.R :
 %                 ----------
 pnchisq          (q, df, ncp = 0, lower.tail = TRUE, %% TODO?!? log.p = FALSE,
                   cutOffncp = 80, itSimple = 110, errmax = 1e-12, reltol = 1e-11,
-                  itrmax = 10* 10000, verbose = 1, xLrg.sigma = 5)
+                  maxit = 10* 10000, verbose = 1, xLrg.sigma = 5)
 pnchisqV(x, \dots, verbose = 0)
 
+pnchisqRC        (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
+                  no2nd.call = FALSE,
+                  cutOffncp = 80, small.ncp.logspace = small.ncp.logspaceR2015,
+                  itSimple = 110, errmax = 1e-12,
+                  reltol = 8 * .Machine$double.eps, epsS = reltol/2, maxit = 1e6,
+                  verbose = FALSE)
 pnchisqPatnaik   (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchisqPearson   (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchisqAbdelAty  (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchisqSankaran_d(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
-pnchisq_ss       (x, df, ncp, i.max = 10000)
-pnchisqTerms     (x, df, ncp, lower.tail = TRUE, i.max = 1000)
+pnchisq_ss       (x, df, ncp,     lower.tail = TRUE, log.p = FALSE, i.max = 10000)
+pnchisqTerms     (x, df, ncp,     lower.tail = TRUE, i.max = 1000)
 
-ss   (x, df, ncp, i.max = 10000)
+ss   (x, df, ncp, i.max = 10000, useLv = !(expMin < -lambda && 1/lambda < expMax))
 ss2  (x, df, ncp, i.max = 10000, eps = .Machine$double.eps)
 ss2. (q, df, ncp = 0, errmax = 1e-12, reltol = 2 * .Machine$double.eps,
-      itrmax = 1e+05, eps = reltol)
+      maxit = 1e+05, eps = reltol, verbose = FALSE)
 }
 \arguments{%--> ~/R/D/r-devel/R/src/library/stats/man/Chisquare.Rd :
 %% ===>  pchisq(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
@@ -53,21 +115,49 @@ ss2. (q, df, ncp = 0, errmax = 1e-12, reltol = 2 * .Machine$double.eps,
   \item{itSimple}{ ...}
   \item{errmax}{absolute error tolerance.}% ...
   \item{reltol}{convergence tolerance for \emph{rel}ative error.}%... TODO
-  \item{itrmax}{maximal number of iterations.}% ...
+  \item{maxit}{maximal number of iterations.}% ...
   \item{xLrg.sigma}{positive number ...}% ... TODO
   \item{verbose}{logical or integer specifying if or how much the algorithm
     progress should be monitored.}
   \item{\dots}{further arguments passed from \code{pnchisqV()} to \code{pnchisq()}.}
+  \item{useLv}{\code{\link{logical}} indicating if logarithmic scale should
+    be used for \eqn{\lambda} computations.}
   \item{eps}{convergence tolerance, a positive number.}
 }
-%% \details{
-%% }
-\value{
-  ...
+\details{
+  \describe{
+    \item{\code{pnchisq_ss()}}{uses \code{si <- ss(x, df, ..)} to get the series terms,
+      and returns \code{2*\link{dchisq}(x, df = df +2) * sum(si$s)}.}
+
+    \item{\code{ss()}}{computes the terms needed for the expansion used in
+      \code{pnchisq_ss()}.}
+
+    \item{\code{ss2()}}{computes some simple \dQuote{statistics} about \code{ss(..)}.}
+    %% do we need it?  currently it computes ss() and trashes most of it ..
+  }
 }
-%% \references{
-%%
-%% }
+\value{
+  \describe{
+    \item{\code{ss()}}{returns a list with 3 components}
+  }
+  \item{s}{the series}
+  \item{i1}{location (in \code{s[]}) of the first change from 0 to positive.}
+  \item{max}{(first) location of the maximal value in the series (i.e.,
+    \code{\link{which.max}(s)}).}
+
+  %% ss2 :  \item{i2}{the length of \code{s[]}, \code{\link{length}(s)}.}
+
+}
+\references{
+  Johnson, N.L., Kotz, S. and Balakrishnan, N. (1995)
+  Continuous Univariate Distributions Vol~2, 2nd ed.; Wiley.
+  \cr Chapter 29 \emph{Noncentral \eqn{\chi^2}-Distributions};
+  notably Section \emph{8  Approximations}, p.461 ff.
+
+  Abramowitz, M. and Stegun, I. A. (1972)
+  \emph{Handbook of Mathematical Functions}. New York: Dover.
+  \url{https://en.wikipedia.org/wiki/Abramowitz_and_Stegun}
+}
 \author{Martin Maechler, from May 1999;  starting from a post to the S-news
   mailing list by Ranjan Maitra (@ math.umbc.edu) who showed a version of
   our \code{pchisqAppr.0()} thanking Jim Stapleton for providing it.
@@ -91,5 +181,54 @@ ss2. (q, df, ncp = 0, errmax = 1e-12, reltol = 2 * .Machine$double.eps,
    cat("\n~~~~~~~~~~~~~\nncp: ", ncp,"\n=======\n")
    print(sapply(pnchF, function(F) Vectorize(F, names(formals(F))[[1]])(qq, df = 3, ncp=ncp)))
  }
+
+## A case where the non-central P[] should be improved :
+## First, the central P[] which is close to exact -- choosing df=2 allows
+## truly exact values: chi^2 = Exp(1) !
+opal <- palette()
+palette(c("black", "red", "green3", "blue", "cyan", "magenta", "gold3", "gray44"))
+cR  <- curve(pchisq   (x, df=2,        lower.tail=FALSE, log.p=TRUE), 0, 4000, n=2001)
+cRC <- curve(pnchisqRC(x, df=2, ncp=0, lower.tail=FALSE, log.p=TRUE),
+             add=TRUE, col=adjustcolor(2,1/2), lwd=3, lty=2, n=2001)
+cR0 <- curve(pchisq   (x, df=2, ncp=0, lower.tail=FALSE, log.p=TRUE),
+             add=TRUE, col=adjustcolor(3,1/2), lwd=4,        n=2001)
+## smart "named list" constructur :
+list_ <- function(...)
+   `names<-`(list(...), vapply(sys.call()[-1L], as.character, ""))
+JKBfn <-list_(pnchisqPatnaik,
+              pnchisqPearson,
+              pnchisqAbdelAty,
+              pnchisqSankaran_d)
+cl. <- setNames(adjustcolor(3+seq_along(JKBfn), 1/2), names(JKBfn))
+lw. <- setNames(2+seq_along(JKBfn),                   names(JKBfn))
+cR.JKB <- sapply(names(JKBfn), function(nmf) {
+  curve(JKBfn[[nmf]](x, df=2, ncp=0, lower.tail=FALSE, log.p=TRUE),
+        add=TRUE, col=cl.[[nmf]], lwd=lw.[[nmf]], lty=lw.[[nmf]], n=2001)
+})
+legend("bottomleft", c("pchisq", "pchisq.ncp=0", "pnchisqRC", names(JKBfn)),
+       col=c(palette()[1], adjustcolor(2:3,1/2), cl.),
+       lwd=c(1,3,4, lw.), lty=c(1,2,1, lw.))
+palette(opal)# revert
+
+all.equal(cRC, cR0, tol = 1e-15) # TRUE [for now]
+## the problematic "jump" :
+as.data.frame(cRC)[744:750,]
+## verbose=TRUE  may reveal which branches of the algorithm are taken:
+pnchisqRC(1500, df=2, ncp=0, lower.tail=FALSE, log.p=TRUE, verbose=TRUE) #
+## |-->  -Inf currently
+
+## The *two*  principal cases (both lower.tail = {TRUE,FALSE} !), where
+##  "2nd call"  happens *and* is currently beneficial :
+dfs <- c(1:2, 5, 10, 20)
+pL. <- pnchisqRC(.00001, df=dfs, ncp=0, log.p=TRUE, lower.tail=FALSE, verbose = TRUE)
+pR. <- pnchisqRC(   100, df=dfs, ncp=0, log.p=TRUE, verbose = TRUE)
+## R's own non-central version (specifying 'ncp'):
+pL0 <- pchisq   (.00001, df=dfs, ncp=0, log.p=TRUE, lower.tail=FALSE)
+pR0 <- pchisq   (   100, df=dfs, ncp=0, log.p=TRUE)
+## R's *central* version, i.e., *not* specifying 'ncp' :
+pL  <- pchisq   (.00001, df=dfs,        log.p=TRUE, lower.tail=FALSE)
+pR  <- pchisq   (   100, df=dfs,        log.p=TRUE)
+cbind(pL., pL, relEc = signif(1-pL./pL, 3), relE0 = signif(1-pL./pL0, 3))
+cbind(pR., pR, relEc = signif(1-pR./pR, 3), relE0 = signif(1-pR./pR0, 3))
 }
 \keyword{distribution}

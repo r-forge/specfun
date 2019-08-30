@@ -25,11 +25,11 @@
 .D_log <- function(p, log.p)  if(log.p) p else log(p)	     # log(p)
 .D_Clog<- function(p, log.p)  if(log.p) log1p(-p) else ((0.5 - p) + 0.5)# [log](1-p)
 
-M.LN2 <- log(2)
+M_LN2 <- log(2)
 
 ##' log(1 - exp(-x))  in more stable form than log1p(- R_D_qIv(-x))
 ##' NB: copula::log1mexp() is slightly more sophisticated
-log1mexp <- function(x) ifelse(x <= M.LN2, log(-expm1(-x)), log1p(-exp(-x)))
+log1mexp <- function(x) ifelse(x <= M_LN2, log(-expm1(-x)), log1p(-exp(-x)))
 
 ## log(1-exp(x)): R_D_LExp(x) == (log1p(- .D_qIv(x))) but even more stable:
 .D_LExp <- function(x, log.p) if(log.p) log1mexp(-x) else log1p(-x)

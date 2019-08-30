@@ -1,12 +1,12 @@
 #### R simulation of C's pnchisq_raw()  -*- delete-old-versions: never -*-
 #### ---------------------------------
 
-## For using this, see ./chisq-nonc-ex.R , for testing  ./pnchisq-tst.R
-##		       ~~~~~~~~~~~~~~~~~                ~~~~~~~~~~~~~~~
+## Ex. and tests:, see ../tests/chisq-nonc-ex.R
+##	            	  ----- ~~~~~~~~~~~~~~~
 
 ### Exports:
 ### -------
-### pnchisq  (q, df, ncp = 0, errmax = 1e-12, itrmax = 10* 10000, verbose = 1)
+### pnchisq  (q, df, ncp = 0, errmax = 1e-12, maxit = 10* 10000, verbose = 1)
 ### rr       (i, lambda)
 ### titleR.exp  [expression]
 ### plotRR   (lambda, iset = 1:(2*lambda), do.main=TRUE)
@@ -19,10 +19,17 @@ pnchisq <- function(q, df, ncp = 0, lower.tail = TRUE,
                     ## log.p = FALSE,
                     cutOffncp = 80, itSimple = 110,
                     errmax = 1e-12, reltol = 1e-11,
-                    itrmax = 10* 10000,
+                    maxit = 10* 10000,
                     verbose = 1, xLrg.sigma = 5)
 {
-  ## Purpose: R simulation of C's pnchisq_raw()
+  ## Purpose: R simulation of C's pnchisq_raw() --- almost everything 2003--Feb.27_2004
+    ##          long before the 'log.p=TRUE' addition there (in April 2014),
+    ## and its "finish"  : 2015-09-01 :
+    ## ------------------------------------------------------------------------
+    ## r69248 | maechler | 2015-09-01 09:23:16
+    ## pnchisq (*, df=0, ncp > 0, log.p=TRUE) now correct and accurate
+    ## ------------------------------------------------------------------------
+
   ## ----------------------------------------------------------------------
   ## Arguments: as pchisq()
   ## ----------------------------------------------------------------------
@@ -143,9 +150,9 @@ pnchisq <- function(q, df, ncp = 0, lower.tail = TRUE,
             ## REprintf("\n L10: n=%d; term= %g; bound= %g",n,term,bound);
             is.r <- is.it <- FALSE
 	    if (((is.b <- bound <= errmax) &&
-                 (is.r <- term  <= reltol * ans)) || (is.it <- n > itrmax))
+                 (is.r <- term  <= reltol * ans)) || (is.it <- n > maxit))
             {
-                Cat("BREAK n=",n, if(is.it) "> itrmax",
+                Cat("BREAK n=",n, if(is.it) "> maxit",
                     "; bound= ",formatC(bound), if(is.b)"<= errmax",
                     "rel.err= ",formatC(term/ans),if(is.r)"<= reltol\n")
                 break                   # out completely
@@ -196,7 +203,7 @@ pnchisq <- function(q, df, ncp = 0, lower.tail = TRUE,
 
     ## L_End:
     if (bound > errmax) { ## NOT converged
-	warning("pnchisq(x,....): not converged in ",itrmax," iter.")
+	warning("pnchisq(x,....): not converged in ",maxit," iter.")
     }
     ##ifdef DEBUG_pnch
     ## REprintf("\n == L_End: n=%d; term= %g; bound=%g\n",n,term,bound);
@@ -338,7 +345,8 @@ pnchisqTerms <-  function(x, df, ncp, lower.tail = TRUE, i.max = 1000)
 
 
 ## Summands for pnchisq() series approximation, see pnchisq_ss() [below]
-ss <- function(x, df, ncp, i.max = 10000)
+ss <- function(x, df, ncp, i.max = 10000,
+               useLv = !(expMin < -lambda && 1/lambda < expMax))
 {
     ## Purpose:
     ## pnchisq() :=                         sum_{i=0}^{n*} v_i  t_i
@@ -360,9 +368,10 @@ ss <- function(x, df, ncp, i.max = 10000)
     ## Arguments: as p[n]chisq(), but only scalar
     ## ----------------------------------------------------------------------
     ## Author: Martin Maechler, Date:  6 Feb 2004, 19:27
-    if(length(x)   > 1) stop("'x' must be of length 1")
-    if(length(df)  > 1) stop("'df' must be of length 1")
-    if(length(ncp) > 1) stop("'ncp' must be of length 1")
+    if(length(x)   != 1) stop("'x' must be of length 1")
+    if(length(df)  != 1) stop("'df' must be of length 1")
+    if(length(ncp) != 1) stop("'ncp' must be of length 1")
+    if(x <= 0) stop("'x' must be positive (here)")
     expMin <- log(2)*.Machine$double.min.exp # ~= -708.4 for IEEE FP
     expMax <- log(2)*.Machine$double.max.exp # ~= +709.8
 
@@ -372,14 +381,15 @@ ss <- function(x, df, ncp, i.max = 10000)
 
     xq <- x / (df + 2*i)
     tt <- cumprod(c(1, xq))
-    it0 <- tt == 0 # underflow
-    useLt <- any(it0) ## useLt := use log terms in formula
+
+    ## useLt := use log terms in formula [protect against underflow / denormalized numbers]
+    useLt <- any(it0 <- tt < .Machine$double.xmin) # was  it0 <- tt == 0
     if(useLt) { ## work with log(tt) there
         ltt <- cumsum(c(0, log(xq)))
     }
 
     ## Nota Bene: v[n] == e_n(lambda) * exp(-lambda)  is always in [0,1)
-    useLv <- !(expMin < -lambda && 1/lambda < expMax)
+    ## default useLv <- !(expMin < -lambda && 1/lambda < expMax)
     if(!useLv) {## otherwise overflows/underflows
         u <- exp(-lambda)*cumprod(c(1, lambda / i))
         v <- cumsum(u)
@@ -408,7 +418,7 @@ ss <- function(x, df, ncp, i.max = 10000)
 
     ## now get it's attributes:
 
-    d <- diff(p <- r > 0)
+    d <- diff(r > 0)
     i1 <- which.max(d) # [i1] -> [i1+1]: first change from 0 to >0
     i2 <- i.max+1 - which.min(rev(d))
     ## [i2] -> [i2+1]: last change from >0 to 0
@@ -427,11 +437,31 @@ ss2 <- function(x, df, ncp, i.max = 10000, eps = .Machine$double.eps)
 }
 
 
-pnchisq_ss <- function(x, df, ncp, i.max = 10000) {
+pnchisq_ss <- function(x, df, ncp, lower.tail=TRUE, log.p=FALSE, i.max = 10000) {
+    ## deal with boundary cases as in pnchisq()
+    if(x <= 0) {
+	if(x == 0 && df == 0)
+	    return(
+                if(log.p) {
+                    if(lower.tail)     -0.5*ncp  else R_Log1_Exp(-0.5*ncp)
+                } else {
+                    if(lower.tail) exp(-0.5*ncp) else     -expm1(-0.5*ncp)
+                })
+        ## else
+        return(.DT_0(lower.tail, log.p=log.p))
+    }
+    if(!is.finite(x))
+        return(.DT_1(lower.tail, log.p=log.p))
     ## Using ss() for the non-central chisq prob.
     si <- ss(x=x, df=df, ncp=ncp, i.max = i.max)
-    ## old version: had exp(-ncp/2)*
-    2*dchisq(x, df = df +2) * sum(si$s)
+    f <- if(log.p) log(2) + dchisq(x, df = df+2, log=TRUE)
+         else          2  * dchisq(x, df = df+2)
+    s <- sum(si$s)
+    if(lower.tail) {
+        if(log.p) f+log(s) else f*s
+    } else { ## upper tail
+        if(log.p) log1p(- f*s) else 1 - f*s
+    }
 }
 
 ## Instead of limited (overflow!) ss(),
@@ -439,7 +469,7 @@ pnchisq_ss <- function(x, df, ncp, i.max = 10000) {
 ## dyn.load("/u/maechler/R/MM/NUMERICS/dpq-functions/pnchisq-it.so")
 
 pnchisqIT <- function(q, df, ncp = 0, errmax = 1e-12,
-                      reltol = 2*.Machine$double.eps, itrmax = 1e5)
+                      reltol = 2*.Machine$double.eps, maxit = 1e5, verbose = FALSE)
 {
     if(length(q) != 1 || length(df) != 1 || length(ncp) != 1)
         stop("arguments must have length 1 !")
@@ -449,18 +479,19 @@ pnchisqIT <- function(q, df, ncp = 0, errmax = 1e-12,
             theta = as.double(ncp),
             errmax = as.double(errmax),
             reltol = as.double(reltol),
-            itrmax = as.integer(itrmax),
+            maxit = as.integer(maxit),
+            verbose = as.integer(verbose),
             i0 = integer(1),
             n.terms = integer(1),
-            terms = double(itrmax+1), ## !!
+            terms = double(maxit+1), ## !!
             prob  = double(1))
     length(r$terms) <- r$n.terms
     r[c("prob", "i0", "n.terms", "terms")]
 }
 
 ss2. <- function(q, df, ncp = 0, errmax = 1e-12,
-                 reltol = 2*.Machine$double.eps, itrmax = 1e5,
-                 eps = reltol)
+                 reltol = 2*.Machine$double.eps, maxit = 1e5,
+                 eps = reltol, verbose = FALSE)
 {
     ## Purpose: "Statistic" on ss() ==> give only interesting indices
     ## ----------------------------------------------------------------------
@@ -476,10 +507,11 @@ ss2. <- function(q, df, ncp = 0, errmax = 1e-12,
             theta = as.double(ncp),
             errmax = as.double(errmax),
             reltol = as.double(reltol),
-            itrmax = as.integer(itrmax),
+            maxit = as.integer(maxit),
+            verbose = as.integer(verbose),
             i0 = integer(1L),
             n.terms = integer(1L),
-            terms = double(itrmax+1L) ## !!
+            terms = double(maxit+1L) ## !!
           , prob  = double(1)
             )
     length(r$terms) <- r$n.terms
@@ -507,4 +539,28 @@ ss2. <- function(q, df, ncp = 0, errmax = 1e-12,
         i.need <- c(1,1)
     }
     c(i0 = r$i0, nT = r$n.terms, i1=i1, i2=i2, iN = i.need, iMax = iMax)
+}
+
+
+small.ncp.logspaceR2015 <- function(x, df, ncp, lower.tail, log.p) {
+    ## 'ncp' and 'log.p' not used here
+    lower.tail & df > 0 & {
+        log(x) < log(2) + 2/df*(lgamma(df/2. + 1) + M_minExp)
+        ## M_minExp := LN2 * .Machine$double.min.exp) ~= -708.396
+    }
+}
+
+##' R's C version pnchisq() [with more "tuning" arguments; 'verbose' ..] :
+pnchisqRC <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
+                      no2nd.call = FALSE,
+                      cutOffncp = 80, small.ncp.logspace = small.ncp.logspaceR2015, itSimple = 110,
+                      errmax = 1e-12, reltol = 8*.Machine$double.eps, epsS = reltol/2,
+                      maxit = 1000000, verbose = FALSE)
+{
+    if(is.function(small.ncp.logspace))
+        small.ncp.logspace <- small.ncp.logspace(q, df, ncp, lower.tail, log.p)
+    stopifnot(is.logical(small.ncp.logspace))
+    .Call(C_Pnchisq_R, ## ../src/pnchisq-it.c
+          as.double(q), as.double(df), as.double(ncp), lower.tail, log.p,
+          no2nd.call, cutOffncp, small.ncp.logspace, itSimple, errmax, reltol, epsS, maxit, verbose)
 }

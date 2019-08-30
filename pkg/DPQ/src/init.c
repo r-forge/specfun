@@ -18,10 +18,10 @@ static R_NativePrimitiveArgType qchisq_appr_v_t[7] = {
     LGLSXP,  LGLSXP, REALSXP };
 // pnchisq-it.c :
 static R_NativePrimitiveArgType Pnchisq_it_t[] = {
-    REALSXP, REALSXP, REALSXP,
-    /* errmax: */ REALSXP, REALSXP, INTSXP,
+    /* x, f, theta : */ REALSXP, REALSXP, REALSXP,
+    /* errmax, reltol, itrmax, verbose: */ REALSXP, REALSXP, INTSXP, INTSXP,
     /* i_0, n_terms: */ INTSXP,  INTSXP,
-    REALSXP, REALSXP };
+    /* terms, prob : */ REALSXP, REALSXP };
 static R_NativePrimitiveArgType ncbeta_t[] = {
     REALSXP, REALSXP, REALSXP, REALSXP,
     /* n: */ INTSXP,
@@ -46,8 +46,9 @@ static const R_CMethodDef CEntries[] = {
 };
 
 static R_CallMethodDef CallEntries[] = {
-    CALLDEF(R_algdiv, 2), // <-- ./algdiv.c
-    CALLDEF(ppoisD,   3), // <-- ./ppois-direct.c
+    CALLDEF(R_algdiv,   2), // <-- ./algdiv.c
+    CALLDEF(ppoisD,     3), // <-- ./ppois-direct.c
+    CALLDEF(Pnchisq_R, 14), // <-- ./pnchisq-it.c
 
     {NULL, NULL, 0}
 };

@@ -6,7 +6,10 @@
 // for SEXP:
 #include <Rinternals.h>
 
-// From R's source
+/* Instead of inside R
+ * #include "nmath.h"
+ ------------------- */
+// MM_R our substitute for the above header , from R's source
 // -------- excerpt from  nmath.h ---------------------------------
 #include <R_ext/Error.h>
 # define MATHLIB_ERROR(fmt,x)		error(fmt,x);
@@ -27,7 +30,90 @@
 #else
 #define _(String) (String)
 #endif
-// ----------- end of excerpt from R's  nmath.h -------------------------
+
+
+#define ML_VALID(x)	(!ISNAN(x))
+
+#define ME_NONE		0
+/*	no error */
+#define ME_DOMAIN	1
+/*	argument out of domain */
+#define ME_RANGE	2
+/*	value out of range */
+#define ME_NOCONV	4
+/*	process did not converge */
+#define ME_PRECISION	8
+/*	does not have "full" precision */
+#define ME_UNDERFLOW	16
+/*	and underflow occured (important for IEEE)*/
+
+/* FIXME: 'ERR' and 'ERROR' below are misnomers, both in R and stand-alone Rmathlib:
+   -----  they only *warn* after all; they are private headers, so can change anytime
+*/
+
+#define ML_ERR_return_NAN { ML_ERROR(ME_DOMAIN, ""); return ML_NAN; }
+
+/* For a long time prior to R 2.3.0 ML_ERROR did nothing.
+   We don't report ME_DOMAIN errors as the callers collect ML_NANs into
+   a single warning.
+ */
+#define ML_ERROR(x, s) { \
+   if(x > ME_DOMAIN) { \
+       char *msg = ""; \
+       switch(x) { \
+       case ME_DOMAIN: \
+	   msg = _("argument out of domain in '%s'\n");	\
+	   break; \
+       case ME_RANGE: \
+	   msg = _("value out of range in '%s'\n");	\
+	   break; \
+       case ME_NOCONV: \
+	   msg = _("convergence failed in '%s'\n");	\
+	   break; \
+       case ME_PRECISION: \
+	   msg = _("full precision may not have been achieved in '%s'\n"); \
+	   break; \
+       case ME_UNDERFLOW: \
+	   msg = _("underflow occurred in '%s'\n");	\
+	   break; \
+       } \
+       MATHLIB_WARNING(msg, s); \
+   } \
+}
+// --------- MM_R end_of { #include <nmath.h> substitute } ----------------------
+
+
+/* R's  #include <config.h> typically defines this (it may be very on Solaris):
+ *
+ * Define if you wish to use the 'long double' type. */
+#define HAVE_LONG_DOUBLE 1
+
+
+/* Required by C99, but might be slow */
+#ifdef HAVE_LONG_DOUBLE
+# define LDOUBLE long double
+#else
+# define LDOUBLE double
+#endif
+
+#ifdef HAVE_LONG_DOUBLE
+# define EXP expl
+# define EXPm1 expm1l
+# define FABS fabsl
+# define LOG logl
+# define LOG1p log1pl
+// Rmpfr: log(mpfr(2, 130)) {130 bits is "more than enough": most long_double are just 80 bits!}
+# define M_LN2_ 0.6931471805599453094172321214581765680755L
+#else
+# define EXP exp
+# define EXPm1 expm1
+# define FABS fabs
+# define LOG log
+# define LOG1p log1p
+# define M_LN2_ M_LN2
+#endif
+
+
 
 #include "dpq.h"
 //        =====
@@ -50,9 +136,16 @@ void qchisq_appr_v(double *P, int *n, double *nu, double *tol,
 
 void Pnchisq_it(double *x, double *f, double *theta,
 		/* FIXME?? additionally vectorize in (x, prob) or (x,f,th) |-> prob */
-		double *errmax, double *reltol, int *itrmax,
+		double *errmax, double *reltol, int *itrmax, int *verbose,
 		int *i_0, int *n_terms, double *terms, double *prob)
     ;
+SEXP Pnchisq_R(SEXP x_, SEXP f_, SEXP theta_,
+	       SEXP lower_tail_, SEXP log_p_,
+	       SEXP no_2nd_call_,
+	       SEXP cutoff_ncp_, SEXP small_ncp_logspace_, SEXP it_simple_,
+	       SEXP errmax_, SEXP reltol_, SEXP epsS_, SEXP itrmax_, SEXP verbose_)
+    ;
+
 
 // 310-pnbeta.c : --------------------------------------------------------------
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2004--2018 Martin Maechler
+ *  Copyright (C) 2004--2019 Martin Maechler
 
  *  Providing an R interface to the new (in March 2004)
  *  non-API  qchisq_appr()  in R's src/nmath/qgamma.c
@@ -55,63 +55,6 @@
  *	Best, D. J. and D. E. Roberts (1975).
  *	Percentage Points of the Chi-Squared Distribution.
  *	Applied Statistics 24, page 385.  */
-
-#ifdef USING_R
-#include "nmath.h"
-#include "dpq.h"
-#else // MM_R our substitute for the above R/src/nmath-internal headers :
-
-#define ML_VALID(x)	(!ISNAN(x))
-
-#define ME_NONE		0
-/*	no error */
-#define ME_DOMAIN	1
-/*	argument out of domain */
-#define ME_RANGE	2
-/*	value out of range */
-#define ME_NOCONV	4
-/*	process did not converge */
-#define ME_PRECISION	8
-/*	does not have "full" precision */
-#define ME_UNDERFLOW	16
-/*	and underflow occured (important for IEEE)*/
-
-/* FIXME: 'ERR' and 'ERROR' below are misnomers, both in R and stand-alone Rmathlib:
-   -----  they only *warn* after all; they are private headers, so can change anytime
-*/
-
-#define ML_ERR_return_NAN { ML_ERROR(ME_DOMAIN, ""); return ML_NAN; }
-
-/* For a long time prior to R 2.3.0 ML_ERROR did nothing.
-   We don't report ME_DOMAIN errors as the callers collect ML_NANs into
-   a single warning.
- */
-#define ML_ERROR(x, s) { \
-   if(x > ME_DOMAIN) { \
-       char *msg = ""; \
-       switch(x) { \
-       case ME_DOMAIN: \
-	   msg = _("argument out of domain in '%s'\n");	\
-	   break; \
-       case ME_RANGE: \
-	   msg = _("value out of range in '%s'\n");	\
-	   break; \
-       case ME_NOCONV: \
-	   msg = _("convergence failed in '%s'\n");	\
-	   break; \
-       case ME_PRECISION: \
-	   msg = _("full precision may not have been achieved in '%s'\n"); \
-	   break; \
-       case ME_UNDERFLOW: \
-	   msg = _("underflow occurred in '%s'\n");	\
-	   break; \
-       } \
-       MATHLIB_WARNING(msg, s); \
-   } \
-}
-#endif
-// MM_R  end_of { #include <nmath.h> substitute }
-
 
 #ifdef DEBUG_qgamma
 # define DEBUG_q

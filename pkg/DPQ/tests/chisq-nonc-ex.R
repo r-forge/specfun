@@ -308,7 +308,7 @@ plot(function(x)pchisq(x, df=1e-4, ncp=0, lower=FALSE),2000, 5000) ## all = 0 st
 ## this is ok (2014-04)
 plot(function(x)pchisq(x, df=1e-4, ncp=0, lower=FALSE),1e-1, 5000, log="xy")## !?
 ## The R version of this:
-plot(function(x)pnchisqV(x, df=1e-4, ncp=0, lower=FALSE),1e-1, 5000, log="xy")## (same pict)
+curve(   pnchisqV     (x, df=1e-4, ncp=0, lower=FALSE), add=TRUE, col=adjustcolor(2,1/2), lwd=4)
 ## central chisq is ok here:
 curve( pchisq(x, df=1e-4,        lower=FALSE),add = TRUE, col = "red")
 curve( pchisq(x, df=1e-4,        lower=FALSE),1e-1, 5000)#, add = TRUE)
@@ -320,6 +320,7 @@ par(new=TRUE)
 curve( pchisq(x, df=0.01, ncp = 0.1, lower=FALSE,log=TRUE),
       1e-1, 5000, log="x", ylab="", yaxt="n", col=2)
 axis(4, col.axis=2); mtext("log(1 - p)", 4, col=2)
+## --> underflows to -Inf [because it computes log(.)
 
 ###--- this was "noncentral-ex.R" :
 
@@ -578,13 +579,15 @@ curve(pnchisqV(x, df= 16e3, ncp= 16e3),
       from=30e3, to= 35e3, main="df = 16e3, ncp = 16e3")
 curve(400*dchisq(x, df= 16e3, ncp= 16e3), add = TRUE,
       col = adjustcolor("green4",.5), lwd=3)
+
+## current R version: -- (also relatively slow, but much faster!) *and* non-convergence warning
+rr <- curve(pchisq(x, df= 10000, ncp=3e5), type = "o", cex = 1/2,  n = 49)
+summary(warnings()) ## all non-convergences (but *looks* ok)
 ## non-convergence in 100000 iterations : -- S.L.O.W. (~ 1 min. on 2014 lynne)
 rV <- curve(pnchisqV(x, df= 10000, ncp=3e5), n = 49,
             from=3.13e5, to= 3.14e5, main="ncp = 3e5 - pnchisqV()")
-## current R version -- also slow *and* non-convergence!
-rr <- curve(pnchisqV(x, df= 10000, ncp=3e5),
-            add = TRUE, col=2, n = 49)
-summary(warnings()) ## many non-convergences!
+summary(warnings())
+identical(rr$x, rV$x)
 showProc.time()#-----------------
 
 
