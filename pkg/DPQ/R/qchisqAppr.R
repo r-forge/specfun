@@ -77,7 +77,7 @@ qchisq.appr.Kind <-
     switch(kind,
            "chi.small" = { ##/* for small chi-squared */
 
-               ch <- exp((log(alpha) + p1 + g)/alpha + M.LN2)
+               ch <- exp((log(alpha) + p1 + g)/alpha + M_LN2)
                Cat(sprintf(" small chi-sq., ch0 = %g\n", ch))
            },
            "WHchk" = { ##/*  using Wilson and Hilferty estimate */
@@ -99,7 +99,7 @@ qchisq.appr.Kind <-
                C10 <- 13.32
 
                ch <- 0.4
-               a <- .DT_Clog(p, lower.tail, log.p) + g + c*M.LN2
+               a <- .DT_Clog(p, lower.tail, log.p) + g + c*M_LN2
                Cat(sprintf(" nu=%g <= .32: a(p,nu) = %19.13g ", nu,a))
 
                it <- 0; converged <- FALSE

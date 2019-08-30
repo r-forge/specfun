@@ -72,7 +72,7 @@ qchisqAppr.R <- function(p, df, lower.tail = TRUE, log.p = FALSE,
 		   ## = log(alpha*gamma(alpha)) = lgamma(alpha+1) suffers from
 		   ##  catastrophic cancellation when alpha << 1
 		   lgam1pa <- if(alpha < 0.25) lgamma1p(alpha) else log(alpha) + g
-		   ch <- exp((lgam1pa + p1)/alpha + M.LN2)
+		   ch <- exp((lgam1pa + p1)/alpha + M_LN2)
 		   Cat(sprintf("(p1,df)=(%g,%g) ==> small chi-sq., ch0 = %g\n",
 			       p1,df,ch))
                },
@@ -99,7 +99,7 @@ qchisqAppr.R <- function(p, df, lower.tail = TRUE, log.p = FALSE,
                    C10 <- 13.32
 
                    ch <- 0.4
-                   a <- .DT_Clog(p, lower.tail, log.p) + g + c*M.LN2
+                   a <- .DT_Clog(p, lower.tail, log.p) + g + c*M_LN2
 
                    Cat(sprintf("'df.small', df=%g, a(p,df) = %19.13g ", df,a))
 
@@ -217,7 +217,7 @@ qgamma.R <- function(p, alpha, scale = 1, lower.tail = TRUE, log.p = FALSE,
                 do.break <- TRUE ; break
             }
 
-            t <- p2*exp(alpha*M.LN2 + g + p1 - c*log(ch));
+            t <- p2*exp(alpha*M_LN2 + g + p1 - c*log(ch));
             b <- t/ch;
             a <- 0.5*t - b*c;
             s1 <- (210+ a*(140+a*(105+a*(84+a*(70+60*a))))) * i420;

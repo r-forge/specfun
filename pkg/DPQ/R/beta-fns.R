@@ -134,7 +134,7 @@ betaI <- function(a, n)
   if(length(n) > 1) stop("'n' must have length 1.")
   if(is.na(n <- as.integer(n)) || n <= 0)
     stop("'n' must be positive (not too large) integer")
-  ni <- seq(length= n-1)
+  ni <- seq_len(n-1L)
   prod(ni) / prod(a+c(0,ni))
 }
 
@@ -164,13 +164,13 @@ lbetaIhalf <- function(a, n)
 
 ## ---> lgamma1p() below
 
-SQR <- function(x) (x*x)
-scalefactor <- SQR(SQR(SQR(4294967296.0)))
-rm(SQR)
+scalefactor <- 2^256 # == 2^2^2^3 == double prec. exact{checking via Rmpfr and gmp::as.bigz(2)^256}
+
+## smallest exponent E for which exp(E) is "above underflow" {exp(E) == .Machine$double.xmin}
+M_minExp <- log(2) * .Machine$double.min.exp # ~= -708.396
 
 ##/* If |x| > |k| * M_cutoff,  then  log[ exp(-x) * k^x ] =~=  -x */
-M_cutoff <- log(2) *
-    .Machine$double.max.exp / .Machine$double.eps ## = 3.196577e18
+M_cutoff <- log(2) * .Machine$double.max.exp / .Machine$double.eps ## = 3.196577e18
 
 logcf <- function (x, i, d, eps, maxit=10000) ##/* ~ relative tolerance */)
 {
