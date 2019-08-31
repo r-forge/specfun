@@ -1,1 +1,224 @@
-/u/maechler/bib/R-numerics.bib
+@string{AmStat = "The American Statistician"}
+@string{JRSS = "Journal of the Royal Statistical Society"} %% ALWAYS #~A or #~B!
+@string{JRSSC-AS = "Applied Statistics --- " # JRSS # "~C"}
+%@string{TOMS = "ACM Transactions on Mathematical Software"}
+@string{TOMS = "ACM Trans.\ Math.\ Software"}
+@string{Wiley = "Wiley"}
+@string{NY = "N.~Y."}
+
+%%-------- Fundamental {from /u/sfs/bib/Assbib.bib } -----------------------
+
+@Book{AbrMS72,
+  author = {Milton Abramowitz and Irene A. Stegun},
+  title = {Handbook of Mathematical Functions},
+  year = 1972,
+  publisher = {Dover},
+  address = {New York},
+  annote = {first printing 1964, 10th printing (with corrections) 1972},
+  url = {https://en.wikipedia.org/wiki/Abramowitz_and_Stegun},
+}
+
+
+@Book{JohNK72,
+  author = {N. L. Johnson and S. Kotz},
+  title = {Continuous Multivariate Distributions},
+  year = 1972,
+  address = {New York},
+  pages = 333,
+  publisher = {Wiley},
+  series = {A Wiley Publication in Applied Statistics}
+}
+
+@Book{JohNKB94,
+  author = 	 {Norman L. Johnson and Samuel Kotz and N. Balakrishnan},
+  title = 	 {Continuous Univariate Distributions},
+  publisher = 	 Wiley,
+  address =      NY,
+  year = 	 1994,
+  volume =	 1,
+  annote =      {--},
+  series =	 {Wiley Series in Probability and Mathematical Statistics},
+  edition =	 2
+}
+
+@Book{JohNKB95,
+  author = 	 {Norman L. Johnson and Samuel Kotz and N. Balakrishnan},
+  title = 	 {Continuous Univariate Distributions},
+  publisher = 	 Wiley,
+  address =      NY,
+  year = 	 1995,
+  volume =	 2,
+  annote =      {--},
+  series =	 {Wiley Series in Probability and Mathematical Statistics},
+  edition =	 2
+}
+
+@Book{JohNKB97,
+  author =	 {Norman L. Johnson and Samuel Kotz and N. Balakrishnan},
+  title = 	 {Discrete Multivariate Distributions},
+  publisher = 	 {Wiley},
+  year = 	 1997,
+  series =	 {Series in Probability and Statistics}
+}
+
+@Book{JohNKK92,
+  author = 	 {Norman L. Johnson and Samuel Kotz and Adrienne W. Kemp},
+  title = 	 {Univariate Discrete Distribution},
+  publisher = 	 Wiley,
+  address =	NY,
+  year = 	 1992,
+  edition =	 2
+}
+
+@Book{KenWG80,
+  author = 	 {Kennedy, Jr, William J. and James E. Gentle},
+  title = 	 {Statistical Computing},
+  publisher = 	 {Marcel Dekker Inc.},
+  year = 	 1980,
+  volume =	 33,
+  series =	 {Statistics: textbooks and monographs},
+  address =	 {New York}
+}
+
+
+%%-------------- qt() computation in R -------------------
+@article{355955,
+ author = {G. W. Hill},
+ title = {Remark on `Algorithm 395: {Student's t}-Distribution [{S14}]'},
+ journal = {ACM Transactions on Mathematical Software (TOMS)},
+ volume = {7},
+ number = {2},
+ year = {1981},
+ issn = {0098-3500},
+ pages = {247--249},
+ doi = {10.1145/355945.355955},
+ publisher = {ACM Press},
+ }
+
+@article{355956,
+ author = {G. W. Hill},
+ title = {Remark on ?Algorithm 396: Student's t-Quantiles [S14]?},
+ journal = {ACM Transactions on Mathematical Software (TOMS)},
+ volume = {7},
+ number = {2},
+ year = {1981},
+ issn = {0098-3500},
+ pages = {250--251},
+ doi = {10.1145/355945.355956},
+ publisher = {ACM Press},
+ }
+%-------------- These are about the incomplete Beta ----------------------
+
+@article{MajKB73-AS63,
+  author =	 {Majumder, K. L. and Bhattacharjee, G. P.},
+  title =	 {The Incomplete Beta Integral [Algorithm {AS} 63]},
+  year =	 1973,
+  volume =	 22,
+  pages =	 {409--411},
+  journal =	 JRSSC-AS,
+  keywords =	 {Series approximation},
+additions = {(AS {R}19: 77V26 P111-114)},
+}
+
+@article{MajKB73-AS64,
+  author =	 {Majumder, K. L. and Bhattacharjee, G. P.},
+  title =	 {Inverse of the Incomplete Beta
+                  Function Ratio [Algorithm {AS} 64]},
+additions = {({AS R}19: 77V26 P111-114)},
+  year =	 1973,
+  volume =	 22,
+  pages =	 {411--414},
+  journal =	 JRSSC-AS,
+  keywords =	 {Newton-Raphson method},
+
+}
+
+@article{CraGMT77,
+  author =	 {Cran, G. W. and Martin, K. J. and Thomas, G. E.},
+  title =	 {A Remark on Algorithm {AS} 63: ``{T}he Incomplete Beta
+                  Integral'' and Algorithm {AS} 64: ``{I}nverse of the
+                  Incomplete Beta Function Ratio'' [Algorithm {AS} 109]},
+additions = {[{AS R}19] (AS {R}83: 90V39 P309-310 (Corr: 91V40 P236))},
+  year =	 1977,
+  volume =	 26,
+  pages =	 {111--114},
+  journal =	 JRSSC-AS,
+}
+
+@article{BerKMC90,
+  author =	 {Berry, K. J. and Mielke, P. W., Jr and Cran, G. W.},
+  title =	 {A Remark on Algorithm {AS} 109: ``{I}nverse
+                  of the Incomplete Beta Function Ratio'' [{AS R}83]},
+additions = {{C}orr: 91 v40 p.236)},
+  year =	 1990,
+  volume =	 39,
+  pages =	 {309--310},
+  journal =	 JRSSC-AS,
+}
+
+
+@inproceedings{PosH86,
+  Author =	 {Posten, H. O.},
+  Title =	 {Algorithms for the Beta Distribution Function},
+  Year =	 1986,
+  Booktitle =	 {Proc.\ in Computat.\ Statist., 1986},
+  Pages =	 {309--319},
+}
+
+@article{LeeC92,
+  author =	 {Lee, Carl M.-S.},
+  title =	 {On the Computation of Central and Noncentral Beta
+                  Probabilities},
+  year =	 1992,
+  journal =	 {J. Statist.\ Computat.\ Simul.},
+  pages =	 {1--10},
+  volume =	 43
+}
+
+@article{PosH93,
+  author =	 {Posten, Harry O.},
+  title =	 {An Effective Algorithm for the Noncentral Beta
+                  Distribution Function},
+  year =	 1993,
+  journal =	 AmStat,
+  keywords =	 {Statistical Computing},
+  pages =	 {129--131},
+  volume =	 47
+}
+
+@Article{DiDAM92,
+  author = 	 {DiDinato, A. R. and Morris, A. H.},
+  title = 	 {Algorithm 708: Significant Digit Computation of the
+                  Incomplete Beta Function Ratios},
+  journal = 	 TOMS,
+  year = 	 1992,
+  volume =	 18,
+  number =	 3,
+  pages =	 {360--373}
+}
+
+%---------------- Bessel --- from ./toms.bib :
+@Article{Cody:1983:ASM,
+  author =       "W. J. Cody",
+  title =        "{Algorithm 597}: Sequence of Modified {Bessel}
+                 Functions of the First Kind",
+  journal =      j-TOMS,
+  volume =       9,
+  number =       2,
+  pages =        "242--245",
+  month =        jun,
+  year =         1983,
+  CODEN =        "ACMSCU",
+  DOI =          "10.1145/357456.357462",
+  ISSN =         "0098-3500 (print), 1557-7295 (electronic)",
+  ISSN-L =       "0098-3500",
+  bibdate =      "Tue Sep 6 22:16:30 1994",
+  bibsource =    "http://www.math.utah.edu/pub/tex/bib/toms.bib",
+  acknowledgement = ack-nhfb,
+  fjournal =     "ACM Transactions on Mathematical Software (TOMS)",
+  journal-URL =  "http://dl.acm.org/pub.cfm?id=J782",
+  keywords =     "algorithms",
+  subject =      "G.1.2 Mathematics of Computing, NUMERICAL ANALYSIS,
+                 Approximation, Elementary function approximation G
+                 Mathematics of Computing, MISCELLANEOUS",
+}
