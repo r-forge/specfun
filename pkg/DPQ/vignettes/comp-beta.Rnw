@@ -1,25 +1,37 @@
 \documentclass[a4paper,11pt,twoside]{article}
 
 \usepackage[a4paper, text={15cm,24cm}]{geometry}
+\usepackage{natbib}% for bibliography citation
 
-% \usepackage{sfspaper}
-\usepackage{harvard}% for biblio, wa \usepackage{sfsbib}
-\usepackage{texab}
-%
-% \usepackage{parskip}
-% \usepackage{subfig-M}%-- subfigures 'M': less space than standard
-%%
-% \usepackage[dvips]{epsfig}
 \usepackage{amsbsy} % for \boldsymbol:  only a small part of \usepackage{amstex}
+% \usepackage{amssymb}% for \intercal
+\usepackage{amsopn}% DeclareMathOperator
+\usepackage{amsfonts}
+%% From our \usepackage{texab} ----------------------------------------------
+\DeclareMathOperator{\where}{ where }
+\newcommand*{\Nat}{\mathbb{N}}% <-> amsfonts
+\newcommand{\Degr}{\relax\ensuremath{^\circ}}% \ifmmode^\circ\else$^\circ$\fi
+
+\newcommand{\vect}[1]   {\left( \begin{array}{c} #1 \end{array}\right)}
+        %-  ~~~~~ use as  \vect{x_1 \\ x_2 \\ \vdots \\ x_n}
+\newcommand{\vecII}[2]  {{\arraycolsep 0.04em \def\arraystretch{.75} %
+        \left(\begin{array}{c} #1 \\ #2 \end{array}\right)}}
+%--- use as \vecII{x}{y}
+% \arraycolsep: is defined in article/ report / book .sty / .doc  -- as 5 pt --
+% \arraystretch: defined in latex.tex  (as {1}) ###### Tampering with latex ####
+%% At first:
+%\let\binom\vecII%%<< useful Synonym
+%% End from \usepackage{texab} ----------------------------------------------
+
 
 %\VignetteIndexEntry{Computing Beta(a,b) for Large Arguments}
 %\VignetteDepends{DPQ}
 \SweaveOpts{engine=R,eps=FALSE,pdf=TRUE,width=7,height=5,strip.white=true,keep.source=TRUE}
 %%%------------------------------------------------------------
 
+\bibliographystyle{apalike}% was {sfsbib}
+% \citationstyle{dcu}
 \begin{document}
-\bibliographystyle{alpha}% was {sfsbib}
-\citationstyle{dcu}
 
 \title{Computing the Beta Function for Large Arguments}
 \author{Martin M\"achler\\ Seminar f\"ur Statistik \\ ETH Zurich}
@@ -39,11 +51,11 @@
 The beta distribution function and its inverse are widely used in
 statistical software, since, e.g., the critical values of the $F$ and $t$
 distributions can be expressed using the inverse beta distribution, see, e.g.,
-\citeasnoun[sec.~5.5]{KenWG80}.
+\citet[sec.~5.5]{KenWG80}.
 
 Whereas sophisticated algorithms are available for computing
 the beta distribution function and its inverse (\cite{MajKB73-AS63} and
-\citeyear{MajKB73-AS64}, \cite{CraGMT77,BerKMC90}, \cite[ch.~25]{JohNKB95}),
+\citeyear{MajKB73-AS64}, \cite{CraGMT77,BerKMC90}, \citep[ch.~25]{JohNKB95}),
 these algorithms rely on
 the computation of the beta function itself which is not a problem in most
 cases.  However, for large arguments  $p$, the usual formula of the beta
@@ -70,7 +82,7 @@ From (\ref{def.Gamma}), integrating by parts gives $\Gamma(x+1) = x
 This entails the best-known  property of the gamma function, i.e., the fact
 that it  generalizes the factorial $n!$. Namely, for \emph{integer} arguments
 $n \in \Nat$, one has $ \Gamma(n+1) =  n!$.
-For this and many more properties, see, e.g., \citeasnoun[ch.~6]{AbrMS70}.
+For this and many more properties, see, e.g., \citet[ch.~6]{AbrMS72}.
 
 For the beta function $B(p,q)$, it is well known that
 for larger values of $p,q$ the corresponding $\Gamma$ values may become
