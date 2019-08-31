@@ -542,8 +542,8 @@ pntP94.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
                 if(log) lval else exp(lval)
             }
         }
-        if(FALSE) ## needed for printing mpfr numbers {-> pkg Rmpfr}, e.g.
-	.N <- if(isMpfr) Rmpfr::asNumeric else as.numeric
+        ## if(FALSE) ## needed for printing mpfr numbers {-> pkg Rmpfr}, e.g.
+	## .N <- if(isMpfr) Rmpfr::asNumeric else as.numeric
         Cat("Some 'non-numeric arguments .. fine\n")
     }
 

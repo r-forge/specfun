@@ -66,6 +66,9 @@ export(
   # , dntRwrong, dntRwrong1
   , dtWV
 
+  , logspace.add
+  , logspace.sub
+
   , ppoisErr
   , format01prec
  ## R/wienergerm_nchisq-fn.R : -----

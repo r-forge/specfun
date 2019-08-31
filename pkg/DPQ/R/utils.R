@@ -20,6 +20,12 @@ any_mpfr <- function(...) {
     FALSE
 }
 
+## MM: From ~/R/D/r-devel/R/src/nmath/pgamma.c : --- Help page now  >>> ../man/logspace.add.Rd <<<<
+logspace.add <- function(lx, ly) pmax(lx, ly) + log1p(exp(-abs(lx - ly)))
+
+logspace.sub <- function(lx, ly) lx + log1mexp(lx - ly)
+
+
 
 ### was as 'form01.prec' in  source("~/R/MM/MISC/Util.R")
 format01prec <- function(x, digits = getOption("digits"), width = digits + 2,

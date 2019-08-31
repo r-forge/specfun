@@ -96,5 +96,61 @@ qnchisqSankaran_d(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
    cat("\n~~~~~~~~~~~~~\nncp: ", ncp,"\n=======\n")
    print(sapply(qnchF, function(F) Vectorize(F, "p")(pp, df = 3, ncp=ncp)))
  }
+
+## One current (2019-08) R bug: Noncentral chi-squared quantiles on *LOG SCALE*
+
+## a)  left/lower tail : -------------------------------------------------------
+qs <- 2^seq(0,11, by=1/16)
+pqL <- pchisq(qs, df=5, ncp=1, log.p=TRUE)
+plot(qs, -pqL, type="l", log="xy") # + expected warning on log(0) -- all fine
+qpqL <- qchisq(pqL, df=5, ncp=1, log.p=TRUE) # severe overflow :
+qm <- cbind(qs, pqL, qchisq=qpqL
+	, qchA.0 = qchisqAppr.0 (pqL, df=5, ncp=1, log.p=TRUE)
+	, qchA.1 = qchisqAppr.1 (pqL, df=5, ncp=1, log.p=TRUE)
+	, qchA.2 = qchisqAppr.2 (pqL, df=5, ncp=1, log.p=TRUE)
+	, qchA.3 = qchisqAppr.3 (pqL, df=5, ncp=1, log.p=TRUE)
+	, qchACF1= qchisqApprCF1(pqL, df=5, ncp=1, log.p=TRUE)
+	, qchACF2= qchisqApprCF2(pqL, df=5, ncp=1, log.p=TRUE)
+	, qchCa.2= qchisqCappr.2(pqL, df=5, ncp=1, log.p=TRUE)
+	, qnPatnaik   = qnchisqPatnaik   (pqL, df=5, ncp=1, log.p=TRUE)
+	, qnAbdelAty  = qnchisqAbdelAty  (pqL, df=5, ncp=1, log.p=TRUE)
+	, qnPearson   = qnchisqPearson   (pqL, df=5, ncp=1, log.p=TRUE)
+	, qnSankaran_d= qnchisqSankaran_d(pqL, df=5, ncp=1, log.p=TRUE)
+)
+
+round(qm[ qs \%in\% 2^(0:11) , -2])
+#=> Approximations don't overflow but are not good enough
+
+## b)  right/upper tail , larger ncp -------------------------------------------
+qS <- 2^seq(-3, 3, by=1/8)
+pqLu <- pchisq(qS, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
+## using "the alternative" (here is currently identical):
+identical(pqLu, (pqLu.<- log1p(-pchisq(qS, df=5, ncp=100)))) # here TRUE
+plot (qS, -pqLu, type="l", log="xy") # fine
+qpqLu <- qchisq(pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
+cbind(qS, pqLu, pqLu, qpqLu)# # severe underflow
+qchMat <- cbind(qchisq = qpqLu
+	, qchA.0 = qchisqAppr.0 (pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
+	, qchA.1 = qchisqAppr.1 (pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
+	, qchA.2 = qchisqAppr.2 (pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
+	, qchA.3 = qchisqAppr.3 (pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
+	, qchACF1= qchisqApprCF1(pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
+	, qchACF2= qchisqApprCF2(pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
+	, qchCa.2= qchisqCappr.2(pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
+	, qnPatnaik   = qnchisqPatnaik   (pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
+	, qnAbdelAty  = qnchisqAbdelAty  (pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
+	, qnPearson   = qnchisqPearson   (pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
+	, qnSankaran_d= qnchisqSankaran_d(pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
+	)
+cbind(L2err <- sort(sqrt(colSums((qchMat - qS)^2))))
+##--> "Sankaran_d", "CF1" and "CF2" are good here
+
+plot (qS, qpqLu, type = "b", log="x", lwd=2)
+lines(qS, qS, col="gray", lty=2, lwd=3)
+top3 <- names(L2err)[1:3]
+use <- c("qchisq", top3)
+matlines(qS, qchMat[, use]) # 3 of the approximations are "somewhat ok"
+legend("topleft", c(use,"True"), bty="n", col=c(palette()[1:4], "gray"),
+                  lty = c(1:4,2), lwd = c(2,3, 1,1,1))
 }
 \keyword{distribution}

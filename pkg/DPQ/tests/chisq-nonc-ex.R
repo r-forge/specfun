@@ -1491,27 +1491,6 @@ t1 <- function(p, ncp, lower.tail = FALSE, log.p = FALSE,
     c(if(!missing(p)) c(p=p), x=x, pnchisq=p1, p.true=p2, relErr=abs(p1-p2)/p2)
 }
 
-## log(1-exp(x)): in a numerical optimal way (yes, ln(2) is "correct"!) :
-##    yes, log1p(-exp(.))  can be improved ! ---> ./dpq-h.R
-log1mexp <- function(x) {
-    mLn2 <- -0.6931471805599453094172321214581765680755 # -log(2) in high precision
-    ifelse(x > mLn2, log(-expm1(x)), log1p(-exp(x)))
-}
-##
-## MM: From ~/R/D/r-devel/R/src/nmath/pgamma.c :
-##
-## logspace.add :=
-##    Compute the log of a sum from logs of terms, i.e.,
-##        		log (exp (logx) + exp (logy))
-##    without causing overflows and without throwing away large handfuls of accuracy.
-##
-##  logspace.sub :=
-##    Compute the log of a difference from logs of terms, i.e.,
-##        		log (exp (logx) - exp (logy))
-logspace.add <- function(logx, logy) pmax(logx, logy) + log1p(exp(-abs(logx - logy)))
-logspace.sub <- function(logx, logy) logx + log1mexp(logy - logx)
-
-
 t1(1e-12, 85)
 ## [1] 1.000000e-12 2.642192e+02 1.003355e-12 9.943394e-13 9.066654e-03
 ## Warning messages:
@@ -1525,7 +1504,7 @@ t1(1e-12, 85)
 t1(1e-14, 100)
 ## [1] 1.000000e-14 5.208816e+02 0.000000e+00 6.107835e-38 1.000000e+00
 
-## has lost all precision.
+## has lost all precision.  [MM: still true, Aug.2019]
 
 ## This sort of thing (because we compute 1 - answer) does not happen in
 ## the other tail.  So unless someone can show examples of precision

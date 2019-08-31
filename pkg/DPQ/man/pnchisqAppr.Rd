@@ -117,6 +117,13 @@ ss2. (q, df, ncp = 0, errmax = 1e-12, reltol = 2 * .Machine$double.eps,
   \item{reltol}{convergence tolerance for \emph{rel}ative error.}%... TODO
   \item{maxit}{maximal number of iterations.}% ...
   \item{xLrg.sigma}{positive number ...}% ... TODO
+  \item{no2nd.call}{logical indicating if a 2nd call is made to the
+    internal function ....}%TODO
+  \item{small.ncp.logspace}{logical vector or \code{\link{function}},
+    indicating if the logspace computations for \dQuote{small} \code{ncp}
+    (defined to fulfill \code{ncp < cutOffncp} !).}
+  \item{epsS}{small positive number, the convergence tolerance of the
+    \sQuote{simple} iterations...}% ... TODO
   \item{verbose}{logical or integer specifying if or how much the algorithm
     progress should be monitored.}
   \item{\dots}{further arguments passed from \code{pnchisqV()} to \code{pnchisq()}.}
@@ -221,7 +228,7 @@ pnchisqRC(1500, df=2, ncp=0, lower.tail=FALSE, log.p=TRUE, verbose=TRUE) #
 ##  "2nd call"  happens *and* is currently beneficial :
 dfs <- c(1:2, 5, 10, 20)
 pL. <- pnchisqRC(.00001, df=dfs, ncp=0, log.p=TRUE, lower.tail=FALSE, verbose = TRUE)
-pR. <- pnchisqRC(   100, df=dfs, ncp=0, log.p=TRUE, verbose = TRUE)
+pR. <- pnchisqRC(   100, df=dfs, ncp=0, log.p=TRUE,                   verbose = TRUE)
 ## R's own non-central version (specifying 'ncp'):
 pL0 <- pchisq   (.00001, df=dfs, ncp=0, log.p=TRUE, lower.tail=FALSE)
 pR0 <- pchisq   (   100, df=dfs, ncp=0, log.p=TRUE)

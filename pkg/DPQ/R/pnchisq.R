@@ -320,10 +320,6 @@ plRpois <- function(lambda, iset = 1:(2*lambda), do.main=TRUE,
 ## Approach used in pnchisq.c for  ncp < 80 :
 pnchisqTerms <-  function(x, df, ncp, lower.tail = TRUE, i.max = 1000)
 {
-    ## Purpose:
-    ## ----------------------------------------------------------------------
-    ## Arguments:
-    ## ----------------------------------------------------------------------
     ## Author: Martin Maechler, Date:  1 Apr 2008, 17:52
 
     if(length(x)   > 1) stop("'x' must be of length 1")
@@ -333,13 +329,13 @@ pnchisqTerms <-  function(x, df, ncp, lower.tail = TRUE, i.max = 1000)
 
     lambda <- 0.5 * ncp
     sum <- 0.
-    pr <- exp(-lambda)
+    ## pr <- exp(-lambda)
     k <- 1:i.max
     p.k <- dpois(k, lambda) ## == pr * cumprod(lambda / k)
     t.k <- pchisq(x, df + 2*(k-1), lower.tail=lower.tail, log.p=FALSE)
     s.k <- p.k * t.k
     kMax <- which.max(s.k)
-    list(p.k=p.k, t.k=t.k, s.k = s.k, kMax = kMax,
+    list(p.k = p.k, t.k = t.k, s.k = s.k, kMax = kMax,
          f = sum(s.k[1:kMax]) + sum(s.k[i.max:(kMax+1L)]))
 }## {pnchisqTerms}
 
@@ -443,9 +439,9 @@ pnchisq_ss <- function(x, df, ncp, lower.tail=TRUE, log.p=FALSE, i.max = 10000) 
 	if(x == 0 && df == 0)
 	    return(
                 if(log.p) {
-                    if(lower.tail)     -0.5*ncp  else R_Log1_Exp(-0.5*ncp)
+                    if(lower.tail)     -0.5*ncp  else log1mexp(+0.5*ncp)
                 } else {
-                    if(lower.tail) exp(-0.5*ncp) else     -expm1(-0.5*ncp)
+                    if(lower.tail) exp(-0.5*ncp) else   -expm1(-0.5*ncp)
                 })
         ## else
         return(.DT_0(lower.tail, log.p=log.p))
@@ -519,7 +515,7 @@ ss2. <- function(q, df, ncp = 0, errmax = 1e-12,
 
     ## now get it's attributes:
     if(nT > 1) {
-        d <- diff(p <- s > 0)
+        d <- diff(s > 0)
         if(sum(diff(sign(d))) > 1) warning("more than local extremum")
         i1 <- which.max(d)     # [i1] -> [i1+1]: first change from 0 to >0
         i2 <- nT+1 - which.min(rev(d))## [i2] -> [i2+1]:last change from >0 to 0
