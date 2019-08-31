@@ -11,16 +11,16 @@ Authors@R: c(person("Martin","Maechler", role=c("aut","cre"),
 Description: Computations for approximations and alternatives for the 'DPQ'
   (Density (pdf), Probability (cdf) and Quantile) functions for probability
   distributions in R.
-  Primary focus is on (central and non-central) beta, gamma and possibly related
+  Primary focus is on (central and non-central) beta, gamma and related
   distributions such as the chi-squared, F, and t.
   --
   This is for the use of researchers in these numerical approximation
   implementations, notably for my own use in order to improve R`s own
    pbeta(), qgamma(), ..., etc: {'"dpq"'-functions}.
+  -- We plan to complement with 'DPQmpfr' to be suggested later.
 Depends: R (>= 3.5.0)
 Imports: stats, graphics, methods, utils, sfsmisc
 Suggests: Rmpfr, Matrix, mgcv, scatterplot3d, akima
-SuggestsLater: Rmpfr, DPQmpfr, Matrix, mgcv, scatterplot3d, akima
 SuggestsNote: Matrix only for its "test-tools-1.R"; mgcv,scatt..,akima: some tests/
 License: GPL (>= 2)
 Encoding: UTF-8

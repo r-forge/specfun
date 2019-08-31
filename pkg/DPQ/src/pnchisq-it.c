@@ -214,24 +214,36 @@ double pnchisqR(double x, double df, double ncp, Rboolean lower_tail, Rboolean l
     ans = pnchisq_rawR(x, df, ncp, cutoff_ncp, small_logspace, it_simple,
 		       errmax, reltol, epsS, itrmax,
 		       verbose, lower_tail, log_p, &sum, &sum2);
+
+    if (x <= 0. || x == ML_POSINF)
+	return ans; // because it's perfect
+
     if(ncp >= cutoff_ncp) {
 	if(lower_tail) {
 	    ans = fmin2(ans, R_D__1);  /* e.g., pchisq(555, 1.01, ncp = 80) */
 	} else { /* !lower_tail */
 	    /* since we computed the other tail cancellation is likely */
 	    // FIXME: There are cases where  ans == 0. if(!log_p) is perfect
-	    if(ans < (log_p ? (-10. * M_LN10) : 1e-10)) ML_ERROR(ME_PRECISION, "pnchisq");
-	    if(!log_p) ans = fmax2(ans, 0.0);  /* Precaution PR#7099 */
+	    if(ans < (log_p ? (-10. * M_LN10) : 1e-10)) {
+		if(verbose)
+		    REprintf(" ans := pnch.raw(*, ncp >= cutoff, <upper tail>)=%g \"too small\" -> precision warning\n",
+			     ans);
+		ML_ERROR(ME_PRECISION, "pnchisq");
+	    }
+	    if(!log_p && ans < 0.) ans = 0.;  /* Precaution PR#7099 */
+	    // else if(log_p && ISNAN(ans)) ans = ML_NEGINF;
 	}
     }
+    /* MM: the following "trick" / "hack", by Brian Ripley (& Jerry Lewis) in c51179 (<--> PR#14216)
+     * -- is "kind of ok" ... but potentially suboptimal: we do  log1p(- p(*, <other tail>, log=FALSE)),
+     *    but that  p(*, log=FALSE) may already be an exp(.) or even expm1(..)
+     *   <---> "in principle"  this check should happen there, not here  */
     if (no_2nd_call || !log_p || ans < -1e-8)
 	return ans;
     else { // log_p  &&  ans >= -1e-8
 	// prob. = exp(ans) is near one: we can do better using the other tail
 	if(verbose)
 	    REprintf("   pnchisq_raw(*, log_p): ans=%g => 2nd call, log1p(- <other tail no log>)\n", ans);
-	/* FIXME: (sum,sum2) will be the same as in the call above => return them there as well and reuse here
-	 * ----- *instead* of this call : */
 	ans = pnchisq_rawR(x, df, ncp, cutoff_ncp, small_logspace, it_simple,
 			   errmax, reltol, epsS, itrmax,
 			   verbose, !lower_tail, FALSE, &sum, &sum2);
@@ -395,11 +407,11 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
 	ans = term = (double) (v * t);
     }
 
-    for (n = 1, f_2n = f + 2., f_x_2n += 2.;  ; n++, f_2n += 2, f_x_2n += 2) {
-	if(verbose)
+    for (n = 1, f_2n = f + 2., f_x_2n += 2.; n <= itrmax ; n++, f_2n += 2, f_x_2n += 2) { // --------
+	if(verbose >= 2)
 	    REprintf("\n _OL_: n=%d",n);
 #ifndef MATHLIB_STANDALONE
-	if(n % 1000) R_CheckUserInterrupt();
+	if(n % 1000 == 0) R_CheckUserInterrupt();
 #endif
 	/* f_2n    === f + 2*n
 	 * f_x_2n  === f - x + 2*n   > 0  <==> (f+2n)  >   x */
@@ -407,17 +419,17 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
 	    /* find the error bound and check for convergence */
 
 	    bound = (double) (t * x / f_x_2n);
-	    if(verbose)
+	    if(verbose >= 2)
 		REprintf("\n L10: n=%d; term= %g; bound= %g",n,term,bound);
 
-	    is_r = is_it = FALSE;
+	    is_r = FALSE;
 	    /* convergence only if BOTH absolute and relative error < 'bnd' */
 	    if (((is_b = (bound <= errmax)) &&
-                 (is_r = (term <= reltol * ans))) || (is_it = (n > itrmax)))
+                 (is_r = (term <= reltol * ans))))
             {
 		if(verbose)
-		    REprintf("BREAK n=%d %s; bound= %g %s, rel.err= %g %s\n",
-			     n, (is_it ? "> itrmax" : ""),
+		    REprintf("BREAK out of for(n = 1 ..): n=%d; bound= %g %s, rel.err= %g %s\n",
+			     n,
 			     bound, (is_b ? "<= errmax" : ""),
 			     term/ans, (is_r ? "<= reltol" : ""));
 		break; /* out completely */
@@ -459,11 +471,11 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
 	    ans += term;
 	}
 
-    } /* for(n ...) */
+    }// for(n ...) -----------------------
 
-    if (is_it) {
-	MATHLIB_WARNING2(_("pnchisq(x=%g, ..): not converged in %d iter."),
-			 x, itrmax);
+    if (n > itrmax) {
+	MATHLIB_WARNING4(_("pnchisq(x=%g, f=%g, theta=%g, ..): not converged in %d iter."),
+			 x, f, theta, itrmax);
     }
     if(verbose)
 	REprintf("\n == L_End: n=%d; term= %g; bound=%g: ans=%Lg\n",

@@ -108,8 +108,9 @@ qnchisqPearson <- function(p, df, ncp = 0,
 
     n2 <- df + 2*ncp
     n3 <- n2 + ncp ## = df + 3*ncp
-    -(ncp*ncp /n3) + (n3/n2)*
-        qchisq(p, df = n2^3/(n3*n3), lower.tail=lower.tail, log.p=log.p)
+    n2n3 <- n2/n3
+    cdf <- n2n3*n2*n2n3 # == n2^3 / n3^2  but with overflow/underflow protection
+    -(ncp / n3 * ncp) + qchisq(p, df = cdf, lower.tail=lower.tail, log.p=log.p) / n2n3
 }
 
 qchisqCappr.2 <- function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
@@ -145,8 +146,9 @@ qnchisqSankaran_d <- function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
     r <- df + ncp  #              = ν + λ
     n2 <- r + ncp  # = df + 2*ncp = ν + 2λ
     n3 <- n2 + ncp # = df + 3*ncp = ν + 3λ
-    q1 <- n2/r^2   # = (n + 2λ)/(n+λ)²
-    h1 <- - 2/3 * r*n3/n2^2 # =  h - 1
+    q1 <- n2/r/r   # = (n + 2λ)/(n+λ)²   {with some overflow/underflow protection for large df | ncp}
+    ## h1 <- - 2/3 * r*n3/n2^2            with some "protection":
+    h1 <- - 2/3 * r/n2 * n3/n2 # =  h - 1
     h <- 1 + h1
     mu <- 1 + h*h1*q1*(1 + (h-2)*(1-3*h)*q1/2)
     V  <- 2*h^2 * q1 *(1 +  h1 * (1-3*h)*q1)

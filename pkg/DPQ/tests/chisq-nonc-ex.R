@@ -523,26 +523,50 @@ curve(pchisq(x, df=1, ncp=0, lower=FALSE,log=TRUE),
       from=1,to=1e4, log='x', main="ncp = 0")# -> goes down to -700 or so
 
 ## ncp > 80 is different ..
-xp <- curve(pchisq(x, df=1, ncp=300, lower=FALSE,log=TRUE),
-            from=1,to=1e4, log='x', main="ncp = 300, log=TRUE")# only down to ~ -25
+xp <- curve(pchisq(x, df=1, ncp=300, lower=FALSE,log=TRUE), xaxt="n",
+            from=1, to=1e4, log='x', main="ncp = 300, log=TRUE")# only down to ~ -25
+sfsmisc::eaxis(1, sub10=2)
 ## .. hmm, really bad...
-## .. the reason is that we compute on (lower=TRUE, log=FALSE) scale and only then transform:
-curve(pchisq(x, df=1, ncp=300, lower=FALSE),
-      from=100,to=2000, log='xy', main="ncp = 300")
-curve(pnchisqV(x, df=1, ncp=300, errmax = 4e-16, lower=FALSE, verbose=1),# ,log=TRUE),
-      from=100,to=2000, log='xy', main="ncp = 300 -- pnchisqV() pure R")
 
+## .. the reason is that we compute on (lower=TRUE, log=FALSE) scale and only then transform:
+## --> gives warnings! (and 'verbose' output):
+curve(pchisq(x, df=1, ncp=300, lower=FALSE),
+      from=100,to=2000, log='xy', main="ncp = 300,  upper tail", axes=FALSE) -> pxy
+summary(warnings())
+sfsmisc::eaxis(1, sub10=3); sfsmisc::eaxis(2)
+curve(pnchisqV(x, df=1, ncp=300, errmax = 4e-16, lower=FALSE, verbose=1),# ,log=TRUE),
+      add = TRUE, col=2); mtext("ncp = 300 -- pnchisqV() pure R", col=2)
+stopifnot(
+    all.equal(pxy$y, pnchisqRC(pxy$x, df=1, ncp=300, lower=FALSE, verbose=1), ## FIXME
+              tol = 0)
+)
+summary(warnings())
 
 ## Really large 'df' and 'x' -- "case I":
 ## no problem anymore:
 f <- c(.9,.999,.99999, 1, 1.00001,1.111, 1.1)
 x <- 1e18*f
-stopifnot(all.equal(pchisq(x, df=1e18, ncp=1),
-                    c(0,0,0, 1/2, 1,1,1)))
-pnchisq(1e18, df=1e18, ncp=1)
-## 0.5 fine  {was 0.0041688 + non-convergence in 100'000 it}
+stopifnot(exprs = {
+    all.equal(pchisq(x, df=1e18, ncp=1) -> p,
+              c(0,0,0, 1/2, 1,1,1))
+    all.equal(p, pnchisqRC(x, df=1e18, ncp=1), tol = 4e-16) # see 0
+})
 ## case I -- underflow protection large x --> 1
-pnchisq(1e18*(1+1e-8), df=1e18, ncp=1)
+tt <- 10^-(6:12)
+stopifnot(!is.unsorted(xm <- 1e18*(1 + c(-tt, 0, rev(tt)))))
+(pn <- pnchisqV (xm, df=1e18, ncp=1)) #-> 0...1 is correct
+pp  <- pchisq   (xm, df=1e18, ncp=1)
+pp. <- pnchisqRC(xm, df=1e18, ncp=1, verbose=1)
+all(pp == pp.)# >>> TRUE :  *RC is also C code, perfect
+all.equal(pp, pn, tol = 0) # see 1.6e-16
+if(doExtras)  # who knows ..
+    stopifnot(pp == pp.)
+stopifnot(exprs = {
+    all.equal(pp, pp., tol = 1e-15) # see 0
+    all.equal(pp, pn,  tol = 1e-15) # see 1.6e-16
+})
+
+
 ## (also "problematic" with Wienergerm: s=0)
 showProc.time()#-----------------
 
@@ -1669,12 +1693,54 @@ pch   <- with(pars, pchisq(q=q, df=df, ncp=ncp))
 pchAA <- with(pars, pnchisqAbdelAty  (q=q, df=df, ncp=ncp))
 pchSa <- with(pars, pnchisqSankaran_d(q=q, df=df, ncp=ncp))
 cbind(pars, R = pch, AA = pchAA, San = pchSa)
+showProc.time()
 
 ## Reproducing part of  'Table 29.2' (p.464) of  Johnson, Kotz, Balakr.(1995) Vol.2
 
 ## FIXME (not yet !!)
+## .....
+## showProc.time()
 
-showProc.time()
+###----------- Much testing  pnchisqRC()  notably during my experiments
+ptol <- if(doExtras) 3e-16 else 1e-15
+set.seed(123)
+for(df in c(.1, .2, 1, 2, 5, 10, 20, 50, 1000, if(doExtras) c(1e10, 1e200))) { ## BUG!  (df=1e200, ncp=1000) takes forever
+    cat("\n============\ndf = ",df,"\n~~~~~~~~~\n")
+    for(ncp in c(0, .1, .2, 1, 2, 5, 10, 20, 50, if(df < 1e10) c(1000, 1e4) else c(100,200))) { ## BUG !? really high ncp take forever
+        cat("\nncp = ",ncp,":  qq = ")
+        qch <- if(ncp+df < 1000)
+                   qchisq((1:15)/16, df=df, ncp=ncp)
+               else {
+                   qq <- qnchisqPatnaik((1:15)/16, df=df, ncp=ncp)
+                   if(qq[1] < qq[length(qq)])
+                       qq
+                   else { # they all coincide ==> take mu +/- (1:3) SD
+                       mu <- df+ncp
+                       sigma <- sqrt(2*(df + 2*ncp))
+                       mu + seq(-4,4, length.out=15)*sigma
+                   }
+               }
+        str(qq <- c(0, qch, Inf), digits=4)
+        for(lower.tail in c(TRUE, FALSE)) {
+            cat(sprintf("lower.tail = %-5s :  ", lower.tail))
+            for(log.p in c(FALSE, TRUE)) {
+                cat("log.p=", log.p, "")
+                AE <- all.equal(
+                    pchisq   (qq, df=df, ncp=ncp, lower.tail=lower.tail, log.p=log.p) ,
+                    pnchisqRC(qq, df=df, ncp=ncp, lower.tail=lower.tail, log.p=log.p) ,
+                    tol = ptol)
+                if(is.character(AE)) {
+                    dd <- sub(".*:", "", AE)
+                    cat("pchisq() differ by", dd,"\n")
+                    stopifnot(as.numeric(dd) < 100 * ptol)
+                }
+            }; cat("\n")
+        }
+    }# for(ncp .)
+    showProc.time()
+}# for(df .)
+
+
 
 
 ### Part 3 :  qchisq (non-central!)
@@ -1900,5 +1966,50 @@ sum.qappr(r <- p.qappr (pU, df= .1, ncp= 500))
 sum.qappr(r <- p.qappr (pU, df= .1, ncp= 500, kind='dif', nF = 6))
                p.qappr (pU, df= .1, ncp= 500, kind='rel', log='y', nF = 6)
 # order: CF2, CF1, Pea, Patn
+showProc.time()
+
+
+### Very large ncp, df --- Sankaran_d and Pearson had failed !
+
+op <- options(warn = 1)# immediate ..
+pp <- c(.001, .005, .01, .05, (1:9)/10, .95, .99, .995, .999)
+for(DF in 10^c(50, 100,150,200, 250, 300))
+  stopifnot(exprs = {
+    qnchisqPearson   (pp, df=DF, ncp=100) == DF
+    qnchisqSankaran_d(pp, df=DF, ncp=100) == DF
+    qnchisqPatnaik   (pp, df=DF, ncp=100) == DF
+})
+
+qtol <- if(doExtras) 3e-16 else 1e-15
+## Both large df & large ncp
+for(NCP in 10^c(50, 100,150,200, 250, 300))
+  stopifnot(exprs = {
+    abs(1 - qnchisqPearson   (pp, df=2*NCP, ncp=NCP) / (3*NCP)) < qtol
+    abs(1 - qnchisqSankaran_d(pp, df=2*NCP, ncp=NCP) / (3*NCP)) < qtol
+    abs(1 - qnchisqPatnaik   (pp, df=2*NCP, ncp=NCP) / (3*NCP)) < qtol
+
+    abs(1 - qnchisqPearson   (pp, df=NCP, ncp=NCP) / (2*NCP)) < qtol
+    abs(1 - qnchisqSankaran_d(pp, df=NCP, ncp=NCP) / (2*NCP)) < qtol
+    abs(1 - qnchisqPatnaik   (pp, df=NCP, ncp=NCP) / (2*NCP)) < qtol
+
+    abs(1 - qnchisqPearson   (pp, df=NCP/2, ncp=NCP) / (1.5*NCP)) < qtol
+    abs(1 - qnchisqSankaran_d(pp, df=NCP/2, ncp=NCP) / (1.5*NCP)) < qtol
+    abs(1 - qnchisqPatnaik   (pp, df=NCP/2, ncp=NCP) / (1.5*NCP)) < qtol
+})
+showProc.time()
+options(op) # revert
+
+
+DF <- 1e200
+if(FALSE)## BUG (2019-08-31):
+  system.time(
+      qch <- qchisq(pp, df=DF, ncp=100)
+  )## gives these warnings (immediately "warn = 1"),  and then takes "forever" !!
+## Warning in qchisq(pp, df = DF, ncp = 100) :
+##   pnchisq(x=1e+200, ..): not converged in 10000 iter.
+## Warning in qchisq(pp, df = DF, ncp = 100) :
+##   pnchisq(x=1e+200, ..): not converged in 10000 iter.
+
+## "forever":  Timing stopped at: 3871 0.184 3878  > 1 hour
 
 showProc.time()

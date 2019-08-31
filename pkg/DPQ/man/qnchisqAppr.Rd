@@ -54,7 +54,7 @@ qnchisqSankaran_d(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
     \code{eps} or \code{maxiter}.}
 }
 \details{
-  \describe{
+  \describe{%%----- Get some "outline" from ./pnchisqAppr.Rd <<<< same "Authors" Patnaik, Pearson, Sankaran, ...
     \item{qchisqAppr.0():}{ ...TODO... }
     \item{qchisqAppr.1():}{ ...TODO... }
     \item{qchisqAppr.2():}{ ...TODO... }
@@ -76,9 +76,12 @@ qnchisqSankaran_d(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 \value{
   ...
 }
-%% \references{
-%%
-%% }
+\references{
+  Johnson, N.L., Kotz, S. and Balakrishnan, N. (1995)
+  Continuous Univariate Distributions Vol~2, 2nd ed.; Wiley.
+  \cr Chapter 29 \emph{Noncentral \eqn{\chi^2}-Distributions};
+  notably Section \emph{8  Approximations}, p.461 ff.
+}
 \author{Martin Maechler, from May 1999;  starting from a post to the S-news
   mailing list by Ranjan Maitra (@ math.umbc.edu) who showed a version of
   our \code{qchisqAppr.0()} thanking Jim Stapleton for providing it.
@@ -96,6 +99,9 @@ qnchisqSankaran_d(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
    cat("\n~~~~~~~~~~~~~\nncp: ", ncp,"\n=======\n")
    print(sapply(qnchF, function(F) Vectorize(F, "p")(pp, df = 3, ncp=ncp)))
  }
+
+## Bug: qnchisqSankaran_d() has numeric overflow problems for large df:
+qnchisqSankaran_d(pp, df=1e200, ncp = 100)
 
 ## One current (2019-08) R bug: Noncentral chi-squared quantiles on *LOG SCALE*
 
@@ -151,6 +157,6 @@ top3 <- names(L2err)[1:3]
 use <- c("qchisq", top3)
 matlines(qS, qchMat[, use]) # 3 of the approximations are "somewhat ok"
 legend("topleft", c(use,"True"), bty="n", col=c(palette()[1:4], "gray"),
-                  lty = c(1:4,2), lwd = c(2,3, 1,1,1))
+                  lty = c(1:4,2), lwd = c(2, 1,1,1, 3))
 }
 \keyword{distribution}

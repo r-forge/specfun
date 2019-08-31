@@ -31,6 +31,13 @@
       \item \dQuote{new} \code{logspace.add()} and \code{logspace.sub()}.
     }
   }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item \code{qnchisqPearson(pp, df=DF, ncp=100)} and
+      \code{qnchisqSankaran_d(*)} no longer return \code{NaN} for very
+      large \code{DF = 1e200}.
+    }
+  }
 }
 
 \section{Version 0.3-0 [2018-08-28]}{
