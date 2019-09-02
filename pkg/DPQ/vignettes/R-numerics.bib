@@ -1,14 +1,27 @@
 @string{AmStat = "The American Statistician"}
 @string{JRSS = "Journal of the Royal Statistical Society"} %% ALWAYS #~A or #~B!
 @string{JRSSC-AS = "Applied Statistics --- " # JRSS # "~C"}
+%%     {Journal of the Royal Statistical Society. Series C (Applied Statistics)},
 %@string{TOMS = "ACM Transactions on Mathematical Software"}
+%@string{TOMS = "ACM Transactions on Mathematical Software (TOMS)"}
 @string{TOMS = "ACM Trans.\ Math.\ Software"}
-@string{Wiley = "Wiley"}
-@string{NY = "N.~Y."}
 
+%%---- Pre-History -------------
+
+%-- "Draft for Interface '98" - the PDF is named 'Interface98.pdf' :
+@TechReport{IhaR98,
+  author =	 {Ross Ihaka},
+  year =	 1998,
+  title =	 {R : Past and Future History},
+  institution =	 {Statistics Department, The University of Auckland},
+  type =	 {Technical report},
+  address =	 {Auckland, New Zealand},
+  annote =	 {PDF available from R's Wikipedia entry
+                  \url{https://en.wikipedia.org/wiki/R_(programming_language)}}
+}
 %%-------- Fundamental {from /u/sfs/bib/Assbib.bib } -----------------------
 
-@Book{AbrMS72,
+@Book{Abra72,
   author = {Milton Abramowitz and Irene A. Stegun},
   title = {Handbook of Mathematical Functions},
   year = 1972,
@@ -70,22 +83,24 @@
   edition =	 2
 }
 
-@Book{KenWG80,
-  author = 	 {Kennedy, Jr, William J. and James E. Gentle},
-  title = 	 {Statistical Computing},
-  publisher = 	 {Marcel Dekker Inc.},
-  year = 	 1980,
-  volume =	 33,
-  series =	 {Statistics: textbooks and monographs},
-  address =	 {New York}
+%%-------------- diverse, e.g. pnchisq : ---------------------
+@article{Ding92,
+ author = {Cherng G. Ding},
+ year = 1992,
+ title = {Algorithm {AS 275}: Computing the Non-Central $\chi^2$ Distribution Function},
+ journal = JRSSC-AS,
+ volume = 41,
+ number = 2,
+ pages = {478--482},
+ doi = {10.2307/2347584},
+ annote = {from JSTOR \url{https://www.jstor.org/stable/2347584}}
 }
-
 
 %%-------------- qt() computation in R -------------------
 @article{355955,
  author = {G. W. Hill},
  title = {Remark on `Algorithm 395: {Student's t}-Distribution [{S14}]'},
- journal = {ACM Transactions on Mathematical Software (TOMS)},
+ journal = TOMS,
  volume = {7},
  number = {2},
  year = {1981},
@@ -98,7 +113,7 @@
 @article{355956,
  author = {G. W. Hill},
  title = {Remark on ?Algorithm 396: Student's t-Quantiles [S14]?},
- journal = {ACM Transactions on Mathematical Software (TOMS)},
+ journal = TOMS,
  volume = {7},
  number = {2},
  year = {1981},
@@ -202,7 +217,7 @@ additions = {{C}orr: 91 v40 p.236)},
   author =       "W. J. Cody",
   title =        "{Algorithm 597}: Sequence of Modified {Bessel}
                  Functions of the First Kind",
-  journal =      j-TOMS,
+  journal =      TOMS,
   volume =       9,
   number =       2,
   pages =        "242--245",
@@ -215,7 +230,6 @@ additions = {{C}orr: 91 v40 p.236)},
   bibdate =      "Tue Sep 6 22:16:30 1994",
   bibsource =    "http://www.math.utah.edu/pub/tex/bib/toms.bib",
   acknowledgement = ack-nhfb,
-  fjournal =     "ACM Transactions on Mathematical Software (TOMS)",
   journal-URL =  "http://dl.acm.org/pub.cfm?id=J782",
   keywords =     "algorithms",
   subject =      "G.1.2 Mathematics of Computing, NUMERICAL ANALYSIS,

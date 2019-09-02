@@ -1,0 +1,127 @@
+\documentclass[a4paper,11pt,twoside]{article}
+
+\usepackage[a4paper, text={15cm,24cm}]{geometry}
+\usepackage{alltt}
+\usepackage{natbib}% for bibliography citation
+
+\usepackage{amsbsy} % for \boldsymbol:  only a small part of \usepackage{amstex}
+% \usepackage{amssymb}% for \intercal
+\usepackage{amsopn}% DeclareMathOperator
+\usepackage{amsfonts}
+%% From our \usepackage{texab} ----------------------------------------------
+\DeclareMathOperator{\where}{ where }
+\newcommand*{\Nat}{\mathbb{N}}% <-> amsfonts
+\newcommand{\Degr}{\relax\ensuremath{^\circ}}% \ifmmode^\circ\else$^\circ$\fi
+\newcommand{\vect}[1]   {\left( \begin{array}{c} #1 \end{array}\right)}
+        %-  ~~~~~ use as  \vect{x_1 \\ x_2 \\ \vdots \\ x_n}
+\newcommand{\vecII}[2]  {{\arraycolsep 0.04em \def\arraystretch{.75} %
+        \left(\begin{array}{c} #1 \\ #2 \end{array}\right)}}
+%--- use as \vecII{x}{y}
+% \arraycolsep: is defined in article/ report / book .sty / .doc  -- as 5 pt --
+% \arraystretch: defined in latex.tex  (as {1}) ###### Tampering with latex ####
+%% At first:
+%\let\binom\vecII%%<< useful Synonym
+%% End from \usepackage{texab} ----------------------------------------------
+%%
+\newcommand*{\R}{\textsf{R}$\;$}% R program
+\newcommand*{\pkg}[1]{\texttt{#1}}% R package -- improve?
+\newcommand*{\file}[1]{\texttt{#1}}
+\newcommand*{\code}[1]{\texttt{#1}}
+
+%\VignetteIndexEntry{Noncentral Chi-Squared Probabilities -- Algorithms in \R}
+%\VignetteDepends{DPQ}
+\SweaveOpts{engine=R,eps=FALSE,pdf=TRUE,width=7,height=5,strip.white=true,keep.source=TRUE}
+%%%------------------------------------------------------------
+
+\bibliographystyle{apalike}
+\begin{document}
+
+\title{Non-central Chi-Squared Probabilities -- Algorithms in \R}
+\author{Martin M\"achler\\ Seminar f\"ur Statistik \\ ETH Zurich}
+%\date{2019 ff}
+\maketitle
+
+\begin{abstract} %maybe  \normalsize
+\end{abstract}
+
+\section{Introduction}
+
+\section{Non-central chi-squared probablities: History of \R's \file{pnchisq.c} }
+
+The very early versions of R, the oldest still available, the pre-alpha
+version (before there were version numbers) with source file named
+\file{R-unix-src.tar.gz}, dated June 20, 1995, or the oldest still running version
+0.16.1, February 11, 1997, already had \R functions for the
+\emph{non}-central chi-squared (called \emph{``Chi-Square''} there)
+distribution, at the time functions separate
+from the central chi-squared, the four  non-central functions where called
+\texttt{dnchisq()}, \texttt{pnchisq()}, etc, note the extra ``n'', and had
+their own separate help page (which was wrongly almost identical to the
+central chi-squared); e.g. \code{pnchisq()} with three arguments, already
+gave the correct result, e.g., for
+\begin{Schunk}
+\begin{Sinput}
+> pnchisq(1,1,1)
+\end{Sinput}
+\begin{Soutput}
+[1] 0.4772499
+\end{Soutput}
+\end{Schunk}
+In \R version 0.50 ``Alpha-4'' (September 10, 1997),  the help page was
+correct, and the 4 functions all where shown to have 3 arguments, e.g., \code{pnchisq(q, df, lambda)}.
+
+The source code \file{R-<ver>/src/math/pnchisq.c} and then, for 0.62 and
+newer, using directory name \file{nmath/} had been practically unchanged from the
+earliest version up to version \code{0.61.3} (May 3, 1998).
+The algorithmic implementation in C was just summing up the Poisson
+weighted central term \code{term}, ``\code{ while (term >= acc) }'' with
+the constant declaration
+ \code{double acc = 1.0e-12;}
+
+For \R version 0.62 (1998-06-14), on the R level, the \texttt{n} versions
+of function names became deprecated and the noncentrality parameter renamed
+from \code{lambda} to \code{ncp} and added to the ``non-\texttt{n}''
+version of the functions, e.g. \R's \code{pchisq()} became defined as
+\begin{alltt}
+> pchisq
+function (q, df, ncp = 0)
+{
+    if (missing(ncp))
+        .Internal(pchisq(q, df))
+    else .Internal(pnchisq(q, df, ncp))
+}
+\end{alltt}
+\texttt{NEWS} entry (still in the R sources \file{doc/NEWS.0}) has been
+\begin{alltt}
+		CHANGES IN R VERSION 0.62
+
+NEW FEATURES
+
+    .........
+    .........
+
+    o	Some of the t, F, and chisq distribution/probability functions
+	now allow a noncentrality parameter `ncp'.
+\end{alltt}
+and the source file \file{src/nmath/pnchisq.c} has had the timestamp
+\verb|1998-03-17 04:56| and a size of 2669 bytes \emph{and} more
+relevantly, now did implement algorithm AS 275 by \citet{Ding92}.  Even then, it contained a comment
+\begin{quote}
+ Feb.1, 1998 (R 0.62 alpha); M.Maechler:  still have
+ INFINITE loop and/or bad precision in some cases.
+\end{quote}
+At the time I had been pretty confident we'd eliminate these cases pretty quickly.
+In the meant time, many tweaks have been made, to a large extent by myself,
+and the code of today works accurately in many more cases than in early 1998.
+On the other hand, the help page has warned for years now that only
+moderate values of the noncentrality parameter \code{ncp} where feasible,
+and still in \R 3.6.1 (July 2019), you can find calls to
+\code{pchisq()} which lead to an ``infinite loop'' (at least on 64-bit
+Linux and Windows), also for small values of ncp, e.g.,
+<<inf-loop-1, eval=FALSE>>=
+pchisq(1.00000012e200, df=1e200, ncp=100)
+@
+
+\bibliography{R-numerics}% ~/bib/R-numerics.bib  now link --> "here"
+
+\end{document}
