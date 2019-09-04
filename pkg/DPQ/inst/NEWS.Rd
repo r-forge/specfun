@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.3-3 (2019-08-31, svn r93)}{
+\section{Version 0.3-3 (2019-09-03, svn r98)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item Renamed (and generalized / merged) many functions to have less "." in names.
@@ -29,6 +29,12 @@
       chi-squared, with additional options.
 
       \item \dQuote{new} \code{logspace.add()} and \code{logspace.sub()}.
+
+      \item \dQuote{new} \code{pnchisqT93()} (plus its two auxiliaries),
+      implementing Temme(1993)'s approximations.
+
+      \item \dQuote{new} \code{pnchisqBolKuz()} and \code{qnchisqBolKuz()}
+      implementing Bol'shev and Kuznetzov (1963)'s approximations.
     }
   }
   \subsection{BUG FIXES}{
@@ -36,6 +42,10 @@
       \item \code{qnchisqPearson(pp, df=DF, ncp=100)} and
       \code{qnchisqSankaran_d(*)} no longer return \code{NaN} for very
       large \code{DF = 1e200}.
+
+      \item \code{pnchisq()} now also has default \code{verbose = 0} as all
+      other such functions with \code{verbose} (or \code{trace[.lev]}
+      optional argument.
     }
   }
 }

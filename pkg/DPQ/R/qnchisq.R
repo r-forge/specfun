@@ -238,3 +238,16 @@ newton <- function(x0, G, g, z,
         list(x = x0, G = Gx, it = iter, converged = conv)
     else x0
 } ## newton()
+
+### From Johnson et al., p.465-466 f : Formulas by   Bol'shev and Kuzntzov (1963) [Russian]
+### Useful for small  λ = ncp: error is  O(λ³)  uniformly in any finite interval of q
+## --> formula (29.66), p.466
+qnchisqBolKuz <- function(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
+{
+    stopifnot(df > 0)
+    ## central quantile χ'²_{ν,α} :
+    ch <- qchisq(p, df, ncp=0, lower.tail=lower.tail, log.p=log.p)
+    lnu <- ncp/df # = λ/ν = λν⁻¹
+    ## x* = .....  (29.66)
+    ch * (1 + lnu*(1 + .5*lnu*(1 - ch/(df+2))))
+}

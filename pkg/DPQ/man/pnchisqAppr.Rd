@@ -7,11 +7,15 @@
 \alias{pnchisqRC}
 \alias{pnchisq_ss}
 \alias{pnchisqAbdelAty}
+\alias{pnchisqBolKuz}
 \alias{pnchisqIT}
 \alias{pnchisqPatnaik}
 \alias{pnchisqPearson}
 \alias{pnchisqSankaran_d}
 \alias{pnchisqTerms}
+\alias{pnchisqT93}
+\alias{pnchisqT93.a}
+\alias{pnchisqT93.b}
 %
 \alias{ss}
 \alias{ss2}
@@ -40,14 +44,21 @@
     Johnson et al mention that the approxmation error is \emph{
       \eqn{O(1/\sqrt(\lambda))}{O(1/sqrt(ncp))} for \eqn{\lambda \to \infty}{ncp -> Inf}}.
 
-    \item Abdel-Aty(1954)'s \dQuote{first approximation} based on
-    Wilson-Hilferty via Gaussian (\code{\link{pnorm}}) probabilities, is
-    partly \emph{wrongly} cited in Johnson et al., p.463, eq.\eqn{(29.61a)}.
-
     \item Pearson(1959) is using 3 moments instead of 2 as Patnaik (to
     approximate via a central chi-squared), and therefore better than
     Patnaik for the right tail; further (in Johnson et al.), the
     approxmation error is \emph{\eqn{O(1/\lambda)}{O(1/ncp)} for \eqn{\lambda \to \infty}{ncp -> Inf}}.
+
+    \item Abdel-Aty(1954)'s \dQuote{first approximation} based on
+    Wilson-Hilferty via Gaussian (\code{\link{pnorm}}) probabilities, is
+    partly \emph{wrongly} cited in Johnson et al., p.463, eq.\eqn{(29.61a)}.
+
+    \item Bol'shev and Kuznetzov (1963) concentrate on the case of
+    \bold{small} \code{ncp} \eqn{\lambda} and provide an \dQuote{approximation} via
+    \emph{central} chi-squared with the same degrees of freedom \code{df},
+    but a modified \code{q} (\sQuote{x}); the approximation has error
+    \eqn{O(\lambda^3)} for \eqn{\lambda \to 0}{\lambda -> 0} and is from
+    Johnson et al., p.465, eq.\eqn{(29.62)} and \eqn{(29.63)}.
 
     \item Sankaran(1959, 1963) proposes several further approximations base
     on Gaussian probabilities, according to Johnson
@@ -68,6 +79,12 @@
     \item{\code{pnchisqIT}:}{ .... }
     \item{\code{pnchisqTerms}:}{ .... }
     %
+    \item{\code{pnchisqT93}:}{pure \R implementations of approximations when
+      both \code{q} and \code{ncp} are large, by Temme(1993), from Johnson
+      et al., p.467, formulas \eqn{(29.71 a)}, and \eqn{(29.71 b)}, using
+      auxiliary functions \code{pnchisqT93a()} and \code{pnchisqT93b()}
+      respectively, with adapted formulas for the \code{log.p=TRUE} cases.}
+
     \item{\code{pnchisq_ss()}:}{ .... }
     %
     \item{\code{ss}:}{ .... }
@@ -80,7 +97,7 @@
 %                 ----------
 pnchisq          (q, df, ncp = 0, lower.tail = TRUE, %% TODO?!? log.p = FALSE,
                   cutOffncp = 80, itSimple = 110, errmax = 1e-12, reltol = 1e-11,
-                  maxit = 10* 10000, verbose = 1, xLrg.sigma = 5)
+                  maxit = 10* 10000, verbose = 0, xLrg.sigma = 5)
 pnchisqV(x, \dots, verbose = 0)
 
 pnchisqRC        (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
@@ -89,12 +106,17 @@ pnchisqRC        (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
                   itSimple = 110, errmax = 1e-12,
                   reltol = 8 * .Machine$double.eps, epsS = reltol/2, maxit = 1e6,
                   verbose = FALSE)
+pnchisqAbdelAty  (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
+pnchisqBolKuz    (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchisqPatnaik   (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchisqPearson   (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
-pnchisqAbdelAty  (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchisqSankaran_d(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
-pnchisq_ss       (x, df, ncp,     lower.tail = TRUE, log.p = FALSE, i.max = 10000)
+pnchisq_ss       (x, df, ncp = 0, lower.tail = TRUE, log.p = FALSE, i.max = 10000)
 pnchisqTerms     (x, df, ncp,     lower.tail = TRUE, i.max = 1000)
+
+pnchisqT93  (q, df, ncp, lower.tail = TRUE, log.p = FALSE, use.a = q > ncp)
+pnchisqT93.a(q, df, ncp, lower.tail = TRUE, log.p = FALSE)
+pnchisqT93.b(q, df, ncp, lower.tail = TRUE, log.p = FALSE)
 
 ss   (x, df, ncp, i.max = 10000, useLv = !(expMin < -lambda && 1/lambda < expMax))
 ss2  (x, df, ncp, i.max = 10000, eps = .Machine$double.eps)
@@ -111,6 +133,10 @@ ss2. (q, df, ncp = 0, errmax = 1e-12, reltol = 2 * .Machine$double.eps,
 %%% TODO: \item{method}{a string specifying the approximation method to be used.}
 %%% -----  INSTEAD of all these functions ??
   \item{i.max}{number of terms in evaluation ...}
+  \item{use.a}{\code{\link{logical}} vector for Temme \code{pnchisqT93*()}
+    formulas, indicating to use formula \sQuote{a} over \sQuote{b}.  The
+    default is as recommended in the references, but they did not take into
+    account \code{log.p = TRUE} situations.}
   \item{cutOffncp}{a positive number, the cutoff value for \code{ncp}...}%% FIXME
   \item{itSimple}{ ...}
   \item{errmax}{absolute error tolerance.}% ...
@@ -186,7 +212,8 @@ ss2. (q, df, ncp = 0, errmax = 1e-12, reltol = 2 * .Machine$double.eps,
  str(pnchF)
  for(ncp in c(0, 1/8, 1/2)) {
    cat("\n~~~~~~~~~~~~~\nncp: ", ncp,"\n=======\n")
-   print(sapply(pnchF, function(F) Vectorize(F, names(formals(F))[[1]])(qq, df = 3, ncp=ncp)))
+   pnF <- if(ncp == 0) pnchF[!grepl("chisqT93", pnchNms)] else pnchF
+   print(sapply(pnF, function(F) Vectorize(F, names(formals(F))[[1]])(qq, df = 3, ncp=ncp)))
  }
 
 ## A case where the non-central P[] should be improved :
@@ -205,6 +232,7 @@ list_ <- function(...)
 JKBfn <-list_(pnchisqPatnaik,
               pnchisqPearson,
               pnchisqAbdelAty,
+              pnchisqBolKuz,
               pnchisqSankaran_d)
 cl. <- setNames(adjustcolor(3+seq_along(JKBfn), 1/2), names(JKBfn))
 lw. <- setNames(2+seq_along(JKBfn),                   names(JKBfn))

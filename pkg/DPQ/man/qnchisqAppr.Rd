@@ -13,6 +13,7 @@
 \alias{qchisqN}
 %-
 \alias{qnchisqAbdelAty}
+\alias{qnchisqBolKuz}
 \alias{qnchisqPatnaik}
 \alias{qnchisqPearson}
 \alias{qnchisqSankaran_d}
@@ -34,8 +35,9 @@ qchisqApprCF2(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 qchisqCappr.2 (p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 qchisqN       (p, df, ncp = 0, qIni = qchisqAppr.0, \dots)
 
-qnchisqPatnaik   (p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 qnchisqAbdelAty  (p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
+qnchisqBolKuz    (p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
+qnchisqPatnaik   (p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 qnchisqPearson   (p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 qnchisqSankaran_d(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 }
@@ -66,8 +68,9 @@ qnchisqSankaran_d(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
     \item{qchisqN():}{Uses Newton iterations with \code{\link{pchisq}()}
       and \code{\link{dchisq}()} to determine \code{\link{qchisq}(.)} values.}
 
-    \item{qnchisqPatnaik():}{ ...TODO... }
     \item{qnchisqAbdelAty():}{ ...TODO... }
+    \item{qnchisqBolKuz():}{ ...TODO... }
+    \item{qnchisqPatnaik():}{ ...TODO... }
     \item{qnchisqPearson():}{ ...TODO... }
     \item{qnchisqSankaran_d():}{ ...TODO... }
 
@@ -120,6 +123,7 @@ qm <- cbind(qs, pqL, qchisq=qpqL
 	, qchCa.2= qchisqCappr.2(pqL, df=5, ncp=1, log.p=TRUE)
 	, qnPatnaik   = qnchisqPatnaik   (pqL, df=5, ncp=1, log.p=TRUE)
 	, qnAbdelAty  = qnchisqAbdelAty  (pqL, df=5, ncp=1, log.p=TRUE)
+	, qnBolKuz    = qnchisqBolKuz    (pqL, df=5, ncp=1, log.p=TRUE)
 	, qnPearson   = qnchisqPearson   (pqL, df=5, ncp=1, log.p=TRUE)
 	, qnSankaran_d= qnchisqSankaran_d(pqL, df=5, ncp=1, log.p=TRUE)
 )
@@ -145,6 +149,7 @@ qchMat <- cbind(qchisq = qpqLu
 	, qchCa.2= qchisqCappr.2(pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
 	, qnPatnaik   = qnchisqPatnaik   (pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
 	, qnAbdelAty  = qnchisqAbdelAty  (pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
+	, qnBolKuz    = qnchisqBolKuz    (pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
 	, qnPearson   = qnchisqPearson   (pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
 	, qnSankaran_d= qnchisqSankaran_d(pqLu, df=5, ncp=100, log.p=TRUE, lower.tail=FALSE)
 	)
