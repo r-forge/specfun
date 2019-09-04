@@ -34,6 +34,11 @@ loadList <- function(L, envir = .GlobalEnv)
 ## save directory (to read from):
 (sdir <- system.file("safe", package="DPQ"))
 
+## on "my" platform, and if doExtras,  I'm very strict:
+(myPlatf <- all(Sys.info()[c("sysname", "machine", "login")] ==
+                           c("Linux",  "x86_64",  "maechler")))
+(beStrict <- doExtras && myPlatf)
+
 
 if(!dev.interactive(orNone=TRUE)) pdf("chisq-nonc-1.pdf")
 .O.P. <- par(no.readonly=TRUE)
@@ -193,9 +198,8 @@ matplot(x, res2, add=TRUE)
 ##
 ## Martin
 
-##  dchisqAsym (x, df, ncp, log = FALSE)  --> ./dnchisq-fn.R
-##  ----------                                  ~~~~~~~~~~~~
-
+##  dchisqAsym (x, df, ncp, log = FALSE)  --> ../R/dnchisq-fn.R
+##  ----------                                     ~~~~~~~~~~~~
 
 curve(dchisq(x, df=3, ncp=30000, log=TRUE), 26000, 34000, n=1e4)
 curve(dchisqAsym(x, df=3, ncp=30000, log=TRUE),
@@ -208,11 +212,8 @@ x <- rchisq(1e6, df=3, ncp=30000)
 sum(dnorm(x, m=3+30000, sd=sqrt(2*(3 + 2*30000)), log=TRUE))
 sum(dchisqAsym(x, df=3, ncp=30000, log=TRUE)) ## larger (less negative) <-> better
 
-## dnchisqBessel(x, df, ncp, log = FALSE)  --> ./dnchisq-fn.R
+## dnchisqBessel(x, df, ncp, log = FALSE) --> ../R/dnchisq-fn.R
 ## -------------                                 ~~~~~~~~~~~~
-
-## p.dnchiB(df, ncp, log=FALSE, from=0, to = 2*ncp, p.log="", ...)  --> ./dnchisq-fn.R
-## --------                                                               ~~~~~~~~~~~~
 
 ## From ?pl2curves()  [ == ../man/pl2curves.Rd ] :
 p.dnchiB <- function(df, ncp, log=FALSE, from=0, to = 2*ncp, p.log="", ...)
@@ -1695,11 +1696,68 @@ pchSa <- with(pars, pnchisqSankaran_d(q=q, df=df, ncp=ncp))
 cbind(pars, R = pch, AA = pchAA, San = pchSa)
 showProc.time()
 
-## Reproducing part of  'Table 29.2' (p.464) of  Johnson, Kotz, Balakr.(1995) Vol.2
+### Reproducing part of  'Table 29.2' (p.464) of  Johnson, Kotz, Balakr.(1995) Vol.2
+###
+### as in ../man/pnchisqAppr.Rd -- do run over *all* current pnchisq*() approximations!
 
-## FIXME (not yet !!)
-## .....
-## showProc.time()
+pkg <- "package:DPQ"
+## NB: use versions of the functions that return numeric *vector* (of correct length) :
+pnchNms <- c(paste0("pchisq", c("", "V", "W", "W.R")), # + R's own, but *not* "W." !
+             ls(pkg, pattern = "^pnchisq"))
+## drop some :
+pnchNms <- pnchNms[!grepl("Terms$", pnchNms)]
+pnchNms <- pnchNms[is.na(match(pnchNms, c("pnchisqIT", paste0("pnchisqT93.", c("a", "b")))))]
+pnchF <- sapply(pnchNms, get, envir = as.environment(pkg))
+## shorten the longer names for nicer tables :
+n.n <- nchar(pnNms <- setNames(,pnchNms))
+L8 <- n.n > 8
+pnNms[n.n > 10] <- sub("pnchisq", "pn",  pnNms[n.n > 10])
+pnNms[n.n >  8] <- sub("pnchisq","pnch", pnNms[n.n >  8])
+names(pnchF) <- pnNms <- unname(abbreviate(pnNms, 8))
+str(pnchF)
+op <- options(warn = 1, digits = 5, width = 110)# warn: immediate ..
+## TODO --- want also "x ~ ncp" and or "df ~ ncp"
+## TODO: write a *function* that computes all this *and* stores in nicely dimnamed array
+qq <- c(.001, .005, .01, .05, (1:9)/10, 2^seq(0, 10, by= 0.5))
+nncp <- c(0, 1/8, 1/2, 1, 2, 5, 20, 100, 200, 1000)
+ddf <- c(2:4, 7, 20, 50, 100, 1000, 1e4, 1e10) # 1e300: fails for pchisqW.R() << FIXME
+AR <- array(NA_real_, # [ncp,df, q]
+            dim=c(length(nncp), length(ddf), length(qq), length(pnchF)),
+            dimnames= list(ncp = formatC(nncp, width=1),
+                           df  = formatC( ddf, width=1),
+                           q   = formatC(  qq, width=1),
+                           Fn  = pnNms))
+for(incp in seq_along(nncp)) {
+    cat("\n~~~~~~~~~~~~~\nncp: ", ncp <- nncp[incp], "\n=======\n")
+    pnF <- if(ncp == 0) pnchF[!grepl("T93", pnNms)] else pnchF # Temme('93) : ncp > 0
+    for(idf in seq_along(ddf)) {
+        df <- ddf[idf]
+        r <- vapply(pnF,
+                    function(F) Vectorize(F, names(formals(F))[[1]])(qq, df=df, ncp=ncp),
+                    qq)
+        AR[incp, idf, , names(pnF)] <- r
+    }
+}
+showProc.time()
+
+## Rather, show absolute and also relative "errors" ..
+stopifnot(dimnames(AR)[[4]][1] == "pchisq")
+## Absolute "error" , i.e., delta to R's pchisq() which is AR[,,,1] :
+dAR <- AR[,,,-1] - c(AR[,,,1])
+## if we were perfect, using same compilers as R etc, then these deltas are all = 0 :
+summary(dAR[,,,"pnchRC"])
+if(beStrict) stopifnot(dAR[,,,"pnchRC"] == 0)
+
+apply(dAR, 4, summary) # quite some NA's for some Fn's
+aperm(apply(dAR, 3:4, function(x) {u <- x[!is.na(x)]; c(min=min(u), max=max(u))}), c(2,3,1L))
+ftable(apply(dAR[c("1", "2", "5"), c(1,3,4),,], c(1,2,4), median))
+ftable(apply(dAR[c("1", "2", "5"), c(1,3,4),,], c(1,2,4), function(x) max(abs(x[!is.na(x)]))))
+
+## (Note: for large df=1e10,  p*() == 0 everywhere for the small 'q' we have
+##  ----  FIXME:  qq: should be "realistic"  in  mu +/- 5 sd
+
+
+options(op) # revert
 
 ###----------- Much testing  pnchisqRC()  notably during my experiments
 ptol <- if(doExtras) 3e-16 else 1e-15
@@ -1739,6 +1797,114 @@ for(df in c(.1, .2, 1, 2, 5, 10, 20, 50, 1000, if(doExtras) c(1e10, 1e200))) { #
     }# for(ncp .)
     showProc.time()
 }# for(df .)
+summary(warnings())
+
+### L. Emphasis on very large  df + ncp ===============================
+
+##  L 1.  very large df,  ncp/df << 1 ====================
+
+mkPnch <- function(k, df, ncp, lower.tail=TRUE, log.p=FALSE, twoExp = -53) {
+    stopifnot(is.numeric(k), length(k) > 1, k == (k <- as.integer(k)),
+              is.numeric(df), length(df) == 1L, length(ncp) == 1L, ncp >= 0,
+              twoExp < -5)
+    ones <- 1 + k * 2^twoExp
+    qs <- ones*df
+    cbind(pchisq   = pchisq          (qs,df,ncp, lower.tail=lower.tail, log.p=log.p),
+          pcAbdelA = pnchisqAbdelAty (qs,df,ncp, lower.tail=lower.tail, log.p=log.p),
+          pcBolKuz = pnchisqBolKuz   (qs,df,ncp, lower.tail=lower.tail, log.p=log.p),
+          pcPatnaik= pnchisqPatnaik  (qs,df,ncp, lower.tail=lower.tail, log.p=log.p),
+          pcPearson= pnchisqPearson  (qs,df,ncp, lower.tail=lower.tail, log.p=log.p),
+          pcSanka_d=pnchisqSankaran_d(qs,df,ncp, lower.tail=lower.tail, log.p=log.p))
+}
+
+if(doExtras) { ## really slow because pchisq() is slow!
+
+df <- 1e30; ncp <- 99
+ks <- c(-40, -20, -15, -10, -6:6, 10, 15, 20, 40)
+twoExp <- -25
+##        ===
+system.time(suppressWarnings(
+    Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
+)) ## 6.7 sec
+
+print(Pn., digits=3) # ">>" annotated: shows bug !
+##      pchisq pcAbdelA pcBolKuz pcPatnaik pcPearson pcSanka_d
+##    0.00e+00      0.0      0.0       0.0       0.0       0.0
+##    0.00e+00      0.0      0.0       0.0       0.0       0.0
+##    0.00e+00      0.0      0.0       0.0       0.0       0.0
+##    0.00e+00      0.0      0.0       0.0       0.0       0.0
+##    0.00e+00      0.0      0.0       0.0       0.0       0.0
+## >> 1.00e+00      0.0      0.0       0.0       0.0       0.0
+## >> 1.00e+00      0.0      0.0       0.0       0.0       0.0
+## >> 1.00e+00      0.0      0.0       0.0       0.0       0.0
+## >> 1.00e+00      0.0      0.0       0.0       0.0       0.0
+## >> 1.00e+00      0.0      0.0       0.0       0.0       0.0
+##    4.17e-09      0.5      0.5       0.5       0.5       0.5
+##    1.00e+00      1.0      1.0       1.0       1.0       1.0
+##    1.00e+00      1.0      1.0       1.0       1.0       1.0
+##    1.00e+00      1.0      1.0       1.0       1.0       1.0
+##    1.00e+00      1.0      1.0       1.0       1.0       1.0
+##    1.00e+00      1.0      1.0       1.0       1.0       1.0
+##    .....         ....
+matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)",
+        main = paste0("pchisq*(q = df(1 + k* 2^",twoExp,"), df=",df,", ncp=",ncp,")"))
+
+kk <- seq(min(ks), max(ks), length.out=401)
+qs <- (1 + kk * 2^twoExp)*df
+fq <- dchisq(qs, df, ncp)
+par(new=TRUE)
+plot(kk, fq, type="l", col=adjustcolor(2, 1/3), lwd=3, lty=3, axes=FALSE, ann=FALSE)
+
+showProc.time()
+
+}## only if(doExtras)
+## BUG (FIXME) e.g. here:
+ pchisq  (0.99999989*df, df, ncp) ## --> Warning ... : not converged in 1000'000 iter
+pnchisqRC(0.99999989*df, df, ncp, verbose=1) # The same with more output!
+## both give '1', but really should give 0
+showProc.time()
+
+
+### Much less extreme df ==> pchisq() *is* fast too
+df <- 1e9
+ncp <- 99
+ks <- c(-40, -20, -15, -10, -6:6, 10, 15, 20, 40)
+ks <- if(doExtras) -200:200 else seq(-200, 200, by=5)# more here for plot
+twoExp <- -18 # well chosen for this "range" and behavior of pchisq()
+##        ===
+Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
+showProc.time()
+
+tit <- paste0("pchisq*(q = df(1 + k* 2^",twoExp,"), df=",df,", ncp=",ncp,")")
+matplot(ks, Pn., type = "l", xlab = quote(k), ylab = "pchisq*(q, ..)", main = tit)
+
+cat("'Error' (difference to pchisq(*)):\n")
+dP <- Pn.[,-1] - Pn.[,1]
+print(cbind(ks, q=(1+ks*2^twoExp)*df, pchisq=Pn.[,1], dP), digits = 4)
+matplot(ks, dP, type = "l", xlab = quote(k), main = paste("Difference", tit," - pchisq(..)"))
+abline(h=0, lty=3)
+## the difference to all 5 approx. is almost *IDENTICAL*
+## ==> are the approximations all more accurate than pchisq() here ?
+
+## Look at "smoothness" via first differences:
+matplot(ks[-1], diff(Pn.), type = "l", xlab = quote(k))
+abline(h=0, lty=3)
+
+nk <- length(ks)
+matplot(ks[-c(1,nk)], diff(Pn., differences= 2), type = "l", xlab = quote(k))
+abline(h=0, lty=3)
+
+matplot(ks[-c(1:2,nk)], diff(Pn., differences= 3), type = "l", xlab = quote(k))
+abline(h=0, lty=3) ##---> start seeing noise
+
+## Here, we see a LOT of noise : only in the first curve == pchisq() !
+matplot(ks[-c(1:2,nk-1L,nk)], diff(Pn., differences= 4), type = "l", xlab = quote(k))
+abline(h=0, lty=3)
+## And zooming in to "zero" : log |.| scale
+matplot(ks[-c(1:2,nk-1L,nk)], abs(diff(Pn., differences= 4)), log = "y", type = "l", xlab = quote(k))
+
+showProc.time()
+
 
 
 
@@ -1778,6 +1944,7 @@ all.equal(log1p(- pnc), LpncR, tol = 0)# 4.626185e-16; now TRUE
 showProc.time()
 ## source("/u/maechler/R/MM/NUMERICS/dpq-functions/qnchisq.R")#-> qnchisq.appr*()
 
+## The values from Johnson et al (1995), Table 29.2, p.464
 p.  <- c(0.95, 0.05)
 nu. <- c(2,4,7)
 lam <- c(1,4,16,25)
@@ -1820,8 +1987,11 @@ all.equal(pars$p, p.q, tol=0)# Lnx 64b: 9.2987e-15
 stopifnot(all.equal(pars$p, p.q, tol=1e-14))
 showProc.time()
 
-if(FALSE) # ?? FIXME ?!
-newton(1, G= function(x,...) x^2 -3 , g = function(x,...) 2*x, eps = 1e-10)
+## now works fine :
+str(n.s3 <- newton(1, G= function(x,...) x^2 -3 , g = function(x,...) 2*x,
+                   eps = 8e-16))
+with(n.s3, stopifnot(converged, all.equal(x^2, 3, tol = 1e-15)))
+
 
 ### New comparison -- particularly for right tail:
 ## upper tail "1 - p"

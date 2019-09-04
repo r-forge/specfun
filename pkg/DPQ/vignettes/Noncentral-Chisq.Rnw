@@ -78,8 +78,8 @@ weighted central term \code{term}, ``\code{ while (term >= acc) }'' with
 the constant declaration
  \code{double acc = 1.0e-12;}
 
-For \R version 0.62 (1998-06-14), on the R level, the \texttt{n} versions
-of function names became deprecated and the noncentrality parameter renamed
+For \R version 0.62 (1998-06-14), on the R level, the \texttt{*n*} versions
+of function names became deprecated and the noncentrality parameter was changed
 from \code{lambda} to \code{ncp} and added to the ``non-\texttt{n}''
 version of the functions, e.g. \R's \code{pchisq()} became defined as
 \begin{alltt}
@@ -91,6 +91,9 @@ function (q, df, ncp = 0)
     else .Internal(pnchisq(q, df, ncp))
 }
 \end{alltt}
+and the source file \file{src/nmath/pnchisq.c} (with timestamp
+\verb|1998-03-17 04:56| and a size of 2669 bytes) now did implement the
+algorithm AS 275 by \citet{Ding92}.  The
 \texttt{NEWS} entry (still in the R sources \file{doc/NEWS.0}) has been
 \begin{alltt}
 		CHANGES IN R VERSION 0.62
@@ -103,9 +106,7 @@ NEW FEATURES
     o	Some of the t, F, and chisq distribution/probability functions
 	now allow a noncentrality parameter `ncp'.
 \end{alltt}
-and the source file \file{src/nmath/pnchisq.c} has had the timestamp
-\verb|1998-03-17 04:56| and a size of 2669 bytes \emph{and} more
-relevantly, now did implement algorithm AS 275 by \citet{Ding92}.  Even then, it contained a comment
+But even then, the new \file{pnchisq.c} with AS 275 contained a comment
 \begin{quote}
  Feb.1, 1998 (R 0.62 alpha); M.Maechler:  still have
  INFINITE loop and/or bad precision in some cases.
@@ -121,6 +122,8 @@ Linux and Windows), also for small values of ncp, e.g.,
 <<inf-loop-1, eval=FALSE>>=
 pchisq(1.00000012e200, df=1e200, ncp=100)
 @
+
+
 
 \bibliography{R-numerics}% ~/bib/R-numerics.bib  now link --> "here"
 

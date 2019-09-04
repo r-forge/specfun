@@ -1,7 +1,7 @@
 Package: DPQ
 Title: Probability Distributions 'DPQ' (Density, Probability, Quantile) Computations
 Version: 0.3-3
-Date: 2019-09-03
+Date: 2019-09-04
 Authors@R: c(person("Martin","Maechler", role=c("aut","cre"),
                     email="maechler@stat.math.ethz.ch", comment = c(ORCID = "0000-0002-8685-9910"))
   , person("Morten", "Welinder", role = "ctb", comment = "pgamma C code, see PR#7307, Jan. 2005")

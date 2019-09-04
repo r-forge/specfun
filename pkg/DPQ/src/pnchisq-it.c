@@ -293,14 +293,14 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
 	    // all  pchisq(x, f+2*i, lower_tail, FALSE), i=0,...,110 would underflow to 0.
 	    // ==> work in log scale
 	    double lambda = 0.5 * theta;
-	    double pr = -lambda;
+	    double pr = -lambda, log_lam = log(lambda);
 	    *sum = *sum2 = (LDOUBLE) ML_NEGINF;
 	    /* we need to renormalize here: the result could be very close to 1 */
 	    if(verbose >= 2) REprintf("  logspace iterations: showing ' i, sum2;' :\n  ");
-	    for(i = 0; i < it_simple;  pr += log(lambda) - log(++i)) {
+	    for(i = 0; i < it_simple;  pr += log_lam - log(++i)) {
 		*sum2 = (LDOUBLE) logspace_add(*sum2, pr);
-		*sum  = (LDOUBLE) logspace_add(*sum, pr + pchisq(x, f+2*i, lower_tail, TRUE));
-		if(verbose >= 2) REprintf(" %d, %g;", i, *sum2);
+		*sum  = (LDOUBLE) logspace_add(*sum , pr + pchisq(x, f+2*i, lower_tail, TRUE));
+		if(verbose >= 2) REprintf(" %d: %g;", i, *sum2);
 		if (*sum2 >= -epsS) /*<=> EXP(sum2) >= 1-epsS */ break;
 	    }
 	    ans = *sum - *sum2;
@@ -408,29 +408,34 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
     }
 
     for (n = 1, f_2n = f + 2., f_x_2n += 2.; n <= itrmax ; n++, f_2n += 2, f_x_2n += 2) { // --------
-	if(verbose >= 2)
-	    REprintf("\n _OL_: n=%d",n);
+	if(verbose >= 2) {
+	    if(n % 1000 == 0)
+		REprintf("\n _OL_: n=%d,  f_x_2n = %g",n);
+	    else
+		REprintf(n % 100 == 0 ? ".\n" : ".");
+	}
 #ifndef MATHLIB_STANDALONE
 	if(n % 1000 == 0) R_CheckUserInterrupt();
 #endif
 	/* f_2n    === f + 2*n
-	 * f_x_2n  === f - x + 2*n   > 0  <==> (f+2n)  >   x */
+	 * f_x_2n  === f - x + 2*n   > 0  <==> (f+2n) > x  ==> have positive error bound
+	 * <==> n > (x - f)/2 : when too large, MUST use different "algorithm": asymptotic approx ! */
 	if (f_x_2n > 0) {
 	    /* find the error bound and check for convergence */
 
 	    bound = (double) (t * x / f_x_2n);
-	    if(verbose >= 2)
-		REprintf("\n L10: n=%d; term= %g; bound= %g",n,term,bound);
-
+	    if(verbose >= 2 && n % 1000 == 0)
+		REprintf("\n L10: n=%d; term, ans = %g, %g; bound= %g",
+			 n, term, ans, bound);
 	    is_r = FALSE;
 	    /* convergence only if BOTH absolute and relative error < 'bnd' */
 	    if (((is_b = (bound <= errmax)) &&
                  (is_r = (term <= reltol * ans))))
             {
 		if(verbose)
-		    REprintf("BREAK out of for(n = 1 ..): n=%d; bound= %g %s, rel.err= %g %s\n",
+		    REprintf("BREAK out of for(n = 1 ..): n=%d; bound= %g %s; term=%g, rel.err= %g %s\n",
 			     n,
-			     bound, (is_b ? "<= errmax" : ""),
+			     bound, (is_b ? "<= errmax" : ""), term,
 			     term/ans, (is_r ? "<= reltol" : ""));
 		break; /* out completely */
             }
