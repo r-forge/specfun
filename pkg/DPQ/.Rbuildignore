@@ -12,6 +12,7 @@ src/.*\+
 svn-.*
 TAGS
 etags.*
+vignettes/.*:
 demo/.*.R\+
 tests/*pdf
 tests/.*\.Rout

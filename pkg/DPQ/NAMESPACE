@@ -102,7 +102,7 @@ export(
   , pnbetaAS310
   , pnbetaAppr2, pnbetaAppr2v1
 
-  , pnchisq
+  , pnchisq, pnchi1sq, pnchi3sq
   , pnchisqAbdelAty, pnchisqPatnaik, pnchisqPearson, pnchisqSankaran_d
   , pnchisq_ss, pnchisqIT, pnchisqTerms, pnchisqV
   , pnchisqT93, pnchisqT93.a, pnchisqT93.b

@@ -654,3 +654,84 @@ pnchisqBolKuz <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
     ## central χ² (same ν (df)) with w* instead of q :
     pchisq(w., df=df, lower.tail=lower.tail, log.p=log.p)
 }
+
+## df == 1  ==>  have exact formula == use MM's hand written notes on p.433,
+## -------       or the formula after (29.17), top of p.441
+pnchi1sq <- function(q, ncp = 0, lower.tail = TRUE, log.p = FALSE, epsS = .01)
+## FIXME: "correct" 'epsS' via  Rmpfr :: pnorm()  etc !
+{
+    if(!lower.tail) stop("'lower.tail=FALSE' not yet implemented")
+    if(log.p)       stop("'log.p = TRUE' not yet implemented")
+    sq <- sqrt(q) # = 's' in my notes
+    sl <- sqrt(ncp) # sqrt{λ}
+    sml <- sq <= sl * epsS # (does recycle to correct length)
+    r <- numeric(length(sml))
+    if(any(sml)) {
+        N <- which(sml)
+        s    <- rep_len(sq, length(r))[N]
+        sl.  <- rep_len(sl, length(r))[N]
+        ncp. <- rep_len(ncp,length(r))[N]
+        ## Terms with *even* Hermite polynomial in sqrt{λ}; sqrt{λ}² = ncp
+        ##                          s²/3! He₂(rt{λ})  s⁴/5! He₄(rt{λ})
+        r[N] <- 2*s*dnorm(sl.)*(1 + s/6*s*((ncp. - 1) + s/20*s*((ncp. - 6)*ncp. + 3)))
+        ## last term needed (see ex. w/ epsS=1e-2 !)
+    }
+    if(any(!sml)) {
+        N <- !sml
+        ## Cancellation here, too:   1 - 1  or  0 - 0  ...
+        ##  Φ(l+s) - Φ(l-s) = Φ(l+s) - Φ(l-s)
+        ##  Φ(P) - Φ(D)     =  Φ(-D) - Φ(-P)
+        D <- (sl-sq)[N]
+        P <- (sl+sq)[N]
+        ## check intervals for D and P and possibly use pnorm(*, lower.tail=FALSE)
+        ## FIXME: suboptimal!
+        r[N] <- pnorm(-D) - pnorm(-P)
+    }
+    r
+}
+
+## https://en.wikipedia.org/wiki/Hermite_polynomials :
+##  The first .. probabilists' Hermite polynomials are:
+##
+## He_0(x) = 1 ,
+## He_1(x) = x ,
+## He_2(x) = x^2 - 1 ,
+## He_3(x) = x^3 - 3 x ,
+## He_4(x) = x^4 - 6 x^2 + 3 ,
+## He_5(x) = x^5 - 10 x^3 + 15 x ,
+## He_6(x) = x^6 - 15 x^4 + 45 x^2 - 15 ,
+## He_7(x) = x^7 - 21 x^5 + 105 x^3 - 105 x ,
+## He_8(x) = x^8 - 28 x^6 + 210 x^4 - 420 x^2 + 105 ,
+## He_9(x) = x^9 - 36 x^7 + 378 x^5 - 1260 x^3 + 945 x ,
+
+
+## df == 3   ==>  have exact formula, too : Johnson et al.  (29.16) :
+pnchi3sq <- function(q, ncp = 0, lower.tail = TRUE, log.p = FALSE, epsS = 0.04)
+## FIXME: "correct" 'epsS' via  Rmpfr :: pnorm()  etc !
+{
+    if(!lower.tail) stop("'lower.tail=FALSE' not yet implemented")
+    if(log.p)       stop("'log.p = TRUE' not yet implemented")
+    sq <- sqrt(q) # = 's' in my notes
+    sl <- sqrt(ncp) # sqrt{λ}
+    sml <- sq <= sl * epsS # (does recycle to correct length)
+    r <- numeric(length(sml))
+    if(any(sml)) {
+        N <- which(sml)
+        s    <- rep_len(sq, length(r))[N]
+        sl.  <- rep_len(sl, length(r))[N]
+        ncp. <- rep_len(ncp,length(r))[N]
+        s2 <- s^2 # = q {recycled length}
+        r[N] <- 2/3*s*s2*dnorm(sl.)*
+            (1 + s2/10*(ncp. - 3 + s2/28*(ncp.*(ncp. - 10) + 15))) # + O(s^9)
+    }
+    if(any(!sml)) {
+        N <- which(!sml)
+        sl. <- rep_len(sl, length(r))[N]
+        D <- (sl - sq)[N]
+        P <- (sl + sq)[N]
+        ## check intervals for D and P and possibly use pnorm(*, lower.tail=FALSE)
+        ## FIXME: suboptimal!
+        r[N] <- pnorm(-D) - pnorm(-P) + (dnorm(P) - dnorm(D)) / sl.
+    }
+    r
+}
