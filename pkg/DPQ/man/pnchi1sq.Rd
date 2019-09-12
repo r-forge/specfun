@@ -4,11 +4,14 @@
 \alias{pnchi3sq}%-- __end of__ >>> ../R/pnchisq.R <<<
 \description{
   Computes probabilities for the non-central chi squared distribution, in
-  special cases, currently for \code{df = 1} and \code{df = 3}.
+  special cases, currently for \code{df = 1} and \code{df = 3}, using
+  \sQuote{exact} formulas only involving the standard normal (Gaussian)
+  cdf \eqn{\Phi()} and its derivative \eqn{\phi()}, i.e., \R's
+  \code{\link{pnorm}()} and \code{\link{dnorm}()}.
 }
 \usage{
 pnchi1sq(q, ncp = 0, lower.tail = TRUE, log.p = FALSE, epsS = .01)
-pnchi3sq(q, ncp = 0, lower.tail = TRUE, log.p = FALSE, epsS = 1e-4)
+pnchi3sq(q, ncp = 0, lower.tail = TRUE, log.p = FALSE, epsS = .04)
 }
 \arguments{
   \item{q}{number ( \sQuote{quantile}, i.e., abscissa value.)}
@@ -19,13 +22,25 @@ pnchi3sq(q, ncp = 0, lower.tail = TRUE, log.p = FALSE, epsS = 1e-4)
     \dQuote{small case} to the regular case, namely by defining
     \code{small <- sqrt(q/ncp) <= epsS}.}
 }
-%% \details{
-%% }
+\details{
+  %% FIXME: give formulas for both df=1 and df=3 !!
+  %% -----  and page / equation numbers from Johnson et al
+  In the \dQuote{small case} (\code{epsS} above), the direct formulas
+  suffer from cancellation, and we use Taylor series expansions in 
+  \eqn{s := \sqrt{q}}, which in turn use
+  \dQuote{probabilists'} Hermite polynomials \eqn{He_n(x)}.
+
+  The default values \code{epsS} have currently been determined by
+  experiments as those in the \sQuote{Examples} below.
+}
 \value{
   a numeric vector \dQuote{like} \code{q+ncp}, i.e., recycled to common length.
 }
 \references{
-  Johnson et al.(1995), see \sQuote{References} in \code{\link{pnchisqPearson}}.
+  Johnson et al.(1995), see \sQuote{References} in
+  \code{\link{pnchisqPearson}}.
+
+  \url{https://en.wikipedia.org/wiki/Hermite_polynomials}
 }
 \author{Martin Maechler, notably the Taylor approximations in the
   \dQuote{small} cases.}

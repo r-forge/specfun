@@ -30,6 +30,7 @@ loadList <- function(L, envir = .GlobalEnv)
     invisible(lapply(names(L), function(nm) assign(nm, L[[nm]], envir=envir)))
 
 
+(noLdbl <- (.Machine$sizeof.longdouble <= 8)) ## TRUE when --disable-long-double
 (doExtras <- DPQ:::doExtras())
 ## save directory (to read from):
 (sdir <- system.file("safe", package="DPQ"))
@@ -37,11 +38,12 @@ loadList <- function(L, envir = .GlobalEnv)
 ## on "my" platform, and if doExtras,  I'm very strict:
 (myPlatf <- all(Sys.info()[c("sysname", "machine", "login")] ==
                            c("Linux",  "x86_64",  "maechler")))
-(beStrict <- doExtras && myPlatf)
+(beStrict <- doExtras && !noLdbl && myPlatf)
 
 
 if(!dev.interactive(orNone=TRUE)) pdf("chisq-nonc-1.pdf")
 .O.P. <- par(no.readonly=TRUE)
+showProc.time()
 
 ### Part 1 : Densities  dchisq(*, ncp)
 ### ----------------------------------
@@ -49,9 +51,7 @@ if(!dev.interactive(orNone=TRUE)) pdf("chisq-nonc-1.pdf")
 ### densities alone :
 ## ===> shows Normal limit (for lambda -> Inf;  true also for nu -> Inf)
 nu <- 12
-nS <- length(ncSet <- 10^(0:11))
-## faster:
-nS <- length(ncSet <- 10^(0:8))
+nS <- length(ncSet <- if(doExtras) 10^(0:9) else 10^(0:6))
 
 cpUse <- numeric(nS); names(cpUse) <- formatC(ncSet)
 mult.fig(nS, main = paste("non-central chisq(*, df=",nu,
@@ -69,8 +69,8 @@ showProc.time()
 
 cbind(ncSet, cpUse, "c/ncp"= cpUse / ncSet)
 plot(cpUse ~ ncSet, log = "xy", type = 'b', col = 2)
-try(# fails occasionally (too many zeros)
-summary(lmll <- lm(log(cpUse) ~ log(ncSet), subset = ncSet >= 1e4))
+if(doExtras) try(# fails occasionally (too many zeros)
+  print(summary(lmll <- lm(log(cpUse) ~ log(ncSet), subset = ncSet >= 1e4)))
 )
 ## Coefficients:
 ##              Estimate Std. Error t value Pr(>|t|)
@@ -90,7 +90,7 @@ summary(lmll <- lm(log(cpUse) ~ log(ncSet), subset = ncSet >= 1e4))
 
 ###--- Now, limit for  nu = df --> Inf :
 ncp <- 16
-nS <- length(dfSet <- 10^(0:11))
+nS <- length(dfSet <- 10^(if(doExtras) 0:11 else 0:8))
 cpUse <- numeric(nS); names(cpUse) <- formatC(dfSet)
 oPar <- mult.fig(nS, main = "non-central chisq(ncp = 16) and normal approx")$old.par
 for(DF in dfSet) {
@@ -103,7 +103,7 @@ for(DF in dfSet) {
 }
 par(oPar)
 cbind(dfSet, cpUse, "c/df"= cpUse / dfSet)
-## remains very fast!
+## remains fast!
 showProc.time()
 
 ## source("~/R/MM/NUMERICS/dpq-functions/dnchisq-fn.R")# dnoncentchisq() etc
@@ -125,6 +125,8 @@ matplot(x, res)
 
 res2 <- outer(x, del, function(x,del)dchisq(x=x, 3, ncp=del))
 matplot(x, res2, add=TRUE)
+
+showProc.time()
 
 ###---- March 2008 -----  "large ncp" :
 
@@ -275,6 +277,8 @@ showProc.time()
 ### Part 2 :  pchisq (non-central!)
 ### -------------------------------
 
+if(!dev.interactive(orNone=TRUE)) { dev.off(); pdf("chisq-nonc-2.pdf") }
+
 ## source("/u/maechler/R/MM/NUMERICS/dpq-functions/pnchisq.R")#-> pnchisq(), pnchisqV()
 
 ### Note Brian's change (which completely broke df=0 case !) for R 2.3.0:
@@ -293,7 +297,7 @@ stopifnot(pchisq(0:10, 0,1) >= exp(-1/2)) ## gave NaN from 2.3.0 to 2.6.1
 lam <- seq(0,100, by=.25)
 p00  <- pchisq(0,     df=0, ncp=lam)
 p.0 <- pchisq(1e-300, df=0, ncp=lam)
-stopifnot(all.equal(p00, exp(-lam/2), tol=0),
+stopifnot(all.equal(p00, exp(-lam/2), tol=2e-16),# '0' (when compiled alike)
           all.equal(p.0, exp(-lam/2), tol=4e-16))# was "1e-100" aka tol=0 ..
 
 ###------
@@ -432,6 +436,7 @@ p.pchUp(   1,    1,     69, 1500)
 p.pchUp(   1,    1,     69, 1500, log=TRUE)# small discrepancy for largish x
 p.pchUp( 2.5, 0.02,     61, 1500, log=TRUE)# (nothing visible)
 p.pchUp(  25,   10,    150, 1600, log=TRUE)# discrepancy largish x
+summary(warnings()) ; showProc.time()
 p.pchUp( 100,  500,    980, 1900)# normal:noise(and cutoff at 1); Wienerg: smooth
 p.pchUp( 100,  500,    980, 1900, log=TRUE)# pchisq() breaks down
 p.pchUp( 500,  100,    897, 3000)
@@ -439,6 +444,7 @@ p.pchUp( 500,  100,    897, 3000, log=TRUE)# pchisq break down
 p.pchUp( 5e3,  100,   5795, 1.e4)  # zoom in..
 p.pchUp( 5e3,  100,   5777, 6000)  # --> Wiener has less noise long before!
 ## (but it also is systematically a bit larger - correct?)
+summary(warnings()) ; showProc.time()
 
 ## Now have m + 5*s cutoff, ...
 cc <- p.pchUp( 5e3,  5e3,  10400, 11e3) # still pchisq() jumps to 0 at 10866.2, too early
@@ -537,9 +543,10 @@ summary(warnings())
 sfsmisc::eaxis(1, sub10=3); sfsmisc::eaxis(2)
 curve(pnchisqV(x, df=1, ncp=300, errmax = 4e-16, lower=FALSE, verbose=1),# ,log=TRUE),
       add = TRUE, col=2); mtext("ncp = 300 -- pnchisqV() pure R", col=2)
+pncRC <- pnchisqRC(pxy$x, df=1, ncp=300, lower=FALSE, verbose=1)
+all.equal(pxy$y, pncRC, tol = 0)# "often" TRUE, depends on exact R version, etc
 stopifnot(
-    all.equal(pxy$y, pnchisqRC(pxy$x, df=1, ncp=300, lower=FALSE, verbose=1), ## FIXME
-              tol = 0)
+    all.equal(pxy$y, pncRC, tol = if(noLdbl) 5e-14 else 0)# noLdbl: seen 1.129e-14
 )
 summary(warnings())
 
@@ -560,7 +567,7 @@ pp  <- pchisq   (xm, df=1e18, ncp=1)
 pp. <- pnchisqRC(xm, df=1e18, ncp=1, verbose=1)
 all(pp == pp.)# >>> TRUE :  *RC is also C code, perfect
 all.equal(pp, pn, tol = 0) # see 1.6e-16
-if(doExtras)  # who knows ..
+if(doExtras && !noLdbl)  # who knows ..
     stopifnot(pp == pp.)
 stopifnot(exprs = {
     all.equal(pp, pp., tol = 1e-15) # see 0
@@ -586,6 +593,7 @@ plot(x, px, type='l', col=2, lwd=2,
      main="pchisq(*, df=10000,ncp=300, log=TRUE))")
 head(px, 20)
 ## for the (5500,11000): -Inf -Inf ..... -Inf -650.2379 -640.3743 -630.6..
+showProc.time()
 
 pnchisq(5500, df= 10000, ncp=300, verbose=2)
 ##  lt= -744.4 => exp(lt) underflow protection ln(x)= 8.612503
@@ -604,7 +612,9 @@ curve(pnchisqV(x, df= 16e3, ncp= 16e3),
       from=30e3, to= 35e3, main="df = 16e3, ncp = 16e3")
 curve(400*dchisq(x, df= 16e3, ncp= 16e3), add = TRUE,
       col = adjustcolor("green4",.5), lwd=3)
+showProc.time()
 
+if(doExtras) withAutoprint({
 ## current R version: -- (also relatively slow, but much faster!) *and* non-convergence warning
 rr <- curve(pchisq(x, df= 10000, ncp=3e5), type = "o", cex = 1/2,  n = 49)
 summary(warnings()) ## all non-convergences (but *looks* ok)
@@ -614,7 +624,7 @@ rV <- curve(pnchisqV(x, df= 10000, ncp=3e5), n = 49,
 summary(warnings())
 identical(rr$x, rV$x)
 showProc.time()#-----------------
-
+})
 
 ### NOTA BENE:  dnchisq() has a similar sum and the following  i.Max
 imaxD <- function(x,df,lambda)
@@ -1086,7 +1096,7 @@ if(!doExtras && file.exists(sfil2)) {
         f  <- dfs[i]
         x <- f + lm
         ssR2[3:5, i] <- ss2.(x, df=f, ncp=lm)[5:7]
-        cat("."); if(i %% 20 == 0) cat("\n",i)
+        cat("."); if(i %% 100 == 0) cat("\n",i)
     }
     dimnames(ssR2) <- list(c("lam","df","iN1","iN2", "iMax"),NULL)
     ssR2 <- t(ssR2)
@@ -1218,9 +1228,8 @@ filled.contour(log10(lam3), log10(dfs3), log10(iMaxR3/ (lam3/2)),
 
 showProc.time()
 
-
-## same with both data --> need interp ! : s/dsR3/dsR./ :
-library(akima)
+if(doExtras && require("akima")) {
+    ## same with both data --> need interp ! : s/dsR3/dsR./ :
 ds1 <- subset(dsR., lam >= 1)
 sr.I  <- with(ds1, interp(log(lam), log(df), iMax))
 sr.Iq <- with(ds1, interp(log(lam), log(df), iMax / (lam/2)))
@@ -1232,25 +1241,25 @@ filled.contour(sr.Iq,
                          xlab = "ln(lam)", ylab = "ln(df)")
                    with(ds1, points(log(lam), log(df), pch='.'))
                })
-summary(l.1 <- lm(iMax / (lam/2) ~ log(lam) * log(df), data= ds1))
+print(summary(l.1 <- lm(iMax / (lam/2) ~ log(lam) * log(df), data= ds1)))
 TA.plot(l.1)
 plot(resid(l.1) ~ lam, data=ds1, pch ='.', log = 'x')
-summary(l.2 <- update(l.1, .~. + I(1/lam)))
-summary(l.3 <- update(l.2, .~. + I(log(lam)^2) + I(1/log(lam))))
+print(summary(l.2 <- update(l.1, .~. + I(1/lam))))
+print(summary(l.3 <- update(l.2, .~. + I(log(lam)^2) + I(1/log(lam)))))
 plot(resid(l.3) ~ lam, data=ds1, pch ='.', log = 'x')
 ### --> Aha!   1/lam seems the best term !!
 ## -- maybe try  lam^(-a)  ?
-
-showProc.time()
+showProc.time() # 0.9
+} # only if(.X.)
 
 ## This is impressive (but shows "non-fit")
 with(dsR., p.res.2x(log10(lam), log10(df), residuals(l.5), scol=2:3))
 with(dsR., p.res.2x(lam, df, residuals(l.5)))
 
-
 with(dsR., p.res.2x(lam, df, residuals(l.10), scol=2:3))
 with(dsR., p.res.2x(log(lam), log(df), residuals(l.6), scol=2:3))
-with(dsR., p.res.2x(lam, df, residuals(l.3), scol=2:3))
+if(doExtras)
+  with(dsR., p.res.2x(lam, df, residuals(l.3), scol=2:3))
 
 plot(l.5) ## 2-3 outliers:
 ## 5000 : maximal lambda
@@ -1263,12 +1272,13 @@ summary(lq2s, corr=TRUE, symb=TRUE)
 ## shows the complete non-sense (large lambda values fit very badly
 with(dsR., n.plot(fitted(lq2s)*lam, iMax))
 
-## GAM -- needs tons of cpu + memory:
-summary(g.5 <- gam(iMax ~ s(lam) + s(df) + s(lam,df), data=dsR.))#s^=4.489
+if(doExtras) ## GAM -- needs tons of cpu + memory:
+   summary(g.5 <- gam(iMax ~ s(lam) + s(df) + s(lam,df), data=dsR.))#s^=4.489
 ## -> (too) many deg.freedom s
+showProc.time()
 
-## visualize more:
-library(akima)
+
+if(doExtras && require("akima")) { ## visualize more: ----------
 sr2I <- with(dsR., interp(log(lam), log(df), iMax))
 filled.contour(sr2I, xlab="ln(lam)", ylab="ln(df)", main="iMax")
 sr2I <- with(dsR., interp(log(lam), log(df), log(iMax)))
@@ -1300,7 +1310,11 @@ persp(sr2rI,xlab="log(lam)",ylab="log(df)",zlab="log(iN2)",ticktype="detailed")
 
 sr2rI <- with(dsR.r, interp(log(lam), log(df), log(iMax)))
 persp(sr2rI,xlab="log(lam)",ylab="log(df)",zlab="log(iMax)",ticktype="detailed")
-
+} else {
+    cat("Define   dsR2r : \n") ; str(dsR2r <- subset(dsR., iN1 > 1))
+    cat("and also dsR.r : \n") ; str(dsR.r <- subset(dsR., iN1 > 1))
+}
+showProc.time()
 summary(ll.2 <- lm(log(iMax) ~ log(lam) + log(df), data=dsR.r))
 summary(ll.3 <- lm(log(iMax) ~ log(lam) * log(df), data=dsR.r))
 summary(ll.4 <- lm(log(iMax) ~ log(lam) * log(df) + I(log(lam)^2), data=dsR.r))
@@ -1309,6 +1323,7 @@ plot(residuals(ll.3) ~ dsR.r$lam, log='x')
 plot(residuals(ll.4) ~ dsR.r$lam, log='x')
 plot(dsR.r$iMax - exp(fitted(ll.4)) ~ dsR.r$lam, log='x')
 
+if(doExtras) {
 summary(gl.4 <- gam(log(iMax) ~ s(lam) + log(df), data=dsR.r))## very bad
 ## but this is very good:
 summary(gl.4 <- gam(log(iMax) ~ s(log(lam)) + log(df), data = dsR.r))
@@ -1317,12 +1332,14 @@ if(FALSE) { # fails now
 summary(gl.5 <- gam(log(iMax) ~ s(log(lam),4) + log(df)*log(lam), data=dsR.r))
 plot(gl.5)
 }
+} # only if(.X.)
 ##-> try
 summary(ll.5 <- lm(log(iMax) ~ (log(lam) + poly(pmax(0,log(lam)-5),2))*log(df),
                    data=dsR.r))
 
 summary(dsR.r$iMax - exp(fitted(ll.5))) # one very negative
 plot(ll.5)
+showProc.time()
 
 
 ## First try to find formula for maximal number of terms needed
@@ -1390,7 +1407,7 @@ df <- 4e-4; curve((df+x) - qchisq(1/2, df, ncp=x), add=TRUE,col=4)
 df <- 8e-4; curve((df+x) - qchisq(1/2, df, ncp=x), add=TRUE,col=5)
 }
 df <-16e-4; curve((df+x) - qchisq(1/2, df, ncp=x), add=TRUE,col=6)
-showProc.time()
+showProc.time() # 0.41 {2019-09}
 
 df <- 1e-100; curve((df+x) - qchisq(1/2, df, ncp=x), 1.38, 1.40, col=2)
 dfs <- 2^(if(doExtras) seq(-300,-2, length=21) else -2) # as they are costly
@@ -1401,12 +1418,13 @@ for(df in dfs) {
 showProc.time()
 
 df <- 1e-300; curve((df+x) - qchisq(1/2, df, ncp=x), 1.38628, 1.38630, col=2)
+if(doExtras)
 for(df in dfs) {
     curve((df+x) - qchisq(1/2, df, ncp=x), add=TRUE,col=3)
     cat(formatC(df)," ")
 }; cat("\n")
 curve((0+x) - qchisq(1/2, df=0, ncp=x), 1.386294, 1.386295, col=2)
-showProc.time()
+showProc.time() # doExtras: ~ 0.6 {2019-09}
 
 
 ff <- function(ncp) (0+ncp)-qchisq(1/2, df=0, ncp=ncp)
@@ -1727,18 +1745,36 @@ AR <- array(NA_real_, # [ncp,df, q]
                            df  = formatC( ddf, width=1),
                            q   = formatC(  qq, width=1),
                            Fn  = pnNms))
-for(incp in seq_along(nncp)) {
+CT <- AR[,,1,1] # (w/ desired dim and dimnames)
+
+sfil5 <- file.path(sdir, "tests_chisq-nonc-ssAp.rds")
+if(!doExtras && file.exists(sfil5)) {
+  ssAp_l <- readRDS(sfil5)
+  cat("Read ssAp_l from ", sfil5," :\n ")
+  str(ssAp_l)
+  AR <- ssAp_l$AR ## loadList(ssAp_l)# attach it
+
+} else { ## do run the simulation always  if(doExtras) :
+
+  for(incp in seq_along(nncp)) {
     cat("\n~~~~~~~~~~~~~\nncp: ", ncp <- nncp[incp], "\n=======\n")
     pnF <- if(ncp == 0) pnchF[!grepl("T93", pnNms)] else pnchF # Temme('93) : ncp > 0
     for(idf in seq_along(ddf)) {
         df <- ddf[idf]
-        r <- vapply(pnF,
-                    function(F) Vectorize(F, names(formals(F))[[1]])(qq, df=df, ncp=ncp),
-                    qq)
+        ct <- system.time(
+          r <- vapply(pnF,
+                      function(F) Vectorize(F, names(formals(F))[[1]])(qq, df=df, ncp=ncp),
+                      qq)
+        )[["user.self"]]
         AR[incp, idf, , names(pnF)] <- r
+        CT[incp, idf] <- ct
     }
-}
-showProc.time()
+  }
+  showProc.time()
+  cat("User times in milli-sec.:\n")
+  print(CT * 1000)
+  saveRDS(list_(pnchNms, pnchF, qq, nncp, ddf,   AR, CT), file=sfil5)
+} ## else *do* run ..
 
 ## Rather, show absolute and also relative "errors" ..
 stopifnot(dimnames(AR)[[4]][1] == "pchisq")
@@ -1756,11 +1792,10 @@ ftable(apply(dAR[c("1", "2", "5"), c(1,3,4),,], c(1,2,4), function(x) max(abs(x[
 ## (Note: for large df=1e10,  p*() == 0 everywhere for the small 'q' we have
 ##  ----  FIXME:  qq: should be "realistic"  in  mu +/- 5 sd
 
-
-options(op) # revert
+options(warn = 0, digits = 7)# partial revert
 
 ###----------- Much testing  pnchisqRC()  notably during my experiments
-ptol <- if(doExtras) 3e-16 else 1e-15
+ptol <- if(noLdbl) 8e-13 else if(doExtras) 3e-16 else 1e-15
 set.seed(123)
 for(df in c(.1, .2, 1, 2, 5, 10, 20, 50, 1000, if(doExtras) c(1e10, 1e200))) { ## BUG!  (df=1e200, ncp=1000) takes forever
     cat("\n============\ndf = ",df,"\n~~~~~~~~~\n")
@@ -1799,17 +1834,26 @@ for(df in c(.1, .2, 1, 2, 5, 10, 20, 50, 1000, if(doExtras) c(1e10, 1e200))) { #
 }# for(df .)
 summary(warnings())
 
-### L. Emphasis on very large  df + ncp ===============================
+### L. Emphasis on very large  df + ncp ===============================================
 
-##  L 1.  very large df,  ncp/df << 1 ====================
+##===  L 1.  very large df,  ncp/df << 1 ====================
 
 mkPnch <- function(k, df, ncp, lower.tail=TRUE, log.p=FALSE, twoExp = -53) {
     stopifnot(is.numeric(k), length(k) > 1, k == (k <- as.integer(k)),
               is.numeric(df), length(df) == 1L, length(ncp) == 1L, ncp >= 0,
-              twoExp < -5)
+              if((k. <- min(k)) >= 0) TRUE else twoExp < -log2(-k.))
     ones <- 1 + k * 2^twoExp
-    qs <- ones*df
+    qs <- ones*(df+ncp) # df+ncp = E[chi'^2]
+    xtra <-
+        if(df == 1) { ## use exact formula {incl Taylor for small x = q}
+            cbind(pnchi1sq = pnchi1sq(qs,  ncp, lower.tail=lower.tail, log.p=log.p))
+        } else if(df == 3) {
+            cbind(pnchi3sq = pnchi3sq(qs,  ncp, lower.tail=lower.tail, log.p=log.p))
+        } else {
+            array(NA_real_, c(length(qs), 0L))
+        }
     cbind(pchisq   = pchisq          (qs,df,ncp, lower.tail=lower.tail, log.p=log.p),
+          xtra,
           pcAbdelA = pnchisqAbdelAty (qs,df,ncp, lower.tail=lower.tail, log.p=log.p),
           pcBolKuz = pnchisqBolKuz   (qs,df,ncp, lower.tail=lower.tail, log.p=log.p),
           pcPatnaik= pnchisqPatnaik  (qs,df,ncp, lower.tail=lower.tail, log.p=log.p),
@@ -1847,7 +1891,7 @@ print(Pn., digits=3) # ">>" annotated: shows bug !
 ##    1.00e+00      1.0      1.0       1.0       1.0       1.0
 ##    .....         ....
 matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)",
-        main = paste0("pchisq*(q = df(1 + k* 2^",twoExp,"), df=",df,", ncp=",ncp,")"))
+        main = paste0("pchisq*(q = μ(1 + k* 2^",twoExp,"), df=",df,", ncp=",ncp,")"))
 
 kk <- seq(min(ks), max(ks), length.out=401)
 qs <- (1 + kk * 2^twoExp)*df
@@ -1859,8 +1903,8 @@ showProc.time()
 
 }## only if(doExtras)
 ## BUG (FIXME) e.g. here:
- pchisq  (0.99999989*df, df, ncp) ## --> Warning ... : not converged in 1000'000 iter
-pnchisqRC(0.99999989*df, df, ncp, verbose=1) # The same with more output!
+ pchisq  (0.99999989*(df+ncp), df, ncp) ## --> Warning ... : not converged in 1000'000 iter
+pnchisqRC(0.99999989*(df+ncp), df, ncp, verbose=1) # The same with more output!
 ## both give '1', but really should give 0
 showProc.time()
 
@@ -1875,7 +1919,7 @@ twoExp <- -18 # well chosen for this "range" and behavior of pchisq()
 Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
 showProc.time()
 
-tit <- paste0("pchisq*(q = df(1 + k* 2^",twoExp,"), df=",df,", ncp=",ncp,")")
+tit <- paste0("pchisq*(q = μ(1 + k* 2^",twoExp,"), df=",df,", ncp=",ncp,")")
 matplot(ks, Pn., type = "l", xlab = quote(k), ylab = "pchisq*(q, ..)", main = tit)
 
 cat("'Error' (difference to pchisq(*)):\n")
@@ -1885,6 +1929,8 @@ matplot(ks, dP, type = "l", xlab = quote(k), main = paste("Difference", tit," - 
 abline(h=0, lty=3)
 ## the difference to all 5 approx. is almost *IDENTICAL*
 ## ==> are the approximations all more accurate than pchisq() here ?
+options(op) # revert
+summary(warnings())
 
 ## Look at "smoothness" via first differences:
 matplot(ks[-1], diff(Pn.), type = "l", xlab = quote(k))
@@ -1905,12 +1951,201 @@ matplot(ks[-c(1:2,nk-1L,nk)], abs(diff(Pn., differences= 4)), log = "y", type = 
 
 showProc.time()
 
+##===  L 2.  large ncp,  df/ncp << 1 ====================
+
+ncp <- 1e20; df <- 99
+ks <- c(-40, -20, -15, -10, -6:6, 10, 15, 20, 40)
+twoExp <- -35
+##        ===
+system.time(suppressWarnings(
+    Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
+)) ## ~ 0.3
+
+print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong; other "coincide"
+##  pchisq pcAbdelA pcBolKuz pcPatnaik pcPearson pcSanka_d
+##       0 2.93e-09        1  2.93e-09  2.93e-09  2.93e-09
+##       0 1.80e-03        1  1.80e-03  1.80e-03  1.80e-03
+##       0 1.45e-02        1  1.45e-02  1.45e-02  1.45e-02
+##       0 7.28e-02        1  7.28e-02  7.28e-02  7.28e-02
+##       0 1.91e-01        1  1.91e-01  1.91e-01  1.91e-01
+##       0 2.33e-01        1  2.33e-01  2.33e-01  2.33e-01
+##       0 2.80e-01        1  2.80e-01  2.80e-01  2.80e-01
+##       0 3.31e-01        1  3.31e-01  3.31e-01  3.31e-01
+##       0 3.86e-01        1  3.86e-01  3.86e-01  3.86e-01
+##       0 4.42e-01        1  4.42e-01  4.42e-01  4.42e-01
+##       0 5.00e-01        1  5.00e-01  5.00e-01  5.00e-01
+##       0 5.58e-01        1  5.58e-01  5.58e-01  5.58e-01
+##       0 6.14e-01        1  6.14e-01  6.14e-01  6.14e-01
+##       0 6.69e-01        1  6.69e-01  6.69e-01  6.69e-01
+##       0 7.20e-01        1  7.20e-01  7.20e-01  7.20e-01
+##       0 7.67e-01        1  7.67e-01  7.67e-01  7.67e-01
+##       0 8.09e-01        1  8.09e-01  8.09e-01  8.09e-01
+##       0 9.27e-01        1  9.27e-01  9.27e-01  9.27e-01
+##       0 9.85e-01        1  9.85e-01  9.85e-01  9.85e-01
+##       0 9.98e-01        1  9.98e-01  9.98e-01  9.98e-01
+##       1 1.00e+00        1  1.00e+00  1.00e+00  1.00e+00
+pchiTit <- function(twoE, df, ncp, fN = "pchisq*", xtr = "", ncN = "ncp")
+    sprintf("%s(q = μ(1 + k* 2^%g)%s, µ = ν+λ = df+ncp; df=%g, %s=%g)",
+            fN, twoE, xtr, df, ncN, ncp)
+## paste0("pchisq*(q = μ(1 + k* 2^",twoExp,"), µ = ν+λ = df+ncp; df=",df,", ncp/df=",ncp/df,")"))
+pchiTit.1 <- function(twoE, df, ncp)
+    pchiTit(twoE, df, ncp, fN = "pchi*", xtr = " - pchi.1")
+pchiTit.n.d <- function(twoE, df, ncp) pchiTit(twoE, df, ncp=ncp/df, ncN="ncp/df")
+
+matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)", main= pchiTit(twoExp,df,ncp))
+
+if(doExtras) {
+## less extreme, same phenomenom:
+ncp <- 1e9; df <- 99 ; twoExp <- -17
+Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
+print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong; other "coincide"
+matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)", main= pchiTit(twoExp,df,ncp))
+
+## less extreme, same phenomenom: still
+ncp <- 1e7; df <- 99 ; twoExp <- -14
+Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
+print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong; other "coincide"
+matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)", main= pchiTit(twoExp,df,ncp))
+
+## even less extreme, same phenomenom: still
+ncp <- 4e6; df <- 99 ; twoExp <- -13
+##     ---
+Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
+print(Pn., digits=3) # pchisq = Pearson = Sanka_d  ~~ AbdelA, Patnaik
+matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)", main= pchiTit(twoExp,df,ncp))
+
+} # only if(.X.)
+showProc.time()
+
+## Here pchisq() seems "perfect"
+ncp <- 1e6; df <- 99 ; twoExp <- -12
+##     ---
+Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
+print(Pn., digits=3) # pchisq = Pearson = Sanka_d  ~~ AbdelA, Patnaik
+matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)", main= pchiTit(twoExp,df,ncp))
+
+kk <- seq(min(ks), max(ks), length.out=401)
+qs <- (1 + kk * 2^twoExp)*(df+ncp)
+fq <- dchisq(qs, df, ncp)
+par(new=TRUE)
+plot(kk, fq, type="l", col=adjustcolor(2, 1/3), lwd=3, lty=3, axes=FALSE, ann=FALSE)
+showProc.time()
+
+##=== df=1 and df=3 ==== here we have exact formula ! ==================
+
+## 10'000 : "too small" for asymptotic approx:
+ncp <- 10000; df <- 1 ; twoExp <- -7
+Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
+print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong; other "coincide"
+matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)",
+        main = pchiTit.1(twoExp,df,ncp))
+
+## now absolute *difference* to true pchi1sq() :
+print(Pn.[,-c(2,4)]-Pn.[,2], digits=3)
+
+matplot(ks, Pn.[,-c(2,4)]-Pn.[,2], type = "b", xlab = quote(k), ylab = "pchisq*(q, ..) - pchi1sq()",
+        main = pchiTit.1(twoExp,df,ncp))
+legend("topright", colnames(Pn.)[-c(2,4)], lty=1:5, col=1:5, bty="n")
+
+j.dr <- 2:5 # drop
+matplot(ks, Pn.[,-j.dr]-Pn.[,2], type = "b", xlab = quote(k), ylab = "pchisq*(q, ..) - pchi1sq()",
+        main = pchiTit.1(twoExp,df,ncp))
+legend("topright", colnames(Pn.)[-j.dr], lty=1:5, col=1:5, bty="n")
+
+j.d2 <- 2:6 # drop
+matplot(ks, Pn.[,-j.d2]-Pn.[,2], type = "b", xlab = quote(k), ylab = "pchisq*(q, ..) - pchi1sq()",
+        main = pchiTit.1(twoExp,df,ncp))
+legend("topright", colnames(Pn.)[-j.d2], lty=1:5, col=1:5, bty="n")
+
+showProc.time()# --
+
+## 1e6 : ???
+ncp <- 1e6; df <- 1 ; twoExp <- -13
+Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
+showProc.time()
+print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong; other "coincide"
+matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)",
+        main = pchiTit.1(twoExp,df,ncp))
+## now absolute *difference* to true pchi1sq() :
+print(Pn.[,-c(2,4)]-Pn.[,2], digits=3)
+
+matplot(ks, Pn.[,-c(2,4)]-Pn.[,2], type = "b", xlab = quote(k), ylab = "pchisq*(q, ..) - pchi1sq()",
+        main = pchiTit.1(twoExp,df,ncp))
+legend("topright", colnames(Pn.)[-c(2,4)], lty=1:5, col=1:5, bty="n")
+
+j.dr <- 2:5 # drop
+matplot(ks, Pn.[,-j.dr]-Pn.[,2], type = "b", xlab = quote(k), ylab = "pchisq*(q, ..) - pchi1sq()",
+        main = pchiTit.1(twoExp,df,ncp))
+legend("topright", colnames(Pn.)[-j.dr], lty=1:5, col=1:5, bty="n")
+
+## Convincing: here, Sanka_d  is *better* than R's pchisq() !
+j.d2 <- 2:6 # drop
+matplot(ks, Pn.[,-j.d2]-Pn.[,2], type = "b", xlab = quote(k), ylab = "pchisq*(q, ..) - pchi1sq()",
+        main = pchiTit.1(twoExp,df,ncp))
+abline(h=0, lty=3, col=adjustcolor(1, 1/4))
+legend("topright", colnames(Pn.)[-j.d2], lty=1:5, col=1:5, bty="n")
+showProc.time()
+
+##     vvvv
+ncp <- 1e9; df <- 3 ; twoExp <- -17
+Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
+print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong; other "coincide"
+matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)",
+        main = pchiTit(twoExp,df,ncp))
+showProc.time()
 
 
+##===  L 3.  BOTH large ncp, large df ====================
 
+df <- 1e9; ncp <- 1 * df ; twoExp <- -17
+Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
+print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong; other "coincide"
+matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)",
+        main = pchiTit.n.d(twoExp,df,ncp))
+
+if(doExtras) { ## because it's a bit costly here :
+df <- 1e8; ncp <- 2 * df ; twoExp <- -16
+Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
+print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong; other "coincide"
+matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)",
+        main = pchiTit.n.d(twoExp,df,ncp))
+
+df <- 1e7; ncp <- 1/2 * df ; twoExp <- -14
+Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
+print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong; other "coincide"
+matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)",
+        main = pchiTit.n.d(twoExp,df,ncp))
+
+## pnchisq still "broken"; others good
+df <- 1e6; ncp <- 10 * df ; twoExp <- -14
+Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
+print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong; other "coincide"
+matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)",
+        main = pchiTit.n.d(twoExp,df,ncp))
+
+## pchisq *NON*-monotone !!
+df <- 4e6; ncp <- .5 * df ; twoExp <- -14
+Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
+print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong; other "coincide"
+matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)",
+        main = pchiTit.n.d(twoExp,df,ncp))
+
+} # only if(.X.)
+showProc.time()
+
+## pchisq ok
+df <- 2e6; ncp <- .5 * df ; twoExp <- -14
+Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
+print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong; other "coincide"
+matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)",
+        main = pchiTit.n.d(twoExp,df,ncp))
+
+showProc.time()
 
 ### Part 3 :  qchisq (non-central!)
 ### -------------------------------
+
+if(!dev.interactive(orNone=TRUE)) { dev.off(); pdf("chisq-nonc-3.pdf") }
 
 ### Bug 875 {see also ~/R/r-devel/R/tests/d-p-q-r-tests.R
 (q49.7 <- qchisq(0.025, 31, ncp=1, lower.tail=FALSE))## now ok: 49.7766
@@ -2068,7 +2303,7 @@ p.qappr <- function(p, df, ncp, main = NULL,
 } ## end{ p.qappr() }
 
 pU <- seq(.5, 1, length= 201)
-pU <- seq(0, 1, length= 501)[-c(1,501)]
+pU <- seq( 0, 1, length= 501)[-c(1,501)]
 ## (I've lost the original 'pU' I had used ...)
 
 mystats <- function(x) c(M=mean(x), quantile(x))
@@ -2076,6 +2311,8 @@ sum.qappr <- function(r) {
     m <- t(apply(abs(r[,-1] - r[,1]), 2,mystats))
     m[order(m[,"50%"]),]
 }
+op <- options(digits = 6, width = 110)# warn: immediate ..
+showProc.time()
 
 sum.qappr(p.qappr (pU, df= 1, ncp= 1))
 
@@ -2084,14 +2321,15 @@ sum.qappr(r <- p.qappr (pU, df=10, ncp= 10))
                p.qappr (pU, df=10, ncp= 10, kind = "diff", ylim.r = 1)
                p.qappr (pU, df=10, ncp= 10, kind = "abs", ylim.r = 0.01)
                p.qappr (pU, df=10, ncp= 10, kind = "rel", log = 'y')
-
 showProc.time()
 
 sum.qappr(p.qappr (pU, df= 1, ncp= 10))
 sum.qappr(p.qappr (pU, df= 1, ncp= 10, kind="rel"))
+showProc.time()
 
-## this takes CPU !
+if(doExtras) ## this takes CPU !
 sum.qappr(p.qappr (pU, df= 10, ncp= 1e4, kind="rel"))
+showProc.time() # 2.9 sec
 
 ##--> CF2, Pea, CF1 and Patn  are  the four best ones overall
 ##    ---  ---  ---     ----
@@ -2114,17 +2352,17 @@ sum.qappr(r <- p.qappr (pU, df= 10, ncp= .01))
 sum.qappr(r <- p.qappr (pU, df= 100, ncp= .01))
                                         # shows noise in qchisq() itself !!!
                p.qappr (pU, df= 100, ncp= .01, kind="rel", log="xy")
+showProc.time()
+
 ## even smaller ncp:
 sum.qappr(r <- p.qappr (pU, df= 100, ncp= .001))
                                         # shows noise in qchisq() itself !!!
                p.qappr (pU, df= 100, ncp= .001, kind="rel", log="xy")
 
-
 sum.qappr(r <- p.qappr (pU, df= 1, ncp= .1))
                p.qappr (pU, df= 1, ncp= .1, kind="rel", log="y")
-
-
-
+summary(warnings())
+showProc.time()
 
 sum.qappr(r <- p.qappr (pU, df= 20, ncp= 200))
                p.qappr (pU, df= 20, ncp= 200, kind='rel', log='y')
