@@ -660,6 +660,7 @@ pnchisqBolKuz <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchi1sq <- function(q, ncp = 0, lower.tail = TRUE, log.p = FALSE, epsS = .01)
 ## FIXME: "correct" 'epsS' via  Rmpfr :: pnorm()  etc !
 {
+    ## FIXME: For t1() function in ../tests/chisq-nonc-ex.R  got working lower.tail & log.p
     if(!lower.tail) stop("'lower.tail=FALSE' not yet implemented")
     if(log.p)       stop("'log.p = TRUE' not yet implemented")
     sq <- sqrt(q) # = 's' in my notes

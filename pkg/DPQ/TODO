@@ -1,8 +1,8 @@
 ##-*- org -*-->  Emacs .. [Tab] key + [Org] menu; C-c C-o to follow links
 
-* TODO tests/chisq-nonc-ex.R : move "things" to a vignette / demo // use result file in inst/test // only if(doExtras)
-* TODO tests/qbeta-dist.R    : move "things" to a vignette / demo // use result file in inst/test // only if(doExtras)
-* TODO tests/qgamma-ex.R     : some parts only if(doExtras)
+* TODO Compare pnchi1sq() with t1() function in tests/chisq-nonc-ex.R
+* TODO tests/chisq-nonc-ex.R : move "things" to a vignette -- DONE partly : vignettes/Noncentral-Chisq.Rnw
+* TODO tests/qbeta-dist.R    : move "things" to a vignette
 * TODO tests/pnt-precision-problem.R : some parts only if(doExtras)
 * TODO vignettes/comp-beta.Rnw: change to use same 'jss' * \cite*{} etc as ~/R/Pkgs/lme4/vignettes/lme4.Rnw
 * TODO b_chi(): Now have higher order asymptotic expansion *and* confirmed via Rmpfr that it is
@@ -26,6 +26,10 @@
 
 * TODO tests/qPoisBinom-ex.R:  *FIX* Bug in qpois / qbinom / qnbinom upper.tail|log.p
 
+
+* DONE tests/chisq-nonc-ex.R : use result file in inst/safe/  -- parts only if(doExtras)
+* DONE tests/qbeta-dist.R    : use result file in inst/safe/  -- parts only if(doExtras)
+* DONE tests/qgamma-ex.R     : some parts only if(doExtras)
 * DONE ppoisErr() should use 'long double'; get an 'all_from_0' option that works like cumsum(dpois(0:n))
 * DONE Document these (or do _not_ export):  now --> man/pnchisqWienergerm.Rd
   NB <--> ./wienergerm_README <<< ./R/wienergerm_nchisq-fn.R ./tests/wienergerm_nchisq.R

@@ -9,17 +9,21 @@ source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
 ##--> showProc.time(), assertError(), relErrV(), ...
 showProc.time()
 
+(doExtras <- DPQ:::doExtras())
+(sdir <- system.file("safe", package="DPQ")) ## save directory (to read from)
+
 ### Nowadays finds cases in a special region for really small p and cutoff 1e-11 :
 set.seed(47)
+n <- if(doExtras) 100 else 32
 res <- cbind(p=1,df=1,rE=1)[-1,]
-for(M in 1:20)
-for(p in runif(100)) for(df in rlnorm(100)) {
+for(M in 1:(if(doExtras) 20 else 10))
+for(p in runif(n)) for(df in rlnorm(n)) {
     r <- 1- pchisq(qchisq(p, df),df)/p
     if(abs(r) > 1e-11) res <- rbind(res, c(p,df,r))
 }
 
 ### use df in U[0,1]: finds two cases with bound 1e-11
-for(p in runif(100)/2) for(df in runif(100)) {
+for(p in runif(n)/2) for(df in runif(n)) {
     qq <- qchisq(p, df)
     if(qq > 0 && p > 0) {
         r <- 1- pchisq(qq, df) / p
@@ -171,12 +175,8 @@ p.qgammaSml <- function(from= 1e-110, to = 1e-5, ylim = c(0.4, 1000),
 showProc.time()
 
 p.qgammaSml()
-
 p.qgammaSml(1e-300)
 p.qgammaSml(1e-300,1e-50, a2= seq(100,360, by=4), a3=seq(350,1500, by=10))
-## ps.do("PqgammaSml-3.ps")
-p.qgammaSml(1e-300,1e-50, a2= seq(100,360, by=4), a3=seq(350,1500, by=10))
-## ps.end()
 
 showProc.time()
 
@@ -355,24 +355,32 @@ showProc.time()
 ## Consider the two different implementations of
 ##  lgamma1p(a) := lgamma(1+a) == log(gamma(1+a) == log(a*gamma(a))  "stable":
 
-if(!require("Rmpfr")) q("no") ## FIXME ?
+if(require("Rmpfr")) { ##---------------- MPFR numbers -------------------------
 
-(gammaE <- Const("gamma",200)); pi. <- Const("pi",200)
-(a0 <- (gammaE^2 + pi.^2/6)/2)
-(psi2.1 <- -2*zeta(mpfr(3,200)))# == psigamma(1,2) =~ -2.4041138
-(a1 <- (psi2.1 - gammaE*(pi.^2/2 + gammaE^2))/6)
+.mpfr.all.eq <- Rmpfr::all.equal
+AllEq <- function(target, current, ...)
+    .mpfr.all.eq(target, current, ...,
+                 formatFUN = function(x, ...) Rmpfr::format(x, digits = 9))
+
+print(gammaE <- Const("gamma",200)); pi. <- Const("pi",200)
+print(a0 <- (gammaE^2 + pi.^2/6)/2)
+print(psi2.1 <- -2*zeta(mpfr(3,200)))# == psigamma(1,2) =~ -2.4041138
+print(a1 <- (psi2.1 - gammaE*(pi.^2/2 + gammaE^2))/6)
 
 lseq <- sfsmisc::lseq
-x <- lseq(1e-30, 0.8, length=1000)
+x <- lseq(1e-30, 0.8, length = if(doExtras) 1000 else 125)
 x. <- mpfr(x, 200)
 xct. <- log(x. * gamma(x.)) ## using  MPFR  arithmetic .. no overflow ...
 xc2. <- log(x.) + lgamma(x.)##  (ditto)
-all.equal(xct., xc2., tol = 0) # 3.15779......e-57
+print(AllEq(xct., xc2., tol = 0)) # 3.15779......e-57
 xct <- as.numeric(xct.)
-stopifnot(
-              all.equal(xct., xc2., tol = 1e-45) ,
-              all.equal(xct , xc2., tol = 1e-15)
-)
+stopifnot(exprs = {
+    AllEq(xct., xc2., tol = 1e-45)
+    AllEq(xct , xc2., tol = 1e-15)
+    ##
+    all.equal(lgamma1p(x), lgamma1p(x, tol= 1e-16), tol=0)
+    ## -> no difference; i.e., default tol = 1e-14 seems fine enough!
+})
 showProc.time()
 
 m.appr <- cbind(log(x*gamma(x)), lgamma(1+x), log(x) + lgamma(x),
@@ -381,24 +389,26 @@ m.appr <- cbind(log(x*gamma(x)), lgamma(1+x), log(x) + lgamma(x),
                 lgamma1p.(x, k=3, cut=8e-4),
                 lgamma1p(x))#, tol= 1e-14), # = default
 
-stopifnot(all.equal(lgamma1p(x), lgamma1p(x, tol= 1e-16), tol=0))
-## -> no difference; i.e., default tol = 1e-14 seems fine enough!
-
 eMat <- m.appr - xct # absolute error
-matplot(x, eMat, log="x", type="l",lty=1)#-> problematic  log(x) + lgamma(x) for "large"
-
-matplot(x, abs(eMat), log="xy", type="l",lty=1)#-> but good for small; lgamma1p is much better
-
 ## Relative errors:
-str(reMat. <- m.appr /xct. - 1)
+str(reMat. <- m.appr/xct. - 1)
 str(reMat <- as(reMat., "array")) # as(., "matrix") fails in older versions
-matplot(x, abs(reMat), log="xy", type="l",lty=1)
+
+matplot(x,      eMat , log="x",  type="l", lty=1) #-> problematic  log(x) + lgamma(x) for "large"
+matplot(x, abs( eMat), log="xy", type="l", lty=1) #-> but good for small; lgamma1p is much better
+matplot(x, abs(reMat), log="xy", type="l", lty=1)
 abline(v= 3.47548562941137e-08, col = "gray80", lwd=3)#<- the cutoff value of  lgamma1p()
 ##---> should use earlier cutoff!
 ## zoom in:
-matplot(x, abs(reMat), log="xy", type="l",lty=1,
-        xlim=c(8e-9, 1e-3))
+matplot(x, abs(reMat), log="xy", type="l", lty=1, xlim=c(8e-9, 1e-3))
 abline(v= 3.47548562941137e-08, col = "gray80", lwd=3)#<- the cutoff value of  lgamma1p()
+
+    ## rm(x., xct., xc2., reMat., eMat, AllEq)
+    detach("package:Rmpfr")
+showProc.time()
+
+} ## if( MPFR ) ----------------------------------------------------------------
+
 
 ## ../R/qchisqAppr.R -- talks about the "small shape" qgamma() approxmation
 ## -----------------  --> .qgammaApprBnd() :
@@ -745,11 +755,9 @@ plot(a, (re <- RE.pqgamma(x, a, lower.tail=FALSE)), type="b", col=2, log="x")# o
 qgamma(x, 2^-400, lower.tail=FALSE)## is exactly 0
 
 ## -> it goes to 0 quickly . .. zooming in:
-curve(qgamma(1e-100, x, lower.tail=FALSE), 1e-120, 1e-80, log="xy", col=2, n=2000)
-if(FALSE) { ## eaxis(), i.e. axTicks() has incorrect defaults --> ~/R/D/r-devel/R/TODO
 curve(qgamma(1e-100, x, lower.tail=FALSE), 1e-110, 1e-70, log="xy", col=2, axes=FALSE)
 eaxis(1);eaxis(2)
-}
+
 ## from when on is it exactly 0:
 uniroot(function(u) qgamma(1e-100, 2^u,lower.tail=FALSE)-1e-315, c(-400, -300))$root
 ## -341.6941
@@ -816,7 +824,8 @@ plot(a, -dpa, log="xy", type="l", col=2, yaxt="n");eaxis(2)
 a <- lseq(1e-40, 1e-5, length=400)
 dpa <- sapply(a, del.pgamma)
 plot(a, -dpa, log="xy", type="l", col=2, axes=FALSE)
-eaxis(1, at = 10^-seq(5,40, by=5));eaxis(2)
+eaxis(1, at = 10^-seq(5,40, by=5))
+eaxis(2)
 
 
 xm <- .Machine$double.xmin
@@ -872,12 +881,13 @@ z1true <- c(226.97154111939946, 222.15218724493326, 219.59373661415756,
             217.27485383840451, 214.98015408183574, 212.68797118872064,
             210.39614286838227, 208.10445550564617, 205.81289009100664,
             203.52144711679352)
-all.equal(z1, z1true, tol=1e-15)# 1.307e-16 on 32-bit (Pentium M)
+all.equal(z1[1:10], z1true, tol=0)# 1.307e-16 on 32-bit (Pentium M); 1.686e-16 (64b Lnx, 2019)
+stopifnot(all.equal(z1[1:10], z1true, tol = 1e-15))
 showProc.time()
 ##>
 ##> With these values of z1true, we get the expected values:
 
-(y <- pgamma(z1true,x,lower.tail=FALSE))
+(y <- pgamma(z1true, a, lower.tail=FALSE))
 ## [1] 1e-100 1e-100 1e-100 1e-100 1e-100 1e-100 1e-100 1e-100 1e-100 1e-100
 
 ## > I am using the precompiled binary version of R, under Windows Vista.
@@ -926,9 +936,9 @@ try( # reveals eaxis() bug ? -- for the *subnormal* numbers
 
 curve(qgamma(x, .001, lower=FALSE), .4, .6, n=1001, log="y")
 curve(qgamma(x, .001, lower=FALSE), .5, .55, n=1001, log="y")
-try(# gives an error from axis()  bug ? -- subnormal y-range == fixed in R-devel (2018-08)
+## gives a *warning* from axis()  because of subnormal y-range  {was error, fixed in R-devel (2018-08)}
 curve(qgamma(x, .001, lower=FALSE), .52, .53, n=1001, log="y")
-)
+
 curve(qgamma(x, .001, lower=FALSE)*1e100, .522, .526, n=1001, log="y")
 
 showProc.time()

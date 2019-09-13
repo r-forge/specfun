@@ -137,9 +137,10 @@ showProc.time()
 
 ###---- March 2008 -----  "large ncp" :
 
+n <- if(doExtras) 1e4 else 512
+
 ## From: Martin Maechler <maechler@stat.math.ethz.ch>
 ## To: Peter Dalgaard <p.dalgaard@biostat.ku.dk>
-## Cc: Martin Maechler <maechler@stat.math.ethz.ch>
 ## Subject: Re: non-central chisq density
 ## Date: Thu, 27 Mar 2008 22:22:15 +0100
 
@@ -147,9 +148,9 @@ showProc.time()
 ## >>>>>     on Thu, 27 Mar 2008 22:14:07 +0100 writes:
 
 ##     PD> Martin Maechler wrote:
-##     >> curve(dchisq(x, df=3, ncp=30000, log=TRUE), 27300, 27500,
-##     >> n=1e4)
-##     >>
+
+curve(dchisq(x, df=3, ncp=30000, log=TRUE), 27300, 27500, n=n)
+
 ##     >>
 ##     PD> Hmm, am I supposed to know what causes this?
 
@@ -189,11 +190,11 @@ showProc.time()
 
 ## Anyway, I started to look a bit more closely and then saw this
 
-   d <- 1e6;curve(dchisq(x, df=3, ncp=d, log=TRUE), .98*d, 1.02*d, n=1e3)
+  d <- 1e6; curve(dchisq(x, df=3, ncp=d, log=TRUE), .98*d, 1.02*d, n=n)
 
 ## when going to smaller ncp and looking more closely something like
 
-   curve(dchisq(x, df=3, ncp=30000, log=TRUE), 27300, 27500, n=1e4)
+   curve(dchisq(x, df=3, ncp=30000, log=TRUE), 27300, 27500, n=n)
 
 ## which you may find amusing....
 
@@ -210,25 +211,26 @@ showProc.time()
 ##  dchisqAsym (x, df, ncp, log = FALSE)  --> ../R/dnchisq-fn.R
 ##  ----------                                     ~~~~~~~~~~~~
 
-curve(dchisq(x, df=3, ncp=30000, log=TRUE), 26000, 34000, n=1e4)
+curve(dchisq(x, df=3, ncp=30000, log=TRUE), 26000, 34000, n=n)
 curve(dchisqAsym(x, df=3, ncp=30000, log=TRUE),
-      add=TRUE, col="purple", n=1e4)
+      add=TRUE, col="purple", n=n)
 curve(dnorm(x, m=3+30000, sd=sqrt(2*(3 + 2*30000)), log=TRUE),
-      add = TRUE, col="blue", n=1e4)
+      add = TRUE, col="blue", n=n)
 ##==> It seems the chisqAsym() approximation is slightly better;
 ##  also from this :
-x <- rchisq(1e6, df=3, ncp=30000)
-sum(dnorm(x, m=3+30000, sd=sqrt(2*(3 + 2*30000)), log=TRUE))
-sum(dchisqAsym(x, df=3, ncp=30000, log=TRUE)) ## larger (less negative) <-> better
+x <- rchisq(if(doExtras) 1e6 else 1e4, df=3, ncp=30000)
+(sN <- sum(dnorm(x, m=3+30000, sd=sqrt(2*(3 + 2*30000)), log=TRUE)))
+(sCh<- sum(dchisqAsym(x, df=3, ncp=30000, log=TRUE))) ## larger (less negative) <-> better
+all.equal(sN, sCh) # ... 2.6887e-6"
 
 ## dnchisqBessel(x, df, ncp, log = FALSE) --> ../R/dnchisq-fn.R
 ## -------------                                 ~~~~~~~~~~~~
 
 ## From ?pl2curves()  [ == ../man/pl2curves.Rd ] :
-p.dnchiB <- function(df, ncp, log=FALSE, from=0, to = 2*ncp, p.log="", ...)
+p.dnchiB <- function(df, ncp, log=FALSE, from=0, to = 2*ncp, p.log="", n = if(doExtras) 2001 else 512, ...)
 {
     pl2curves(dnchisqBessel, dchisq, df=df, ncp=ncp, log=log,
-              from=from, to=to, p.log=p.log, ...)
+              from=from, to=to, p.log=p.log, n=n, ...)
 }
 
 ## simple check
@@ -254,7 +256,7 @@ p.dnchiB(df= 3, ncp=800, log=TRUE, 0,3500)    # for large x --> NaN in besselI
 dnchisqBessel(8000, df=20, ncp=5000) ## NaN -- no longer: now 1.3197e-78
 
 ## Hmm, I'm slightly confused that the cutoff seems at 1500 [ < 1e4 !]
-x <- 1000:1600
+x <- if(doExtras) 1000:1600 else seq(1000, 1600, by = 5)
 plot (x, besselI(x, 9, TRUE), type="l")
 ## Warning message:
 ## In besselI(x, nu, 1 + as.logical(expon.scaled)) : NaNs produced
@@ -1424,15 +1426,15 @@ for(df in dfs) {
 }; cat("\n")
 showProc.time()
 
+if(doExtras) { ## -- show irregularity more closely ---------------
 df <- 1e-300; curve((df+x) - qchisq(1/2, df, ncp=x), 1.38628, 1.38630, col=2)
-if(doExtras)
 for(df in dfs) {
     curve((df+x) - qchisq(1/2, df, ncp=x), add=TRUE,col=3)
     cat(formatC(df)," ")
 }; cat("\n")
 curve((0+x) - qchisq(1/2, df=0, ncp=x), 1.386294, 1.386295, col=2)
 showProc.time() # doExtras: ~ 0.6 {2019-09}
-
+} # only if(.X.)  -------------------------------------------------
 
 ff <- function(ncp) (0+ncp)-qchisq(1/2, df=0, ncp=ncp)
 str(oo <- optimize(ff, c(1.3,1.4), maximum=TRUE, tol=1e-15),digits=16)
@@ -1442,7 +1444,7 @@ qchisq(1/2, df=0, ncp = 1.386294373354218)## = 1.765e-8
 
 
 ## This is the case  df -> 0 where the distribution has a point mass at 0 !
-x <- c(0,1e-8,1e-5,1e-3,seq(0.01, 3, length=1001))
+x <- c(0,1e-8,1e-5,1e-3,seq(0.01, 3, length = if(doExtras) 1001 else 125))
 plot (x, pchisq(x, df=1e-4, ncp = 1.4), type ='l', col=2, ylim = 0:1)
 lines(x, pchisq(x, df=1e-4, ncp = 1.6), col=1)
 lines(x, pchisq(x, df=1e-4, ncp = 1.2), col=3)
@@ -1462,6 +1464,7 @@ lines(x, pchisq(x, df=0.1, ncp = 1.1), col=4)
 lines(x, pchisq(x, df=0.1, ncp = 0.1), col=5)
 
 showProc.time()
+
 ## MM: from something *not* put into ~/R/D/r-devel/R/tests/d-p-q-r-tests.R
 ## 1) PR#14216 (r51179, 2010-02-25)
 x <- 80:200; lp <- pchisq(x, 4, ncp=1, log.p=TRUE)
@@ -1509,6 +1512,7 @@ summary(1 - p1/p2)
 
 ## MM: added 'lower.tail' 'log.p' and 'x'  arguments
 
+##__ FIXME 2019-09:  Compare with my new  pnchis1sq()  function !!
 t1 <- function(p, ncp, lower.tail = FALSE, log.p = FALSE,
                x = qchisq(p, df = 1, ncp, lower.tail=lower.tail, log.p=log.p))
 {
@@ -1537,7 +1541,6 @@ t1 <- function(p, ncp, lower.tail = FALSE, log.p = FALSE,
                 logspace.add(pnorm(sx,  sL, log.p=TRUE, lower.tail=FALSE),
                              pnorm(sx, -sL, log.p=TRUE, lower.tail=FALSE))
         }
-
     c(if(!missing(p)) c(p=p), x=x, pnchisq=p1, p.true=p2, relErr=abs(p1-p2)/p2)
 }
 
