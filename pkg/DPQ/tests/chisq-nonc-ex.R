@@ -31,7 +31,14 @@ loadList <- function(L, envir = .GlobalEnv)
 
 
 (noLdbl <- (.Machine$sizeof.longdouble <= 8)) ## TRUE when --disable-long-double
-(doExtras <- DPQ:::doExtras())
+
+## very large ncp gave "infinite" loop in R <= 3.6.1 :
+## ==> need new enough "3.6.1 patched" or R{-devel} > 3.6.x
+(okR_Lrg <- (getRversion() >  "3.6.1" ||
+             getRversion() == "3.6.1" && R.version$`svn rev` >= 77145))
+
+(doExtras <- okR_Lrg && DPQ:::doExtras())
+
 ## save directory (to read from):
 (sdir <- system.file("safe", package="DPQ"))
 
@@ -1953,8 +1960,19 @@ showProc.time()
 
 ##===  L 2.  large ncp,  df/ncp << 1 ====================
 
-ncp <- 1e20; df <- 99
+pchiTit <- function(twoE, df, ncp, fN = "pchisq*", xtr = "", ncN = "ncp")
+    sprintf("%s(q = μ(1 + k* 2^%g)%s, µ = ν+λ = df+ncp; df=%g, %s=%g)",
+            fN, twoE, xtr, df, ncN, ncp)
+## paste0("pchisq*(q = μ(1 + k* 2^",twoExp,"), µ = ν+λ = df+ncp; df=",df,", ncp/df=",ncp/df,")"))
+pchiTit.1 <- function(twoE, df, ncp)
+    pchiTit(twoE, df, ncp, fN = "pchi*", xtr = " - pchi.1")
+pchiTit.n.d <- function(twoE, df, ncp) pchiTit(twoE, df, ncp=ncp/df, ncN="ncp/df")
+
 ks <- c(-40, -20, -15, -10, -6:6, 10, 15, 20, 40)
+
+if(okR_Lrg) { ## R <= 3.6.1 gave an (almost ?) infinite loop here !!
+
+ncp <- 1e20; df <- 99
 twoExp <- -35
 ##        ===
 system.time(suppressWarnings(
@@ -1984,13 +2002,6 @@ print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong
 ##       0 9.85e-01        1  9.85e-01  9.85e-01  9.85e-01
 ##       0 9.98e-01        1  9.98e-01  9.98e-01  9.98e-01
 ##       1 1.00e+00        1  1.00e+00  1.00e+00  1.00e+00
-pchiTit <- function(twoE, df, ncp, fN = "pchisq*", xtr = "", ncN = "ncp")
-    sprintf("%s(q = μ(1 + k* 2^%g)%s, µ = ν+λ = df+ncp; df=%g, %s=%g)",
-            fN, twoE, xtr, df, ncN, ncp)
-## paste0("pchisq*(q = μ(1 + k* 2^",twoExp,"), µ = ν+λ = df+ncp; df=",df,", ncp/df=",ncp/df,")"))
-pchiTit.1 <- function(twoE, df, ncp)
-    pchiTit(twoE, df, ncp, fN = "pchi*", xtr = " - pchi.1")
-pchiTit.n.d <- function(twoE, df, ncp) pchiTit(twoE, df, ncp=ncp/df, ncN="ncp/df")
 
 matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)", main= pchiTit(twoExp,df,ncp))
 
@@ -2015,6 +2026,9 @@ print(Pn., digits=3) # pchisq = Pearson = Sanka_d  ~~ AbdelA, Patnaik
 matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)", main= pchiTit(twoExp,df,ncp))
 
 } # only if(.X.)
+
+} # only if(okR..)
+
 showProc.time()
 
 ## Here pchisq() seems "perfect"
@@ -2097,6 +2111,8 @@ showProc.time()
 
 ##===  L 3.  BOTH large ncp, large df ====================
 
+if(okR_Lrg) { ## R <= 3.6.1 gave an (almost ?) infinite loop here !!
+
 df <- 1e9; ncp <- 1 * df ; twoExp <- -17
 Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
 print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong; other "coincide"
@@ -2139,6 +2155,8 @@ Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
 print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong; other "coincide"
 matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)",
         main = pchiTit.n.d(twoExp,df,ncp))
+
+} # only if(okR..)
 
 showProc.time()
 
