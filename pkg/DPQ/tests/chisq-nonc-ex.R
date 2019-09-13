@@ -2100,6 +2100,7 @@ abline(h=0, lty=3, col=adjustcolor(1, 1/4))
 legend("topright", colnames(Pn.)[-j.d2], lty=1:5, col=1:5, bty="n")
 showProc.time()
 
+if(okR_Lrg) { ## R <= 3.6.1 gave an (almost ?) infinite loop here !!
 ##     vvvv
 ncp <- 1e9; df <- 3 ; twoExp <- -17
 Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
@@ -2107,6 +2108,7 @@ print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong
 matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)",
         main = pchiTit(twoExp,df,ncp))
 showProc.time()
+} # only if(okR..)
 
 
 ##===  L 3.  BOTH large ncp, large df ====================
