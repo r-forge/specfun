@@ -33,14 +33,16 @@ pnbetaAppr2(x, a, b, ncp = 0, lower.tail = TRUE, log.p = FALSE)
   Algorithm AS 310: Computing the Non-Central Beta Distribution Function.
   \emph{Journal of the Royal Statistical Society. Series C (Applied Statistics)}
   \bold{46}(1), 146--156, for \dQuote{approximation 2} notably p.154;
-  \url{https://www.jstor.org/stable/2986212} or \doi{10.1111/1467-9876.00055}.
+  % not ok in CRAN/winb checks:  \url{https://www.jstor.org/stable/2986212}  or
+  \doi{10.1111/1467-9876.00055}.
 }
 \author{Martin Maechler; \code{pnbetaAppr2()} in Oct 2007.}
 \note{
-  The authors in the reference compare AS 310 with Frick(1990) and Lenth(1987) and
-  state to be better than both.  \R's current (2019) noncentral beta
-  implementation builds on Lenth(1987), with some amendments though; still, \code{pnbetaAS310()}
-  potentially be better, at least in certain corners of the 4-dimensional input space.
+  The authors in the reference compare AS 310 with Frick(1990) and Lenth(1987)
+  and state to be better than both.  \R's current (2019) noncentral beta
+  implementation builds on Lenth(1987), with some amendments though; still,
+  \code{pnbetaAS310()} may potentially be better, at least in certain
+  corners of the 4-dimensional input space.
 }
 \seealso{
   \R's own \code{\link{pbeta}}.
