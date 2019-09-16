@@ -46,7 +46,7 @@ loadList <- function(L, envir = .GlobalEnv)
 (myPlatf <- all(Sys.info()[c("sysname", "machine", "login")] ==
                            c("Linux",  "x86_64",  "maechler")))
 (beStrict <- doExtras && !noLdbl && myPlatf)
-
+(is32 <- .Machine$sizeof.pointer == 4) ## <- should work uniformly on Linux/MacOS/Windows
 
 if(!dev.interactive(orNone=TRUE)) pdf("chisq-nonc-1.pdf")
 .O.P. <- par(no.readonly=TRUE)
@@ -401,16 +401,6 @@ sfsmisc::eaxis(2) ## whereas this underflows much much much earlier (at x ~ 100)
 curve(1-pchisq(x,1,1), add=TRUE, col=adjustcolor("red", 0.5), lwd=3, n = 2001)
 
 
-## Older R versions (<= 1.6.2): bad problem around the following:
-if(FALSE)
-str(uniroot(function(x)pchisq(x,1,1)- 1/2, c(1400, 1600),tol=1e-10), digits = 10)
-##- List of 4
-##-  $ root      : num 1497.126158
-##-  $ f.root    : num -0.5
-##-  $ iter      : int 42
-##-  $ estim.prec: num 1.009539119e-10
-
-## but now:
 x <- 100:1511
 p <- pchisq(x,1,1, lower=FALSE)
 stopifnot(0 <= p, p <= 2e-19)
@@ -552,12 +542,15 @@ summary(warnings())
 sfsmisc::eaxis(1, sub10=3); sfsmisc::eaxis(2)
 curve(pnchisqV(x, df=1, ncp=300, errmax = 4e-16, lower=FALSE, verbose=1),# ,log=TRUE),
       add = TRUE, col=2); mtext("ncp = 300 -- pnchisqV() pure R", col=2)
+if(!is32 && !noLdbl) { ## seems to hang on Winbuilder [32 bit  only??]
 pncRC <- pnchisqRC(pxy$x, df=1, ncp=300, lower=FALSE, verbose=1)
 all.equal(pxy$y, pncRC, tol = 0)# "often" TRUE, depends on exact R version, etc
 stopifnot(
     all.equal(pxy$y, pncRC, tol = if(noLdbl) 5e-14 else 0)# noLdbl: seen 1.129e-14
 )
 summary(warnings())
+}# if(!is32 ...)
+
 
 ## Really large 'df' and 'x' -- "case I":
 ## no problem anymore:
@@ -1805,7 +1798,7 @@ ftable(apply(dAR[c("1", "2", "5"), c(1,3,4),,], c(1,2,4), function(x) max(abs(x[
 options(warn = 0, digits = 7)# partial revert
 
 ###----------- Much testing  pnchisqRC()  notably during my experiments
-ptol <- if(noLdbl) 8e-13 else if(doExtras) 3e-16 else 1e-15
+ptol <- if(noLdbl) 8e-13 else if(doExtras) 3e-16 else if(is32) 1e-14 else 1e-15
 set.seed(123)
 for(df in c(.1, .2, 1, 2, 5, 10, 20, 50, 1000, if(doExtras) c(1e10, 1e200))) { ## BUG!  (df=1e200, ncp=1000) takes forever
     cat("\n============\ndf = ",df,"\n~~~~~~~~~\n")
