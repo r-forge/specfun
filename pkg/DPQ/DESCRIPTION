@@ -6,6 +6,7 @@ Authors@R: c(person("Martin","Maechler", role=c("aut","cre"),
                     email="maechler@stat.math.ethz.ch", comment = c(ORCID = "0000-0002-8685-9910"))
   , person("Morten", "Welinder", role = "ctb", comment = "pgamma C code, see PR#7307, Jan. 2005")
   , person("Wolfgang", "Viechtbauer", role = "ctb", comment = "dtWV(), 2002")
+  , person("Ross", "Ihaka", role = "ctb", comment = "src/qchisq_appr.c")
   , person("R-core", email = "R-core@R-project.org", role = "ctb", comment = "src/{dpq.h, algdiv.c, pnchisq.c}")
   	     )
 Description: Computations for approximations and alternatives for the 'DPQ'

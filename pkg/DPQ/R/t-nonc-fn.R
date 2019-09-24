@@ -405,8 +405,8 @@ pntR  <- Vectorize(pntR1, c("t", "df", "ncp"))
 ##'         = log(exp(log(x_max))*sum(exp(log(x)-log(x_max))))
 ##'         = log(x_max) + log(sum(exp(log(x)-log(x_max)))))
 ##'         = lx.max + log(sum(exp(lx-lx.max)))
-##' @author Marius Hofert, Martin Maechler
-
+##' @author Martin Maechler (originally joint with Marius Hofert)
+##'
 ##' NB: If lx == -Inf for all should give -Inf, but gives NaN / if *one* is +Inf, give +Inf
 lsum <- function(lx, l.off = max(lx)) {
     if (is.finite(l.off))
@@ -431,7 +431,7 @@ lsum <- function(lx, l.off = max(lx)) {
 ##'         = log(exp(log(x0))*sum(signs*exp(log(|x|)-log(x0))))
 ##'         = log(x0) + log(sum(signs* exp(log(|x|)-log(x0))))
 ##'         = l.off   + log(sum(signs* exp(lxabs -  l.off  )))
-##' @author Marius Hofert and Martin Maechler
+##' @author Martin Maechler (originally joint with Marius Hofert)
 lssum <- function (lxabs, signs, l.off = max(lxabs), strict = TRUE)
 {
     sum. <- sum(signs * exp(lxabs - l.off))
