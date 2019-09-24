@@ -79,8 +79,10 @@ z.s(x, df, ncp, verbose = getOption("verbose"))
   \item{verbose}{logical (or integer) indicating if or how much diagnostic
     output should be printed to the console during the computations.}
   \item{f.s}{a number must be a \dQuote{version} of \eqn{s(x, df, ncp)}.}
-  \item{eps1}{ .... }
-  \item{sMax}{ .... }
+  \item{eps1}{for \code{qs()}: use direct approximation instead of
+    \code{h(1 - 1/s)} for \code{s < eps1}.}
+  \item{sMax}{for \code{qs()}: cutoff to switch the \eqn{h(.)} formula for
+    \code{s > sMax}.}
 }
 \note{
   The exact auxiliary function names etc, are still considered
@@ -94,7 +96,8 @@ z.s(x, df, ncp, verbose = getOption("verbose"))
 %% but also in Martin's extensive example scripts, and hand notes
 }
 \value{
-  bla FIXME
+  all these functions return \code{\link{numeric}} vectors according to
+  their arguments.
 }
 \author{Martin Maechler, mostly end of Jan 2004}% <--> ../wienergerm_README <<<<
 \references{

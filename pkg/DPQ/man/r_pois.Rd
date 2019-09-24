@@ -49,23 +49,26 @@ plRpois(lambda, iset = 1:(2*lambda), do.main = TRUE,
   \code{r_pois()} is related to our series expansions and approximations
   for the non-central chisquared;
   in particular
-  ...........
+  ........... % TODO
 
 
   \code{plRpois()} simply produces a \dQuote{nice} plot of \code{r_pois(ii, *)}
   vs \code{ii}.
 }
 \value{
-  .........
+  \describe{
+    \item{\code{r_pois()}}{returns a numeric vector
+      \eqn{r_\lambda(i)}{r_v(i)} values.}
+    \item{\code{r_pois_expr()}}{an \code{\link{expression}}.}
+  }
 }
-\references{
-  ...
-}
+%% \references{
+%%   TODO
+%% }
 \author{Martin Maechler, 20 Jan 2004}
 %% \note{
 
 %% }
-
 \seealso{
   \code{\link{dpois}()}.
 }

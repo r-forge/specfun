@@ -1,6 +1,8 @@
 ##-*- org -*-->  Emacs .. [Tab] key + [Org] menu; C-c C-o to follow links
 
 * TODO Compare pnchi1sq() with t1() function in tests/chisq-nonc-ex.R
+* TODO Add .LDBLmachine() which gives the "long double" aka 'LDOUBLE' equivalent of `.Machine()`
+  Note that from `#include <float.h>` we should just return the `LDBL_*` values.
 * TODO tests/chisq-nonc-ex.R : move "things" to a vignette -- DONE partly : vignettes/Noncentral-Chisq.Rnw
 * TODO tests/qbeta-dist.R    : move "things" to a vignette
 * TODO tests/pnt-precision-problem.R : some parts only if(doExtras)

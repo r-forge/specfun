@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.3-3 (2019-09-16, svn r108)}{
+\section{Version 0.3-3 (2019-09-24, svn r110)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item Renamed (and generalized / merged) many functions to have less "." in names.
@@ -37,7 +37,10 @@
       implementing Bol'shev and Kuznetzov (1963)'s approximations.
 
       \item \dQuote{new} \code{pnchi1sq()} and \code{pnchi2sq()} with
-      \dQuote{exact} formulas for the special cases \code{df=1} and  \code{df=3}.
+      \dQuote{exact} formulas for the special cases \code{df=1} and
+      \code{df=3}.
+
+      \item simplified formula in \code{dtWV()}.
     }
   }
   \subsection{BUG FIXES}{

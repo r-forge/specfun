@@ -779,11 +779,12 @@ dntJKBf <- Vectorize(dntJKBf1, c("x", "df", "ncp"))
 ## .......
 ##
 ## MM: added 'log' argument and implemented  log=TRUE
-## --- TODO: almost untested by MM [but see Wolfgang's notes in *_WV.R !]
+## --- TODO: almost untested by MM [but see Wolfgang's notes in *_WV.R (s.above)]
 dtWV <- function(x, df, ncp=0, log=FALSE) {
-   dfx2 <- df + x^2 # << by MM; used almost only as df/dfx2
-   y <- -ncp*x/sqrt(dfx2)
-   a <- (-y + sqrt(y^2 + 4*df)) / 2 # << MM: cancellation for y >> df
+   dfx2 <- df + x^2 # = 'f+t^2' in Resnikoff+L.(1957), p.1 (by MM)
+   y <- -ncp*x/sqrt(dfx2) # = 'y' in R.+L., p.1
+   ## MM(FIXME): cancellation for y >> df  here :
+   a <- (-y + sqrt(y^2 + 4*df)) / 2 # NB a = 't' in R.+L., p.25
    dfa2 <- df+a^2 ## << MM(2)
    if(log) {
        lHhmy <- df*log(a) + -0.5*(a+y)^2 +
@@ -791,10 +792,11 @@ dtWV <- function(x, df, ncp=0, log=FALSE) {
            log1p( - 3*df/(4*dfa2^2) + 5*df^2/(6*dfa2^3))
        lHhmy - (((df-1)/2)*log(2) + lgamma(df/2) + .5*log(pi*df)) +
            -0.5*df*ncp^2/dfx2 + ((df+1)/2)*log(df/dfx2)
-   } else {
+   } else { ## MM: cancelled 1/f! = 1/gamma(df+1) in Hh_f(y) =: Hhmy : formula p.25
        Hhmy <- a^df * exp(-0.5*(a+y)^2) *
            sqrt(2*pi*a^2/dfa2) *
            (1 - 3*df/(4*dfa2^2) + 5*df^2/(6*dfa2^3))
+       ## formula p.1:  h(f,δ,t) = (....) * Hh_f(-δ t / sqrt(f+t²)) = (....) * Hhmy
        Hhmy / (2^((df-1)/2) * gamma(df/2) * sqrt(pi*df)) *
            exp(-0.5*df*ncp^2/dfx2) * (df/dfx2)^((df+1)/2)
    }

@@ -56,6 +56,8 @@ qnchisqSankaran_d(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
     \code{eps} or \code{maxiter}.}
 }
 \details{
+  Compute (approximate) quantiles, using approximations analogous to those
+  for the probabilities, see \code{\link{pnchisqPearson}}.
   \describe{%%----- Get some "outline" from ./pnchisqAppr.Rd <<<< same "Authors" Patnaik, Pearson, Sankaran, ...
     \item{qchisqAppr.0():}{ ...TODO... }
     \item{qchisqAppr.1():}{ ...TODO... }
@@ -73,11 +75,11 @@ qnchisqSankaran_d(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
     \item{qnchisqPatnaik():}{ ...TODO... }
     \item{qnchisqPearson():}{ ...TODO... }
     \item{qnchisqSankaran_d():}{ ...TODO... }
-
   }
 }
 \value{
-  ...
+  \code{\link{numeric}} vectors of (noncentral) chi-squared quantiles,
+  corresponding to probabilities \code{p}.
 }
 \references{
   Johnson, N.L., Kotz, S. and Balakrishnan, N. (1995)

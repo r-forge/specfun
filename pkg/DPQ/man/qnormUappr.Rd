@@ -40,7 +40,8 @@ qnormUappr(p, lp = .DT_Clog(p, lower.tail=lower.tail, log.p=log.p),
   \dQuote{swapping the tails}, so it is good there as well.
 }
 \value{
-  TODO
+  numeric vector of (approximate) normal quantiles corresponding to
+  probabilities \code{p}
 }
 %% \references{
 
