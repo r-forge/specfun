@@ -52,9 +52,9 @@ static double h(double y)
 /* h(y) := ( (1-y)* log(1-y) + y - y^2/2) / y^2
  *  --
  * numerically stable; Martin Maechler (2004) */
-    static const double // -pedantic warns about sqrt(.) , pow(.) not being const.
-	E_2 = sqrt((10./3.) * DBL_EPSILON),// ~= 2.72  e-8
-	E_3 = pow(5. * DBL_EPSILON, 1./3.);// ~= 1.035 e-5
+    static const double // -pedantic warns / clang *error*s about sqrt(.) , pow(.) not being const.
+	E_2 = 2.7205673729636575453329564e-8, // == sqrt((10./3.) * DBL_EPSILON),// ~= 2.72  e-8
+	E_3 = 1.0354681459788919721672346e-5; // == pow(5. * DBL_EPSILON, 1./3.);// ~= 1.035 e-5
 
     if(y == 1.) return(0.5);
 
