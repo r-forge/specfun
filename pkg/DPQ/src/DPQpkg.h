@@ -104,13 +104,18 @@
 # define LOG1p log1pl
 // Rmpfr: log(mpfr(2, 130)) {130 bits is "more than enough": most long_double are just 80 bits!}
 # define M_LN2_ 0.6931471805599453094172321214581765680755L
-#else
+# define PR_g_ "Lg"
+
+#else //--------------------
+
 # define EXP exp
 # define EXPm1 expm1
 # define FABS fabs
 # define LOG log
 # define LOG1p log1p
 # define M_LN2_ M_LN2
+# define PR_g_ "g"
+
 #endif
 
 
