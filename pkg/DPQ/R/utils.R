@@ -8,14 +8,14 @@ doExtras <- function(int = interactive()) {
 
 all_mpfr <- function(...) {
     ## Remain lazy ==> do *NOT* use list(...)  which evaluates all
-    for(i in ...length()) if(!inherits(...elt(i), "mpfr")) return(FALSE)
+    for(i in seq_len(...length())) if(!inherits(...elt(i), "mpfr")) return(FALSE)
     ## else return
     TRUE
 }
 
 any_mpfr <- function(...) {
     ## Remain lazy ==> do *NOT* use list(...)  which evaluates all
-    for(i in ...length()) if(inherits(...elt(i), "mpfr")) return(TRUE)
+    for(i in seq_len(...length())) if(inherits(...elt(i), "mpfr")) return(TRUE)
     ## else return
     FALSE
 }

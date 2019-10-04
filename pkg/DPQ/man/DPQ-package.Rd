@@ -7,10 +7,18 @@
   \packageDescription{DPQ}
 }
 \details{
-  The DESCRIPTION file:
+  The DESCRIPTION file: % >> ../DESCRIPTION <<
   \packageDESCRIPTION{DPQ}
   \packageIndices{DPQ}
-  %% ~~ Overview of how to use the package, incl. the most important functions ~~
+
+  An important goal is to investigate diverse algorithms and approximations
+  of \R's own density (\code{d*()}), probability (\code{p*()}), and
+  quantile (\code{q*()}) functions, notably in \dQuote{border} cases where
+  the traditional published algorithms have shown to be suboptimal, not
+  quite accurate, or even useless.
+
+  Examples are border cases of the beta distribution, or \bold{non-central}
+  distributions such as the non-central chi-squared and t-distributions.
 }
 \author{
   Principal author and maintainer: \packageMaintainer{DPQ}
@@ -26,7 +34,9 @@
   \pkg{\link[Rmpfr:Rmpfr-package]{Rmpfr}}.
 }
 \examples{
-"FIXME"
+## Show problem in R's non-central t-distrib. density:
+example(dnt)
+%% add another few cases;  notably  non-central chisq
 }
 \keyword{ distribution }
 \keyword{ math }

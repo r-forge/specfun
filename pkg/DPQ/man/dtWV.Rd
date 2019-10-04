@@ -41,7 +41,8 @@ dtWV(x, df, ncp = 0, log = FALSE)
   and Martin Maechler (\code{log} argument; tweaks, notably recycling).
 }
 \seealso{
- \code{\link{dt}}, \R's (C level) implementation of the (non-central) t density.
+ \code{\link{dt}}, \R's (C level) implementation of the (non-central) t density;
+ \code{\link{dntJKBf}}, for Johnson et al.'s summation formula approximation.
 }
 \examples{
 tt <- seq(0, 10, len = 21)

@@ -31,11 +31,12 @@ G_half       # = sqrt(pi) = Gamma( 1/2 )
 ## Functions :
 all_mpfr(...)
 any_mpfr(...)
-logr(x, a)    # == log(x / (x + a)) -- but numerically smart; x > 0, a >= 0 > -x
+logr(x, a)    # == log(x / (x + a)) -- but numerically smart; x >= 0, a > -x
 }
 \arguments{
   \item{\dots}{numeric or \code{"mpfr"} numeric vectors.}
-  \item{x, a}{number-like .. }
+  \item{x, a}{number-like, not negative, now may be vectors of
+    \code{length(.) > 1}.}
 }
 \value{
   The numeric constant in the first case; a numeric (or "mpfr") vector of
@@ -49,7 +50,7 @@ logr(x, a)    # == log(x / (x + a)) -- but numerically smart; x > 0, a >= 0 > -x
       package \CRANpkg{Rmpfr}).  The arguments are evaluated only until
       the result is determined, see the example.}
 
-    \item{\code{logr()}}{computes \eqn{\log( x / (x+a) )} in a numerically
+    \item{\code{logr()}}{computes \eqn{\log( x / (x+a) )}{log(x / (x+a))} in a numerically
       stable way.}%% which means .... (TODO)
 
     %% \item{\code{..()}}{ ..}
@@ -66,5 +67,8 @@ logr(x, a)    # == log(x / (x + a)) -- but numerically smart; x > 0, a >= 0 > -x
 \examples{
 (Ms <- ls("package:DPQ", pattern = "^M"))
 lapply(Ms, function(nm) { cat(nm,": "); print(get(nm)) }) -> .tmp
+
+logr(1:3, a=1e-10)
+
 }
 \keyword{math}

@@ -391,21 +391,21 @@ print(f. <- .dntJKBch(1:6, df=3, ncp=5, check=TRUE), digits = 4)
 ## now:[1] 0.0005083 0.0260607 0.1191377 0.1761045 0.1657718 0.1305411
 ## was:[1] 0.0032023 0.2728377 1.5174647 2.4481320 2.4106931 1.9481189 -- wrong "but sensible"
 
-
 x <- seq(-1,12, by=1/16)
-
 if(FALSE) ## FIXME ?! -- internal logic error:
 .dntJKBch(x, df=3, ncp=5, check=TRUE)
-## Error in (function (x, df, ncp, log = FALSE, M = 1000, check = FALSE,  :
-##   exp(lterms[ii]) and terms[ii] are not equal:
-##   'is.NA' value mismatch: 0 in current 340 in target
-fx <- dt(x, df=3, ncp=5)
-re1 <- 1 - .dntJKBch(x, df=3, ncp=5) / fx # with warnings
-re2 <- 1 -  dntJKBf (x, df=3, ncp=5) / fx
-summary(warnings()) ## "In log(x * ncp * sqrt(2)/sqrt(df + x^2)) : NaNs produced"
-          all.equal(re1[!is.na(re1)], re2[!is.na(re1)], tol=0)##  Mean relative ...: 2.068..e-5
-stopifnot(all.equal(re1[!is.na(re1)], re2[!is.na(re1)], tol=1e-6))
-matplot(x, log10(abs(cbind(re1, re2))), type = "o", cex = 1/4)
+## ## Error in (function (x, df, ncp, log = FALSE, M = 1000, check = FALSE,  :
+## ##   exp(lterms[ii]) and terms[ii] are not equal:
+## ##   'is.NA' value mismatch: 0 in current 340 in target
+
+## -- This is now in help page examples  >>> ../man/dnt.Rd <<<
+## fx <- dt(x, df=3, ncp=5)                  ~~~~~~~~~~~~~
+## re1 <- 1 - .dntJKBch(x, df=3, ncp=5) / fx # with warnings
+## re2 <- 1 -  dntJKBf (x, df=3, ncp=5) / fx
+## summary(warnings()) ## "In log(x * ncp * sqrt(2)/sqrt(df + x^2)) : NaNs produced"
+##           all.equal(re1[!is.na(re1)], re2[!is.na(re1)], tol=0)##  Mean relative ...: 2.068..e-5
+## stopifnot(all.equal(re1[!is.na(re1)], re2[!is.na(re1)], tol=1e-6))
+## matplot(x, log10(abs(cbind(re1, re2))), type = "o", cex = 1/4)
 
 
 print(ft <- .dntJKBch(1:6, df=3, ncp=5), digits = 4)

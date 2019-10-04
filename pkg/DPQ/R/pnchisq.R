@@ -562,7 +562,8 @@ pnchisqRC <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
     stopifnot(is.logical(small.ncp.logspace))
     .Call(C_Pnchisq_R, ## ../src/pnchisq-it.c
           as.double(q), as.double(df), as.double(ncp), lower.tail, log.p,
-          no2nd.call, cutOffncp, small.ncp.logspace, itSimple, errmax, reltol, epsS, maxit, verbose)
+	  no2nd.call, cutOffncp, small.ncp.logspace, itSimple,
+	  errmax, reltol, epsS, maxit, verbose)
 }
 
 
