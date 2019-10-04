@@ -712,16 +712,22 @@ dntRwrong <- Vectorize(dntRwrong1, c("x", "df", "ncp"))
 }
 .dntJKBch <- Vectorize(.dntJKBch1, c("x", "df", "ncp"))
 
-##-FIXME: have  exp(logr(.)) in one place - *clearly* suboptimal
-## MM: really optimal in the other cases?
-logr <- function(x, a) ## == log(x / (x + a)) -- but numerically smart; x > 0, a >= 0 > -x
-    if(a < x) -log1p(a/x) else log(x / (x + a))
+## Q{MM}: is the [ a < x ] cutoff really exactly optimal?
+logr <- function(x, a) { ## == log(x / (x + a)) -- but numerically smart; x >= 0, a > -x
+    if(length(aS <- a < x) == 1L) {
+        if(aS) -log1p(a/x) else log(x / (x + a))
+    } else { # "vectors" : do ifelse(aS, .., ..) efficiently:
+        r <- a+x # of correct (recycled) length and type (numeric, mpfr,  ..)
+        r[ aS] <- -log1p((a/x)[aS])
+        r[!aS] <- log((x / r)[!aS])
+        r
+    }
+}
 
-## New "optimized" and  "mpfr-aware" version:
-dntJKBf1 <- function(x, df, ncp, log = FALSE, M = 1000)
+## New "optimized" and  "mpfr-aware" and *vectorized* (!) version:
+dntJKBf <- function(x, df, ncp, log = FALSE, M = 1000)
 {
-    stopifnot(length(x) == 1, length(df) == 1, length(ncp) == 1, length(M) == 1,
-              df >= 0, is.numeric(M), M >= 1, M == round(M))
+    stopifnot(length(M) == 1, df >= 0, is.numeric(M), M >= 1, M == round(M))
     ln2 <- log(2)
     ._1.1..M <- c(1L, seq_len(M)) # cumprod(.) = (0!, 1!, 2! ..) =  (1, 1, 2, 6, ...)
     isN <- is.numeric(x) && is.numeric(df) && is.numeric(ncp)
@@ -749,22 +755,33 @@ dntJKBf1 <- function(x, df, ncp, log = FALSE, M = 1000)
     lfac <- -ncp^2/2  - (.5*log(pi*df)+lgamma(df/2)) + logr(df, x2)*(df+1)/2
     j <- 0:M
     lfact.j <- cumsum(log(._1.1..M)) ## == lfactorial(j)
-    dx <- ncp*x # delta * x
-    lSum <- if(dx == 0) 0 else {
-	alt <- (sign(dx) == -1) ## if(alt)  alternating sum !
-	if(ncp < 0) ncp <- -ncp
+    nd <- length(df)
+    LogRt <- 2*log(abs(ncp)) + ln2 + logr(x2, df) # (full length)
+    ## now vectorize "lSum(x,df,ncp)" :
+    lSum <- dx <- ncp*x + 0*df # delta * x  [of full length],  (correct == 0 for dx == 0)
+    for(i in seq_along(dx)) { # --- compute lSum[i] ----------------
+        alt <- dx[i] < 0 ## if(alt)  alternating sum !
+	## use abs(ncp) : if(ncp < 0) ncp <- -ncp
 	##lterms <- lgamma((df+j + 1)/2) - lfact.j + log(x*ncp*sqrt(2)/sqrt(df+x^2))* j
-	lterms <- lgamma((df + j + 1)/2) - lfact.j + (2*log(ncp) + ln2 + logr(x2, df)) * j/2
-	if(alt) ## this is hard: even have *negative* sum {before log(.)} with mpfr,
-            ## e.g. in  dnt.1(mpfr(-4, 128), 5, 10)   ???
-            lssum(lterms, signs = rep_len(c(1,-1), length(j)), strict=FALSE)
-        else
-            lsum(lterms)
+	lterms <- lgamma((df[1L+ (i-1L)%% nd] + j + 1)/2) - lfact.j + LogRt[i] * j/2
+        lSum[i] <-
+            if(alt) ## this is hard: even have *negative* sum {before log(.)} with mpfr,
+                ## e.g. in  dnt.1(mpfr(-4, 128), 5, 10)   ???
+                lssum(lterms, signs = c(1,-1), strict=FALSE)
+            else
+                lsum(lterms)
     }
     lf <- lfac + lSum
     if(log) lf else exp(lf)
 }
-dntJKBf <- Vectorize(dntJKBf1, c("x", "df", "ncp"))
+## No longer, as have vectorized above!
+## dntJKBf <- Vectorize(dntJKBf1, c("x", "df", "ncp"))
+## instead, from 2019-10-04 :
+dntJKBf1 <- function(x, df, ncp, log = FALSE, M = 1000) {
+    .Deprecated("dntJKBf")
+    dntJKBf(x=x, df=df, ncp=ncp, log=log, M=M)
+}
+
 
 ## Orig: ~/R/MM/NUMERICS/dpq-functions/noncentral-t-density-approx_WV.R
 ##

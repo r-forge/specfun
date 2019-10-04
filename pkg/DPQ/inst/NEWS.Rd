@@ -4,6 +4,27 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
+\section{Version 0.3-4 (2019-10-05, svn r....)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item more efficient (internally vectorized) \code{dntJKBf()}.
+      Consequently, \code{dntJKBf1()} is deprecated now.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item fix thinko in \code{any_mpfr()} and \code{all_mpfr()}.
+
+      \item \code{pnchisqRC()}'s C code gave severe valgrind warnings...
+
+      \item \code{ppoisD()} behaves differently in a valgrinded version;
+      ......
+      ......
+    }
+  }
+}
+
+
 \section{Version 0.3-3 (2019-09-24, svn r110)}{
   \subsection{NEW FEATURES}{
     \itemize{
