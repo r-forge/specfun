@@ -6,7 +6,9 @@ do-now\.org
 ^Misc
 ^old$
 auto
-.*log$
+\.bbl$
+\.blg$
+log$
 .*/.*,v
 R/.*\.R\+
 src/.*\+
@@ -15,11 +17,11 @@ TAGS
 ^do-
 etags
 vignettes/.*:
+vignettes/.*\[woven\]
 inst/doc/.*\.Rnw
 demo/.*.R\+
 tests/.*\.pdf
-tests/.*\.Rout
-tests/.*\.Rout[-_]
+tests/.*\.Rout[-_]?
 tests/.*\.Rout*[24]b
 TODO-man
 TODO-merge-

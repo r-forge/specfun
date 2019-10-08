@@ -17,8 +17,10 @@ stopifnot(exprs = {
     require(sfsmisc)
 })
 
-if(!dev.interactive(orNone=TRUE)) pdf("pt_ncp_appr.pdf")
+source(system.file("test-tools-1.R", package="Matrix"), keep.source=FALSE)
+## relerrV()
 
+if(!dev.interactive(orNone=TRUE)) pdf("t-nonc_P-1.pdf")
 
 ### Part I  -- former  pnt-ex.R
 ### ---------------------------
@@ -68,7 +70,7 @@ pt(39,39,39)#   p = 0 ==> result=0 --- no longer
 
 ## FIXME:
 pntR1(40,40, 38.5, verbose=2) ## and then edit ---> gives the *.out file
-## FIXME --- work via sink() or capture.output -- to get  rr data.frame()
+##--------- FIXME --- work via sink() or capture.output -- to get  rr data.frame()
 if(FALSE) {
 t.file <- "/u/maechler/R/MM/NUMERICS/dpq-functions/pnt-40-40-38.5.out"
 nr <- names(rr <- read.table(t.file, header= TRUE))
@@ -202,9 +204,6 @@ cbind(n, qq, ncp.n, pt = ptq, "pf.q^2" = pfq2, rel.E = 1 - ptq/pfq2)
 lines(qq, pfq2, col=adjustcolor("blue", 0.4), lwd=3)
 ##==> he is right that  pf() is good *here*
 
-source(system.file("test-tools-1.R", package="Matrix"), keep.source=FALSE)
-## relerrV()
-
 chk.t.F <- function(x, df, ncp, tolerance = 1e-9) {
     pt. <- pt(x,           df= df, ncp = ncp)
     pf. <- pf(x^2, df1=1, df2= df, ncp = ncp^2)
@@ -263,11 +262,13 @@ curve(dt(x, df=11, ncp=-10, log=TRUE), -40, 30, n=512, col=2, lwd=2)
 
 ## Jerry
 
+if(!dev.interactive(orNone=TRUE)) { dev.off(); pdf("t-nonc_P-2.pdf") }
+
 ### Part II -- former  t-nonc-fn.R
 ### ------------------------------
 
 ### b_nu  -----------------------------------
-mult.fig(2, main = "b(nu) = E[ Chi_nu ] / sqrt(nu)")
+mult.fig(2, main = "b(nu) = E[ Chi_nu ] / sqrt(nu)")$old.par -> opar
 plot(b_chi, n=1024, col=2)
 
 ## Unfortunately, the above switch gives  a small kink at nu = 300
@@ -288,7 +289,7 @@ plot(nu, b_chi(nu) - b_chiAsymp(nu), type='l')# b_chi(nu) > b_chiAsymp() ALWAYS
 ## with 'one.minus=TRUE'  the reverse:  b_chi(*, one.minus=TRUE) < b_chiAsymp(*, ..TRUE)
 plot(nu, b_chi(nu,one.minus=TRUE) - b_chiAsymp(nu,one.minus=TRUE), type='l')
 
-
+par(opar)# reset
 
 ### ----------- pntJW39() and  pntR() ----------------------
 

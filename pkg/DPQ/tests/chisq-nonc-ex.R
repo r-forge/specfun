@@ -37,7 +37,7 @@ loadList <- function(L, envir = .GlobalEnv)
 (okR_Lrg <- (getRversion() >  "3.6.1" ||
              getRversion() == "3.6.1" && R.version$`svn rev` >= 77145))
 
-(doExtras <- okR_Lrg && DPQ:::doExtras())
+(doExtras <- okR_Lrg && DPQ:::doExtras() && !grepl("valgrind", R.home()))
 
 ## save directory (to read from):
 (sdir <- system.file("safe", package="DPQ"))
@@ -1373,6 +1373,7 @@ showProc.time()
 
 
 if(.do.ask <- dev.interactive() && !identical(source, sys.function())) par(ask=TRUE)
+cat(".do.ask : ", .do.ask, "\n")
 mult.fig(2)$old.par -> op
 ## large NC -- still (2018-08) very expensive!!
 ## 10^(3:10)  is (still!)  much too expensive, 10^8 alone costs 31.8 sec !
