@@ -59,14 +59,14 @@ showProc.time()
 ## ===> shows Normal limit (for lambda -> Inf;  true also for nu -> Inf)
 nu <- 12
 nS <- length(ncSet <- if(doExtras) 10^(0:9) else 10^(0:6))
-
+np <- if(doExtras) 201 else 64
 cpUse <- numeric(nS); names(cpUse) <- formatC(ncSet)
 mult.fig(nS, main = paste("non-central chisq(*, df=",nu,
                           ") and normal approx"))$old.par -> op
 for(NC in ncSet) {
     m <- NC + nu
     s <- sqrt(2*(nu + 2*NC))
-    x <- seq(from= m - 3*s, to= m + 3*s, length = 201)
+    x <- seq(from= m - 3*s, to= m + 3*s, length = np)
     cpUse[formatC(NC)] <- system.time(y <- dchisq(x, df=nu, ncp=NC))[1]
     plot(x, y, ylim=c(0,max(y)),type = "l", ylab='f(x)', main=paste("ncp =",NC))
     lines(x, dnorm(x,m=m,s=s), col = 'blue')
@@ -103,7 +103,7 @@ oPar <- mult.fig(nS, main = "non-central chisq(ncp = 16) and normal approx")$old
 for(DF in dfSet) {
     m <- DF + ncp
     s <- sqrt(2*(DF + 2*ncp))
-    x <- seq(from= m - 3*s, to= m + 3*s, length = 201)
+    x <- seq(from= m - 3*s, to= m + 3*s, length = np)
     cpUse[formatC(DF)] <- system.time(y <- dchisq(x, df=DF, ncp=ncp))[1]
     plot(x, y, ylim=c(0,max(y)),type = "l", ylab='f(x)', main=paste("df =",DF))
     lines(x, dnorm(x,m=m,s=s), col = 'blue', lty=2)
@@ -445,6 +445,7 @@ p.pchUp( 5e3,  100,   5777, 6000)  # --> Wiener has less noise long before!
 ## (but it also is systematically a bit larger - correct?)
 summary(warnings()) ; showProc.time()
 
+if(doExtras) withAutoprint({ # -----------------------------------
 ## Now have m + 5*s cutoff, ...
 cc <- p.pchUp( 5e3,  5e3,  10400, 11e3) # still pchisq() jumps to 0 at 10866.2, too early
 p.m(cc, type="l", log="y", lwd=c(1,3), col=c("black", adjustcolor("red",0.5)))
@@ -457,8 +458,8 @@ p.pchUp( 5e3,  5e3,  10800, 11e3)
 cc <- p.pchUp( 5e3,  5e3,  8000,  20e3)
 p.m(cc, type="l", log="y", lwd=c(1,3), col=c("black", adjustcolor("red",0.5)))
 p.pchUp( 1e5,  2e4, 12.25e4, 12.35e4)# m + 5*s  __much__ too early here..
-
-showProc.time()
+showProc.time() # ~ 0.5 sec
+}) ## only if(doExtras) -----------------------------------
 
 ### NOTA BENE: We have the *big* problem when s ~= 1,  x <= ncp+df
 ### ---------  ---------------------------------------------------
@@ -1206,7 +1207,7 @@ summary(l.15<- update(l.14, . ~ . - 1))
 
 with(dsR3, p.res.2x(lam, df, residuals(l.15)))
 ## ok; it's really the low 'lam' (and the low 'df')
-##-> try more
+if(doExtras) { ##-> try more -----------------------------------
 iMaxR3 <- matrix(dsR3$iMax, length(lam3))
 persp         (log10(lam3), log10(dfs3), iMaxR3/ (lam3/2))
 persp         (log10(lam3), log10(dfs3), log10(iMaxR3/ (lam3/2)))
@@ -1227,6 +1228,7 @@ filled.contour(log10(lam3), log10(dfs3), log10(iMaxR3/ (lam3/2)),
                    ##points(expand.grid(log10(lam3), log10(dfs3)), pch='.')
                    with(dsR3, points(log10(lam), log10(df), pch='.'))
                })
+} #-- only if(doExtras) -------------------------------------
 
 showProc.time()
 
@@ -1243,13 +1245,14 @@ filled.contour(sr.Iq,
                          xlab = "ln(lam)", ylab = "ln(df)")
                    with(ds1, points(log(lam), log(df), pch='.'))
                })
-print(summary(l.1 <- lm(iMax / (lam/2) ~ log(lam) * log(df), data= ds1)))
-TA.plot(l.1)
-plot(resid(l.1) ~ lam, data=ds1, pch ='.', log = 'x')
-print(summary(l.2 <- update(l.1, .~. + I(1/lam))))
-print(summary(l.3 <- update(l.2, .~. + I(log(lam)^2) + I(1/log(lam)))))
-plot(resid(l.3) ~ lam, data=ds1, pch ='.', log = 'x')
+print(summary(l.q1 <- lm(iMax / (lam/2) ~ log(lam) * log(df), data= ds1)))
+TA.plot(l.q1)
+plot(resid(l.q1) ~ lam, data=ds1, pch ='.', log = 'x')
+print(summary(l.q2 <- update(l.q1, .~. + I(1/lam))))
+print(summary(l.q3 <- update(l.q2, .~. + I(log(lam)^2) + I(1/log(lam)))))
+plot(resid(l.q3) ~ lam, data=ds1, pch ='.', log = 'x')
 ### --> Aha!   1/lam seems the best term !!
+with(dsR., p.res.2x(lam, df, residuals(l.q3), scol=2:3))
 ## -- maybe try  lam^(-a)  ?
 showProc.time() # 0.9
 } # only if(.X.)
@@ -1260,13 +1263,12 @@ with(dsR., p.res.2x(lam, df, residuals(l.5)))
 
 with(dsR., p.res.2x(lam, df, residuals(l.10), scol=2:3))
 with(dsR., p.res.2x(log(lam), log(df), residuals(l.6), scol=2:3))
-if(doExtras)
-  with(dsR., p.res.2x(lam, df, residuals(l.3), scol=2:3))
 
 plot(l.5) ## 2-3 outliers:
 ## 5000 : maximal lambda
 ## 1841 : maximal df
 
+if(doExtras) withAutoprint({ # -----------------------------------
 ### Yet another idea:
 summary(lq2 <- lm(I(iMax/lam) ~ (lam+ log(lam) + df + log(df))^2, data=dsR.))
 lq2s <- step(lq2)
@@ -1274,9 +1276,11 @@ summary(lq2s, corr=TRUE, symb=TRUE)
 ## shows the complete non-sense (large lambda values fit very badly
 with(dsR., n.plot(fitted(lq2s)*lam, iMax))
 
-if(doExtras) ## GAM -- needs tons of cpu + memory:
+if(doExtras)## GAM -- needs tons of cpu + memory:
    summary(g.5 <- gam(iMax ~ s(lam) + s(df) + s(lam,df), data=dsR.))#s^=4.489
 ## -> (too) many deg.freedom s
+}) #--------------------------------------------
+
 showProc.time()
 
 
