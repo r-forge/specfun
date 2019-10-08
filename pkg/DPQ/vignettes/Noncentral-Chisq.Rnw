@@ -1,9 +1,10 @@
 \documentclass[a4paper,11pt,twoside]{article}
-
+%% FIXME? consider {jss}: ~/R/Pkgs/copula/vignettes/Frank-Rmpfr.Rnw (or ..../rhoAMH-dilog.Rnw )
 \usepackage[a4paper, text={15cm,24cm}]{geometry}
 \usepackage{alltt}
-\usepackage{natbib}% for bibliography citation
-
+\usepackage[authoryear,round,longnamesfirst]{natbib}% for bibliography citation; same as jss.cls
+\usepackage{hyperref}%-> for clickable links for \url{}, \cite, \ref ...
+\usepackage{amsmath}% for {align} environment
 \usepackage{amsbsy} % for \boldsymbol:  only a small part of \usepackage{amstex}
 % \usepackage{amssymb}% for \intercal
 \usepackage{amsopn}% DeclareMathOperator
@@ -11,6 +12,7 @@
 %% From our \usepackage{texab} ----------------------------------------------
 \DeclareMathOperator{\where}{ where }
 \newcommand*{\Nat}{\mathbb{N}}% <-> amsfonts
+\newcommand*{\IR}{\mathbb{R}}% <-> amsfonts
 \newcommand{\Degr}{\relax\ensuremath{^\circ}}% \ifmmode^\circ\else$^\circ$\fi
 \newcommand{\vect}[1]   {\left( \begin{array}{c} #1 \end{array}\right)}
         %-  ~~~~~ use as  \vect{x_1 \\ x_2 \\ \vdots \\ x_n}
@@ -36,7 +38,7 @@
 \bibliographystyle{apalike}
 \begin{document}
 
-\title{Non-central Chi-Squared Probabilities -- Algorithms in \R}
+\title{Non-central Chi-Squared Probabilities -- Algorithms in R}
 \author{Martin M\"achler\\ Seminar f\"ur Statistik \\ ETH Zurich}
 %\date{2019 ff}
 \maketitle
@@ -45,13 +47,81 @@
 \end{abstract}
 
 \section{Introduction}
+%% as from ~/R/D/r-devel/R/src/library/stats/man/Chisquare.Rd  and
+%%  ../man/pnchisqAppr.Rd (+  ../man/pnchi1sq.Rd  +  ../man/pnchisqWienergerm.Rd )
 
-\section{Non-central chi-squared probablities: History of \R's \file{pnchisq.c} }
+\subsection{Definition}
+Thie following paragraphs are basically verbatim from \R's \code{? Chisquare} help page:
 
-The very early versions of R, the oldest still available, the pre-alpha
+%% R/src/library/stats/man/Chisquare.Rd : ----------------------------------
+The chi-squared distribution $\chi^2_n$ with \code{df}\( = n \ge 0\)
+degrees of freedom has density
+\begin{align}
+  f_n(x) = \frac{1}{{2}^{n/2} \Gamma (n/2)} {x}^{n/2-1} {e}^{-x/2}, \label{fn-chisq}
+\end{align}
+for $x > 0$ and $n \ge 0 \in \IR$, i.e., not necessarily integer, where
+\(f_0(x) := \lim_{n \to 0} f_n(x) = \delta_0(x)\),
+a point mass at zero, is not a density function proper, but
+a ``$\delta$ distribution''.
+
+The mean and variance are $n$ and $2n$.
+
+The \emph{\textbf{non}-central} chi-squared distribution with \code{df}$= n$
+degrees of freedom and non-centrality parameter \code{ncp}\(= \lambda\) has density
+\begin{align}\label{f-noncent-chisq}
+  f_{n,\lambda}(x) = e^{-\lambda / 2} \sum_{r=0}^\infty \frac{(\lambda/2)^r}{r!}\, f_{n + 2r}(x),
+\end{align}
+for $x \ge 0$ and $f_n()$ defined in (\ref{fn-chisq}).  For integer $n$,
+this is the distribution of the sum of squares of $n$ normals each with variance one,
+$\lambda$ being the sum of squares of the normal means; further,
+\\
+\(E(X) = n + \lambda\), \(Var(X) = 2(n + 2*\lambda)\), and
+\(E((X - E(X))^3) = 8(n + 3*\lambda)\).
+
+Note that the degrees of freedom \code{df}$= n$, can be
+non-integer, and also $n = 0$ which is relevant for
+non-centrality \(\lambda > 0\),
+see % Johnson \emph{et al} (1995, chapter 29)
+\citet[chapter 29]{JohNKB94}.
+
+In that (noncentral, zero df) case, the distribution is a mixture of a
+point mass at $x = 0$ (of size \code{pchisq(0, df=0, ncp=ncp)}) and
+a continuous part, and \code{dchisq()} is \emph{not} a density with
+respect to that mixture measure but rather the limit of the density
+for \(df \to 0\).
+
+\subsection*{$\chi^2$ a special case of $\Gamma$}
+A central chi-squared distribution is special case of a $\Gamma$ distribution:
+The chi-squared with $n$ degrees of freedom is the same as a Gamma (`$\Gamma$') distribution with \code{shape} $\alpha = n/2$ and \code{scale = s}$ = \sigma = 2$.
+\begin{align}
+  \chi^2_n \equiv \Gamma(\alpha = \frac{n}{2} , \sigma = 2)
+\end{align}
+
+
+\subsection*{Observed inaccuracies}
+
+Since Feb.~2006, % r37287 | ripley | 2006-02-07 23:12:38 +0100
+the last paragraph of the \emph{Details:} \ section says
+\begin{quote}
+  Note that \code{ncp} values larger than about 1e5 may give inaccurate
+  results with many warnings for \code{pchisq} and \code{qchisq}.
+\end{quote}
+where the `1e5' was extended to `\emph{1e5 (and even smaller)}' in June 2019.
+
+Since April 2010, the help page contains the note % 2010-04-11 | r51683 | ripley,
+\begin{quote}
+  The code for non-zero \code{ncp} is principally intended to be used
+  for moderate values of \code{ncp}: it will not be highly accurate,
+  especially in the tails, for large values.
+\end{quote}
+
+
+\section{Non-central $\chi^2$ probabilities: History of \R's \file{pnchisq.c} }
+
+The very early versions of R\footnote{the oldest versions of \R still available, the pre-alpha
 version (before there were version numbers) with source file named
 \file{R-unix-src.tar.gz}, dated June 20, 1995, or the oldest still running version
-0.16.1, February 11, 1997, already had \R functions for the
+0.16.1, February 11, 1997} already had \R functions for the
 \emph{non}-central chi-squared (called \emph{``Chi-Square''} there)
 distribution, at the time functions separate
 from the central chi-squared, the four  non-central functions where called
@@ -75,14 +145,38 @@ newer, using directory name \file{nmath/} had been practically unchanged from th
 earliest version up to version \code{0.61.3} (May 3, 1998).
 The algorithmic implementation in C was just summing up the Poisson
 weighted central term \code{term}, ``\code{ while (term >= acc) }'' with
-the constant declaration
- \code{double acc = 1.0e-12;}
+the constant declaration where $\mathtt{acc} := 10^{-12}$:
+% \begin{alltt} is not good enough (eliminates indentation *and* '{' ..'}') :
+\begin{verbatim}
+	double acc = 1.0e-12;
+
+	if (x <= 0.0)
+		return 0.0;
+	df = n;
+	df1 = 0.5 * df;
+	x = 0.5 * x;
+	val = pgamma(x, df1, 1.0);
+	lambda2 = 0.5 * lambda;
+	c = 1.0;
+	t = 0.0;
+	do {
+		t = t + 1.0;
+		c = c * lambda2 / t;
+		df1 = df1 + 1.0;
+		term = c * pgamma(x, df1, 1.0);
+		val = val + term;
+	}
+	while (term >= acc);
+	return val * exp(-lambda2);
+\end{verbatim}
+Note that this just implements formula (\ref{f-noncent-chisq}) replacing the infinite sum with a finite one, declaring convergence after the summand becomes smaller than $10^{-12}$ (which is not good enough out in the extreme tail).  Note that the code does use the equivalence of the central chi-squared to the Gamma distribution with $\alpha = n/2$ and scale $2$.
+
 
 For \R version 0.62 (1998-06-14), on the R level, the \texttt{*n*} versions
 of function names became deprecated and the noncentrality parameter was changed
 from \code{lambda} to \code{ncp} and added to the ``non-\texttt{n}''
 version of the functions, e.g. \R's \code{pchisq()} became defined as
-\begin{alltt}
+\begin{verbatim}
 > pchisq
 function (q, df, ncp = 0)
 {
@@ -90,12 +184,12 @@ function (q, df, ncp = 0)
         .Internal(pchisq(q, df))
     else .Internal(pnchisq(q, df, ncp))
 }
-\end{alltt}
+\end{verbatim}
 and the source file \file{src/nmath/pnchisq.c} (with timestamp
 \verb|1998-03-17 04:56| and a size of 2669 bytes) now did implement the
 algorithm AS 275 by \citet{Ding92}.  The
 \texttt{NEWS} entry (still in the R sources \file{doc/NEWS.0}) has been
-\begin{alltt}
+\begin{verbatim}
 		CHANGES IN R VERSION 0.62
 
 NEW FEATURES
@@ -105,7 +199,7 @@ NEW FEATURES
 
     o	Some of the t, F, and chisq distribution/probability functions
 	now allow a noncentrality parameter `ncp'.
-\end{alltt}
+\end{verbatim}
 But even then, the new \file{pnchisq.c} with AS 275 contained a comment
 \begin{quote}
  Feb.1, 1998 (R 0.62 alpha); M.Maechler:  still have
