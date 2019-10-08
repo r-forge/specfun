@@ -25,13 +25,17 @@ pntR1     (t, df, ncp, lower.tail = TRUE, log.p = FALSE,
            use.pnorm = (df > 4e5 ||
                         ncp^2 > 2*log(2)*(-.Machine$double.min.exp)),
                                           itrmax = 1000, errmax = 1e-12, verbose = TRUE)
-pnt3150   (t, df, ncp, lower.tail = TRUE, log.p = FALSE, M = 1000, verbose = TRUE)
-pnt3150.1 (t, df, ncp, lower.tail = TRUE, log.p = FALSE, M = 1000, verbose = TRUE)
+
 pntP94    (t, df, ncp, lower.tail = TRUE, log.p = FALSE,
                                           itrmax = 1000, errmax = 1e-12, verbose = TRUE)
 pntP94.1  (t, df, ncp, lower.tail = TRUE, log.p = FALSE,
                                           itrmax = 1000, errmax = 1e-12, verbose = TRUE)
+
+pnt3150   (t, df, ncp, lower.tail = TRUE, log.p = FALSE, M = 1000, verbose = TRUE)
+pnt3150.1 (t, df, ncp, lower.tail = TRUE, log.p = FALSE, M = 1000, verbose = TRUE)
+
 pntLrg    (t, df, ncp, lower.tail = TRUE, log.p = FALSE)
+
 pntJW39   (t, df, ncp, lower.tail = TRUE, log.p = FALSE)
 pntJW39.0 (t, df, ncp, lower.tail = TRUE, log.p = FALSE)
 % TODO: *IMPLEMENT* (and then document (in \details{}) !
@@ -41,12 +45,10 @@ pntJW39.0 (t, df, ncp, lower.tail = TRUE, log.p = FALSE)
 %%                                             itrmax = 1000, errmax = 1e-12, verbose = TRUE)
 }
 \arguments{%% from Tdist.Rd (see above)
-  \item{t}{vector of quantiles (called \code{q} in \code{\link{pt}(..)}.}
-  %% \item{n}{number of observations. If \code{length(n) > 1}, the length
-  %%   is taken to be the number required.}
+  \item{t}{vector of quantiles (called \code{q} in \code{\link{pt}(..)}).}
   \item{df}{degrees of freedom (\eqn{> 0}, maybe non-integer).  \code{df
       = Inf} is allowed.}
-  \item{ncp}{non-centrality parameter \eqn{\delta \gt 0}{delta >= 0};
+  \item{ncp}{non-centrality parameter \eqn{\delta \ge 0};
     If omitted, use the central t distribution.}
   \item{log, log.p}{logical; if TRUE, probabilities p are given as log(p).}
   \item{lower.tail}{logical; if TRUE (default), probabilities are
@@ -87,22 +89,23 @@ pntJW39.0 (t, df, ncp, lower.tail = TRUE, log.p = FALSE)
     }
     \item{\code{pntR()}:}{the \code{\link{Vectorize}()}d version of \code{pntR1()}.}
 
-    \item{\code{pnt3150()}, \code{pnt3150.1()}:}{
-      Simple inefficient but hopefully correct version of pntP94..()
-      This is really a direct implementation of formula
-      (31.50), p.532 of  Johnson, Kotz and Balakrishnan (1995)
-    }
     \item{\code{pntP94()}, \code{pntP94.1()}:}{New versions of
       \code{pntR1()}, \code{pntR()}; using the  Posten (1994) algorithm.
       \code{pntP94()} is the \code{\link{Vectorize}()}d version of
       \code{pntP94.1()}.}
+
+    \item{\code{pnt3150()}, \code{pnt3150.1()}:}{
+      Simple inefficient but hopefully correct version of pntP94..()
+      This is really a direct implementation of formula
+      (31.50), p.532 of Johnson, Kotz and Balakrishnan (1995)
+    }
 
     \item{\code{pntLrg()}:}{provides the \code{\link{pnorm}()}
       approximation (to the non-central \eqn{t}) from
       Abramowitz and Stegun (26.7.10), p.949; which should be employed only for
       \emph{large} \code{df} and/or \code{ncp}.}
 
-    \item{\code{pntJW39.0()}:}{use the Jennett \& Welch (1939) approximation
+    \item{\code{pntJW39.0()}:}{use the Jennett & Welch (1939) approximation
       see Johnson et al. (1995), p. 520, after (31.26a).  This is still
       \emph{fast} for huge \code{ncp} but has \emph{wrong} asymptotic tail
       for \eqn{|t| \to \infty}{|t| -> ∞}.  Crucially needs \eqn{b=}\code{\link{b_chi}(df)}.}
