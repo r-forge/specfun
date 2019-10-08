@@ -234,8 +234,12 @@ c_pt <- function(nu)
 ## -------              --------------------------
 ## Large t (>0 or < 0)  *MUST* get a new algorithm !
 ## -------              --------------------------
-
+## >>>> ../man/pnt.Rd <<<<<<<<<
 pntR1  <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
+                   use.pnorm = (df > 4e5 ||
+                                ncp^2 > 2*log(2)*(-.Machine$double.min.exp)),
+                   ## /*-- 2nd part: if del > 37.6403, then p=0 below
+                   ## FIXME: test should depend on `df`, `t` AND `ncp`
                    itrmax = 1000, errmax = 1e-12, verbose = TRUE)
 {
     ## Purpose: R version of the series used in pnt() in
@@ -267,16 +271,13 @@ pntR1  <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
 	negdel <- TRUE ; tt <- -t; del <- -ncp
     }
 
-    if (df > 4e5 || del*del > 2*log(2)*(-.Machine$double.min.exp)) {
-        ## /*-- 2nd part: if del > 37.6403, then p=0 below
-        ## FIXME: test should depend on `df', `tt' AND `del' ! */
-        ## /* Approx. from Abramowitz & Stegun 26.7.10 (p.949) */
+    if (use.pnorm) {
+        ## Approx. from Abramowitz & Stegun 26.7.10 (p.949) -- FIXME (see above)
 	s <- 1./(4.*df)
         pnt.. <- pnorm(tt*(1 - s), del, sqrt(1. + tt*tt*2.*s),
                        lower.tail = (lower.tail != negdel), log.p=log.p)
-        cat("large 'df' or \"large\" 'ncp' -- C code would return pnorm(*) =",
+        cat("large 'df' or \"large\" 'ncp' ---> return()ing pnorm(*) =",
             format(pnt.., digits=16), "\n")
-        ### FIXME: see above !!
         return(pnt..)
     }
 
@@ -752,22 +753,23 @@ dntJKBf <- function(x, df, ncp, log = FALSE, M = 1000)
     }
 
     x2 <- x^2
-    lfac <- -ncp^2/2  - (.5*log(pi*df)+lgamma(df/2)) + logr(df, x2)*(df+1)/2
+    lfac <- -ncp^2/2 - (.5*log(pi*df)+lgamma(df/2)) + logr(df, x2)*(df+1)/2
     j <- 0:M
     lfact.j <- cumsum(log(._1.1..M)) ## == lfactorial(j)
     nd <- length(df)
     LogRt <- 2*log(abs(ncp)) + ln2 + logr(x2, df) # (full length)
     ## now vectorize "lSum(x,df,ncp)" :
     lSum <- dx <- ncp*x + 0*df # delta * x  [of full length],  (correct == 0 for dx == 0)
-    for(i in seq_along(dx)) { # --- compute lSum[i] ----------------
-        alt <- dx[i] < 0 ## if(alt)  alternating sum !
+    if(any(negD <- dx < 0)) # if(negD[i]) "alternating sum"
+	sigPM <- rep_len(c(1,-1), length(j))
+    for(i in which(dx != 0)) { # --- compute lSum[i] ----------------
 	## use abs(ncp) : if(ncp < 0) ncp <- -ncp
 	##lterms <- lgamma((df+j + 1)/2) - lfact.j + log(x*ncp*sqrt(2)/sqrt(df+x^2))* j
 	lterms <- lgamma((df[1L+ (i-1L)%% nd] + j + 1)/2) - lfact.j + LogRt[i] * j/2
         lSum[i] <-
-            if(alt) ## this is hard: even have *negative* sum {before log(.)} with mpfr,
+            if(negD[i]) ## this is hard: even have *negative* sum {before log(.)} with mpfr,
                 ## e.g. in  dnt.1(mpfr(-4, 128), 5, 10)   ???
-                lssum(lterms, signs = c(1,-1), strict=FALSE)
+                lssum(lterms, signs = sigPM, strict=FALSE)
             else
                 lsum(lterms)
     }

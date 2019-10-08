@@ -4,11 +4,14 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.3-4 (2019-10-05, svn r....)}{
+\section{Version 0.3-4 (2019-10-08, svn r117)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item more efficient (internally vectorized) \code{dntJKBf()}.
       Consequently, \code{dntJKBf1()} is deprecated now.
+
+      \item \code{pntR()} (and \code{pntR1()}) get new option
+      \code{use.pnorm} (the default of which had been hard coded previously).
     }
   }
   \subsection{BUG FIXES}{

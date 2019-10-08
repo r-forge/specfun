@@ -22,9 +22,8 @@
   arbitrary precise numbers of \code{\link{class}}
   \code{"\link[Rmpfr:mpfr-class]{mpfr}"} (from package \CRANpkg{Rmpfr})
   as arguments.
-  %% FIXME: check that
 }
-\usage{
+\usage{%--> ~/R/D/r-devel/R/src/library/stats/man/TDist.Rd  |  >>> ../R/t-nonc-fn.R <<<
 dntJKBf1(x, df, ncp, log = FALSE, M = 1000)
 dntJKBf (x, df, ncp, log = FALSE, M = 1000)
 
@@ -78,18 +77,19 @@ tt <- seq(0, 10, len = 21)
 ncp <- seq(0, 6, len = 31)
 dt3R   <- outer(tt, ncp, dt,     df = 3)
 dt3JKB <- outer(tt, ncp, dntJKBf, df = 3)
-all.equal(dt3R, dt3JKB)
+all.equal(dt3R, dt3JKB) # Lnx(64-b): 51 NA's in dt3R
 
 x <- seq(-1,12, by=1/16)
 fx <- dt(x, df=3, ncp=5)
 re1 <- 1 - .dntJKBch(x, df=3, ncp=5) / fx ; summary(warnings()) # slow, with warnings
+op <- options(warn = 2) # (=> warning == error, for now)
 re2 <- 1 -  dntJKBf (x, df=3, ncp=5) / fx  # faster, no warnings
 stopifnot(all.equal(re1[!is.na(re1)], re2[!is.na(re1)], tol=1e-6))
 head( cbind(x, fx, re1, re2) , 20)
 matplot(x, log10(abs(cbind(re1, re2))), type = "o", cex = 1/4)
 
-
 ## One of the numerical problems in "base R"'s non-central t-density:
+options(warn = 0) # (factory def.)
 x <- 2^seq(-12, 32, by=1/8) ; df <- 1/10
 dtm <- cbind(dt(x, df=df,           log=TRUE),
              dt(x, df=df, ncp=df/2, log=TRUE),
@@ -101,10 +101,12 @@ matplot(x, dtm, type="l", log = "x", xaxt="n",
 sfsmisc::eaxis(1)
 legend("right", legend=c("", paste0("ncp = df",c("/2","","*2"))),
        lty=1:4, col=1:4, bty="n")
+\donttest{ # using MPFR high accuracy arithmetic (too slow for routine testing)
 ## no such kink here:
-x. <- if(requireNamespace("Rmpfr")) mpfr(x, 256) else x
+x. <- if(requireNamespace("Rmpfr")) Rmpfr::mpfr(x, 256) else x
 system.time(dtJKB <- dntJKBf(x., df=df, ncp=df, log=TRUE)) # 7 sec if(Rmpfr)
 lines(x, dtJKB, col=adjustcolor(3, 1/2), lwd=3)
+options(op) # reset to prev.
 
 ## Relative Difference / Approximation errors :
 plot(x, 1 - dtJKB / dtm[,3], type="l", log="x")
@@ -114,6 +116,7 @@ plot(x, abs(1 - dtJKB / dtm[,3]), type="l", log="xy", axes=FALSE, main =
      "dt(*, 1/10, 1/10, log=TRUE) relative approx. error",
      sub= paste("Copyright © 2019  Martin Mächler  --- ", R.version.string))
 for(j in 1:2) sfsmisc::eaxis(j)
+}% \donttest
 }
 \keyword{distribution}
 \keyword{math}

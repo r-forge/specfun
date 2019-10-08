@@ -18,6 +18,7 @@
 ** TODO extract fns & tests   from ~/R/MM/NUMERICS/dpq-functions/pt-ex.R
 ** TODO extract fns & tests   from ~/R/MM/NUMERICS/dpq-functions/qt-ex.R
 
+** TODO: Implement Chattamvelli, R. and Shanmugam, R. (1994) --> pntChShP94()
 * TODO chisq-Wienergerm approximations:
 ** TODO move C code to here
 ** TODO Find documentation / papers ==> for help pages about h() and g() in R/wienergerm_nchisq-fn.R
