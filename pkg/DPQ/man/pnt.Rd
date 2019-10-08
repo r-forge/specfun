@@ -32,13 +32,13 @@ pntP94    (t, df, ncp, lower.tail = TRUE, log.p = FALSE,
 pntP94.1  (t, df, ncp, lower.tail = TRUE, log.p = FALSE,
                                           itrmax = 1000, errmax = 1e-12, verbose = TRUE)
 pntLrg    (t, df, ncp, lower.tail = TRUE, log.p = FALSE)
-% TODO: document (in \details{}) from here ----------
 pntJW39   (t, df, ncp, lower.tail = TRUE, log.p = FALSE)
 pntJW39.0 (t, df, ncp, lower.tail = TRUE, log.p = FALSE)
-pntChShP94  (t, df, ncp, lower.tail = TRUE, log.p = FALSE,
-                                            itrmax = 1000, errmax = 1e-12, verbose = TRUE)
-pntChShP94.1(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
-                                            itrmax = 1000, errmax = 1e-12, verbose = TRUE)
+% TODO: *IMPLEMENT* (and then document (in \details{}) !
+%% pntChShP94  (t, df, ncp, lower.tail = TRUE, log.p = FALSE,
+%%                                             itrmax = 1000, errmax = 1e-12, verbose = TRUE)
+%% pntChShP94.1(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
+%%                                             itrmax = 1000, errmax = 1e-12, verbose = TRUE)
 }
 \arguments{%% from Tdist.Rd (see above)
   \item{t}{vector of quantiles (called \code{q} in \code{\link{pt}(..)}.}
@@ -105,7 +105,7 @@ pntChShP94.1(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
     \item{\code{pntJW39.0()}:}{use the Jennett \& Welch (1939) approximation
       see Johnson et al. (1995), p. 520, after (31.26a).  This is still
       \emph{fast} for huge \code{ncp} but has \emph{wrong} asymptotic tail
-      for \eqn{|t| \to \infty}{|t| -> ∞}.  Crucially needs \eqn{b=}\code{\link{b_chi}(df)}.
+      for \eqn{|t| \to \infty}{|t| -> ∞}.  Crucially needs \eqn{b=}\code{\link{b_chi}(df)}.}
     \item{\code{pntJW39()}:}{is an improved version of \code{pntJW39.0()},
       using \eqn{1-b =}\code{b_chi(df, one.minus=TRUE)} to avoid
       cancellation when computing \eqn{1 - b^2}.}
