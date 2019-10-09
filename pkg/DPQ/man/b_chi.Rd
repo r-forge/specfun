@@ -18,7 +18,7 @@
 
   This is a relatively important auxiliary function when computing with
   non-central t distribution functions and approximations, specifically see
-  Johnson et al.(1994), p.520, after (31.26a).
+  Johnson et al.(1994), p.520, after (31.26a), e.g., our \code{\link{pntJW39}()}.
 
   Its logarithm,
   \deqn{lb_\chi(\nu) := log\bigl(\frac{\sqrt{2/\nu}\Gamma((\nu+1)/2)}{\Gamma(\nu/2)}\bigr),}{%
@@ -104,7 +104,8 @@ c_pt(nu)       # warning("use better c_dt()") %---> FIXME deprecate even stronge
 }
 \author{Martin Maechler}
 \seealso{
-  The t-distribution (base \R) page \code{\link{pt}}.
+  The t-distribution (base \R) page \code{\link{pt}};
+  our \code{\link{pntJW39}()}.
 }
 \examples{
 curve(b_chi, 0, 20); abline(h=0:1, v=0, lty=3)

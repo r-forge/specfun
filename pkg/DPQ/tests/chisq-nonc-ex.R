@@ -75,7 +75,8 @@ par(op)# resetting mult.fig()
 showProc.time()
 
 cbind(ncSet, cpUse, "c/ncp"= cpUse / ncSet)
-plot(cpUse ~ ncSet, log = "xy", type = 'b', col = 2)
+## fails on Win 32b: "need finite 'ylim' values" :
+try(plot(cpUse ~ ncSet, log = "xy", type = 'b', col = 2))
 if(doExtras) try(# fails occasionally (too many zeros)
   print(summary(lmll <- lm(log(cpUse) ~ log(ncSet), subset = ncSet >= 1e4)))
 )
@@ -221,7 +222,7 @@ curve(dnorm(x, m=3+30000, sd=sqrt(2*(3 + 2*30000)), log=TRUE),
 x <- rchisq(if(doExtras) 1e6 else 1e4, df=3, ncp=30000)
 (sN <- sum(dnorm(x, m=3+30000, sd=sqrt(2*(3 + 2*30000)), log=TRUE)))
 (sCh<- sum(dchisqAsym(x, df=3, ncp=30000, log=TRUE))) ## larger (less negative) <-> better
-all.equal(sN, sCh) # ... 2.6887e-6"
+all.equal(sN, sCh) # ... 2.6887e-6" [Win 32b: 2.873e-5]
 
 ## dnchisqBessel(x, df, ncp, log = FALSE) --> ../R/dnchisq-fn.R
 ## -------------                                 ~~~~~~~~~~~~
@@ -543,14 +544,19 @@ summary(warnings())
 sfsmisc::eaxis(1, sub10=3); sfsmisc::eaxis(2)
 curve(pnchisqV(x, df=1, ncp=300, errmax = 4e-16, lower=FALSE, verbose=1),# ,log=TRUE),
       add = TRUE, col=2); mtext("ncp = 300 -- pnchisqV() pure R", col=2)
-if(!is32 && !noLdbl) { ## seems to hang on Winbuilder [32 bit  only??]
+showProc.time()
+
+
+## also seems to hang (or take much too long?) on Winbuilder [32 bit *and* 64 bit ]
+if(.Platform$OS.type == "unix" && !noLdbl) {
 pncRC <- pnchisqRC(pxy$x, df=1, ncp=300, lower=FALSE, verbose=1)
 all.equal(pxy$y, pncRC, tol = 0)# "often" TRUE, depends on exact R version, etc
 stopifnot(
     all.equal(pxy$y, pncRC, tol = if(noLdbl) 5e-14 else 0)# noLdbl: seen 1.129e-14
 )
 summary(warnings())
-}# if(!is32 ...)
+showProc.time()
+}# ---------------------only if(.. "unix" ....)----------------------------
 
 
 ## Really large 'df' and 'x' -- "case I":
@@ -567,16 +573,22 @@ tt <- 10^-(6:12)
 stopifnot(!is.unsorted(xm <- 1e18*(1 + c(-tt, 0, rev(tt)))))
 (pn <- pnchisqV (xm, df=1e18, ncp=1)) #-> 0...1 is correct
 pp  <- pchisq   (xm, df=1e18, ncp=1)
+##
+if(.Platform$OS.type == "unix") { #-------------------
 pp. <- pnchisqRC(xm, df=1e18, ncp=1, verbose=1)
+## Pnchisq_R(x, f, th, ... lower.tail=1, log.p=0, cut_ncp=80, it_simple=110,
+##   errmax=1e-12, reltol=1.77636e-15, epsS=8.88178e-16, itrmax=1000000, verbose=1)
+##   --> n:= max(length(.),..) = 15
+## but then does *NOT* terminate in time on Winbuilder
 all(pp == pp.)# >>> TRUE :  *RC is also C code, perfect
-all.equal(pp, pn, tol = 0) # see 1.6e-16
+all.equal(pp, pn, tol = 0) # see 1.6e-16  (even on Win 32b)
 if(doExtras && !noLdbl)  # who knows ..
     stopifnot(pp == pp.)
 stopifnot(exprs = {
     all.equal(pp, pp., tol = 1e-15) # see 0
     all.equal(pp, pn,  tol = 1e-15) # see 1.6e-16
 })
-
+}## only if( .. unix .. )
 
 ## (also "problematic" with Wienergerm: s=0)
 showProc.time()#-----------------
@@ -695,7 +707,8 @@ par(op)
 ### Now back to the original problem:
 ### Using ss() terms and see where they are maximal, etc.
 (pR <-          pnchisq (1.2,df=1,ncp=3, verbose=FALSE))# iter = 12, now 13
-all.equal(c(pR), pnchisq_ss(1.2,df=1,ncp=3), tol=0)# 2.19e-12, now 9.61e-14
+all.equal(c(pR), pnchisq_ss(1.2,df=1,ncp=3), tol=0)# 2.19e-12, now 9.61e-14,
+## 6.4e-16 on Win 32b !
 
 (pR <-          pnchisq (1.2,df=1,ncp=30, verbose=FALSE))# iter = 12, now 16
 all.equal(pR, pnchisq_ss(1.2,df=1,ncp=30), tol= 2e-13)
@@ -2171,7 +2184,7 @@ if(!dev.interactive(orNone=TRUE)) { dev.off(); pdf("chisq-nonc-3.pdf") }
 ### Bug 875 {see also ~/R/r-devel/R/tests/d-p-q-r-tests.R
 (q49.7 <- qchisq(0.025, 31, ncp=1, lower.tail=FALSE))## now ok: 49.7766
 pb     <- pchisq(q49.7, 31, ncp=1, lower.tail=FALSE)
-all.equal(pb, 0.025, tol=0) # 2.058e-13 [Lnx 64b]
+all.equal(pb, 0.025, tol=0) # 2.058e-13 [Lnx 64b]; 2.0609e-13 [Win 32b]
 stopifnot(all.equal(pb, 0.025, tol= 1e-12))
 
 ##  Ensuing things I tried :
@@ -2239,7 +2252,7 @@ cbind(pars, qch, p.q, relE = signif(1 - p.q / pars$p, 4)) ## very accurate
 ## 22 0.05  7   4  3.6642526 0.05 -2.420e-14
 ## 23 0.05  7  16 10.2573190 0.05  1.066e-14
 ## 24 0.05  7  25 16.2267524 0.05  3.775e-14
-all.equal(pars$p, p.q, tol=0)# Lnx 64b: 9.2987e-15
+all.equal(pars$p, p.q, tol=0)# Lnx 64b: 9.2987e-15; Win 32b: 9.25e-15
 stopifnot(all.equal(pars$p, p.q, tol=1e-14))
 showProc.time()
 

@@ -74,7 +74,9 @@
     \item{\code{pnchisqV()}:}{a \code{\link{Vectorize}()}d \code{\link{pnchisq}}.}
 
     \item{\code{pnchisqRC()}:}{\R's C implementation as of Aug.2019; but
-      with many more options.}
+      with many more options.
+      Currently extreme cases tend to hang on Winbuilder (?) % FIXME?
+    }
 
     \item{\code{pnchisqIT}:}{ .... }
     \item{\code{pnchisqTerms}:}{ .... }
@@ -248,9 +250,10 @@ palette(opal)# revert
 all.equal(cRC, cR0, tol = 1e-15) # TRUE [for now]
 ## the problematic "jump" :
 as.data.frame(cRC)[744:750,]
-## verbose=TRUE  may reveal which branches of the algorithm are taken:
-pnchisqRC(1500, df=2, ncp=0, lower.tail=FALSE, log.p=TRUE, verbose=TRUE) #
-## |-->  -Inf currently
+if(.Platform$OS.type == "unix")
+  ## verbose=TRUE  may reveal which branches of the algorithm are taken:
+  pnchisqRC(1500, df=2, ncp=0, lower.tail=FALSE, log.p=TRUE, verbose=TRUE) #
+  ## |-->  -Inf currently
 
 ## The *two*  principal cases (both lower.tail = {TRUE,FALSE} !), where
 ##  "2nd call"  happens *and* is currently beneficial :
