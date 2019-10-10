@@ -465,8 +465,7 @@ pnchisq_ss <- function(x, df, ncp = 0, lower.tail=TRUE, log.p=FALSE, i.max = 100
 }
 
 ## Instead of limited (overflow!) ss(),
-## use C - code which parallels  pnchisq()'s in C:
-## dyn.load("/u/maechler/R/MM/NUMERICS/dpq-functions/pnchisq-it.so")
+## use C - code which parallels  pnchisq()'s in C:  >>> ../src/pnchisq-it.c <<<
 
 pnchisqIT <- function(q, df, ncp = 0, errmax = 1e-12,
                       reltol = 2*.Machine$double.eps, maxit = 1e5, verbose = FALSE)
@@ -550,7 +549,7 @@ small.ncp.logspaceR2015 <- function(x, df, ncp, lower.tail, log.p) {
     }
 }
 
-##' R's C version pnchisq() [with more "tuning" arguments; 'verbose' ..] :
+##' R's *current* C version pnchisq() [with more "tuning" arguments; 'verbose' ..] :
 pnchisqRC <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
                       no2nd.call = FALSE,
                       cutOffncp = 80, small.ncp.logspace = small.ncp.logspaceR2015, itSimple = 110,

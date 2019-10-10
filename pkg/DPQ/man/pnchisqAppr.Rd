@@ -205,18 +205,25 @@ ss2. (q, df, ncp = 0, errmax = 1e-12, reltol = 2 * .Machine$double.eps,
  approximations we use in \code{pnchisq_ss()}.
 }
 \examples{
- qq <- c(.001, .005, .01, .05, (1:9)/10, 2^seq(0, 10, by= 0.5))
- pkg <- "package:DPQ"
- pnchNms <- c(paste0("pchisq", c("V", "W", "W.", "W.R")),
-              ls(pkg, pattern = "^pnchisq"))
- pnchNms <- pnchNms[!grepl("Terms$", pnchNms)]
- pnchF <- sapply(pnchNms, get, envir = as.environment(pkg))
- str(pnchF)
- for(ncp in c(0, 1/8, 1/2)) {
-   cat("\n~~~~~~~~~~~~~\nncp: ", ncp,"\n=======\n")
-   pnF <- if(ncp == 0) pnchF[!grepl("chisqT93", pnchNms)] else pnchF
-   print(sapply(pnF, function(F) Vectorize(F, names(formals(F))[[1]])(qq, df = 3, ncp=ncp)))
- }
+## set of quantiles to use :
+qq <- c(.001, .005, .01, .05, (1:9)/10, 2^seq(0, 10, by= 0.5))
+## Take "all interesting" pchisq-approximation from our pkg :
+pkg <- "package:DPQ"
+pnchNms <- c(paste0("pchisq", c("V", "W", "W.", "W.R")),
+             ls(pkg, pattern = "^pnchisq"))
+pnchNms <- pnchNms[!grepl("Terms$", pnchNms)]
+pnchF <- sapply(pnchNms, get, envir = as.environment(pkg))
+str(pnchF)
+ncps <- c(0, 1/8, 1/2)
+pnchR <- as.list(setNames(ncps, paste("ncp",ncps, sep="=")))
+for(i.n in seq_along(ncps)) {
+  ncp <- ncps[i.n]
+  pnF <- if(ncp == 0) pnchF[!grepl("chisqT93", pnchNms)] else pnchF
+  pnchR[[i.n]] <- sapply(pnF, function(F)
+            Vectorize(F, names(formals(F))[[1]])(qq, df = 3, ncp=ncp))
+}
+str(pnchR, max=2)%% FIXME: *look* more; do plots , .... and/or move this
+		 %% ------  to ../tests/chisq-nonc-ex.R
 
 ## A case where the non-central P[] should be improved :
 ## First, the central P[] which is close to exact -- choosing df=2 allows

@@ -291,6 +291,10 @@ if(!dev.interactive(orNone=TRUE)) { dev.off(); pdf("chisq-nonc-2.pdf") }
 
 ## source("/u/maechler/R/MM/NUMERICS/dpq-functions/pnchisq.R")#-> pnchisq(), pnchisqV()
 
+## In examples ../man/pnchisqAppr.Rd ---------
+## ((again there at beginning))
+
+
 ### Note Brian's change (which completely broke df=0 case !) for R 2.3.0:
 
 ## r37287 | ripley | 2006-02-07 23:12:38 +0100 (Tue, 07 Feb 2006) | 6 lines

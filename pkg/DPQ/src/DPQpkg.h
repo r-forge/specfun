@@ -83,11 +83,21 @@
 // --------- MM_R end_of { #include <nmath.h> substitute } ----------------------
 
 
-/* R's  #include <config.h> typically defines this (it may be very on Solaris):
+/* R's  #include <config.h> typically defines this
+ *                          (it may be very slow on Solaris):
  *
- * Define if you wish to use the 'long double' type. */
+ * Define if you wish to use the 'long double' type.
+ */
+// MM: At least '%Lg' printing completely fails (seg.fault) with Mingw gcc 4.9.x, R-devel 2019-10-10 :
+#ifndef _WIN32
 #define HAVE_LONG_DOUBLE 1
-
+#else // Windows:
+#  ifdef _WIN64
+     // .....
+#  else // Windows 32 bit
+#    define HAVE_LONG_DOUBLE 1
+#  endif
+#endif
 
 /* Required by C99, but might be slow */
 #ifdef HAVE_LONG_DOUBLE
@@ -104,6 +114,20 @@
 # define LOG1p log1pl
 // Rmpfr: log(mpfr(2, 130)) {130 bits is "more than enough": most long_double are just 80 bits!}
 # define M_LN2_ 0.6931471805599453094172321214581765680755L
+
+/* #ifndef _WIN32 */
+/* #  define PR_g_ "Lg" */
+/* #else // Windows: '%Lg' printing completely fails (seg.fault) with Mingw gcc 4.9.x, R-devel 2019-10-10 */
+/* #  define __USE_MINGW_ANSI_STDIO 1 */
+/* #  ifdef _WIN64 */
+/* #    define PR_g_ "Lg" */
+/* #  else // Windows 32 bit */
+/* #    define PR_g_ "Lg" */
+/* #  endif */
+/* #endif */
+# ifdef _WIN32
+#   define __USE_MINGW_ANSI_STDIO 1
+# endif
 # define PR_g_ "Lg"
 
 #else //--------------------

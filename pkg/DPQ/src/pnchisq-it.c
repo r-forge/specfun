@@ -175,6 +175,8 @@ double pnchisq_it(double x, double f, double theta,
     return (ans);
 }
 
+/** Called from R's pnchisqIT()   as  .C(C_Pnchisq_it, ...)  --->> ../R/pnchisq.R
+ */
 // TODO: vectorize in x
 void Pnchisq_it(double *x, double *f, double *theta,
 		double *errmax, double *reltol, int *itrmax, int *verbose,
@@ -195,22 +197,23 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
 		    double errmax, double reltol, double epsS, int itrmax, int verbose,
 		    Rboolean lower_tail, Rboolean log_p, LDOUBLE *sum, LDOUBLE *sum2);
 
+// called in a loop over x from Pnchisq_R() which is called from R's pnchisqRC() :
 double pnchisqR(double x, double df, double ncp, Rboolean lower_tail, Rboolean log_p,
 		double cutoff_ncp, Rboolean small_logspace,
 		Rboolean no_2nd_call, int it_simple,
 		double errmax, double reltol, double epsS, int itrmax, int verbose)
 		// 1e-12, 8*DBL_EPSILON, 1000000,
 {
-    double ans;
 #ifdef IEEE_754
     if (ISNAN(x) || ISNAN(df) || ISNAN(ncp))
 	return x + df + ncp;
     if (!R_FINITE(df) || !R_FINITE(ncp))
 	ML_ERR_return_NAN;
 #endif
-    LDOUBLE sum, sum2;
-
     if (df < 0. || ncp < 0.) ML_ERR_return_NAN;
+
+    LDOUBLE sum, sum2;
+    double ans;
     ans = pnchisq_rawR(x, df, ncp, cutoff_ncp, small_logspace, it_simple,
 		       errmax, reltol, epsS, itrmax,
 		       verbose, lower_tail, log_p, &sum, &sum2);
@@ -489,8 +492,10 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
 }
 
 
-/* called from ../R/pnchisq.R : {with slightly different name conventions:
-
+/** Called from R's pnchisqRC()   as  .Call(C_R_Pnchisq_R, ...)  --->> ../R/pnchisq.R <<
+ *
+ * with slightly different name conventions:
+ *
  *                        Name in R */
 SEXP Pnchisq_R(SEXP x_, //	  q
 	       SEXP f_, //	 df
