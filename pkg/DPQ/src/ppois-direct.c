@@ -6,6 +6,8 @@
  *    ppois(x, lambda, low, log_p) := pgamma(lambda, x + 1, 1., !low, log_p)
  */
 
+#include "DPQpkg.h"
+
 #include <float.h> /* DBL_MIN etc */
 
 #ifdef DEBUG_p2
@@ -15,7 +17,6 @@
 # include <R_ext/Print.h>
 #endif
 
-#include "DPQpkg.h"
 
 /** Direct computation of the cumulative Poisson distribution function  ppois()
  *

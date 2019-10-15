@@ -3,9 +3,9 @@
  *  positive real degrees of freedom f and nonnegative noncentrality
  *  parameter theta
  */
-#include <float.h> // for DBL_*
+#include "DPQpkg.h" // before stdio (for MINGW_...)
 
-#include "DPQpkg.h"
+#include <float.h> // for DBL_*
 
 /* --> below:  Pnchisq_it()  called from R
  *             ------------
@@ -437,7 +437,7 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
 		    REprintf("BREAK out of for(n = 1 ..): n=%d; bound= %g %s; term=%g, rel.err= %g %s\n",
 			     n,
 			     bound, (is_b ? "<= errmax" : ""), term,
-			     term/ans, (is_r ? "<= reltol" : ""));
+			     (double)(term/ans), (is_r ? "<= reltol" : ""));
 		break; /* out completely */
             }
 
@@ -483,11 +483,16 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
 	MATHLIB_WARNING4(_("pnchisq(x=%g, f=%g, theta=%g, ..): not converged in %d iter."),
 			 x, f, theta, itrmax);
     }
+    double dans = (double) ans;
     if(verbose)
+	// workaround MinGW Windows bug
+#ifdef _WIN32
+	REprintf("\n == L_End: n=%d; term= %g; bound=%g: [dbl]ans=%g\n",
+		 n, term, bound, dans);
+#else // working printf(<long double)
 	REprintf("\n == L_End: n=%d; term= %g; bound=%g: ans=%" PR_g_ "\n",
 		 n, term, bound, ans);
-
-    double dans = (double) ans;
+#endif
     return R_DT_val(dans);
 }
 

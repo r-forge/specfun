@@ -1,4 +1,8 @@
 
+# ifdef _WIN32
+#   define __USE_MINGW_ANSI_STDIO 1
+# endif
+
 #include <Rmath.h>
 // for F77_NAME() :
 #include <R_ext/RS.h>
@@ -100,6 +104,7 @@
 #endif
 
 /* Required by C99, but might be slow */
+/* Required by C99, but might be slow */
 #ifdef HAVE_LONG_DOUBLE
 # define LDOUBLE long double
 #else
@@ -125,10 +130,11 @@
 /* #    define PR_g_ "Lg" */
 /* #  endif */
 /* #endif */
-# ifdef _WIN32
+# define PR_g_ "Lg"
+
+# ifdef _WIN32 // all of Windows (such that "%Lg" works)
 #   define __USE_MINGW_ANSI_STDIO 1
 # endif
-# define PR_g_ "Lg"
 
 #else //--------------------
 

@@ -39,11 +39,12 @@ Computational Statistics \bold{15}, 219--228. \doi{10.1007/s001800000029}
    translated by f2c (version 20031025) and by f2c-clean,v 1.10;
    and simplified by Martin Maechler, Jan.2004
 */
+
+#include "DPQpkg.h" // before stdio (for MINGW_...)
+
 #include <float.h> /* DBL_MIN etc */
 
 #include <R_ext/Print.h>
-
-#include "DPQpkg.h"
 
 /* R: use pnorm(z) instead of  derfc(- z/sqrt(2)) / 2  ! */
 

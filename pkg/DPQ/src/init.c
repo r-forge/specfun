@@ -1,10 +1,10 @@
+#include "DPQpkg.h" // before stdio (for MINGW_...)
+
 #include <stdlib.h> // for NULL
 #include <R.h>
 #include <Rinternals.h>
 
 #include <R_ext/Rdynload.h>
-
-#include "DPQpkg.h"
 
 #define CDEF(name)  {#name, (DL_FUNC) &name, sizeof(name ## _t)/sizeof(name ## _t[0]), name ##_t}
 #define CALLDEF(name, n)  {#name, (DL_FUNC) &name, n}
