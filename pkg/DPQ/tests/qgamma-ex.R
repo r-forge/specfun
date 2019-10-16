@@ -355,6 +355,10 @@ showProc.time()
 ## Consider the two different implementations of
 ##  lgamma1p(a) := lgamma(1+a) == log(gamma(1+a) == log(a*gamma(a))  "stable":
 
+if(!exists("lseq", mode="function"))
+    lseq <- if(requireNamespace("sfsmisc"))  sfsmisc::lseq  else
+	function(from, to, length) exp(seq(log(from), log(to), length.out = length))
+
 if(require("Rmpfr")) { ##---------------- MPFR numbers -------------------------
 
 .mpfr.all.eq <- Rmpfr::all.equal
@@ -367,7 +371,6 @@ print(a0 <- (gammaE^2 + pi.^2/6)/2)
 print(psi2.1 <- -2*zeta(mpfr(3,200)))# == psigamma(1,2) =~ -2.4041138
 print(a1 <- (psi2.1 - gammaE*(pi.^2/2 + gammaE^2))/6)
 
-lseq <- sfsmisc::lseq
 x <- lseq(1e-30, 0.8, length = if(doExtras) 1000 else 125)
 x. <- mpfr(x, 200)
 xct. <- log(x. * gamma(x.)) ## using  MPFR  arithmetic .. no overflow ...

@@ -11,11 +11,11 @@ library(DPQ)
 
 stopifnot(exprs = {
     require(graphics)
-    require(sfsmisc) # lseq(), p.m(), mult.fig()
+    require(sfsmisc) # eaxis(), lseq(), p.m(), mult.fig(), sessionInfoX()
 })
 source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
 ##--> showProc.time(), assertError(), relErrV(), ...
-## to be used in saveRDS(list.(nam1, nam2, ...),  file=*) :
+## to be used in saveRDS(list_(nam1, nam2, ...),  file=*) :
 list_ <- function(...) {
     ## nms <- vapply(sys.call()[-1L], deparse, "", width.cutoff=500L, backtick=FALSE)
     nms <- vapply(sys.call()[-1L], as.character, "")
@@ -29,6 +29,8 @@ list_ <- function(...)
 loadList <- function(L, envir = .GlobalEnv)
     invisible(lapply(names(L), function(nm) assign(nm, L[[nm]], envir=envir)))
 
+## For package-testing "diagnostics":
+sessionInfoX(c("DPQ","Rmpfr"))
 
 (noLdbl <- (.Machine$sizeof.longdouble <= 8)) ## TRUE when --disable-long-double
 
@@ -402,7 +404,7 @@ pc1 <-
 ## 1-P of course jumps to 0 *much* earlier:
 plot(pc1, type="l", log="y", yaxt="n", ylab="",
       main="1-pchisq(x,1,1), x in [69, 1500]", sub = R.version.string)
-sfsmisc::eaxis(2) ## whereas this underflows much much much earlier (at x ~ 100)
+eaxis(2) ## whereas this underflows much much much earlier (at x ~ 100)
 curve(1-pchisq(x,1,1), add=TRUE, col=adjustcolor("red", 0.5), lwd=3, n = 2001)
 
 
@@ -537,7 +539,7 @@ curve(pchisq(x, df=1, ncp=0, lower=FALSE,log=TRUE),
 ## ncp > 80 is different ..
 xp <- curve(pchisq(x, df=1, ncp=300, lower=FALSE,log=TRUE), xaxt="n",
             from=1, to=1e4, log='x', main="ncp = 300, log=TRUE")# only down to ~ -25
-sfsmisc::eaxis(1, sub10=2)
+eaxis(1, sub10=2)
 ## .. hmm, really bad...
 
 ## .. the reason is that we compute on (lower=TRUE, log=FALSE) scale and only then transform:
@@ -545,7 +547,7 @@ sfsmisc::eaxis(1, sub10=2)
 curve(pchisq(x, df=1, ncp=300, lower=FALSE),
       from=100,to=2000, log='xy', main="ncp = 300,  upper tail", axes=FALSE) -> pxy
 summary(warnings())
-sfsmisc::eaxis(1, sub10=3); sfsmisc::eaxis(2)
+eaxis(1, sub10=3); eaxis(2)
 curve(pnchisqV(x, df=1, ncp=300, errmax = 4e-16, lower=FALSE, verbose=1),# ,log=TRUE),
       add = TRUE, col=2); mtext("ncp = 300 -- pnchisqV() pure R", col=2)
 showProc.time()

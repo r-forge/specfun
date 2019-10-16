@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.3-4 (2019-10-15, svn r124)}{
+\section{Version 0.3-4 (2019-10-16, svn r125)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item more efficient (internally vectorized) \code{dntJKBf()}.
@@ -19,8 +19,8 @@
       \item fix thinko in \code{any_mpfr()} and \code{all_mpfr()}.
 
       \item \code{pnchisqRC()}'s C code gave severe valgrind warnings;
-      fixed printing of \code{long double} etc.  Seems to need special
-      MinGW deal in Windows.
+      fixed printing of \code{long double} etc;
+      also added special MinGW deal in Windows.
 
       \item \code{ppoisD()} behaves differently in a valgrinded version;
       for now, reproducible only when using valgrind on non-valgrinded
