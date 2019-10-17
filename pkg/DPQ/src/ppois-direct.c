@@ -6,16 +6,12 @@
  *    ppois(x, lambda, low, log_p) := pgamma(lambda, x + 1, 1., !low, log_p)
  */
 
-#include "DPQpkg.h"
-
 #include <float.h> /* DBL_MIN etc */
 
-#ifdef DEBUG_p2
-# define DEBUG_p
-#endif
-#ifdef DEBUG_p
-# include <R_ext/Print.h>
-#endif
+// if(verbose) :
+#include <R_ext/Print.h>
+
+#include "DPQpkg.h"
 
 
 /** Direct computation of the cumulative Poisson distribution function  ppois()
@@ -32,7 +28,7 @@
  *     ppoisD(x, lambda, 1) := ppois(0:x, lambda, low=TRUE, log_p=FALSE)
  *                                   ~~~
  */
-SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0)
+SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0, SEXP verbose_)
 {
     if(!isReal(X))
 	error("'x' must be a \"double\" numeric vector");
@@ -44,6 +40,9 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0)
     int from_0 = asLogical(all_from_0);
     if(from_0 == NA_LOGICAL)
 	error("'all.from.0' must be TRUE or FALSE but is NA");
+    int verbose = asInteger(verbose_);
+    if(verbose == NA_INTEGER || verbose < 0)
+	error("'verbose' must be in {0,1,2,..} but is %d", verbose);
     R_xlen_t i, nx = XLENGTH(X), n;
     if(from_0) { // return all probabilities at 0:x, i.e., 0:(n-1)
 	jI = 1 + floor(x[0] + 1e-7);
@@ -57,7 +56,7 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0)
 	    error("ceiling(lambda) > INT_MAX is invalid here");
     }
 
-    SEXP Prob = PROTECT(allocVector(REALSXP, n));
+    SEXP Prob = PROTECT(allocVector(REALSXP, n)); // the result
     double *prob = REAL(Prob);
     long double f, P,
 	exp_arg = 0, // "= 0": -Wall
@@ -67,10 +66,9 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0)
 	// f0 = f_0; where  f_j := e^{-lam} lam^j / j!  for j = 0,1,...
     if (f0 == 0.L) {
 	exp_arg = -ldlam;
-#ifdef DEBUG_much
-	REprintf("ppoisD(*, lambda=%g): expl(-ldlam)=%Lg= 0 ==> llam=%Lg, exp_arg=%Lg\n",
-		 lam, f0, llam, exp_arg);
-#endif
+	if(verbose)
+	    REprintf("ppoisD(*, lambda=%g): expl(-ldlam)=%Lg= 0 ==> llam=%Lg, exp_arg=%Lg\n",
+		     lam, f0, llam, exp_arg);
     }
     for(i = 0; i < n; i++) { /* prob[i] := ppois(xi, lambda) */
 
@@ -98,10 +96,9 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0)
 		// exp_arg = -ldlam + i*llam - lgammal((long double)(i+1));
 		if((f = expl(exp_arg)) > 0) {
 		    P += f; // P == sum_{m=0, i} f_m
-#ifdef DEBUG_much
-		    REprintf(" .. i=%d, finally new f = expl(exp_arg = %Lg) = %Lg > 0\n",
-			     i, exp_arg, f);
-#endif
+		    if(verbose >= 2)
+			REprintf(" .. i=%d, finally new f = expl(exp_arg = %Lg) = %Lg > 0\n",
+				 i, exp_arg, f);
 		}
 	    }
 	    prob[i] = (double) P;
@@ -136,21 +133,19 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0)
 	    else { // !sml_x : xi > jI := ceil(lam) - 1  ==> start summation at xi :
 		/* f := f_xi = e^-lam * lam^xi / xi! = e^-lam * lam^xi / gamma(xi+1)
 		 *           = e^{-lam + xi*log(lam) - log(gamma(xi+1)) } */
-#ifdef DEBUG_much
-		f = expl(-ldlam + xi*llam - lgammal((long double)(xi+1)));
-		if(f == 0L) {
-
-		    REprintf("ppoisD(x=%g, lambda=%g, expl(-ldlam)=%Lg=0 ==> log(lam)=%Lg, exp_arg=%Lg\n",
-			     xi, lam, f0, llam, exp_arg);
-		    xi--;
+		if(verbose >= 2) {
+		    f = expl(-ldlam + xi*llam - lgammal((long double)(xi+1)));
+		    if(f == 0L) {
+			REprintf("ppoisD(x=%g, lambda=%g, expl(-ldlam)=%Lg=0 ==> log(lam)=%Lg, exp_arg=%Lg\n",
+				 xi, lam, f0, llam, exp_arg);
+			xi--;
+			while((f = expl(-ldlam + xi*logl(ldlam) - lgammal((long double)(xi+1)))) == 0L && xi > j_+1)
+			    xi--;
+		    }
+		} else { // not verbose
 		    while((f = expl(-ldlam + xi*logl(ldlam) - lgammal((long double)(xi+1)))) == 0L && xi > j_+1)
 			xi--;
 		}
-#else
-		    while((f = expl(-ldlam + xi*logl(ldlam) - lgammal((long double)(xi+1)))) == 0L && xi > j_+1)
-			xi--;
-
-#endif
 		long double S2 = f;
 		for(int j = xi; j > j_+1; j--) {// backwards; now, f = f_j
 		    // f := f_{j-1} = f_j * (j / lam)
@@ -158,10 +153,8 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0)
 			f *= j/ldlam;
 		    else { // f == 0 (underflow) or  f "subnormal" -- cannot accurately update
 			f = expl(-ldlam + j*llam - lgammal((long double)(j+1)));
-#ifdef DEBUG_much
-			if(f)
+			if(verbose >=2 && f)
 			    REprintf(" .. j=%d, finally new f = expl(.) = %Lg > 0\n", j, f);
-#endif
 		    }
 		    S2 += f;
 		}

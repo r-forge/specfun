@@ -1,4 +1,4 @@
-ppoisD <- function(q, lambda, all.from.0 = TRUE)
+ppoisD <- function(q, lambda, all.from.0 = TRUE, verbose = 0L)
 {
   ## Purpose: ppois() via direct computation ("sum(dpois)"
   ## ----------------------------------------------------------------------
@@ -6,7 +6,7 @@ ppoisD <- function(q, lambda, all.from.0 = TRUE)
   ## ----------------------------------------------------------------------
   ## Author: Martin Maechler, Date:  2 Mar 2004; .C -> .Call(): 2019-08-15
     if(all.from.0) stopifnot(length(q) == 1L)
-    .Call(C_ppoisD, as.double(q), lambda, all.from.0)
+    .Call(C_ppoisD, as.double(q), lambda, all.from.0, verbose) # -> ../src/ppois-direct.c
 }
 
 
