@@ -22,6 +22,7 @@
 * TODO chisq-Wienergerm approximations:
 ** TODO move C code to here
 ** TODO Find documentation / papers ==> for help pages about h() and g() in R/wienergerm_nchisq-fn.R
+* TODO non-central beta (AS 310): more experiments (cf with R's older algo) --> R/pnbeta.R
 * TODO src/qchisq_appr.c / init.c : change to .Call() version which vectorizes in both args
 * TODO tests/qbeta-dist.R : Demonstrates clear *bug* in R's qbeta() incl 'NOTIFY R-core!'
 

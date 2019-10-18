@@ -185,6 +185,7 @@ SEXP Pnchisq_R(SEXP x_, SEXP f_, SEXP theta_,
 // 310-pnbeta.c : --------------------------------------------------------------
 
 void ncbeta(double *a, double *b, double *lambda, double *x, int *n,
+	    int *use_AS226,
 	    double *errmax, int *itrmax, int *ifault, double *res)
     ;
 

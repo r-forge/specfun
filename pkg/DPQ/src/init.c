@@ -24,7 +24,7 @@ static R_NativePrimitiveArgType Pnchisq_it_t[] = {
     /* terms, prob : */ REALSXP, REALSXP };
 static R_NativePrimitiveArgType ncbeta_t[] = {
     REALSXP, REALSXP, REALSXP, REALSXP,
-    /* n: */ INTSXP,
+    /* n: */ INTSXP, LGLSXP,
     /* errmax: */ REALSXP, INTSXP, INTSXP,
     /* res: */ REALSXP };
 

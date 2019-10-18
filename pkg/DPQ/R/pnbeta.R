@@ -45,10 +45,11 @@ pnbetaAppr2 <- function(x, a, b, ncp = 0, lower.tail=TRUE, log.p=FALSE)
 }
 
 pnbetaAS310 <- function(x, a, b, ncp = 0, lower.tail=TRUE, log.p=FALSE,
-                        errmax = 1e-6, itrmax = 100)
+                        useAS226 = (ncp < 54.), errmax = 1e-6, itrmax = 100)
 {
     stopifnot(length(lower.tail) == 1, length(log.p) == 1,
-              length(errmax) == 1, length(itrmax) == 1)
+              length(errmax) == 1, length(itrmax) == 1,
+              length(useAS226) %in% c(1L, length(ncp)))
     ## Two cases:
     ##  1)  length(a) == length(b) == length(ncp) == n := length(x)   <<  all_n <- TRUE
     ##  2)  length(a) == length(b) == length(ncp) == 1                <<  all_n <- FALSE
@@ -64,7 +65,7 @@ pnbetaAS310 <- function(x, a, b, ncp = 0, lower.tail=TRUE, log.p=FALSE,
         if(n != length(x)) x <- rep_len(x, n)
         if(n != length(a)) a <- rep_len(a, n)
         if(n != length(b)) b <- rep_len(b, n)
-        if(n != length(ncp)) ncp <- rep_len(ncp, n)
+        if(n != length(ncp)) { ncp <- rep_len(ncp, n); useAS226 <- rep_len(useAS226, n) }
     } else { ## only x[] is of length n .. the other three of length 1
         stopifnot(length(a <- as.numeric(a)) == 1,
                   length(b <- as.numeric(b)) == 1,
@@ -73,6 +74,7 @@ pnbetaAS310 <- function(x, a, b, ncp = 0, lower.tail=TRUE, log.p=FALSE,
     r <- .C(C_ncbeta, # ../src/310-pnbeta.c
             a, b, ncp, x,
             as.integer(n),
+            as.logical(useAS226),
             as.double(errmax),
             as.integer(itrmax),
             ifault = as.integer(all_n),# input/output

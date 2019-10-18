@@ -11,8 +11,12 @@
   \code{pnbetaAS310()} is an \R level interface to a C translation (and
   \dQuote{Rification}) of the \code{AS 310} Fortran implementation.
 }
-\usage{%  R code : ../R/pnbeta-approx2.R <<<<
+\usage{%  R code : ../R/pnbeta.R <<<<
 pnbetaAppr2(x, a, b, ncp = 0, lower.tail = TRUE, log.p = FALSE)
+
+pnbetaAS310(x, a, b, ncp = 0, lower.tail = TRUE, log.p = FALSE,
+            useAS226 = (ncp < 54.),
+            errmax = 1e-6, itrmax = 100)% -> ../src/310-pnbeta.c <<<
 }% R's Beta Distrib.: ~/R/D/r-devel/R/src/library/stats/man/Beta.Rd
 \arguments{
   \item{x}{numeric vector (of quantiles), typically from inside \eqn{[0,1]}.}
@@ -21,6 +25,11 @@ pnbetaAppr2(x, a, b, ncp = 0, lower.tail = TRUE, log.p = FALSE)
   \item{log.p}{logical; if TRUE, probabilities p are given as log(p).}
   \item{lower.tail}{logical; if TRUE (default), probabilities are
     \eqn{P[X \le x]}, otherwise, \eqn{P[X > x]}.}
+  \item{useAS226}{\code{\link{logical}} specifying if AS 226 (with R84 and
+    R95 amendments) should be used which is said to be sufficient for small
+    \code{ncp}.  The default \code{ncp < 54} had been hardwired in AS 310.}
+  \item{errmax}{non-negative number determining convergence for AS 310.}
+  \item{itrmax}{positive integer number, only \code{if(useAS226)} is passed to AS 226.}
 }
 %% \details{
 
@@ -35,12 +44,16 @@ pnbetaAppr2(x, a, b, ncp = 0, lower.tail = TRUE, log.p = FALSE)
   \bold{46}(1), 146--156, for \dQuote{approximation 2} notably p.154;
   % not ok in CRAN/winb checks:  \url{https://www.jstor.org/stable/2986212}  or
   \doi{10.1111/1467-9876.00055}.
+
+  Lenth, R. V. (1987) Algorithm AS 226, \dots,
+  Frick, H. (1990)'s AS R84, \dots, and
+  Lam, M.L. (1995)'s AS R95 :  See \sQuote{References} in \R's \code{\link{pbeta}} page.
 }
 \author{Martin Maechler; \code{pnbetaAppr2()} in Oct 2007.}
 \note{
-  The authors in the reference compare AS 310 with Frick(1990) and Lenth(1987)
-  and state to be better than both.  \R's current (2019) noncentral beta
-  implementation builds on Lenth(1987), with some amendments though; still,
+  The authors in the reference compare AS 310 with Lam(1995), Frick(1990) and Lenth(1987)
+  and state to be better than them.  \R's current (2019) noncentral beta
+  implementation builds on these, too, with some amendments though; still,
   \code{pnbetaAS310()} may potentially be better, at least in certain
   corners of the 4-dimensional input space.
 }

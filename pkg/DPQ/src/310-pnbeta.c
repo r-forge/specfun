@@ -9,6 +9,7 @@ double betanc(double x, double a, double b, double lambda,
 	      double errmax, int itrmax, int *ifault);
 
 double ncbeta1(double a, double b, double lambda, double x,
+	       Rboolean use_AS226,
 	       int itrmax, /* only passed to betanc() for AS 226 currently,
 			    *  was hardwired = 100 */
 	       double errmax,
@@ -51,11 +52,12 @@ double ncbeta1(double a, double b, double lambda, double x,
 
     *xj = 0;
 
-    if (lambda < 54.) {/* AS 226 as it stands is sufficient in this situation */
+    // if (lambda < 54.) {/* AS 226 as it stands is sufficient in this situation */
+    if (use_AS226) {
 
 	return betanc(x, a, b, lambda, errmax, itrmax, ifault);
 
-    } else { // lambda >= 54 :
+    } else { // !use_AS226 [was 'lambda >= 54' hardwired]
 
 	double q, r__, s, s0, s1, t0, t1, fx, gx;
 	double ebd, sum, lBeta, temp, psum;
@@ -89,19 +91,17 @@ double ncbeta1(double a, double b, double lambda, double x,
 
 /*      The first set of iterations starts from M and goes downwards */
 
-L20:
-	if (iter1 < iterlo || q < errmax) {
-	    goto L30;
+	while(iter1 >= iterlo && q >= errmax) {
+// L20:
+	    q *= (iter1 / c__); //  '310', the online copy of AS 310 has "Q = Q - ITER1 / C" which is incorrect.
+	    (*xj)++;
+	    gx = (a + iter1) / (x * (a + b + iter1 - 1.)) * gx;
+	    iter1--;
+	    temp += gx;
+	    psum += q;
+	    sum += q * temp;
 	}
-	q *= (iter1 / c__); //  '310', the online copy of AS 310 has "Q = Q - ITER1 / C" which is incorrect.
-	(*xj)++;
-	gx = (a + iter1) / (x * (a + b + iter1 - 1.)) * gx;
-	iter1--;
-	temp += gx;
-	psum += q;
-	sum += q * temp;
-	goto L20;
-L30:
+// L30:
 	t0 = lgamma(a + b) - lgamma(a + 1.) - lgamma(b);
 	s0 = a * log(x) + b * log1p( - x);
 	s = 0.; // << correction: initialization of 's' was missing in '310' *and* the publication (!)
@@ -119,44 +119,39 @@ L30:
 	temp = ftemp;
 	gx = fx;
 	iter2 = m;
-L50:
-	ebd = errbd + (1. - psum) * temp;
-	if (ebd < errmax || iter2 >= iterhi) {
-	    goto L60;
+	while(iter2 < iterhi && (ebd = errbd + (1. - psum) * temp) >= errmax) {
+// L50:
+	    iter2 += 1.;
+	    (*xj)++;
+	    q = q * c__ / iter2;
+	    psum += q;
+	    temp -= gx;
+	    gx = x * (a + b + iter2 - 1.) / (a + iter2) * gx;
+	    sum += q * temp;
 	}
-	iter2 += 1.;
-	(*xj)++;
-	q = q * c__ / iter2;
-	psum += q;
-	temp -= gx;
-	gx = x * (a + b + iter2 - 1.) / (a + iter2) * gx;
-	sum += q * temp;
-	goto L50;
-L60:
-	;
+// L60:
 	return sum;
     }
-
 } /* ncbeta1 */
 
-// call this via .C()  from R  --> ../R/pnbeta.R
+// call this via .C()  from R's pnbetaAS310() --> ../R/pnbeta.R
 void ncbeta(double *a, double *b, double *lambda, double *x, int *n,
+	    int *use_AS226,
 	    double *errmax, int *itrmax,
 	    int *ifault, double *res)
 {
     int it_used;
     if(*ifault == 1) // all 4 main args are vectors of length n
 	for(int i=0; i < *n; i++) // FIXME: *ifault depends on [i] -- must error() here
-	    res[i] = ncbeta1(a[i], b[i], lambda[i], x[i],
+	    res[i] = ncbeta1(a[i], b[i], lambda[i], x[i], (Rboolean) use_AS226[i],
 			     *itrmax, *errmax, &it_used, ifault);
-    // TODO/FIXME : report 'it_used'  if(verbose) ??
+    // TODO/FIXME : report 'it_used'  (for every 'i') if(verbose) ??
 
     else // x = x[1:n], the other three args are scalar :
 	for(int i=0; i < *n; i++)
-	    res[i] = ncbeta1(a[0], b[0], lambda[0], x[i],
+	    res[i] = ncbeta1(a[0], b[0], lambda[0], x[i], (Rboolean) use_AS226[0],
 			     *itrmax, *errmax, &it_used, ifault);
-    // TODO/FIXME : report 'it_used'  if(verbose) ??
-
+    // TODO/FIXME : report 'it_used'  (for every 'i') if(verbose) ??
 }
 
 
