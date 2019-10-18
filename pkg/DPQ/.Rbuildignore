@@ -1,3 +1,5 @@
+[A-Za-z]\+$
+[A-Za-z]\+[A-Za-z0-9]
 DESCRIPTION_Author
 ^MM
 ^Resnikoff
@@ -10,8 +12,6 @@ auto
 \.blg$
 log$
 .*/.*,v
-R/.*\.R\+
-src/.*\+
 svn-
 TAGS
 ^do-
@@ -19,7 +19,6 @@ etags
 vignettes/.*:
 vignettes/.*\[woven\]
 inst/doc/.*\.Rnw
-demo/.*.R\+
 tests/.*\.pdf
 tests/.*\.Rout[-_]?
 tests/.*\.Rout*[24]b

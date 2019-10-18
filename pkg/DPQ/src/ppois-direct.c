@@ -108,9 +108,13 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0, SEXP verbose_)
     if (f0 == 0.L) {
 	exp_arg = -ldlam;
 	if(verbose)
-	    REprintf("ppoisD(*, lambda=%g): expl(-ldlam)=%Lg= 0 ==> llam=%Lg, exp_arg=%Lg\n",
-		     lam, f0, llam, exp_arg);
-    }
+	    REprintf("ppoisD(*, lambda=%g): expl(-ldlam)=%" PR_g_ "= 0 ==> llam=%" PR_g_
+		     ", exp_arg=%" PR_g_ "\n", lam, f0, llam, exp_arg);
+    } else if(verbose)
+	    REprintf("ppoisD(*, lambda=%g): ldlam = %" PR_g_ ", expl(-ldlam)=%" PR_g_
+		     "; llam=%" PR_g_ ", exp_arg=%" PR_g_ "\n",
+		     lam, ldlam, f0, llam, exp_arg);
+
     for(i = 0; i < n; i++) { /* prob[i] := ppois(xi, lambda) */
 
 	/* Compute Prob = sum_{j = 0}^xi f_j,  where f_j := exp(-L) L^j / j! {L:= lambda}
@@ -137,10 +141,12 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0, SEXP verbose_)
 		// exp_arg = -ldlam + i*llam - lgammal((long double)(i+1));
 		if((f = expl(exp_arg)) > 0) {
 		    P += f; // P == sum_{m=0, i} f_m
-		    if(verbose >= 2)
-			REprintf(" .. i=%d, finally new f = expl(exp_arg = %Lg) = %Lg > 0\n",
+		    if(verbose)
+			REprintf(" ..>> i=%d, finally new f = expl(exp_arg = %"PR_g_
+				 ") = %"PR_g_ " > 0\n", i, exp_arg, f);
+		} else if(verbose >= 2)
+			REprintf(" .. i=%d, f = expl(exp_arg = %"PR_g_") = %"PR_g_"\n",
 				 i, exp_arg, f);
-		}
 	    }
 	    prob[i] = (double) P;
 	}
@@ -177,14 +183,17 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0, SEXP verbose_)
 		if(verbose >= 2) {
 		    f = expl(-ldlam + xi*llam - lgammal((long double)(xi+1)));
 		    if(f == 0L) {
-			REprintf("ppoisD(x=%g, lambda=%g, expl(-ldlam)=%Lg=0 ==> log(lam)=%Lg, exp_arg=%Lg\n",
+			REprintf("ppoisD(x=%g, lambda=%g, expl(-ldlam)=%"PR_g_ "=0 ==> log(lam)=%"
+				 PR_g_ ", exp_arg=%" PR_g_ "\n",
 				 xi, lam, f0, llam, exp_arg);
 			xi--;
-			while((f = expl(-ldlam + xi*logl(ldlam) - lgammal((long double)(xi+1)))) == 0L && xi > j_+1)
+			while((f = expl(-ldlam + xi*logl(ldlam) - lgammal((long double)(xi+1)))) == 0L
+			      && xi > j_+1)
 			    xi--;
 		    }
 		} else { // not verbose
-		    while((f = expl(-ldlam + xi*logl(ldlam) - lgammal((long double)(xi+1)))) == 0L && xi > j_+1)
+		    while((f = expl(-ldlam + xi*logl(ldlam) - lgammal((long double)(xi+1)))) == 0L
+			  && xi > j_+1)
 			xi--;
 		}
 		long double S2 = f;
@@ -195,7 +204,7 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0, SEXP verbose_)
 		    else { // f == 0 (underflow) or  f "subnormal" -- cannot accurately update
 			f = expl(-ldlam + j*llam - lgammal((long double)(j+1)));
 			if(verbose >=2 && f)
-			    REprintf(" .. j=%d, finally new f = expl(.) = %Lg > 0\n", j, f);
+			    REprintf(" .. j=%d, finally new f = expl(.) = %" PR_g_ " > 0\n", j, f);
 		    }
 		    S2 += f;
 		}

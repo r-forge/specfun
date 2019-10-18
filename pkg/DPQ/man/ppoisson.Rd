@@ -10,7 +10,7 @@
 %%  ......
 }
 \usage{% --------> ../R/ppois-fn.R
-ppoisD(q, lambda, all.from.0 = TRUE)
+ppoisD(q, lambda, all.from.0 = TRUE, verbose = 0L)
 ppoisErr (lambda, ppFUN = ppoisD, iP = 1e-15,
           xM = qpois(iP, lambda=lambda, lower.tail=FALSE),
           verbose = FALSE)
@@ -34,8 +34,8 @@ ppoisErr (lambda, ppFUN = ppoisD, iP = 1e-15,
     used, i.e., the values used will be \code{x <- 0:iM}.  The default,
     \code{qpois(1-iP, lambda = lambda)} is the upper tail
     \code{iP}-quantile of \code{Poi(lambda)}.}
-  \item{verbose}{\code{\link{logical}} indicating if extra information
-    should be printed.}
+  \item{verbose}{\code{\link{integer}} (\eqn{\ge 0}) or
+    \code{\link{logical}} indicating if extra information should be printed.}
 }
 %% \details{
 %%   ....

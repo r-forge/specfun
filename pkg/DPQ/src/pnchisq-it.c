@@ -337,7 +337,7 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
 	    if(verbose)
 		REprintf("pnchisq(x=%g, f=%g, theta=%g); theta < cutoff_ncp=%g: i=%d, "
 			 "ans=(sum=%" PR_g_ ")/(sum2=%" PR_g_ ")\n",
-			 x,f,theta, cutoff_ncp, i, (double)*sum, (double)*sum2);
+			 x,f,theta, cutoff_ncp, i, *sum, *sum2);
 	    if (i >= it_simple)
 		MATHLIB_WARNING2(_("pnchisq(x=%g, ..): II: not converged in %d simple iterations"),
 				 x, it_simple);
