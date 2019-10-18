@@ -95,6 +95,8 @@ all.equal(pE, pEd) # not quite: 'x0' differs slightly
 ## Large Lam  where  exp(-lambda) underflows to 0 (even in 'long double'):
 
 ## "the minimal" large lambda is
+okLD <- okLongDouble(999)
+notXorLD <- !okLD || !doExtras
 Lam  <- 11400 ## but we choose a slightly larger, where one sees more
 set.seed(12)
 for(Lam in c(11400 + c(0, sort(round(rlnorm(10, 4, 2), 1))))) {
@@ -126,9 +128,9 @@ for(Lam in c(11400 + c(0, sort(round(rlnorm(10, 4, 2), 1))))) {
     if(doExtras) lines(kM[ip], ppSL[ip] - pp[ip], col = adjustcolor(3, 1/2), lwd=3)
     abline(v = Lam, lty=2, col="gray")
     stopifnot(exprs = {
-        all.equal(pp, pp., tol = 1e-12)
-        !doExtras || all.equal(pp,  ppSL, tol = 1e-12)
-        !doExtras || all.equal(pp., ppSL, tol = 1e-14)# both ppoisD()  "fast" or "slow" should be very close
+        !okLD    || all.equal(pp,  pp. , tol = 1e-12)
+        notXorLD || all.equal(pp,  ppSL, tol = 1e-12)
+        notXorLD || all.equal(pp., ppSL, tol = 1e-14)# both ppoisD()  "fast" or "slow" should be very close
     })
 }
 

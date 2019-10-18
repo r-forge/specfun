@@ -13,6 +13,47 @@
 
 #include "DPQpkg.h"
 
+// Called from R's  okLongDouble() :
+SEXP chk_LDouble(SEXP lambda_, SEXP verbose_, SEXP tol_) {
+    int verbose = asLogical(verbose_);
+    if(verbose == NA_LOGICAL)
+	error("'verbose' must be TRUE or FALSE but is NA");
+    double lambda = asReal(lambda_);
+    if(lambda < 0) error("'lambda' must be >=0");
+    double tol = asReal(tol_),
+	rt_lam = sqrt(lambda), eps = exp(-rt_lam);
+    long double
+	ldlam = (long double) lambda,
+	llam  = logl(ldlam),
+	f0    = expl(-ldlam),// e^{-lambda}  [in long double]
+	logf0 = logl(f0),    // log(e^{-lambda}) ~= -lambda  if "things work"
+	explg = expl(llam),  // e^log(ldlam) ~= lambda       if "things work"
+	lg1p  = log1pl(eps), // log(1 + eps) ~= eps - eps^2/2 + .. (for small eps := e^-sqrt(lam))
+	RErr_log = 1 - logf0/-ldlam,
+	RErr_exp = 1 - explg/ldlam,
+	RErr_lg1p= 1 - lg1p/(eps*(1-eps/2))
+	;
+    Rboolean
+	eq_log = fabsl(RErr_log) <= tol,
+	eq_exp = fabsl(RErr_exp) <= tol,
+	eq_lg1p= fabsl(RErr_lg1p)<= tol
+	;
+    if(verbose) {
+	Rprintf("lambda=%g; eps = e^-sqrt(l.) = %g  ==>  logl(ldlam)=%" PR_g_
+		"; expl(-ldlam)=%" PR_g_
+		";\n logl(expl(-ldlam))= %" PR_g_ "~= -ldlam? rel.err=%g: %s"
+		";\n expl(logl( ldlam))= %" PR_g_ " ~= ldlam? rel.err=%g: %s"
+		";\n log1pl(eps)= %" PR_g_ "~= eps(1-eps/2)?  rel.err=%g: %s"
+		"\n"
+ 		, lambda, eps, llam, f0
+		, logf0, (double)RErr_log, (eq_log ? "TRUE" : "FALSE")
+		, explg, (double)RErr_exp, (eq_exp ? "TRUE" : "FALSE")
+		, lg1p,  (double)RErr_lg1p,(eq_lg1p? "TRUE" : "FALSE")
+	    );
+    }
+    return ScalarLogical(eq_log && eq_exp);
+}
+
 
 /** Direct computation of the cumulative Poisson distribution function  ppois()
  *

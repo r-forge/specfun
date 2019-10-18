@@ -87,6 +87,7 @@ export(
   , lbeta_asy, lbetaI, lbetaM, lbetaMM
   ## , lbetaIhalf
   , algdiv # name as in TOMS 708 .. but really?
+  , okLongDouble # as with valgrind, it does not work contrary to what .Machine says
 
   , lgamma1p., lgamma1p, lgamma1p_series
   , log1pmx

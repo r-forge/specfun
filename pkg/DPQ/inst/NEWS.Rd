@@ -4,10 +4,14 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.3-5 (2019-10-18, svn r127)}{
+\section{Version 0.3-5 (2019-10-18, svn r128)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{pnbetaAS310()} gained a \code{useAS226} option.
+
+      \item New \code{okLongDouble()} function, notably for detecting that
+      with a \command{valgrind}ed version of \R, \code{long double} C
+      arithmetic seems to silently switch to (simple) \code{double} precision.
     }
   }
 }
