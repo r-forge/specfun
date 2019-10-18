@@ -39,7 +39,7 @@ lssum(lxabs, signs, l.off = max(lxabs), strict = TRUE)
 }
 \seealso{
   \code{\link{lsum}()} which computes an exponential sum in log scale
-  with\emph{out} signs.
+  with \emph{out} signs.
 }
 \author{
   Marius Hofert and Martin Maechler (for package \CRANpkg{copula}).

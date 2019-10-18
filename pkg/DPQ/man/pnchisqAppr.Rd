@@ -1,6 +1,6 @@
 %%------------ = Part 1 of  "pnchisq Approximations"  [part 2 : ==> ./pnchisqWienergerm.Rd]
 \name{pnchisqAppr}
-\title{(Approximate) Probabilities of Non-Central Chisquared Distribution}
+\title{(Approximate) Probabilities of Non-Central Chi-squared Distribution}
 %%     ----------------------------------------------------------------
 \alias{pnchisq}
 \alias{pnchisqV}% with "n" (--> ./pnchisqWienergerm.Rd has {pchisqV}  w/o "n" )
@@ -21,7 +21,7 @@
 \alias{ss2}
 \alias{ss2.}
 \description{
-  Compute (approximate) probabilities for the non-central chi squared
+  Compute (approximate) probabilities for the non-central chi-squared
   distribution.
 
   The non-central chi-squared distribution with \code{df}\eqn{= n}

@@ -1,9 +1,9 @@
 \name{pnchi1sq}
-\title{(Probabilities of Non-Central Chisquared Distribution for Special Cases}
+\title{(Probabilities of Non-Central Chi-squared Distribution for Special Cases}
 \alias{pnchi1sq}
 \alias{pnchi3sq}%-- __end of__ >>> ../R/pnchisq.R <<<
 \description{
-  Computes probabilities for the non-central chi squared distribution, in
+  Computes probabilities for the non-central chi-squared distribution, in
   special cases, currently for \code{df = 1} and \code{df = 3}, using
   \sQuote{exact} formulas only involving the standard normal (Gaussian)
   cdf \eqn{\Phi()} and its derivative \eqn{\phi()}, i.e., \R's

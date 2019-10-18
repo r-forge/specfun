@@ -1,6 +1,6 @@
 \name{pnchisqWienergerm}
-\title{Wienergerm Approximations to (Non-Central) Chisquare Probabilities}
-%% TODO: also read/use >>>>  ../wienergerm_README <<<<<<<<<<<<<<<
+%F\title{Wienergerm Approximations to (Non-Central) \eqn{\chi^2}{χ²} Probabilities}
+\title{Wienergerm Approximations to (Non-Central) Chi-squared Probabilities}
 \alias{pchisqV}% w/o "n" -- NB:  --> ./pnchisqAppr.Rd for 'pnchisqV() % *with* "n"
 \alias{pchisqW}
 \alias{pchisqW.}
@@ -22,7 +22,7 @@
 \description{%%--> ../R/wienergerm_nchisq-fn.R <--
 
   Functions implementing the two Wiener germ approximations to
-  \code{\link{pchisq}()}, the (non-central) chisquare distribution, and to
+  \code{\link{pchisq}()}, the (non-central) chi-squared distribution, and to
   \code{\link{qchisq}()} its inverse, the quantile function.
 
   These have been proposed by Penev and Raykov (2000) who also listed a
@@ -92,6 +92,7 @@ z.s(x, df, ncp, verbose = getOption("verbose"))
 }
 \details{
   ....TODO... or write vignette
+%% read/use >>>>  ../wienergerm_README <<<<<<<<<<<<<<<
 %% ==> info in header of ../src/wienergerm_nchisq.c
 %% but also in Martin's extensive example scripts, and hand notes
 }
@@ -102,10 +103,10 @@ z.s(x, df, ncp, verbose = getOption("verbose"))
 \author{Martin Maechler, mostly end of Jan 2004}% <--> ../wienergerm_README <<<<
 \references{
   Penev, Spiridon and Raykov, Tenko (2000)
-  A Wiener Germ approximation of the noncentral chi square
+  A Wiener Germ approximation of the noncentral chi square % < sic! written
   distribution and of its quantiles.
-  Computational Statistics \bold{15}, 219--228.
-  \doi{10.1007/s001800000029}% ~/save/papers/Numerics/a-wiener-germ-approximation.ps
+  \emph{Computational Statistics} \bold{15}, 219--228.
+  \doi{10.1007/s001800000029}% ~/save/papers/Numerics/wienergerm-approximation.ps
 
   Dinges, H. (1989)
   Special cases of second order Wiener germ approximations.

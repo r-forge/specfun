@@ -44,7 +44,7 @@ pbetaRv1(q, shape1, shape2, lower.tail = TRUE,
 \value{
   a number.
 }
-\note{The C code contains\cr \emph{
+\note{The C code contains \cr \emph{
  This routine is a translation into C of a Fortran subroutine
  by W. Fullerton of Los Alamos Scientific Laboratory.}
 }

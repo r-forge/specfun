@@ -37,7 +37,7 @@ qchisqAppr.R(p, df, lower.tail = TRUE, log.p = FALSE, tol = 5e-07,
     Wilson-Hilferty versions, when the string contains \code{"WH"}.
     More specifically, it must be one of the strings
     \describe{
-      \item{"chi.small"}{particularly useful for small chisquared values \code{p};... ...}
+      \item{"chi.small"}{particularly useful for small chi-squared values \code{p};... ...}
       \item{"WH"}{... ...}
       \item{"p1WH"}{... ...}
       \item{"WHchk"}{... ...}

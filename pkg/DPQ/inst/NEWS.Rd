@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.3-5 (2019-10-18, svn r129)}{
+\section{Version 0.3-5 (2019-10-18, svn r131)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{pnbetaAS310()} gained a \code{useAS226} option.

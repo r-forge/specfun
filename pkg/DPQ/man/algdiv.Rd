@@ -6,8 +6,8 @@
     \Gamma(b) - \log\Gamma(a+b) = \code{lgamma(b) - lgamma(a+b)}}
   in a numerically stable way.
 
-  This is an auxiliary function ins TOMS 708 implementation of
-  \code{\link{pbeta}}, aka the incomplete beta function ratio.
+  This is an auxiliary function in \R's (TOMS 708) implementation of
+  \code{\link{pbeta}()}, aka the incomplete beta function ratio.
 }
 \usage{
 algdiv(a, b)
@@ -36,7 +36,7 @@ algdiv(a, b)
   Didonato, A. and Morris, A., Jr, (1992)
   Algorithm 708: Significant digit computation of the incomplete beta
   function ratios,
-  \emph{ACM Transactions on Mathematical Software} \bold{18}, 360--373.
+  \emph{ACM Transactions on Mathematical Software} \bold{18}, 360--373. % =: TOMS 708
 }
 \author{Didonato, A. and Morris, A., Jr, (1992); \code{algdiv()}'s C
   version from the \R sources, authored by the \R core team; C and \R

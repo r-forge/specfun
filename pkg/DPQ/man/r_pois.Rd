@@ -47,7 +47,7 @@ plRpois(lambda, iset = 1:(2*lambda), do.main = TRUE,
 }
 \details{
   \code{r_pois()} is related to our series expansions and approximations
-  for the non-central chisquared;
+  for the non-central chi-squared;
   in particular
   ........... % TODO
 

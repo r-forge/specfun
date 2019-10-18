@@ -1,11 +1,11 @@
 \name{dchisqApprox}
-\title{Approximations of the (Noncentral) Chisquared Density}
+\title{Approximations of the (Noncentral) Chi-Squared Density}
 \alias{dnchisqR}
 \alias{dchisqAsym}
 \alias{dnchisqBessel}
 \alias{dnoncentchisq}
 \description{
-  Compute the density function \eqn{f(x, *)} of the (noncentral) chisquared
+  Compute the density function \eqn{f(x, *)} of the (noncentral) chi-squared
   distribution.
 }
 \usage{%- ../R/dnchisq-fn.R
@@ -30,7 +30,7 @@ dnoncentchisq(x, df, ncp, kmax = floor(ncp/2 + 5 * (ncp/2)^0.5))
     safeguarding against infinite loops, from \PR{14105}, e.g., for
     \code{dchisq(2000, 2, 1000)}.}
   \item{ncpLarge}{in the case where \code{mid} underflows to \code{0}, when
-    \code{log} is true, or\code{ncp >= ncpLarge}, use a central
+    \code{log} is true, or \code{ncp >= ncpLarge}, use a central
     approximation.  In theory, an optimal choice of \code{ncpLarge} would
     not be arbitrarily set at \code{1000} (hardwired in \R's
     \code{\link{dchisq}()} here), but possibly also depend on \code{x} or
@@ -52,7 +52,7 @@ dnoncentchisq(x, df, ncp, kmax = floor(ncp/2 + 5 * (ncp/2)^0.5))
 
   \code{dnoncentchisq()} uses the (typically defining) infinite series expansion
   directly, with truncation at \code{kmax}, and terms \eqn{t_k}{t[k]} which
-  are products of a Poisson probability and a central chisquare density, i.e.,
+  are products of a Poisson probability and a central chi-square density, i.e.,
   terms \code{t.k :=  \link{dpois}(k, lambda = ncp/2) * \link{dchisq}(x, df = 2*k + df)}
   for \code{k = 0, 1, ..., kmax}.
 }
