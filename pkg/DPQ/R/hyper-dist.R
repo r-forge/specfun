@@ -1,6 +1,10 @@
 #### Hypergeometric Distribution
-#### dhyper(x, m, n, k)
-#### phyper(q, m, n, k)
+#### ===========================
+#### R ( / S) functions :
+####	dhyper(x, m, n, k)
+####	phyper(q, m, n, k)
+###
+### Parametrization / Nomenclature :
 ###
 ### JohKK  R/S        C    AS152
 ### ~~~~~  ~~~       ~~
@@ -12,7 +16,14 @@
 ###   N   =m+n    = NR+NB = mm   : the TOTAL # { balls   in the urn }
 ###   p   =m/(m+n)= NR/N  = nn/mm: probability of WHITE(Red)
 
-###>>>> HARD testers : ./Knuesel-splus-ex.R  [ -->  phyper() ]
+### where
+###  JohKK := Johnson, Kotz & Kemp (1992)
+###           Univariate Discrete Distributions, 2nd Ed.
+###           [Chapter 6 -- Hypergeometric Distributions]
+###  R/S   := the [dpqr]hyper() functions defined in R {and already S}
+
+### Some tests (no longer problematic):
+###  ./dpq-functions/Knuesel-splus-ex.R  [ -->  phyper() ]
 
 #### Used to be part of /u/maechler/R/MM/NUMERICS/hyper-dist.R -- till Jan.24 2020
 
@@ -25,7 +36,7 @@ phyper.appr.as152 <- function(q, m, n, k)
   ## ----------------------------------------------------------------------
   ## Arguments:
   ## ----------------------------------------------------------------------
-  ## Author: Local Installer, Date: 19 Apr 99, 23:39
+  ## Author: Martin Maechler, Date: 19 Apr 99, 23:39
   kk <- n
   nn <- m
   mm <- m+n
@@ -86,7 +97,7 @@ phyper.Peizer <- function(q, m, n, k)
   mm <- N - Np                  ;  m. <- N - Np + 1/6
   r <- n                        ;  r. <- n      + 1/6
   s <- N - n                    ;  s. <- N - n  + 1/6
-                                   N. <- N             - 1/6
+                                   N. <- N      - 1/6
   A <- x + 1/2                  ;  A. <- x      + 2/3
   B <- Np - x - 1/2             ;  B. <- Np - x - 1/3
   C <- n  - x - 1/2             ;  C. <- n  - x - 1/3
@@ -107,6 +118,121 @@ phyper.Peizer <- function(q, m, n, k)
   # The book wrongly has an extra "2*" before `m* ' (after "2*L* (" ) above
 }
 
+### Binomial Approximation(s) ==========
+### ======== ~~~~~~~~~~~~~~~~ ==========
+
+##  JohKK  R     C
+##  ~~~~~  ~~    ~~
+##  Np   = m  =  NR  : # { WHITE (Red) balls   in the urn }
+##  N-Np = n  =  NB  : # { BLACK       balls   in the urn }
+##   n   = k  =   n  : # { balls drawn from the urn }
+##         x  =   x  : # { WHITE (Red) balls AMONG the `n' drawn}
+
+##' Molenaar(1970a) -- formula (6.80) in JohKK -- improved p for Bin(n,p) approximation:
+hyper2binom.p <- function(x, m,n,k) {
+    N <- m+n
+    p <- m / N # "Np / N"
+    N.n <- N - (k-1)/2
+    ## p^{+} =
+    (m - x/2)/N.n - k*(x - k*p - 1/2) / (6 * N.n^2)
+}
+
+### NOTA BENE/TODO: (this paragraph has not __yet__ been applied below at all !!)
+### ---------
+### JohKK, p.258 (top) mention the *four* different binomial approximations
+### for a given hypergeometric, and then
+### "Brunk et al. (1968) .. support the opinion of ...(1961) that it is
+### best to use the binomial with smallest power parameter, that is,
+### n' = min(n, Np, N-Np, N-n)
+### --------------------------
+###   ( x ; (  n , p= Np/N) )  <--> ( x  ; (Np , p= n /N)) <-->
+###   (n-x; (N-Np, p= n /N) )  <--> (Np-x; (N-n, p= Np/N))
+### translated to R's notation:
+###   ( q ; ( k ,  p= m/(m+n)) <--> ( q  ; (m,     p= k/(m+n))) <-->
+###   (k-q; ( n ,  p= k/(m+n)) <--> (m-q ; (m+n-k, p= m/(m+n)))
+
+##' The support of the hypergeometric distrib. as a function of its parameters
+q.mnk.hyper <- function(m,n,k) max(0, k-n) : min(k, m)
+
+##' The two symmetries <---> the four different ways to compute :
+phypers <- function(m,n,k, q = q.mnk.hyper(m,n,k)) {
+    N <- m+n
+    pm <- cbind(ph = phyper(q,     m,  n , k), # 1 = orig.
+                p2 = phyper(q,     k, N-k, m), # swap m <-> k (keep N = m+n)
+                ## "lower.tail = FALSE"  <==>  1 - p..(..)
+                Ip2= phyper(m-1-q, N-k, k, m, lower.tail=FALSE),
+                Ip1= phyper(k-1-q, n,   m, k, lower.tail=FALSE))
+
+    ## check that all are (approximately) the same :
+    stopifnot(all.equal(pm[,1], pm[,2]),
+              all.equal(pm[,2], pm[,3]),
+              all.equal(pm[,3], pm[,4]))
+    list(q = q, phyp = pm)
+}
+
+phyper.bin.Molenaar <-
+phyper.bin.Molenaar.1 <- function(q, m, n, k, lower.tail=TRUE, log.p=FALSE)
+    pbinom(q, size = k, prob = hyper2binom.p(q, m,n,k),
+           lower.tail=lower.tail, log.p=log.p)
+phyper.bin.Molenaar.2 <- function(q, m, n, k, lower.tail=TRUE, log.p=FALSE)
+    ## swap k ('n') with m ('Np') -- but with R's notation n=N-Np changes too:
+    pbinom(q, size = m, prob = hyper2binom.p(q, k, n-k+m, m),
+           lower.tail=lower.tail, log.p=log.p)
+phyper.bin.Molenaar.3 <- function(q, m, n, k, lower.tail=TRUE, log.p=FALSE) {
+    ## "Ip2"
+    pbinom(m-1-q, size = m, prob = hyper2binom.p(m-1-q, m+n-k, k, m),
+           lower.tail = !lower.tail, log.p=log.p)
+    ##                 ===
+}
+phyper.bin.Molenaar.4 <- function(q, m, n, k, lower.tail=TRUE, log.p=FALSE) {
+    ## "Ip1"
+    pbinom(k-1-q, size = k, prob = hyper2binom.p(k-1-q, n, m, k),
+           lower.tail = !lower.tail, log.p=log.p)
+    ##                 ===
+}
+
+## Now, for completeness, also the simple binomial approximations:
+phyper.bin.1 <- function(q, m, n, k, lower.tail=TRUE, log.p=FALSE)
+    pbinom(q, size = k, prob = m/(m+n), lower.tail=lower.tail, log.p=log.p)
+phyper.bin.2 <- function(q, m, n, k, lower.tail=TRUE, log.p=FALSE)
+    ## swap k ('n') with m ('Np') -- but with R's notation n=N-Np changes too:
+    pbinom(q, size = m, prob = k/(m+n), lower.tail=lower.tail, log.p=log.p)
+phyper.bin.3 <- function(q, m, n, k, lower.tail=TRUE, log.p=FALSE)
+    pbinom(m-1-q, size = m, prob = (m+n-k)/(m+n), lower.tail = !lower.tail, log.p=log.p)
+phyper.bin.4 <- function(q, m, n, k, lower.tail=TRUE, log.p=FALSE)
+    pbinom(k-1-q, size = k, prob = n/(m+n), lower.tail = !lower.tail, log.p=log.p)
+
+
+phyper.bin.allM <- function(m, n, k, q = q.mnk.hyper(m,n,k),
+                            lower.tail=TRUE, log.p=FALSE)
+{
+    cbind(pM1 = phyper.bin.Molenaar.1(q, m, n, k, lower.tail=lower.tail, log.p=log.p),
+          pM2 = phyper.bin.Molenaar.2(q, m, n, k, lower.tail=lower.tail, log.p=log.p),
+          pM3 = phyper.bin.Molenaar.3(q, m, n, k, lower.tail=lower.tail, log.p=log.p),
+          pM4 = phyper.bin.Molenaar.4(q, m, n, k, lower.tail=lower.tail, log.p=log.p))
+}
+
+phyper.bin.all <- function(m, n, k, q = q.mnk.hyper(m,n,k),
+                           lower.tail=TRUE, log.p=FALSE)
+{
+    cbind(
+          p1 = phyper.bin.1(q, m, n, k, lower.tail=lower.tail, log.p=log.p),
+          p2 = phyper.bin.2(q, m, n, k, lower.tail=lower.tail, log.p=log.p),
+          p3 = phyper.bin.3(q, m, n, k, lower.tail=lower.tail, log.p=log.p),
+          p4 = phyper.bin.4(q, m, n, k, lower.tail=lower.tail, log.p=log.p),
+
+          pM1 = phyper.bin.Molenaar.1(q, m, n, k, lower.tail=lower.tail, log.p=log.p),
+          pM2 = phyper.bin.Molenaar.2(q, m, n, k, lower.tail=lower.tail, log.p=log.p),
+          pM3 = phyper.bin.Molenaar.3(q, m, n, k, lower.tail=lower.tail, log.p=log.p),
+          pM4 = phyper.bin.Molenaar.4(q, m, n, k, lower.tail=lower.tail, log.p=log.p))
+
+}
+
+dhyper.bin.Molenaar <- function(x, m, n, k, log=FALSE)
+    dbinom(x, size=k, prob = hyper2binom.p(x, m,n,k), log=log)
+
+### ----------- ----------- lfastchoose() etc -----------------------------
+
 lfastchoose <- function(n,k) lgamma(n + 1) - lgamma(k + 1) - lgamma(n - k + 1)
 
 my.lchoose <- function(n,k) {
@@ -124,7 +250,7 @@ p1 <- c(0.83333333333333101837e-1,
 
 
 ## The  Bernoulli Numbers:
-Bern <- function(n)
+Bern <- function(n, verbose = getOption("verbose", FALSE))
 {
   ## Purpose: n-th Bernoulli number -- exercise in cashing
   ## ----------------------------------------------------------------------
@@ -135,13 +261,12 @@ Bern <- function(n)
   if(n < 0) stop("'n'  must not be negative")
   if(n== 0) 1 else
   if(n==1) -1/2 else
-  if(n%%2==1) 0 else { ##-- maybe use 'cache': .Bernoulli[n] == Bern(2 * n)
+  if(n %% 2 == 1) 0 else { ##-- maybe use 'cache': .Bernoulli[n] == Bern(2 * n)
     n2 <- n %/% 2
     do.new <- !exists(".Bernoulli", mode='numeric')
     if(do.new) .Bernoulli <<- numeric(0)
     if(do.new || length(.Bernoulli) < n2) { ##-- Compute  Bernoulli(n)
-      if(!exists("prt.DEBUG")) source("/u/maechler/R/prt-DEBUG.R")
-      prt.DEBUG("n=",n,": computing")
+      if(verbose) cat("n=",n,": computing", sep='', "\n")
       Bk <- k0 <- seq(length=n2-1)
       if(n2 > 1) {
 	for(k in k0) Bk[k] <- Bern(2*k)
