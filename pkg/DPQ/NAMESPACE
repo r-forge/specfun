@@ -13,9 +13,11 @@ importFrom("sfsmisc"
 importFrom("stats"
          , dnorm, pnorm, qnorm
          , dbeta, pbeta, qbeta
+         , dbinom, pbinom
          , dgamma, pgamma, qgamma
          , dchisq, pchisq, qchisq
          , df, pf, qf
+         , dhyper, phyper
          , dt, pt, qt
          , dpois, ppois, qpois
 )
@@ -28,6 +30,7 @@ importFrom("methods", is, new
            )
 
 importFrom("utils"
+         , globalVariables
          , str
            )
 
@@ -131,6 +134,20 @@ export(
   , qchisqAppr
   , qchisqKG, qchisqWH
   , .qgammaApprBnd
+
+    ## from R/hyper-dist.R :
+  , Bern
+  , .suppHyper
+  , dhyperBinMolenaar
+  , hyper2binomP
+  , lfastchoose, f05lchoose
+  , lgammaAsymp
+  , phyper1molenaar, phyper2molenaar
+  , phyperAllBin, phyperAllBinM
+  , phyperApprAS152
+  , phyperBin.1, phyperBin.2, phyperBin.3, phyperBin.4
+  , phyperBinMolenaar, phyperBinMolenaar.1, phyperBinMolenaar.2, phyperBinMolenaar.3, phyperBinMolenaar.4
+  , phyperIbeta, phyperPeizer, phyperR, phypers
 
     ## from R/qnchisq.R
   , qchisqAppr.0, qchisqAppr.1, qchisqAppr.2, qchisqAppr.3

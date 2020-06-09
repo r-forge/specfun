@@ -1,5 +1,7 @@
 #### Used to be part of /u/maechler/R/MM/NUMERICS/hyper-dist.R -- till Jan.24 2020
 
+library(DPQ)
+
 #### First version committed is the code "as in Apr 1999":
 ####  file | 11782 | Apr 22 1999 | hyper-dist.R
 
@@ -11,6 +13,9 @@ rErr <- function(approx, true, eps = getOption("rErr.eps", 1e-30))
 	   true - approx)     # absolute error (e.g. when true=0)
 }
 
+if(!dev.interactive(orNone=TRUE)) pdf("hyper-dist-ex.pdf")
+
+
 ### ----------- -----------
 
 k <- c(10*(1:9),100*(1:9),1000*(1:9))
@@ -18,29 +23,29 @@ k <- c(10*(1:9),100*(1:9),1000*(1:9))
 options(digits=4)
 ph.k2k <- phyper(k,2*k,2*k,2*k) # rel.err ~ 10^-7
 cbind(k=k, phyper= ph.k2k,
-      rERR.Ibeta= rErr(phyper.Ibeta     (k,2*k,2*k,2*k) , ph.k2k),
-      rERR.as151= rErr(phyper.appr.as152(k,2*k,2*k,2*k) , ph.k2k),
-      rERR.1mol = rErr(phyper.1molenaar (k,2*k,2*k,2*k) , ph.k2k),
-      rERR.2mol = rErr(phyper.2molenaar (k,2*k,2*k,2*k) , ph.k2k),
-      rERR.Peizer=rErr(phyper.Peizer    (k,2*k,2*k,2*k) , ph.k2k))
+      rERR.Ibeta= rErr(phyperIbeta     (k,2*k,2*k,2*k) , ph.k2k),
+      rERR.as151= rErr(phyperApprAS152(k,2*k,2*k,2*k) , ph.k2k),
+      rERR.1mol = rErr(phyper1molenaar (k,2*k,2*k,2*k) , ph.k2k),
+      rERR.2mol = rErr(phyper2molenaar (k,2*k,2*k,2*k) , ph.k2k),
+      rERR.Peizer=rErr(phyperPeizer    (k,2*k,2*k,2*k) , ph.k2k))
 
 ## Here, the Ibeta  fails (NaN) ; moleaar's are both very good :
 ph.k2k <- phyper(k, 1.2*k, 2*k,1.5*k)
 cbind(k=k, phyper= ph.k2k,
-      rERR.Ibeta= rErr(phyper.Ibeta     (k,1.2*k,2*k,1.5*k) , ph.k2k),
-      rERR.as151= rErr(phyper.appr.as152(k,1.2*k,2*k,1.5*k) , ph.k2k),
-      rERR.1mol = rErr(phyper.1molenaar (k,1.2*k,2*k,1.5*k) , ph.k2k),
-      rERR.2mol = rErr(phyper.2molenaar (k,1.2*k,2*k,1.5*k) , ph.k2k),
-      rERR.Peizer=rErr(phyper.Peizer    (k,1.2*k,2*k,1.5*k) , ph.k2k))
+      rERR.Ibeta= rErr(phyperIbeta     (k,1.2*k,2*k,1.5*k) , ph.k2k),
+      rERR.as151= rErr(phyperApprAS152(k,1.2*k,2*k,1.5*k) , ph.k2k),
+      rERR.1mol = rErr(phyper1molenaar (k,1.2*k,2*k,1.5*k) , ph.k2k),
+      rERR.2mol = rErr(phyper2molenaar (k,1.2*k,2*k,1.5*k) , ph.k2k),
+      rERR.Peizer=rErr(phyperPeizer    (k,1.2*k,2*k,1.5*k) , ph.k2k))
 
 x <- round(.8*k); ph.k2k <- phyper(x,1.6*k, 2*k,1.8*k)
 (ph.mat <-
 cbind(k=k, phyper= ph.k2k,
-      rERR.Ibeta= rErr(phyper.Ibeta     (x,1.6*k,2*k,1.8*k) , ph.k2k),
-      rERR.as151= rErr(phyper.appr.as152(x,1.6*k,2*k,1.8*k) , ph.k2k),
-      rERR.1mol = rErr(phyper.1molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
-      rERR.2mol = rErr(phyper.2molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
-      rERR.Peiz = rErr(phyper.Peizer    (x,1.6*k,2*k,1.8*k) , ph.k2k))
+      rERR.Ibeta= rErr(phyperIbeta     (x,1.6*k,2*k,1.8*k) , ph.k2k),
+      rERR.as151= rErr(phyperApprAS152(x,1.6*k,2*k,1.8*k) , ph.k2k),
+      rERR.1mol = rErr(phyper1molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
+      rERR.2mol = rErr(phyper2molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
+      rERR.Peiz = rErr(phyperPeizer    (x,1.6*k,2*k,1.8*k) , ph.k2k))
 )
 matplot(k, abs(ph.mat[,-(1:2)]), type='o', log='xy')
 
@@ -50,11 +55,11 @@ for(Reps in c(0,1)) {
     x <- round(.6*k); ph.k2k <- phyper(x,1.6*k, 2*k,1.8*k)
     print(ph.mat <-
           cbind(k=k, phyper= ph.k2k,
-           rERR.Ibeta= rErr(phyper.Ibeta     (x,1.6*k,2*k,1.8*k) , ph.k2k),
-           rERR.as151= rErr(phyper.appr.as152(x,1.6*k,2*k,1.8*k) , ph.k2k),
-           rERR.1mol = rErr(phyper.1molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
-           rERR.2mol = rErr(phyper.2molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
-           rERR.Peiz = rErr(phyper.Peizer    (x,1.6*k,2*k,1.8*k) , ph.k2k))
+           rERR.Ibeta= rErr(phyperIbeta     (x,1.6*k,2*k,1.8*k) , ph.k2k),
+           rERR.as151= rErr(phyperApprAS152(x,1.6*k,2*k,1.8*k) , ph.k2k),
+           rERR.1mol = rErr(phyper1molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
+           rERR.2mol = rErr(phyper2molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
+           rERR.Peiz = rErr(phyperPeizer    (x,1.6*k,2*k,1.8*k) , ph.k2k))
           )
     ## The two molenaar's  ``break down''; Peizer remains decent!
     Err.phyp <- abs(ph.mat[,-(1:2)])
@@ -80,11 +85,11 @@ for(h.nr in 1:1) {
 
 ### Binomial Approximation(s) =================================================
 
-ph.m <- cbind(ph = phyper               (0:5, 5,15, 7),
-              pM1 = phyper.bin.Molenaar.1(0:5, 5,15, 7),
-              pM2 = phyper.bin.Molenaar.2(0:5, 5,15, 7),
-              pM3 = phyper.bin.Molenaar.3(0:5, 5,15, 7),
-              pM4 = phyper.bin.Molenaar.4(0:5, 5,15, 7))
+ph.m <- cbind(ph  = phyper             (0:5, 5,15, 7),
+              pM1 = phyperBinMolenaar.1(0:5, 5,15, 7),
+              pM2 = phyperBinMolenaar.2(0:5, 5,15, 7),
+              pM3 = phyperBinMolenaar.3(0:5, 5,15, 7),
+              pM4 = phyperBinMolenaar.4(0:5, 5,15, 7))
 
 cc <- adjustcolor(1:(1+ncol(ph.m)), 0.5); ppch <- as.character(0:4)
 matplot(0:5, ph.m, type = "b", lwd=2, col=cc, pch=ppch,
@@ -104,13 +109,13 @@ legend("topright", legend = paste("ph.appr.Mol", 1:4),
 
 ## have rErr() above {but does not work with *matrix* ?}
 
-rErr.Mol.bin <- function(m,n,k, q = q.mnk.hyper(m,n,k), lower.tail=TRUE, log.p=FALSE) {
+rErr.Mol.bin <- function(m,n,k, q = .suppHyper(m,n,k), lower.tail=TRUE, log.p=FALSE) {
     ph  <- phyper      (q, m=m, n=n, k=k,      lower.tail=lower.tail, log.p=log.p)
-    phM <- phyper.bin.allM(m=m, n=n, k=k, q=q, lower.tail=lower.tail, log.p=log.p)
+    phM <- phyperAllBinM(m=m, n=n, k=k, q=q, lower.tail=lower.tail, log.p=log.p)
     apply(phM, 2, rErr, true = ph)
 }
 ## Plotting of the rel.error:
-p.rErr.Mol.bin <- function(m,n,k, q = q.mnk.hyper(m,n,k),
+p.rErr.Mol.bin <- function(m,n,k, q = .suppHyper(m,n,k),
                            lower.tail=TRUE, log.p=FALSE)
 {
     rE <- rErr.Mol.bin(m=m, n=n, k=k, q=q, lower.tail=lower.tail, log.p=log.p)
@@ -145,14 +150,14 @@ TVerr <- function(approx, true) {
 }
 supErr <- function(approx, true) max(abs(true - approx))
 
-TVerr.bin <- function(m,n,k, q = q.mnk.hyper(m,n,k), lower.tail=TRUE, log.p=FALSE) {
+TVerr.bin <- function(m,n,k, q = .suppHyper(m,n,k), lower.tail=TRUE, log.p=FALSE) {
     ph  <- phyper     (q, m=m, n=n, k=k,      lower.tail=lower.tail, log.p=log.p)
-    phM <- phyper.bin.all(m=m, n=n, k=k, q=q, lower.tail=lower.tail, log.p=log.p)
+    phM <- phyperAllBin(m=m, n=n, k=k, q=q, lower.tail=lower.tail, log.p=log.p)
     apply(phM, 2, TVerr, true = ph)
 }
-supErr.binM <- function(m,n,k, q = q.mnk.hyper(m,n,k), lower.tail=TRUE, log.p=FALSE) {
+supErr.binM <- function(m,n,k, q = .suppHyper(m,n,k), lower.tail=TRUE, log.p=FALSE) {
     ph  <- phyper      (q, m=m, n=n, k=k,      lower.tail=lower.tail, log.p=log.p)
-    phM <- phyper.bin.allM(m=m, n=n, k=k, q=q, lower.tail=lower.tail, log.p=log.p)
+    phM <- phyperAllBinM(m=m, n=n, k=k, q=q, lower.tail=lower.tail, log.p=log.p)
     apply(phM, 2, supErr, true = ph)
 }
 
@@ -190,29 +195,29 @@ k <- c(10*(1:9),100*(1:9),1000*(1:9))
 options(digits=4)
 ph.k2k <- phyper(k,2*k,2*k,2*k) # rel.err ~ 10^-7
 cbind(k=k, phyper= ph.k2k,
-      rERR.Ibeta= rErr(phyper.Ibeta     (k,2*k,2*k,2*k) , ph.k2k),
-      rERR.as151= rErr(phyper.appr.as152(k,2*k,2*k,2*k) , ph.k2k),
-      rERR.1mol = rErr(phyper.1molenaar (k,2*k,2*k,2*k) , ph.k2k),
-      rERR.2mol = rErr(phyper.2molenaar (k,2*k,2*k,2*k) , ph.k2k),
-      rERR.Peizer=rErr(phyper.Peizer    (k,2*k,2*k,2*k) , ph.k2k))
+      rERR.Ibeta= rErr(phyperIbeta     (k,2*k,2*k,2*k) , ph.k2k),
+      rERR.as151= rErr(phyperApprAS152 (k,2*k,2*k,2*k) , ph.k2k),
+      rERR.1mol = rErr(phyper1molenaar (k,2*k,2*k,2*k) , ph.k2k),
+      rERR.2mol = rErr(phyper2molenaar (k,2*k,2*k,2*k) , ph.k2k),
+      rERR.Peizer=rErr(phyperPeizer    (k,2*k,2*k,2*k) , ph.k2k))
 
 ## Here, the Ibeta  fails (NaN) ; moleaar's are both very good :
 ph.k2k <- phyper(k, 1.2*k, 2*k,1.5*k)
 cbind(k=k, phyper= ph.k2k,
-      rERR.Ibeta= rErr(phyper.Ibeta     (k,1.2*k,2*k,1.5*k) , ph.k2k),
-      rERR.as151= rErr(phyper.appr.as152(k,1.2*k,2*k,1.5*k) , ph.k2k),
-      rERR.1mol = rErr(phyper.1molenaar (k,1.2*k,2*k,1.5*k) , ph.k2k),
-      rERR.2mol = rErr(phyper.2molenaar (k,1.2*k,2*k,1.5*k) , ph.k2k),
-      rERR.Peizer=rErr(phyper.Peizer    (k,1.2*k,2*k,1.5*k) , ph.k2k))
+      rERR.Ibeta= rErr(phyperIbeta     (k,1.2*k,2*k,1.5*k) , ph.k2k),
+      rERR.as151= rErr(phyperApprAS152 (k,1.2*k,2*k,1.5*k) , ph.k2k),
+      rERR.1mol = rErr(phyper1molenaar (k,1.2*k,2*k,1.5*k) , ph.k2k),
+      rERR.2mol = rErr(phyper2molenaar (k,1.2*k,2*k,1.5*k) , ph.k2k),
+      rERR.Peizer=rErr(phyperPeizer    (k,1.2*k,2*k,1.5*k) , ph.k2k))
 
 x <- round(.8*k); ph.k2k <- phyper(x,1.6*k, 2*k,1.8*k)
 (ph.mat <-
 cbind(k=k, phyper= ph.k2k,
-      rERR.Ibeta= rErr(phyper.Ibeta     (x,1.6*k,2*k,1.8*k) , ph.k2k),
-      rERR.as151= rErr(phyper.appr.as152(x,1.6*k,2*k,1.8*k) , ph.k2k),
-      rERR.1mol = rErr(phyper.1molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
-      rERR.2mol = rErr(phyper.2molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
-      rERR.Peiz = rErr(phyper.Peizer    (x,1.6*k,2*k,1.8*k) , ph.k2k))
+      rERR.Ibeta= rErr(phyperIbeta     (x,1.6*k,2*k,1.8*k) , ph.k2k),
+      rERR.as151= rErr(phyperApprAS152 (x,1.6*k,2*k,1.8*k) , ph.k2k),
+      rERR.1mol = rErr(phyper1molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
+      rERR.2mol = rErr(phyper2molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
+      rERR.Peiz = rErr(phyperPeizer    (x,1.6*k,2*k,1.8*k) , ph.k2k))
 )
 matplot(k, abs(ph.mat[,-(1:2)]), type='o', log='xy')
 
@@ -225,12 +230,12 @@ for(Reps in c(0,1)) {
     x <- round(.6*k); ph.k2k <- phyper(x,1.6*k, 2*k,1.8*k)
     print(ph.mat <-
           cbind(k=k, phyper= ph.k2k,
-           rERR.Ibeta= rErr(phyper.Ibeta     (x,1.6*k,2*k,1.8*k) , ph.k2k),
-           rERR.as151= rErr(phyper.appr.as152(x,1.6*k,2*k,1.8*k) , ph.k2k),
-           rERR.1mol = rErr(phyper.1molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
-           rERR.2mol = rErr(phyper.2molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
-           rERR.Peiz = rErr(phyper.Peizer    (x,1.6*k,2*k,1.8*k) , ph.k2k),
-           rErr.binMol=rErr(phyper.bin.Molenaar(x,1.6*k,2*k,1.8*k) , ph.k2k))
+           rERR.Ibeta= rErr(phyperIbeta        (x,1.6*k,2*k,1.8*k) , ph.k2k),
+           rERR.as151= rErr(phyperApprAS152    (x,1.6*k,2*k,1.8*k) , ph.k2k),
+           rERR.1mol = rErr(phyper1molenaar    (x,1.6*k,2*k,1.8*k) , ph.k2k),
+           rERR.2mol = rErr(phyper2molenaar    (x,1.6*k,2*k,1.8*k) , ph.k2k),
+           rERR.Peiz = rErr(phyperPeizer       (x,1.6*k,2*k,1.8*k) , ph.k2k),
+           rErr.binMol=rErr(phyperBinMolenaar.1(x,1.6*k,2*k,1.8*k) , ph.k2k))
           )
     ## The two molenaar's  ``break down''; Peizer remains decent!
     Err.phyp <- abs(ph.mat[,-(1:2)])
@@ -266,7 +271,7 @@ sapply(0:10, function(n) lfastchoose(n, c(0,n)))
 ## System  lchoose  gives non-sense:
 sapply(0:10, function(n)    lchoose(n, c(0,n)))
 ## This is ok:
-sapply(0:10, function(n) my.lchoose(n, c(0,n)))
+sapply(0:10, function(n) f05lchoose(n, c(0,n)))
 
 
 ###---------- some  gamma testing: -------------
@@ -289,18 +294,19 @@ n <- 0:12
 Bn <- n; for(i in n) Bn[i+1] <- Bern(i); cbind(n, Bn)
 system.time(Bern(30))
 system.time(Bern(30))
-rm(.Bernoulli)
+if(FALSE){ ## rm(.Bernoulli)
 system.time(Bern(30))
 system.time(Bern(80))
+}
 
-### as.lgamma() --- Asymptotic log gamma function :
+### lgammaAsymp() --- Asymptotic log gamma function :
 
-as.lgamma(3,0)
-for(n in 0:10) print(log(2) - as.lgamma(3,n))
-for(n in 0:12) print((log(2*3*4*5) - as.lgamma(5+1,n)) / .Machine$double.eps)
-for(n in 0:12) print((log(720)     - as.lgamma(6+1,n)) / .Machine$double.eps)
-for(n in 0:12) print((log(720)     -    lgamma(6+1)  ) / .Machine$double.eps)
-for(n in 0:12) print((log(5040)    - as.lgamma(7+1,n)) / .Machine$double.eps)
+lgammaAsymp(3,0)
+for(n in 0:10) print(log(2) - lgammaAsymp(3,n))
+for(n in 0:12) print((log(2*3*4*5) - lgammaAsymp(5+1,n)) / .Machine$double.eps)
+for(n in 0:12) print((log(720)     - lgammaAsymp(6+1,n)) / .Machine$double.eps)
+for(n in 0:12) print((log(720)     - lgamma     (6+1)  ) / .Machine$double.eps)
+for(n in 0:12) print((log(5040)    - lgammaAsymp(7+1,n)) / .Machine$double.eps)
 
 
 ## look ok:
@@ -339,10 +345,12 @@ dhyper(34,410,312,49)#          (from S-Plus)
 ##-    [1] 0.0218911
 
 ##================== R is now correct !
+stopifnot(all.equal(dhyper(34,410,312,49),
+                    0.021891095726, tol=1e-11))
 ##E.S. Venkatraman (venkat@biosta.mskcc.org)
 
 
-### phyperR() === R version of  {old} C version in  <R>/src/nmath/phyper.c :
+### phyperR() === R version of pre-2004 C version in <R>/src/nmath/phyper.c :
 
 ## This takes long, currently {18 sec, on sophie [Ultra 1]}
 k <- (1:100)*1000

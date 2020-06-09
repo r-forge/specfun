@@ -572,6 +572,7 @@ pnchisqRC <- function(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
 ## The first two functions, formula "a" and "b", are auxiliary for the third:
 
 pnchisqT93.a <- function(q, df, ncp, lower.tail = TRUE, log.p = FALSE) {
+    if(!all(length(q), length(df), length(ncp))) return(q+df+ncp) # recycling to 0-length
     stopifnot(ncp > 0, length(lower.tail) == 1L, length(log.p) == 1L)
     if(log.p && !lower.tail) {
         ## return log(Ip) but computed *directly*:
@@ -592,8 +593,8 @@ pnchisqT93.a <- function(q, df, ncp, lower.tail = TRUE, log.p = FALSE) {
 }
 
 pnchisqT93.b <- function(q, df, ncp, lower.tail = TRUE, log.p = FALSE) {
+    if(!all(length(q), length(df), length(ncp))) return(q+df+ncp) # recycling to 0-length
     stopifnot(ncp > 0, length(lower.tail) == 1L, length(log.p) == 1L)
-
     ## p ~= (q/ncp)^((df - 1)/4) * pnorm(sqrt(2*ncp) - sqrt(2*q), lower.tail=FALSE)
     ## return
     ## if(log.p) {

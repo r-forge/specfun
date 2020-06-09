@@ -4,6 +4,16 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
+\section{Version 0.4-0 (2020-06-09, svn r134)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item Many new \code{phyper*()} functions and helpers for them, such
+      as Bernoulli numbers \code{Bern()} and asymptotic
+      \code{lgammaAsymp()}.
+    }
+  }
+}
+
 \section{Version 0.3-5 (2019-10-18, svn r131)}{
   \subsection{NEW FEATURES}{
     \itemize{

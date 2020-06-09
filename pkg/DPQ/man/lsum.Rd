@@ -1,6 +1,6 @@
 \name{lsum}
 \alias{lsum}
-\title{Properly Compute the Logarithm of a Sum}
+\title{Properly Compute the Logarithm of a Sum (of Exponentials)}
 \usage{
 lsum(lx, l.off = max(lx))
 }
@@ -18,11 +18,14 @@ lsum(lx, l.off = max(lx))
   }
 }
 \description{
-  Simple vector version of \code{copula:::lsum()} (CRAN package
-  \CRANpkg{copula}). % ~/R/Pkgs/copula/R/special-func.R
-
   Properly compute \eqn{\log(x_1 + \ldots + x_n)}{log(x1 + .. + xn)}.
   for given \eqn{log(x_1),..,log(x_n)}.  Here, \eqn{x_i > 0}{xi > 0} for all \eqn{i}.
+
+  If the inputs are denoted \eqn{l_i = log(x_i)} for \eqn{i = 1,2,..,n}, we
+  compute \code{log(sum(exp(l[])))}, numerically stably.
+
+  Simple vector version of \code{copula:::lsum()} (CRAN package
+  \CRANpkg{copula}). % ~/R/Pkgs/copula/R/special-func.R
 }
 \seealso{
   \code{\link{lssum}()} which computes a sum in log scale
