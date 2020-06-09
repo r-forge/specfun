@@ -3,7 +3,7 @@
 \alias{Bern}
 \description{%% ../R/hyper-dist.R
   Return the \eqn{n}-th Bernoulli number \eqn{B_n}, (or \eqn{B_n^+}{Bn+},
-  see the reference, where \eqn{B_1 = + \frac 1 2}{B_1 = + 1/2}
+  see the reference), where \eqn{B_1 = + \frac 1 2}{B_1 = + 1/2}
 }
 \usage{
 Bern(n, verbose = getOption("verbose", FALSE))
@@ -12,8 +12,6 @@ Bern(n, verbose = getOption("verbose", FALSE))
   \item{n}{integer, \eqn{n \ge 0}{n >= 0}.}
   \item{verbose}{logical indicating if computation should be traced.}
 }
-%% \details{
-%% }
 \value{
   The number \eqn{B_n} of type \code{\link{numeric}}.
 
@@ -24,11 +22,11 @@ Bern(n, verbose = getOption("verbose", FALSE))
 }
 \author{Martin Maechler}
 \seealso{
-  \code{\link[Rmpfr{Bernoulli}} in \CRANpkg{Rmpfr} in arbitrary precision
+  \code{\link[Rmpfr]{Bernoulli}} in \CRANpkg{Rmpfr} in arbitrary precision
   via Riemann's \eqn{\zeta}{zeta} function.
 
   The next version of package \CRANpkg{gmp} should contain
-  \code{\link{BernoulliQ}()} which provides exact Bernoulli numbers as big
+  \code{\link[gmp]{BernoulliQ}()} which provides exact Bernoulli numbers as big
   rationals (class \code{"bigq"}).
 }
 \examples{
