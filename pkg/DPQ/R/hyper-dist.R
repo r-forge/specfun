@@ -262,11 +262,11 @@ Bern <- function(n, verbose = getOption("verbose", FALSE))
   if(n < 0) stop("'n'  must not be negative")
   if(n== 0) 1 else # n == 1, now have +1/2, being compatible with Rmpfr::Bernoulli() :
   if(n==1) +1/2 else
-  if(n %% 2 == 1) 0 else { ##-- maybe use 'cache': .Bernoulli[n] == Bern(2 * n)
+  if(n %% 2 == 1) 0 else { ## use 'cache': .Bernoulli[n] == Bern(2 * n)
     n2 <- n %/% 2
     if(do.new <- is.null(.bernoulliEnv$.Bern))
                          .bernoulliEnv$.Bern <- numeric(0)
-    if(do.new || length(.bernoulliEnv$.Bern) < n2) { ##-- Compute  Bernoulli(n)
+    if(do.new || length(.bernoulliEnv$.Bern) < n2) { # Compute  Bernoulli(n)
         if(verbose) cat("n=",n,": computing", sep='', "\n")
         Bk <- k0 <- seq(length=n2-1)
         if(n2 > 1) {
