@@ -4,12 +4,15 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.4-0 (2020-06-09, svn r134)}{
+\section{Version 0.4-0 (2020-06-15, svn r137)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item Many new \code{phyper*()} functions and helpers for them, such
       as Bernoulli numbers \code{Bern()} and asymptotic
       \code{lgammaAsymp()}.
+
+      \item Notably \code{phyperR2()} which is a pure \R version of \R's
+      own (C code based) \code{phyper()}.
     }
   }
 }

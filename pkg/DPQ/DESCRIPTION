@@ -1,10 +1,10 @@
 Package: DPQ
 Title: Density, Probability, Quantile ('DPQ') Computations
 Version: 0.4-0
-Date: 2020-06-09
+Date: 2020-06-15
 Authors@R: c(person("Martin","Maechler", role=c("aut","cre"),
                     email="maechler@stat.math.ethz.ch", comment = c(ORCID = "0000-0002-8685-9910"))
-  , person("Morten",   "Welinder",    role = "ctb", comment = "pgamma C code, see PR#7307, Jan. 2005")
+  , person("Morten",   "Welinder",    role = "ctb", comment = "pgamma C code, see PR#7307, Jan. 2005; further pdhyper()")
   , person("Wolfgang", "Viechtbauer", role = "ctb", comment = "dtWV(), 2002")
   , person("Ross",     "Ihaka",       role = "ctb", comment = "src/qchisq_appr.c")
   , person("Marius",   "Hofert",      role = "ctb", comment = "lsum(), lssum()")

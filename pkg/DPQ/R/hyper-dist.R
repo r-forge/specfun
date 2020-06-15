@@ -307,9 +307,9 @@ lgammaAsymp <- function(x, n)
 }
 
 
-### R version of  {old} C version in  <R>/src/nmath/phyper.c :
-
-## /usr/local/app/R/R-MM-release/src/nmath/phyper.c
+### R version of  {old} C version in  <R>/src/nmath/phyper.c
+##  before Morten Welinder's (15 Apr 2004 '[Rd] phyper accuracy and efficiency (PR#6772)')
+## from Gnumeric: The last of this was for R 1.9.1 i.e., R-1.9.1/src/nmath/phyper.c
 
 ## NB: Now *vectorized* in all four arguments
 ## --
@@ -351,3 +351,116 @@ phyperR <- function(q,  m,  n, k)
     r[inside] <- s2 ##o return(Sm,s2)
     r
 }
+
+###------- pure R version of "new" Morten_Welinder--phyper() ----
+
+## NB: Try to write this in a way to be used easily via  Rmpfr
+## --  ( --> a version of this to become part of package 'DPQmpfr')
+
+## (Taken from R (devel)source <R>/src/main/phyper.c, 2020-06-15 :
+
+ ## * From: Morten Welinder <terra@gnome.org>
+ ## * Cc: R-bugs@biostat.ku.dk
+ ## * Subject: [Rd] phyper accuracy and efficiency (PR#6772)
+ ## * Date: Thu, 15 Apr 2004 18:06:37 +0200 (CEST)
+ ## ......
+
+ ## The current version has very serious cancellation issues.  For example,
+ ## if you ask for a small right-tail you are likely to get total cancellation.
+ ## For example,  phyper(59, 150, 150, 60, FALSE, FALSE) gives 6.372680161e-14.
+ ## The right answer is dhyper(0, 150, 150, 60, FALSE) which is 5.111204798e-22.
+
+ ## phyper is also really slow for large arguments.
+
+ ## Therefore, I suggest using the code below. This is a sniplet from Gnumeric ...
+ ## The code isn't perfect.  In fact, if  x*(NR+NB)  is close to	n*NR,
+ ## then this code can take a while. Not longer than the old code, though.
+
+ ## -- Thanks to Ian Smith for ideas.
+
+
+## #include "nmath.h"
+## #include "dpq.h"
+
+## C code args:     x, NR, NB, n,
+pdhyper <- function(q,  m,  n, k, log.p = FALSE,
+                     epsC = .Machine$double.eps, verbose = getOption("verbose")) {
+## Calculate
+##
+##        phyper (q, m, n, k, TRUE, FALSE)
+## [log]  ----------------------------------
+##           dhyper (q, m, n, k, FALSE)
+##
+## without actually calling phyper.  This assumes that
+##
+##    q * (m + n) <= k * m   <==>   q/k  <=  m / (m+n)
+
+### For now:
+    stopifnot(length(q) == 1,
+              q == floor(q),
+              length(m) == 1, length(n) == 1, length(k) == 1)
+    ## C code uses LDOUBLE (= long double) which we can't in R.
+    sum  <- 0 # LDOUBLE sum = 0;
+    term <- 1 # LDOUBLE term = 1;
+    if(verbose) q0 <- q
+    while (q > 0 && term >= epsC * sum) {
+	term <- term * (q * (n - k + q) / (k + 1 - q) / (m + 1 - q))
+	sum  <- sum + term
+	q <- q-1
+    }
+    if(verbose)
+        message("pdhyper(q=",q0,"): used q0-q = ", q0-q, " while(.) iterations")
+
+    if(log.p) log1p(sum) else 1 + sum
+}
+
+
+## C code args:      x, NR, NB, n,
+phyperR2 <- function(q,  m,  n, k,
+                     lower.tail=TRUE, log.p=FALSE, ...)
+{
+## Sample of  k balls from  m red  and	 n black ones;	 q are red
+
+### For now:
+    stopifnot(length(q) == 1,
+              ## q == floor(q),
+              length(m) == 1, length(n) == 1, length(k) == 1)
+
+    if(is.na(q) || is.na(m) || is.na(n) || is.na(k))
+	return(q + m + n + k)
+
+    q  <- floor (q + 1e-7)
+    m <- round(m) ## round(.)  was "nmath.h"s  R_forceint()
+    n <- round(n)
+    k  <- round(k)
+
+    if(m < 0 || n < 0 || !is.finite(m + n) || k < 0 || k > m + n) {
+	warning("Invalid values for (m, n, k)")
+        return(NaN)
+    } else if(q * (m + n) > k * m) { ##  Swap tails.
+	oldn <- n; n <- m; m <- oldn
+	q <- k - q - 1
+	lower.tail <- !lower.tail
+    }
+
+    ## support of dhyper() as a function of its parameters
+    ##   .suppHyper <- function(m,n,k) max(0, k-n) : min(k, m)
+    if (q < 0 || q < k - n)
+	return(.DT_0(lower.tail, log.p))
+    if (q >= m || q >= k)
+	return(.DT_1(lower.tail, log.p))
+
+    d <- dhyper (q, m, n, k, log.p)
+   ## dhyper(.., log.p=FALSE) > 0 mathematically, but not always numerically :
+    if((!log.p && d == 0.) ||
+        (log.p && d == -Inf))
+	return(.DT_0(lower.tail, log.p))
+
+    pd <- pdhyper(q, m, n, k, log.p, ...)
+    ## return
+    if(log.p)
+        .DT_Log (d + pd, lower.tail)
+    else .D_Lval(d * pd, lower.tail)
+}
+
+

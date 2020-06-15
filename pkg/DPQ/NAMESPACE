@@ -148,6 +148,7 @@ export(
   , phyperBin.1, phyperBin.2, phyperBin.3, phyperBin.4
   , phyperBinMolenaar, phyperBinMolenaar.1, phyperBinMolenaar.2, phyperBinMolenaar.3, phyperBinMolenaar.4
   , phyperIbeta, phyperPeizer, phyperR, phypers
+  , pdhyper, phyperR2
 
     ## from R/qnchisq.R
   , qchisqAppr.0, qchisqAppr.1, qchisqAppr.2, qchisqAppr.3
