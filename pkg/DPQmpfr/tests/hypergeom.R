@@ -9,11 +9,14 @@ phyper(11, 15, 0, 12) # 0 -- correct
 phyper(11, 15, 0, 12, log=TRUE) # NaN  || correct value:  log(0) = -Inf
 (phyp5.0.12 <- cumsum(dhyperQ(0:12, m=15,n=0,k=12)))
 
+require(Rmpfr)
+.N <- asNumeric # short form for here
+
 m <- 1000; n <- 1001; k <- 1500
 dhyp.1k <- dhyperQ(.suppHyper(m,n,k), m,n,k)
 phyp.1k <- cumsum(dhyp.1k)
 ## Rel.Error: number of correct digits
-asNumeric(-log10(abs(1 - phyper(.suppHyper(m,n,k), m,n,k) / .bigq2mpfr(phyp.1k, 99))))
+.N(-log10(abs(1 - phyper(.suppHyper(m,n,k), m,n,k) / .bigq2mpfr(phyp.1k, 99))))
 
 ## even a bit larger
 m <- 9999; n <- 500; k <- 10100
@@ -21,8 +24,6 @@ range(x <- .suppHyper(m,n,k)) # 9600 9999
 dQ <- dhyperQ(x, m,n,k) # these add exactly to 1 :
 stopifnot(sum(dQ) == 1)
 
-require(Rmpfr)
-.N <- asNumeric # short form
 
 dM <- .bigq2mpfr(dQ, precB=128)
 tail( log(dM) ) # -1395.7599 ... -1443.7188576

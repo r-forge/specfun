@@ -10,8 +10,8 @@
 }
 \usage{
 dhyperQ(x, m, n, k)
-phyperQ(x, m, n, k)
-phyperQall(m, n, k)
+phyperQ(x, m, n, k, lower.tail=TRUE)
+phyperQall(m, n, k, lower.tail=TRUE)
 }
 \arguments{%% >> R's ~/R/D/r-devel/R/src/library/stats/man/Hypergeometric.Rd
   \item{x}{the number of white balls drawn without replacement from an urn
@@ -20,10 +20,15 @@ phyperQall(m, n, k)
   \item{n}{the number of black balls in the urn.}
   \item{k}{the number of balls drawn from the urn, hence must be in
     \eqn{0,1,\dots, m+n}.}
+  \item{lower.tail}{logical indicating if the lower or upper tail
+    probability should be computed.}
 }
 %% \details{
 %% }
 \value{
+  a bigrational (class \code{"bigq"} from package \CRANpkg{gmp}) vector
+  \dQuote{as} \code{x}; currently of length one (as all the function
+  arguments must be \dQuote{scalar}, currently).
 }
 \author{Martin Maechler}
 \seealso{
@@ -56,7 +61,7 @@ k <- 5000
 system.time(ph <-   phyper(k, 2*k, 2*k, 2*k)) #   0 (< 0.001 sec)
 system.time(phQ <- phyperQ(k, 2*k, 2*k, 2*k)) # 6.3 sec
 ## Relative error of R's phyper()
-asNumeric(1 - ph/phQ) # 1.063e-15 -- very small
+gmp::asNumeric(1 - ph/phQ) # 1.063e-15 -- very small
 }
 }
 \keyword{ distribution }
