@@ -48,6 +48,8 @@ importFrom("utils"
 
 ### ------------------ Exports -------------------------------------------------
 
+## R/pbeta-Ding94.R :
+export(dbetaD94, pbetaD94, qbetaD94)
 ## R/hyperDist.R :
 export(dhyperQ, phyperQ, phyperQall)# simple via chooseZ()
 ## R/t-nonc.R :
