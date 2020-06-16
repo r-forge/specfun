@@ -25,8 +25,10 @@ dgamma.R <- function(x, shape, scale = 1, log)
             if(log) -Inf else 0
         } else
             if(log) -log(scale) else 1 / scale
-    } else if (shape < 1) { ## FIXME: not ok for very small x <==> shape/x overflows to Inf
+    } else if (shape < 1) {
 	pr <- dpois_raw(shape, x/scale, log)
+        ## NB: currently *always*  shape/x > 0  if shape < 1:
+	## -- overflow to Inf happens, but underflow to 0 does NOT :
 	if(log) pr + (if(shape/x == Inf)log(shape)-log(x) else log(shape/x)) else pr*shape/x
     }
     else {##  shape >= 1

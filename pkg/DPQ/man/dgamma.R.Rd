@@ -3,7 +3,7 @@
 \title{Gamma Density Function Alternatives}
 \description{
   \code{dgamma.R()} is aimed to be an R level \dQuote{clone} of \R's C
-  level implementation \code{\link[stats]{dgamma}} (from package \pkg{stats}).
+  level implementation \code{\link{dgamma}} (from package \pkg{stats}).
 }
 \usage{
 dgamma.R(x, shape, scale = 1, log)

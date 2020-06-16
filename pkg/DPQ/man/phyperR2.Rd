@@ -6,10 +6,13 @@
   Use pure \R functions to compute (less efficiently and usually even less
   accurately) hypergeometric (point) probabilities with the same
   "Welinder"-algorithm as \R's C level code has been doing since 2004.
+
+  Apart from boundary cases, each \code{phyperR2()} call uses one
+  corresponding \code{pdhyper()} call.
 }
 \usage{
 phyperR2(q, m, n, k, lower.tail = TRUE, log.p = FALSE, \dots)
-pdhyper (q, m, n, k, log.p = FALSE,
+pdhyper (q, m, n, k,                    log.p = FALSE,
          epsC = .Machine$double.eps, verbose = getOption("verbose"))
 }
 \arguments{
@@ -38,30 +41,27 @@ pdhyper (q, m, n, k, log.p = FALSE,
 
 %% }
 \value{
-  a number, typically very close to the corresponding
-  \code{phyper(q, m,n,k, ..)}.
+  a number (as \code{q}).
+  \describe{
+    \item{pdhyper(q, m,n,k)}{computes the ratio
+      \code{phyper(q, m,n,k) / dhyper(q, m,n,k)}
+      but without computing numerator or denominator explicitly.}
+    \item{phyperR2()}{(in the non-boundary cases) then just computes the
+      product \code{dhyper(..) * pdhyper(..)}, of course \dQuote{modulo}
+      \code{lower.tail} and \code{log.p} transformations.
+
+      Consequently, it typically returns values very close to the corresponding
+      \R \code{phyper(q, m,n,k, ..)} call.}
+  }
 }
 \references{
-  E-mail / bug report from Morten Welinder to R-devel / R-bugs
- \cr Subject: [Rd] phyper accuracy and efficiency (PR#6772)
- \cr Date: Thu, 15 Apr 2004 18:06:37 (CEST)
- ......
-
- The current version has very serious cancellation issues.  For example,
- if you ask for a small right-tail you are likely to get total cancellation.
- For example,  \code{phyper(59, 150, 150, 60, FALSE, FALSE)} gives 6.372680161e-14.
- The right answer is \code{dhyper(0, 150, 150, 60, FALSE)} which is 5.111204798e-22.
-
- \code{phyper} is also really slow for large arguments.
-
- Therefore, I suggest using the code below. This is a sniplet from Gnumeric ...
- The code isn't perfect.  In fact, if  x*(NR+NB)  is close to	n*NR,
- then this code can take a while.  Not longer than the old code, though.
-
- Thanks to Ian Smith for ideas.
+  Morten Welinder (2004)
+  phyper accuracy and efficiency;
+  R bug report \PR{6772}. %\url{https://bugs.r-project.org/bugzilla/show_bug.cgi?id=6772}
 }
 \author{Martin Maechler, based on \R's C code originally provided by Morton
-  Welinder, from the Gnumeric project.}
+  Welinder from the Gnumeric project, who thanks Ian Smith for ideas.
+}
 \seealso{
   \code{\link{phyper}}
 }
@@ -69,11 +69,10 @@ pdhyper (q, m, n, k, log.p = FALSE,
 ## same example as phyper()
 m <- 10; n <- 7; k <- 8
 vapply(0:9, phyperR2, 0.1, m=m, n=n, k=k)  ==  phyper(0:9, m,n,k)
-## see *all* TRUE  (64b FC30)
+##  *all* TRUE (for 64b FC30)
 
-## to see number of steps:
+## 'verbose=TRUE' to see the number of terms used:
 vapply(0:9, phyperR2, 0.1, m=m, n=n, k=k,  verbose=TRUE)
-
 
 ## Larger arguments:
 k <- 100 ; x <- .suppHyper(k,k,k)
