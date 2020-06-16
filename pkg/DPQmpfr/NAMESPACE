@@ -1,11 +1,18 @@
 importFrom("DPQ"
-         , dnt
+         , dntJKBf # ~/R/Pkgs/DPQ/R/t-nonc-fn.R
+         , dtWV
+# DPQ 0.4-0: , .suppHyper
 )
 
 importFrom("Rmpfr"
          , mpfr, getPrec, Const
+         , asNumeric
          , dnorm, pnorm
          , dpois
+)
+
+importFrom("gmp"
+         , chooseZ
 )
 
 importClassesFrom("Rmpfr"
@@ -15,7 +22,6 @@ importClassesFrom("Rmpfr"
 ## importFrom("sfsmisc"
 ##          , mult.fig
 ##      )
-
 
 
 importFrom("stats"
@@ -31,13 +37,19 @@ importFrom("stats"
 )
 
 importFrom("methods"
-         , new
+         , new # <- seems not sufficient? R CMD check still wants me to import 'new'
+           ## trying these additionally to see if it helps -- it does not
+         , initialize, as, coerce
            )
 
 importFrom("utils"
          , str
            )
 
-## For now export everything
-exportPattern("^[^.]")
+### ------------------ Exports -------------------------------------------------
+
+## R/hyperDist.R :
+export(dhyperQ, phyperQ, phyperQall)# simple via chooseZ()
+## R/t-nonc.R :
+export(dntJKBm)
 

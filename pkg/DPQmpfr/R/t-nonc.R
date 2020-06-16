@@ -1,4 +1,10 @@
-## dntM() := version for Rmpfr:
-nB <- length(body(dntM <- dnt))
-body(dntM)[[nB]] <- substitute(new("mpfr", THIS), list(THIS = body(dnt)[[nB]]))
-rm(nB) #                       -----------     -
+## Get  dnt  from 'DPQ' and auto-produce
+
+## dntJKBm() := a version for Rmpfr -- by replacing the final "return line":
+nB <- length(bdy <- body(dntJKBm <- dntJKBf))
+new <- FALSE # to prevent FP in codetools checks
+body(dntJKBm)[[nB]] <- substitute(new("mpfr", THIS), list(THIS = bdy[[nB]]))
+##                                     -----------
+
+rm(nB, bdy, new)
+
