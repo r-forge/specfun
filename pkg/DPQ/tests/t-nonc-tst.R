@@ -6,6 +6,8 @@
 c({}## This stems from the two files
 , "/u/maechler/R/MM/NUMERICS/dpq-functions/pnt-ex.R"
 , "/u/maechler/R/MM/NUMERICS/dpq-functions/t-nonc-approx.R"
+, "SEE ALSO ./pnt-prec.R (still current problems!)"
+, "           =========="
 )
 ## and originally, had
 ## source("/u/maechler/R/MM/NUMERICS/dpq-functions/t-nonc-fn.R")

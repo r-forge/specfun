@@ -13,22 +13,9 @@ stopifnot(exprs = {
     require(graphics)
     require(sfsmisc) # eaxis(), lseq(), p.m(), mult.fig(), sessionInfoX()
 })
-source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
-##--> showProc.time(), assertError(), relErrV(), ...
-## to be used in saveRDS(list_(nam1, nam2, ...),  file=*) :
-list_ <- function(...) {
-    ## nms <- vapply(sys.call()[-1L], deparse, "", width.cutoff=500L, backtick=FALSE)
-    nms <- vapply(sys.call()[-1L], as.character, "")
-    `names<-`(list(...), nms)
-}
-## even faster
-list_ <- function(...)
-   `names<-`(list(...), vapply(sys.call()[-1L], as.character, ""))
 
-##' load a named list
-loadList <- function(L, envir = .GlobalEnv)
-    invisible(lapply(names(L), function(nm) assign(nm, L[[nm]], envir=envir)))
-
+source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
+## list_(), save2RDS(), ... showProc.time(), assertError(), relErrV(), ...
 ## For package-testing "diagnostics":
 sessionInfoX(c("DPQ","Rmpfr"))
 
@@ -127,14 +114,23 @@ curve(dchisq       (x, df=3, ncp=1), 0, 10, add=TRUE, col='purple') #ditto
 
 x  <- seq(0, 10, length=101)
 del <- c(0:4,10,40)
-res <- matrix(NA, nr=length(x), nc=length(del))
+res <- matrix(NA, nr=length(x), nc=length(del),
+              dimnames=list(NULL, paste0("ncp=",del)))
 for(id in seq(along=del))
     res[,id] <- dnoncentchisq(x=x, df=3, ncp=del[id])
 
 matplot(x, res)
-
+title("dnoncentchisq(*, df=3, ncp = ..)  & dchisq(..)")
+l.pch <- as.character(seq_along(del))
+legend("topright", paste("ncp =", del), col=1:6, pch=l.pch)
 res2 <- outer(x, del, function(x,del)dchisq(x=x, 3, ncp=del))
-matplot(x, res2, add=TRUE)
+matplot(x, res2, add=TRUE) # practically no difference visible!
+
+signif( cbind(x, abs(1 - res/res2)) , digits=4)
+
+matplot(x, abs(1 - res/res2)[,-1], type="b", lty=1, log="y", yaxt="n"); eaxis(2)
+title("Rel.Err |1 - dnoncentchisq(*, df=3, ncp = ..) / dchisq(..)|")
+legend("bottomright", paste("ncp =", del[-1]), col=1:6, lty=1, pch=l.pch, bty="n")
 
 showProc.time()
 
@@ -147,22 +143,7 @@ n <- if(doExtras) 1e4 else 512
 ## Subject: Re: non-central chisq density
 ## Date: Thu, 27 Mar 2008 22:22:15 +0100
 
-## >>>>> "PD" == Peter Dalgaard <p.dalgaard@biostat.ku.dk>
-## >>>>>     on Thu, 27 Mar 2008 22:14:07 +0100 writes:
-
-##     PD> Martin Maechler wrote:
-
-curve(dchisq(x, df=3, ncp=30000, log=TRUE), 27300, 27500, n=n)
-
-##     >>
-##     PD> Hmm, am I supposed to know what causes this?
-
-## hmm, well; that mail was sent off accidentally,
-## (and I thought I did *not* send it!).
-
-## Here is much more complete version and a bit more reason why I
-## sent it to you:
-## ----------------------------------------
+## [...............]
 
 ## Hi Peter,
 
@@ -872,8 +853,7 @@ nX <- length(pX <- c(0.01, (1:9)/10, 0.99, 0.9999))
 
 sfil1 <- file.path(sdir, "tests_chisq-nonc-ssR.rds")
 if(!doExtras && file.exists(sfil1)) {
-  ssR_l <- readRDS(sfil1)
-  cat("Read ssR_l from ", sfil1," :\n ")
+  ssR_l <- readRDS_(sfil1)
   str(ssR_l)
   ## dfs :  num [1:16] 15.9 20.7 21 29.5 47.8 ...
   ## lam :  num [1:20] 5.74 8.26 8.34 8.64 10.12 ...
@@ -900,10 +880,9 @@ for(iL in 1:nL) {
         cat(".")
     }; cat("\n")
 }
-saveRDS(list_(lam, dfs, ssR), file = sfil1)
+save2RDS(list_(lam, dfs, ssR), file = sfil1)
 
 } # {run simulation}
-showProc.time()
 
 x. <-  ssR["x"   ,,,]
 iM <-  ssR["iMax",,,]
@@ -1011,8 +990,7 @@ nx <- length(pX <- c(0.01, (1:9)/10, 0.99, 0.9999, 1-1e-6, 1-1e-9))
 
 sfil4 <- file.path(sdir, "tests_chisq-nonc-ssR4.rds")
 if(!doExtras && file.exists(sfil4)) {
-    ssR_l <- readRDS(sfil4)
-    cat("Read ssR_l from ", sfil4," :\n ")
+    ssR_l <- readRDS_(sfil4)
     str(ssR_l)
     loadList(ssR_l)
 } else {
@@ -1040,9 +1018,8 @@ if(!doExtras && file.exists(sfil4)) {
         }; cat(il,"")
     }; cat("\n")
 
-    saveRDS(list_(lam4, dfs4, ssR4), file=sfil4)
+    save2RDS(list_(lam4, dfs4, ssR4), file=sfil4)
 }
-showProc.time()
 
 ## Compute the 'iMax' value that corresponds to x = E[X] = df + ncp
 ## from that, with the above 'general f(x)', we can hopefully
@@ -1107,7 +1084,7 @@ showProc.time()
 nSim <- if(doExtras) 5000 else 500
 sfil2 <- file.path(sdir, "tests_chisq-nonc-ssR2.rds")
 if(!doExtras && file.exists(sfil2)) {
-    ssR2 <- readRDS(sfil2)
+    ssR2 <- readRDS_(sfil2)
 } else {
     set.seed(2)
     lam <- rlnorm(nSim, 5, 2)
@@ -1123,15 +1100,13 @@ if(!doExtras && file.exists(sfil2)) {
     dimnames(ssR2) <- list(c("lam","df","iN1","iN2", "iMax"),NULL)
     ssR2 <- t(ssR2)
     ssR2 <- ssR2[sort.list(ssR2[,"lam"]),]
-    saveRDS(ssR2, file=sfil2)
+    save2RDS(ssR2, file=sfil2)
 }
-showProc.time()
 
 ## 3rd simulation: --- this takes a little while (1 min ?)
 sfil3 <- file.path(sdir, "tests_chisq-nonc-ssR3.rds")
 if(!doExtras && file.exists(sfil3)) {
-    ssR3_l <- readRDS(sfil3)
-    cat("Read ssR3_l from ", sfil3," :\n ")
+    ssR3_l <- readRDS_(sfil3)
     str(ssR3_l)
     loadList(ssR3_l)
 } else {
@@ -1150,7 +1125,7 @@ if(!doExtras && file.exists(sfil3)) {
             ssR3[, il,id] <- ss2.(x, df=f, ncp=lm)[5:7]
         }; cat(il,"")
     }; cat("\n")
-    saveRDS(list_(lam3, dfs3, ssR3), file=sfil3)
+    save2RDS(list_(lam3, dfs3, ssR3), file=sfil3)
 }
 showProc.time()
 
@@ -1405,11 +1380,9 @@ NC2 <- if(doExtras) 10^(2:7) else 10^(2:6)
 for(NC in NC2) {
     cat("ncp=",NC,":\n")
     curve(dchisq(x, df=1, ncp=NC), from=NC/10,to=NC*100,
-         log='x', main=paste("Density ncp =",NC))
-    try(
+          log='x', main=paste("Density ncp =",NC))
     curve(pchisq(x, df=1, ncp=NC), from=NC/10,to=NC*100,
-         log='x', main=paste("CDF    ncp =",NC))
-        )
+          log='x', main=paste("CDF    ncp =",NC))
     showProc.time()
 }
 par(op)
@@ -1777,8 +1750,7 @@ CT <- AR[,,1,1] # (w/ desired dim and dimnames)
 
 sfil5 <- file.path(sdir, "tests_chisq-nonc-ssAp.rds")
 if(!doExtras && file.exists(sfil5)) {
-  ssAp_l <- readRDS(sfil5)
-  cat("Read ssAp_l from ", sfil5," :\n ")
+  ssAp_l <- readRDS_(sfil5)
   str(ssAp_l)
   AR <- ssAp_l$AR ## loadList(ssAp_l)# attach it
 
@@ -1801,7 +1773,7 @@ if(!doExtras && file.exists(sfil5)) {
   showProc.time()
   cat("User times in milli-sec.:\n")
   print(CT * 1000)
-  saveRDS(list_(pnchNms, pnchF, qq, nncp, ddf,   AR, CT), file=sfil5)
+  save2RDS(list_(pnchNms, pnchF, qq, nncp, ddf,   AR, CT), file=sfil5)
 } ## else *do* run ..
 
 ## Rather, show absolute and also relative "errors" ..

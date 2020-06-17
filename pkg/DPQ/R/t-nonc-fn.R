@@ -230,7 +230,7 @@ c_pt <- function(nu)
 }
 
 
-## MM:  My conclusion of experiments in ../tests/pnt-precision-problem.R :
+## MM:  My conclusion of experiments in ../tests/pnt-prec.R :
 ## -------              --------------------------
 ## Large t (>0 or < 0)  *MUST* get a new algorithm !
 ## -------              --------------------------

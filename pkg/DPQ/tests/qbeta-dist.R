@@ -3,15 +3,8 @@
 #### Testing  qbeta(.),   pbeta(.),   qt(.), .....
 #### ----------------
 
-source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
-##--> showProc.time(), assertError(), relErrV(), ...
-list_ <- function(...)
-   `names<-`(list(...), vapply(sys.call()[-1L], as.character, ""))
-
-##' load a named list
-loadList <- function(L, envir = .GlobalEnv)
-    invisible(lapply(names(L), function(nm) assign(nm, L[[nm]], envir=envir)))
-
+source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
+## list_(), save2RDS(), ...
 
 (doExtras <- DPQ:::doExtras())
 ## save directory (to read from):
@@ -264,8 +257,7 @@ qn2 <- paste("q=",formatC(q.set2,wid = 1),sep = '')
 
 sfil1 <- file.path(sdir, "tests_qbeta-d-ssR.rds")
 if(!doExtras && file.exists(sfil1)) {
-  ssR_l <- readRDS(sfil1)
-  cat("Read ssR_l from ", sfil1," :\n ")
+  ssR_l <- readRDS_(sfil1)
   str(ssR_l)
   loadList(ssR_l)
 
@@ -293,7 +285,7 @@ for(qq in q.set2) {
 
     print(summary(warnings())) # many warnings from qbeta() inaccuracies
 
-    saveRDS(list_(ra, cta), file = sfil1)
+    save2RDS(list_(ra, cta), file = sfil1)
 
 }## {run simulations} -------------------------------------------------------
 

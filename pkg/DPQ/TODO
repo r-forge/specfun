@@ -1,11 +1,11 @@
 ##-*- org -*-->  Emacs .. [Tab] key + [Org] menu; C-c C-o to follow links
 
+* TODO tests/pnt-precision-problem.R : *label* the 391 plots: tests/pnt-precision-2.pdf
 * TODO Compare pnchi1sq() with t1() function in tests/chisq-nonc-ex.R
 * TODO Add .LDBLmachine() which gives the "long double" aka 'LDOUBLE' equivalent of `.Machine()`
   Note that from `#include <float.h>` we should just return the `LDBL_*` values.
 * TODO tests/chisq-nonc-ex.R : move "things" to a vignette -- DONE partly : vignettes/Noncentral-Chisq.Rnw
 * TODO tests/qbeta-dist.R    : move "things" to a vignette
-* TODO tests/pnt-precision-problem.R : some parts only if(doExtras)
 * TODO vignettes/comp-beta.Rnw: change to use same 'jss' * \cite*{} etc as ~/R/Pkgs/lme4/vignettes/lme4.Rnw
 * TODO b_chi(): Now have higher order asymptotic expansion *and* confirmed via Rmpfr that it is
   much better than internal b2(), we should use its higher order
@@ -13,7 +13,8 @@
   see R/t-nonc-fn.R and notably man/b_chi.Rd
 ** TODO in R/t-nonc-fn.R : also have c_dt() etc, based on lb_chi() which has nice series now
 * TODO t-distributions (notably *noncentral*, "pnt" etc):
-** TODO extract some useful functions from our tests/pnt-precision-problem.R
+* TODO tests/pnt-prec.R : some parts only if(doExtras)
+** TODO extract some useful functions from our tests/pnt-prec.R
 ** TODO extract functions (and "tests") from ~/R/MM/NUMERICS/dpq-functions/dt-ex.R
 ** TODO extract fns & tests   from ~/R/MM/NUMERICS/dpq-functions/pt-ex.R
 ** TODO extract fns & tests   from ~/R/MM/NUMERICS/dpq-functions/qt-ex.R

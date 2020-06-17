@@ -34,9 +34,11 @@
   \pkg{\link[Rmpfr:Rmpfr-package]{Rmpfr}}.
 }
 \examples{
-## Show problem in R's non-central t-distrib. density:
-example(dnt)
-%% add another few cases;  notably  non-central chisq
+\donttest{
+## Show problem in R's non-central t-distrib. density (and approximations):
+example(dntJKBf)
+}
+%% TODO add other few cases (must *fast*!) maybe  non-central chisq
 }
 \keyword{ distribution }
 \keyword{ math }
