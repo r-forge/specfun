@@ -9,8 +9,8 @@ stopifnot(exprs = {
     require(sfsmisc) # lseq(), p.m(), mult.fig()
 })
 
-source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
-##--> showProc.time(), assertError(), relErrV(), ...
+source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
+## list_(), save2RDS(), ... showProc.time(), assertError(), relErrV(), ...
 (doExtras <- DPQ:::doExtras())
 ## save directory (to read from):
 (sdir <- system.file("safe", package="DPQ"))
@@ -185,6 +185,7 @@ ptRTailAsymp <- function(df,ncp, f.x1 = 1e5, f.x0 = 1, nx = 1000,
         if(do.plot) {
             r <- lm.fit(cbind(1, lx[!Out]), px[!Out])
             plot(px ~ lx, xlab = "log(x)")
+### FIXME: title() or mtext() or ... <<<<<<<<
             lines(lx[!Out], r$fitted, col= "green2")
             abline(a = px[n.x0] - rob.slope*lx[n.x0],
                    b = rob.slope, col = "tomato", lwd=2)
@@ -246,7 +247,7 @@ p.tailAsymp <- function(r, add.central=FALSE, F.add = FALSE) {
           main =
           sprintf(paste("pt(x, df=%g, ncp=%g, log",
                         if(prod(par("mfrow")> 2)) "..)"
-                        else "TRUE, lower.tail=FALSE)", sep=''),
+                        else "=TRUE, lower.tail=FALSE)", sep=''),
                   r["df"], r["ncp"]))
     if(F.add) {
         ## This "non-sense"  non-central F <==> "two-tail" non-central t
@@ -360,30 +361,28 @@ indR <- function(i.df, i.nc) paste(c.df[i.df], c.nc[i.nc], sep="_")
 sfil1 <- file.path(sdir, "pnt-prec-sim1.rds")
 if(!doExtras && file.exists(sfil1)) {
 
-    Res <- readRDS(sfil1)
-    cat("Read  'Res' from ", sfil1," :\n ") ; str(Res)
+    Res <- readRDS_(sfil1)
 
 } else { ## do run the simulation [always if(doExtras)] : ---------------
 
-r35 <- ptRTailAsymp(df=3, ncp=5)
+    r35 <- ptRTailAsymp(df=3, ncp=5)
 
-if(names(r35)[1] == "") names(r35)[1] <- "intercpt"
-Res <- matrix(NA_real_, nrow = length(r35), ## <-- length of output
-              ncol = nd*nc,
-              dimnames=list(names(r35), c.c))
-for(i.df in seq_along(df.)) {
-  df <- df.[i.df]
-  cat("\ndf = ", formatC(df)," : \n----------\n")
-  for(i.nc in seq_along(nc.)) {
-    cat(i.nc,"")
-    ncp <- nc.[i.nc]
-    r <- try(ptRTailAsymp(df=df, ncp=ncp))
-    Res[, indR(i.df,i.nc) ] <- if(inherits(r, "try-error")) NA else r
-  }
-}
-attr(Res, "version") <- list(R.version)
-
-    saveRDS(Res, file=sfil1)
+    if(names(r35)[1] == "") names(r35)[1] <- "intercpt"
+    Res <- matrix(NA_real_, nrow = length(r35), ## <-- length of output
+                  ncol = nd*nc,
+                  dimnames=list(names(r35), c.c))
+    for(i.df in seq_along(df.)) {
+        df <- df.[i.df]
+        cat("\ndf = ", formatC(df)," : \n----------\n")
+        for(i.nc in seq_along(nc.)) {
+            cat(i.nc,"")
+            ncp <- nc.[i.nc]
+            r <- try(ptRTailAsymp(df=df, ncp=ncp))
+            Res[, indR(i.df,i.nc) ] <- if(inherits(r, "try-error")) NA else r
+        }
+    }
+    attr(Res, "version") <- list(R.version)
+    save2RDS(Res, file=sfil1)
 }##-- end{ run simulation } --------------------------------------------
 
 dR <- as.data.frame(t(Res))
