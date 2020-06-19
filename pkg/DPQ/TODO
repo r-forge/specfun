@@ -20,7 +20,12 @@
 ** TODO extract fns & tests   from ~/R/MM/NUMERICS/dpq-functions/qt-ex.R
 
 ** TODO: Implement Chattamvelli, R. and Shanmugam, R. (1994) --> pntChShP94()
-* TODO chisq-Wienergerm approximations:
+   ~/save/papers/Numerics/Chattamvelli+Sh_noncentr-t_1994.pdf
+   Chattamvelli, R. and Shanmugam, R. (1994)
+   An enhanced algorithm for noncentral T-distribution
+   \emph{Journal of Statistical Computation and Simulation} \bold{49}, 77--83
+   \doi{10.1080/00949659408811561}
+* TODO chisq-Wienergerm approximations: >>>>> ./wienergerm_README <<<<<<<<<
 ** TODO move C code to here
 ** TODO Find documentation / papers ==> for help pages about h() and g() in R/wienergerm_nchisq-fn.R
 * TODO non-central beta (AS 310): more experiments (cf with R's older algo) --> R/pnbeta.R
