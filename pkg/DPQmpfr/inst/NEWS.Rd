@@ -4,6 +4,19 @@
 \title{DPQmpfr News}
 \encoding{UTF-8}
 
+\section{Version 0.3-0 (2020-06-16, svn r141)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item \code{dhyperQ()}, \code{phyperQ()}, and \code{phyperQall()} for
+      \emph{exact} hypergeometric probabilities (as \dQuote{big rational}s,
+      i.e., \CRANpkg{gmp} package's \code{"bigq"}).
+
+      \item Finally export (and add to svn!) \code{dbetaD94()},
+      \code{pbetaD94()}, and \code{qbetaD94()}.
+    }
+  }
+}
+
 \section{Version 0.2-0 (2018-08-16, svn r40)}{
   \subsection{FEATURES}{
     \itemize{
@@ -17,17 +30,4 @@
   }
 }
 
-
-\section{Version 0.3-0 (2020-06-16, svn r141)}{
-  \subsection{NEW FEATURES}{
-    \itemize{
-      \item \code{dhyperQ()}, \code{phyperQ()}, and \code{phyperQall()} for
-      \emph{exact} hypergeometric probabilities (as \dQuote{big rational}s,
-      i.e., \CRANpkg{gmp} package's \code{"bigq"}).
-
-      \item Finally export (and add to svn!) \code{dbetaD94()},
-      \code{pbetaD94()}, and \code{qbetaD94()}.
-    }
-  }
-}
 
