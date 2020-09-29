@@ -158,7 +158,9 @@ export(
 
   , qgammaAppr, qgammaApprSmallP, qgammaApprKG
 
+  , pnormL_LD10, pnormU_S53
   , qnormAppr, qnormUappr
+  , qnormR, qnormR1
   , qtAppr
   , r_pois, r_pois_expr
     ## no! titleR.exp (FIXME eventually: should not need such a global)

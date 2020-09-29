@@ -25,9 +25,6 @@ dgamma.R(x, shape, scale = 1, log)
 %% %% ~put references to the literature/web site here ~
 %% }
 \author{Martin Maechler}
-%% \note{
-%% %%  ~~further notes~~
-%% }
 \seealso{
   (As \R's C code) this depends crucially on the \dQuote{workhorse}
   function \code{\link{dpois_raw}()}.

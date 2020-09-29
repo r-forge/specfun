@@ -4,6 +4,27 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
+\section{Version 0.4-2 (2020-09-29, svn r...)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item New functions \code{pnormL*()} and \code{pnormU*()} for
+      (mathematically proven) lower and upper bound to \code{pnorm()},
+      notably also for investigation with \code{log.p=TRUE}.
+
+      \item \code{qnormR()}, implementing current \R's \code{qnorm()} in
+      pure R, notably with \code{trace} options, and possibly extra tuning parameters.
+    }
+  }
+}
+
+\section{Version 0.4-1 (2020-06-17, svn r145)}{
+  \subsection{TESTING}{
+    \itemize{
+      \item Reorganize tests; notably to become less platform dependent.
+    }
+  }
+}
+
 \section{Version 0.4-0 (2020-06-15, svn r137)}{
   \subsection{NEW FEATURES}{
     \itemize{

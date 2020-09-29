@@ -599,7 +599,7 @@ qbeta.R	 <-  function(alpha, p, q,
 	stop("MUST  0 <= low.bnd < up.bnd <= 1")
 
     ## Test for admissibility of parameters
-    if (p < 0 || q < 0 || alpha < 0.0 || alpha > 1.0) stop("DOMAIN_ERROR")
+    if (p < 0 || q < 0 || alpha < 0. || alpha > 1.) stop("DOMAIN_ERROR")
 
     ##  R_Q_P01_boundaries(alpha, 0, 1) :=
     if(log.p) {
