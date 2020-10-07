@@ -18,7 +18,7 @@ pnormU_S53 <- function(x, lower.tail=FALSE, log.p=FALSE) {
     ## sqrt(8+x^2) + 3x = |x| sqrt(1 + 8/x^2) + 3x = x(sqrt(1 + 8/x^2) + 3)
     ##
     ## dnorm(x, log=TRUE) - log(x) + (log(4) - log(sqrt(1 + 8/x^2) + 3))
-    r <- dnorm(x, log=TRUE) - log(x) + log(4 / (3 + sqrt(1 + 8/x^2)))
+    r <- dnorm(x, log=TRUE) - log(x) + log(4 / (3 + sqrt(1 + (8/x)/x)))
     if(log.p) {
         if(lower.tail) ## log(1 - exp(r)) = log1mexp(-r)
             log1mexp(-r)
@@ -36,7 +36,7 @@ pnormL_LD10 <- function(x, lower.tail=FALSE, log.p=FALSE) {
     ## non-log, upper tail :
     ## 1-Phi(x) >  ~=~ pi*dnorm(x) / ((pi-1)*x + sqrt(2*pi + x^2))
     ## log.p=TRUE and upper tail, i.e.  !lower.tail :
-    r <- dnorm(x, log=TRUE) - log(x) + log(pi / (pi + sqrt(1 + 2*pi/(x^2)) -1))
+    r <- dnorm(x, log=TRUE) - log(x) + log(pi / (pi + sqrt(1 + (2*pi/x)/x) -1))
     if(log.p) {
         if(lower.tail) ## log(1 - exp(r)) = log1mexp(-r)
             log1mexp(-r)

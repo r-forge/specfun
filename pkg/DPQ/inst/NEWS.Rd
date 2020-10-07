@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.4-2 (2020-09-29, svn r...)}{
+\section{Version 0.4-2 (2020-10-.., svn r...)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item New functions \code{pnormL*()} and \code{pnormU*()} for
