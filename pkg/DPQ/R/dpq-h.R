@@ -26,6 +26,7 @@
 .D_Clog<- function(p, log.p)  if(log.p) log1p(-p) else ((0.5 - p) + 0.5)# [log](1-p)
 
 M_LN2 <- log(2)
+M_SQRT2 <- sqrt(2)
 
 ##' log(1 - exp(-x))  in more stable form than log1p(- R_D_qIv(-x))
 ##' NB: copula::log1mexp() is slightly more sophisticated

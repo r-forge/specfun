@@ -99,10 +99,11 @@ pnormL_LD10 <- function(x, lower.tail=FALSE, log.p=FALSE) {
 
 
 qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
-                    trace = 0) {
+                    trace = 0, version = c("4.0.x", "2020-10-17")) {
     stopifnot(length(p) == 1, length(mu) == 1, length(sd) == 1,
               length(lower.tail) == 1, length(log.p) == 1,
               !is.na(lower.tail), !is.na(log.p))
+    version <- match.arg(version)
     if(is.na(p) || is.na(mu) || is.na(sd)) return(p+mu+sd)
     ## R_Q_P01_boundaries(p, ML_NEGINF, ML_POSINF);
     if(p == .D_0(log.p)) return(if(lower.tail) -Inf else  Inf)
@@ -176,6 +177,11 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
                   2.05319162663775882187) * r + 1.)
         }
         else { ## p is very close to  0 or 1:  r > 5 <==> min(p,1-p) < exp(-25) = 1.3888..e-11
+          if(version == "2020-10-17" && r >= 816) { # p is *extremly* close to 0 or 1 - only possibly when log_p =TRUE
+             ## Using the asymptotical formula -- is *not* optimal but uniformly better than branch below
+             val = r * M_SQRT2;
+          }
+          else {
             r <- r + -5.;
             val = (((((((r * 2.01033439929228813265e-7 +
                        2.71155556874348757815e-5) * r +
@@ -189,8 +195,8 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
                        7.868691311456132591e-4) * r + .0148753612908506148525)
                      * r + .13692988092273580531) * r +
                     .59983220655588793769) * r + 1.);
+          }
         }
-
 	if(q < 0)
 	    val  <- -val;
         ## return (q >= 0.)? r : -r ;*/
@@ -200,4 +206,3 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
 
 qnormR  <- Vectorize(qnormR1, c("p", "mu", "sd"))
 ##==
-

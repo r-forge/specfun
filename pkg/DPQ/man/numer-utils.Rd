@@ -2,6 +2,7 @@
 \title{Numerical Utilities - Functions, Constants}
 %% Numeric Constants .. ---------------------------
 \alias{M_LN2}
+\alias{M_SQRT2}
 \alias{M_minExp}
 \alias{M_cutoff}
 \alias{G_half}
@@ -23,7 +24,8 @@
 }
 \usage{
 ## Numeric Constants : % mostly in   ../R/beta-fns.R
-M_LN2        # = log(2) = 0.693....
+M_LN2        # = log(2)  = 0.693....
+M_SQRT2      # = sqrt(2) = 1.4142...
 M_cutoff     # := If |x| > |k| * M_cutoff, then  log[ exp(-x) * k^x ]  =~=  -x
              #  = 3196577161300663808 ~= 3.2e+18
 M_minExp     # = log(2) * .Machine$double.min.exp # ~= -708.396..

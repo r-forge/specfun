@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.4-2 (2020-10-.., svn r...)}{
+\section{Version 0.4-2 (2020-11-07, svn r150)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item New functions \code{pnormL*()} and \code{pnormU*()} for
@@ -12,7 +12,7 @@
       notably also for investigation with \code{log.p=TRUE}.
 
       \item \code{qnormR()}, implementing current \R's \code{qnorm()} in
-      pure R, notably with \code{trace} options, and possibly extra tuning parameters.
+      pure R, notably with \code{trace} and \code{version} options.
     }
   }
 }
