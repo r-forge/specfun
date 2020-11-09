@@ -4,7 +4,8 @@
 %% \alias{dntWVm}
 \description{
   \code{dntJKBm} is a fully \CRANpkg{Rmpfr}-ified vectorized version of
-  \code{\link[DPQ]{dntJKBf}()} from \pkg{DPQ} which implements the
+ %%\link[DPQ]{dntJKBf}()} -- logically correct, but wrong by the "link to file here" rule
+  \code{\link{dntJKBf}()} from \CRANpkg{DPQ} which implements the
   summation formulas of Johnson, Kotz and Balakrishnan (1995),
   (31.15) on page 516 and (31.15') on p.519, the latter being typo-corrected
   for a missing  factor \eqn{1 / j!}.
@@ -23,7 +24,8 @@ dntJKBm(x, df, ncp, log = FALSE, M = 1000)
 \details{
   How to choose \code{M} optimally has not been investigated yet and
   is probably also a function of the precision of the first three arguments (see
-  \code{\link[Rmpfr]{getPrec}}).
+  %% \code{\link[Rmpfr]{getPrec}}. -- logically correct, but ...
+  \code{\link{getPrec}} from \CRANpkg{Rmpfr}).
 }
 \value{
   an \code{\linkS4class{mpfr}} vector of the same length as the maximum

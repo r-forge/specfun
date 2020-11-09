@@ -1,6 +1,30 @@
 require(DPQmpfr)
 library ( Rmpfr)
 
+options(warn = 1)# warnings *immediately*
+(doExtras <- DPQmpfr:::doExtras())
+
+##  *.time()  utilities   from
+if(FALSE)
+source(system.file("test-tools-1.R", package="Matrix"), keep.source=FALSE)
+##    MM = ~/R/Pkgs/Matrix/inst/test-tools-1.R
+
+showSys.time <- function(expr, ...) {
+    ## prepend 'Time' for R CMD Rdiff
+    st <- system.time(expr, ...)
+    writeLines(paste("Time", capture.output(print(st))))
+    invisible(st)
+}
+showProc.time <- local({ ## function + 'pct' variable
+    pct <- proc.time()
+    function(final="\n") { ## CPU elapsed __since last called__
+	ot <- pct ; pct <<- proc.time()
+	## 'Time ..' *not* to be translated:  tools::Rdiff() skips its lines!
+	cat('Time elapsed: ', (pct - ot)[1:3], final)
+    }
+})
+
+
 ### pbeta*() :
 
 pbetaD94(mpfr(0.864,  140),  5, 5, 54, eps=1e-10)# n=233 at convergence, 0.456302619295....
@@ -37,14 +61,15 @@ pbetaD94(mpfr(0.93,  1024), 20,25, 10000, eps=1e-150)# n= 9828 1.008067956082285
 
 ### qbeta*() --- careful about speed / time usage
 
-## FIXME: use mpfr (??)
+## This now works, thanks to log_scale !
+(q.5.250 <- qbetaD94(0.95, .5, 250, ncp = 0))
 
-qbetaD94(0.95, .5, 250, ncp = 0)# already overflows with dbl prec
 ## but using mpfr of course works:
-qbetaD94(1 - 1/mpfr(20 ,64), .5, 250) # 0.007661102468977...
-qbetaD94(1 - 1/mpfr(20,128), .5, 250, eps = 1e-30, delta=1e-20)
+require("Rmpfr") # (is in DPQmpfr's strict dependencies)
+qbetaD94(1 - 1/mpfr(20 ,64), .5, 250)                           # 0.00766110246787361539366
+qbetaD94(1 - 1/mpfr(20,128), .5, 250, eps = 1e-30, delta=1e-20) # 0.0076611024678614272722717848...
 
-## Compare with  Table 3  of  Baharev_et_al 2017
+## Compare with  Table 3  of  Baharev_et_al 2017 %% ===> ../man/qbBaha2017.Rd <<<<<<<<<<<<
 aa <- c(0.5, 1, 1.5, 2, 2.5, 3, 5, 10, 25)
 bb <- c(1:15, 10*c(2:5, 10, 25, 50))
 

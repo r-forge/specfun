@@ -6,7 +6,8 @@
 \description{% -- ../R/hyperDist.R
   Computes \bold{exact} probabilities for the hypergeometric distribution
   (see, e.g., \code{\link{dhyper}()} in \R), using package \CRANpkg{gmp}'s
-  big integer and rational numbers, notably \code{\link[gmp]{chooseZ}()}.
+  big integer and rational numbers, notably % \code{\link[gmp]{chooseZ}()} -- logically correct, but ...
+  \code{\link{chooseZ}()}.
 }
 \usage{
 dhyperQ(x, m, n, k)

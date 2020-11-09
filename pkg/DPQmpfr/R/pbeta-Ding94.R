@@ -3,14 +3,17 @@
 ## - take identical arguments as pbeta()
 ## - non-default (lower.tail, log.p) are *NOT* properly supported
 pbetaD94 <- function(q, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALSE,
-                   eps = 1e-10, itrmax = 100000L, verbose = TRUE) {
+                     eps = 1e-10, itrmax = 100000L, verbose = FALSE)
+{
     stopifnot(eps >= 0, itrmax <= .Machine$integer.max, # 2^31-1
               ## renaming to (a,b) so notation is more readable:
               length(a <- shape1) == 1, length(b <- shape2) == 1)
     ## FIXME:
     if(!lower.tail) stop("lower.tail=FALSE is not yet supported")
     if(log.p) stop("log.p=TRUE is not supported yet")
-    if(inherits(q, "mpfr")) { # ensure compatible precision, and *all* mpfr:
+    useMpfr <- inherits(q, "mpfr")
+    formt <- if(useMpfr) Rmpfr::formatMpfr else format
+    if(useMpfr) { # ensure compatible precision, and *all* mpfr:
         if(!inherits(a,  "mpfr")) a   <- 0*q + a
         if(!inherits(b,  "mpfr")) b   <- 0*q + b
         if(!inherits(ncp,"mpfr")) ncp <- 0*q + ncp
@@ -18,13 +21,18 @@ pbetaD94 <- function(q, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALS
     ## else they can be double even
     ##
     ## pmin(<M>, *): just in case a guy uses eps=0
-    digitsEps <- function(eps, max=1000L) as.integer(pmin(max, round(1 - log10(eps))))
-    eps.digits <- digitsEps(eps)
-    Fn <- function(x) format(x, digits=eps.digits)
+    if(verbose) {
+        digitsEps <- function(eps, max=1000L) as.integer(pmin(max, round(1 - log10(eps))))
+        eps.digits <- digitsEps(eps)
+        Fn <- function(x) formt(x, digits=eps.digits)
+    }
 
     ## NB: We *could* work in log-scale and actually should  "in extreme cases"
     ## NB(2): FIXME for really large 'ncp' this algorithm "never ends"
     ## Inititialize n=0 :
+
+    ## --- see qbeta*() below for 'log_scale'
+
     ## FIXME: for really large a or b, this overflows to Inf (or Inf/Inf) or underflows to 0
     ##        and we need to work in log-space
     t <- gamma(a+b)/(gamma(a+1)*gamma(b))* q^a * (1-q)^b
@@ -57,7 +65,8 @@ pbetaD94 <- function(q, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALS
         if(bound <= eps * F) {
             if(verbose) cat("n=",n," at convergence\n")
             return(F)
-        } else if(verbose) cat(sprintf("n=%4d, F=%s, bound= %12s\n", n, Fn(F), format(bound,digits=8)))
+        } else if(verbose) cat(sprintf("n=%4d, F=%s, bound= %12s\n", n, Fn(F),
+                                       formt(bound, digits=8)))
         ## A6 (identical to A4, apart from error message):
         u <- u*c/n
         v <- v+u
@@ -70,7 +79,7 @@ pbetaD94 <- function(q, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALS
         abn <- abn +1L
     }
     ## never reached
-}
+} ## {pbetaD94}
 
 ### Experimental:
 ## Quantile of incomplete Beta-distribution according to Ding(1994), Algorithm C, p.453-4
@@ -80,7 +89,8 @@ pbetaD94 <- function(q, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALS
 dbetaD94 <- function(x, shape1, shape2, ncp = 0, log = FALSE,
                    eps = 1e-10,     # desired accuracy for f()
                    itrmax = 100000L,# maximal number of steps for computing f()
-                   verbose = TRUE) {
+                   verbose = FALSE)
+{
     stopifnot(eps >= 0, itrmax <= .Machine$integer.max, # 2^31-1
               ## renaming to (a,b) so notation is more readable:
               length(a <- shape1) == 1, length(b <- shape2) == 1)
@@ -98,7 +108,9 @@ dbetaD94 <- function(x, shape1, shape2, ncp = 0, log = FALSE,
     }
     ## FIXME:
     if(log) stop("log=TRUE is not supported yet")
-    if(inherits(x, "mpfr")) { # ensure compatible precision, and *all* mpfr:
+    useMpfr <- inherits(x, "mpfr")
+    formt <- if(useMpfr) Rmpfr::formatMpfr else format
+    if(useMpfr) { # ensure compatible precision, and *all* mpfr:
         if(!inherits(a,  "mpfr")) a   <- 0*x + a
         if(!inherits(b,  "mpfr")) b   <- 0*x + b
         if(!inherits(ncp,"mpfr")) ncp <- 0*x + ncp
@@ -106,8 +118,10 @@ dbetaD94 <- function(x, shape1, shape2, ncp = 0, log = FALSE,
     ## else they can be double even
 
     ## pmin(<M>, *): just in case a guy uses eps=0
-    digitsEps <- function(eps, max=1000L) as.integer(pmin(max, round(1 - log10(eps))))
-    Fn <- function(x) format(x, digits=digitsEps(eps))
+    if(verbose) {
+        digitsEps <- function(eps, max=1000L) as.integer(pmin(max, round(1 - log10(eps))))
+        Fn <- function(x) formt(x, digits=digitsEps(eps))
+    }
 
     ## NB: We *could* work in log-scale and actually should  "in extreme cases"
     ## NB(2): FIXME for really large 'ncp' this algorithm "never ends"
@@ -144,7 +158,7 @@ dbetaD94 <- function(x, shape1, shape2, ncp = 0, log = FALSE,
             return(structure(f, iter = n))
 
         } else if(verbose) cat(sprintf("n=%4d, f=%s, bound= %12s\n",
-                                       n, Fn(f), format(bound,digits=8)))
+                                       n, Fn(f), formt(bound,digits=8)))
         ## B6 (identical to B4, apart from error message):
         u <- u*c/n
         v <- v+u
@@ -172,14 +186,22 @@ qbetaD94 <- function(p, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALS
                    eps = delta^2,  # desired accuracy for computing F() and f()
                    itrmax = 100000L,# maximal number of steps for computing F() and f()
                    iterN = 1000L,    # maximal number of Newton iterations
-                   verbose = TRUE) {
+                   log_scale = (a*b > 0) &&
+                       (a+b > 100 || c >= 500), # "arbitrary";  gamma(172) |--> Inf  already
+                   ##                                            exp(-750) |--> 0
+                   verbose = FALSE)
+{
     stopifnot(eps >= 0, eps <= delta, itrmax <= .Machine$integer.max, # 2^31-1
               ## renaming to (a,b) so notation is more readable:
-              length(a <- shape1) == 1, length(b <- shape2) == 1)
+              length(a <- shape1) == 1, length(b <- shape2) == 1, length(ncp) == 1,
+              a >= 0, b >= 0, ncp >= 0)
     ## FIXME:
     if(!lower.tail) stop("lower.tail=FALSE is not yet supported")
     if(log.p) stop("log.p=TRUE is not supported yet")
-    if(inherits(p, "mpfr")) { # ensure compatible precision, and *all* mpfr:
+    useMpfr <- inherits(p, "mpfr")
+    formt <- if(useMpfr) Rmpfr::formatMpfr else format
+    if(useMpfr) { # ensure compatible precision, and *all* mpfr:
+        requireNamespace("Rmpfr", quietly=TRUE)
         if(!inherits(a,  "mpfr")) a   <- 0*p + a
         if(!inherits(b,  "mpfr")) b   <- 0*p + b
         if(!inherits(ncp,"mpfr")) ncp <- 0*p + ncp
@@ -187,43 +209,73 @@ qbetaD94 <- function(p, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALS
     ## else they can be double even
 
     ## pmin(<M>, *): just in case a guy uses eps=0
-    digitsEps <- function(eps, max=1000L) as.integer(pmin(max, round(1 - log10(eps))))
-    del.digits <- digitsEps(delta)
-    Fn <- function(x) format(x, digits=digitsEps(eps))
+    if(verbose) {
+        digitsEps <- function(eps, max=1000L) as.integer(pmin(max, round(1 - log10(eps))))
+        del.digits <- digitsEps(delta)
+        cat(sprintf("del.digits  = digitsEps(eps=delta=%g) = %g\n", delta, del.digits),
+            sprintf("Fn() digits = digitsEps(eps = %g)     = %g\n", eps, digitsEps(eps)))
+        Fn <- function(x) formt(x, digits=digitsEps(eps))
+    }
 
     ## NB: We *could* work in log-scale and actually should  "in extreme cases"
     ## NB(2): FIXME for really large 'ncp' this algorithm "never ends"
-    ## Inititialize n=0 :
-    ## FIXME: for really large a or b, this overflows to Inf (or Inf/Inf) or underflows to 0
-    ##        and we need to work in log-space
-    cf <- gamma(a+b)/(gamma(a+1)*gamma(b))
 
+    ## Inititialize n=0 :
+    ## For really large a or b, gamma() overflows to Inf (or Inf/Inf) or underflows to 0
+    ##        and we need to work in log-space
     c <- ncp/2 # == \lambda/2
-    u0 <- exp(-c) ## FIXME: if this underflows to 0 we need to work in log-space
+    if(verbose) cat("log_scale = ", log_scale, "\n")
+    if(log_scale) { # Work in log scale
+        lcf <- lgamma(a+b) - (lgamma(a+1) + lgamma(b))
+        lu0 <- -c
+    } else { # (in original scale)
+        cf <- gamma(a+b)/(gamma(a+1)*gamma(b))
+        u0 <- exp(-c)
+    }
     x <- 0.5 + 0*p # same type as 'p' (mpfr or double)
-    nit <- integer(20L)
+    nit <- integer(32L) # 32: small number, typically sufficient
     ## Newton Iterations {loop through C4 .. C10} :
     for(jN in seq_len(iterN)) {
         ## C4 :
         n <- 1L
-        t <- cf * x^a * (1-x)^b  # (FIXME, overflow / underflow)
-        ## NB: We ensure that  1-x > 0  strictly
-        s <- a*t/x/(1-x)
-        v <- u <- u0
-        F <- v*t # CDF
-        f <- u*s # PDF
+        if(log_scale) { # Work in log scale
+            lx <- log(x)
+            l1_x <- log1p(-x)
+            lt <- lcf + a*lx + b*l1_x ## lt = log(t <- cf * x^a * (1-x)^b)
+            ## NB: We ensure that  1-x > 0  strictly
+            ls <- log(a) + lt - lx - l1_x ## ls := log(s <- a*t/x/(1-x))
+            lv <- lu <- lu0 ## v <- u <- u0
+            F <- exp(lv + lt)## F <- v*t # CDF
+            f <- exp(lu + ls)## f <- u*s # PDF
+        } else { # (in original scale)
+            t <- cf * x^a * (1-x)^b
+            ## NB: We ensure that  1-x > 0  strictly
+            s <- a*t/x/(1-x)
+            v <- u <- u0
+            F <- v*t # CDF
+            f <- u*s # PDF
+        }
         ## pre-C5:
         an <- a+n
         abn <- an+b # = a+b+n
         ab.1 <- abn-1L
         while(an <= abn*x) { ## C5
             ## C6:
-            u <- u*c/n
-            v <- v+u
-            s <- t*ab.1/(1-x)
-            t <- t*x*ab.1/an
-            F <- F + v*t
-            f <- f + u*s
+            if(log_scale) { # Work in log scale
+                lu <- lu + log(c/n) # u <- u*c/n
+                lv <- logspace.add(lv, lu) # lv = log(exp(lv)+exp(lu)) # v <- v+u
+                ls <- lt    +  log(ab.1) - l1_x    # s <- t*ab.1/(1-x)
+                lt <- lt + lx +log(ab.1) - log(an) # t <- t*x*ab.1/an
+                F <- F + exp(lv+lt) # F <- F + v*t
+                f <- f + exp(lu+ls) # f <- f + u*s
+            } else { # (in original scale)
+                u <- u*c/n
+                v <- v+u
+                s <- t*ab.1/(1-x)
+                t <- t*x*ab.1/an
+                F <- F + v*t
+                f <- f + u*s
+            }
             n <- n +1L
             if(n > itrmax) stop("n > itrmax=",itrmax," iterations reached in C5-C6 loop")
             an <- an +1L
@@ -236,8 +288,12 @@ qbetaD94 <- function(p, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALS
         c1 <- c2 <- FALSE
         repeat {
             ## C7 :
-            if(!c1) bound1 <- t* x *  ab.1/(an - abn*x)
-            if(!c2) bound2 <- t*(1-v)*ab.1/(1-x)
+            if(log_scale) t <- exp(lt) ## FIXME?  Compute bound *all* in log_space ?
+            if(!c1)
+                bound1 <- t* x *  ab.1/(an - abn*x)
+            if(!c2)
+                bound2 <- if(log_scale) t*(-expm1(lv))*ab.1/(1-x)
+                          else          t*  (1-v)     *ab.1/(1-x)
             ## C8:
             ## Ding(1994) proposed absolute bounds  (bound_j <= eps)  but that's wrong
             ## ==> using relative bounds :
@@ -245,6 +301,34 @@ qbetaD94 <- function(p, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALS
                 if(verbose >= 2) cat("n=",n," at convergence\n")
                 break ## --> go to C10
             } else { ## C9 (with parts identical to C6):
+
+              if(log_scale) { # Work in log scale
+                  lu <- lu + log(c/n) # u <- u*c/n
+                  lv <- logspace.add(lv, lu) # lv = log(exp(lv)+exp(lu)) # v <- v+u
+                if(c1) {
+                    ## !c2 :  F converged; update {s, f} only
+                    ls <- lt + log(ab.1) - l1_x # s <- t*ab.1/(1-x)
+                    f <- f + exp(lu+ls)         # f <- f + u*s
+                    n <- n +1L
+                    if(n > itrmax) stop("n > itrmax=",itrmax," iterations reached in {C9, f}")
+                    ## update an,... and bound2  and go back to C8
+                } else if((c2 <- bound2 <= eps * f)) { ## !c1 but c2: f converged; update {t, F} only
+                    lt <- lt + lx +log(ab.1) - log(an) # t <- t*x*ab.1/an
+                    F <- F + exp(lv+lt) # F <- F + v*t
+                    n <- n +1L
+                    if(n > itrmax) stop("n > itrmax=",itrmax," iterations reached in {C9, F}")
+                    ## update an,... and bound1  and go back to C8
+                } else { ## neither F nor f have converged: update all
+                    ls <- lt + log(ab.1) - l1_x        # s <- t*ab.1/(1-x)
+                    lt <- lt + lx +log(ab.1) - log(an) # t <- t*x*ab.1/an
+                    F <- F + exp(lv+lt) # F <- F + v*t
+                    f <- f + exp(lu+ls) # f <- f + u*s
+                    n <- n +1L
+                    if(n > itrmax) stop("n > itrmax=",itrmax," iterations reached in {C9,both} loop")
+                }
+
+              } else { # (in original scale)
+
                 u <- u*c/n
                 v <- v+u
                 if(c1) {
@@ -272,6 +356,7 @@ qbetaD94 <- function(p, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALS
                     warning("n=",n,": Increments of F and f underflowed to zero. False convergence")
                     break
                 }
+              }
                 an <- an +1L; ab.1 <- abn; abn <- abn +1L
                 ## --> update bound1 and/or bound2 and go back to C7 (or C8)
             }
@@ -292,16 +377,17 @@ qbetaD94 <- function(p, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALS
         if(verbose) {
             usex <- (x. >= 0) && (1 - x. > 0)
             if(verbose >= 2) cat("\n")
-            x.string <-
-                if(usex) format(x., digits=del.digits)
-                else paste0(format(x., digits=5),": not usable; rather x=",
-                            format(x, digits = min(8, del.digits)))
+            x.string <- ## FIXME: this is not ok for "mpfr"; it becomes
+                ##         -----  "<S4 class ‘mpfr1’ [package “Rmpfr”] with 4 slots>"
+                if(usex) formt(x., digits=del.digits)
+                else paste0(formt(x., digits=5),": not usable; rather x=",
+                            formt(x, digits = min(8, del.digits)))
             cat(sprintf("Newton d.x=%14.5g; new proposal x=%*s\n",
                         asNumeric(d.x),
                         if(usex) del.digits + 3L else nchar(x.string), x.string))
         }
         if(abs(d.x) <= delta) { ## Newton iterations converged !
-            if(verbose) cat("\nNewton converged after", jN, "iterations\n")
+            if(verbose) cat("Newton converged after", jN, "iterations\n")
             ## and store the "iteration statistics"
             return(structure(x, iterNewton = jN, n.inner = nit[seq_len(jN)]))
         }
@@ -309,76 +395,5 @@ qbetaD94 <- function(p, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALS
     } ## for(jN ..) Newton iterations
 }
 
-
-if(FALSE) {
-    ## FIXME: use mpfr
-
-    qbetaD94(0.95, .5, 250, ncp = 0)# already overflows with dbl prec
-    ## but using mpfr of course works:
-    qbetaD94(1 - 1/mpfr(20 ,64), .5, 250) # 0.007661102468977...
-    qbetaD94(1 - 1/mpfr(20,128), .5, 250, eps = 1e-30, delta=1e-20)
-
-    ## Compare with  Table 3  of  Baharev_et_al 2017
-    aa <- c(0.5, 1, 1.5, 2, 2.5, 3, 5, 10, 25)
-    bb <- c(1:15, 10*c(2:5, 10, 25, 50))
-
-    ## Choose one of these
-    p <- 0.95 # = 1 - alpha <<<--- using double precision everywhere below
-    p <- 1 - 1/mpfr(20,128) # = 1 - alpha <<<--- using MPFR everywhere below
-
-    delta <- 1e-18
-    eps <- delta^2 # default; (delta,eps) are needed for safe-file name
-    qbet <- matrix(NA_real_, length(aa), length(bb),
-                 dimnames = list(a = formatC(aa), b = formatC(bb)))
-
-    ff <- "/u/maechler/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/Baharev_et_al-2017_table3.txt"
-    qbB2017 <- t( data.matrix(read.table(ff)) )
-    dimnames(qbB2017) <- dimnames(qbet)
-
-    if(inherits(p, "mpfr")) qbet <- as(qbet, "mpfr")
-    print(system.time(
-    for(ia in seq_along(aa)) {
-        a <- aa[ia]; cat("\na=",a,": b=")
-        for(ib in seq_along(bb)) {
-            b <- bb[ib]; cat(b," ")
-            qbet[ia, ib] <- qbetaD94(p, a, b, ncp = 0, delta=delta)# def.  eps = delta^2
-        }
-        cat("\n")
-    }
-    ))# system.time(.)
-
-    ## Safe the expensive computations !!
-    if(inherits(p,"mpfr")) {
-        prec <- getPrec(p)
-        ## FIXME  eps, delta                                    delta eps
-        saveF <- paste0("qbetaD94_tab3_Rmpfr_pr", prec,
-                        "_",formatC(delta),"_",formatC(eps), ".rds")
-        od <- setwd("~/R/MM/Pkg-ex/Rmpfr")
-        saveRDS(qbet, file=saveF)
-        setwd(od)
-    }
-    ## number of correct digits:
-    summary(nDig <- asNumeric(-log10(abs(1- qbet/qbB2017))))
-
-    matplot(bb, t(asNumeric(-log10(abs(1- qbet/qbB2017)))), type = "o", log="xy")
-
-
-    ## Looks not good:
-    a <-
-    ## qbb <- qbetaD94(p, a, b, ncp = 100, delta=1e-18, verbose=3) # verbose=3: too much
-    ## but itrmax=100'000 is not sufficient.
-    qbb <- qbetaD94(p, a, b, ncp = 100, delta=1e-18, itrmax = 1e8, verbose=2)
-    ## Note how silly it is to have a very small 'eps' in a situation were 'x' is still far from the truth
-    ## ===> Idea:  Much faster if 'eps' is "large" at the beginning, when the Newton 'd.x' will be inaccurate anyway !!
-
-    pb <- pbetaD94(p, a, b, ncp = 100)
-
-
-    ## Other ideas:
-    ## 1) in case Newton is not usable, be better than  x' = (1+x)/2 {on right hand} : rather use Regula Falsi, or smart unirootR() !
-    ## 2) in these cases, use rough estimates, e.g., a few steps of unirootR()    ##    with e.g., eps=1e-3
-
-}
-
-if(FALSE) {
-}
+## Examples, checks, etc: now in  ../man/pbetaD94.Rd
+## and notably in		  ../tests/beta-Ding94.R
