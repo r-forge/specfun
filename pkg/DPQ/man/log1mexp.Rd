@@ -1,12 +1,24 @@
 \name{log1mexp}
+\title{Compute \eqn{\mathrm{log}}{log}(1 - \eqn{\mathrm{exp}}{exp}(-a)) and
+  \eqn{\log(1 + \exp(x))}{log(1 + exp(x))}   Numerically Optimally}
 \alias{log1mexp}
-\title{Compute f(a) = \eqn{\mathrm{log}}{log}(1 - \eqn{\mathrm{exp}}{exp}(-a))
-  Numerically Optimally}
+\alias{log1mexpC}
+\alias{log1pexpC}
 \description{
   Compute  f(a) = log(1 - exp(-a))   quickly and numerically accurately.
+
+  \code{log1mexp()} is simple pure \R code;\cr
+  \code{log1mexpC()} is an interface to \R C API (\file{Rmathlib})
+  function.
+
+  \code{log1pexpC()} is an interface to \R C API (\file{Rmathlib})
+  \code{double} function \code{log1pexp()} which computes \eqn{\log(1 +
+  \exp(x))}{log(1 + exp(x))}, accurately, notably for large \eqn{x}, say, \eqn{x > 720}.
 }
 \usage{
-log1mexp(x)
+log1mexp (x)
+log1mexpC(x)
+log1pexpC(x)
 }
 \arguments{
   \item{x}{numeric vector of positive values.}
@@ -22,5 +34,9 @@ log1mexp(x)
   \url{https://CRAN.R-project.org/package=Rmpfr/vignettes/log1mexp-note.pdf}.
   %  see also <<log1mexp>> in ../inst/doc/Frank-Rmpfr.Rnw
 }
+\examples{
+l1m.xy <- curve(log1mexp(x), -10, 10, n=1001)
+stopifnot(with(l1m.xy, all.equal(y, log1mexpC(x))))
+%% FIXME: add example for log1pexp()
+}
 \keyword{math}
-

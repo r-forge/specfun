@@ -25,6 +25,10 @@ logspace.add <- function(lx, ly) pmax(lx, ly) + log1p(exp(-abs(lx - ly)))
 
 logspace.sub <- function(lx, ly) lx + log1mexp(lx - ly)
 
+log1mexpC <- function(x) .Call(C_R_log1mexp, x)
+log1pexpC <- function(x) .Call(C_R_log1pexp, x)
+log1pmxC  <- function(x) .Call(C_R_log1pmx,  x)
+lgamma1pC <- function(x) .Call(C_R_lgamma1p, x)
 
 
 ### was as 'form01.prec' in  source("~/R/MM/MISC/Util.R")

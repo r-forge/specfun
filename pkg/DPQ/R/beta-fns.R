@@ -244,7 +244,7 @@ log1pmx <- function(x, tol_logcf = 1e-14) {
     r
 }
 
-lgamma1p <- function(a, tol_logcf = 1e-14)
+lgamma1p <- function(a, tol_logcf = 1e-14, f.tol = 1.)
 {
     ## Compute  log(gamma(a+1))  accurately also for small a (0 < a < 0.5).
 
@@ -315,7 +315,8 @@ lgamma1p <- function(a, tol_logcf = 1e-14)
             lgam <- coeffs[i] - a. * lgam
 
         ## return
-        r[a.sml] <- (a. * lgam - eulers_const) * a. - log1pmx(a.)
+        r[a.sml] <- (a. * lgam - eulers_const) * a. -
+            log1pmx(a., tol_logcf = f.tol * tol_logcf)
     }
     r
 }## lgamma1p

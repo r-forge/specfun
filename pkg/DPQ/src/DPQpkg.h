@@ -209,3 +209,33 @@ double algdiv(double a, double b);
 // .Call()ed :
 SEXP R_algdiv(SEXP a_, SEXP b_)
     ;
+
+// DPQ-misc.c: --------------------------------------------------------------------
+
+// 1. Functions from R's  C API  Rmath.h  -- not (yet) existing as base R functions
+
+SEXP R_log1pmx(SEXP x_);
+/* double log1pmx (double X)
+     Computes 'log(1 + X) - X' (_log 1 plus x minus x_), accurately even
+     for small X, i.e., |x| << 1.
+*/
+
+SEXP R_log1pexp(SEXP x_);
+/* double log1pexp (double X)
+     Computes 'log(1 + exp(X))' (_log 1 plus exp_), accurately, notably
+     for large X, e.g., x > 720.
+*/
+
+SEXP R_log1mexp(SEXP x_);
+/* double log1mexp (double X)
+     Computes 'log(1 - exp(-X))' (_log 1 minus exp_), accurately,
+     carefully for two regions of X, optimally cutting off at log 2 (=
+     0.693147..), using '((-x) > -M_LN2 ? log(-expm1(-x)) :
+     log1p(-exp(-x)))'.
+*/
+
+SEXP R_lgamma1p(SEXP x_);
+/* double lgamma1p (double X)
+     Computes 'log(gamma(X + 1))' (_log(gamma(1 plus x))_), accurately
+     even for small X, i.e., 0 < x < 0.5.
+*/

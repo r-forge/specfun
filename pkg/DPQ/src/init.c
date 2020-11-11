@@ -51,6 +51,11 @@ static R_CallMethodDef CallEntries[] = {
     CALLDEF(ppoisD,     4), // <-- ./ppois-direct.c
     CALLDEF(Pnchisq_R, 14), // <-- ./pnchisq-it.c
 
+    CALLDEF(R_log1pmx,  1), // <--> DPQ-misc.c
+    CALLDEF(R_log1pexp, 1),
+    CALLDEF(R_log1mexp, 1),
+    CALLDEF(R_lgamma1p, 1),
+
     {NULL, NULL, 0}
 };
 

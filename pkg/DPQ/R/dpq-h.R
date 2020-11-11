@@ -32,6 +32,7 @@ M_SQRT2 <- sqrt(2)
 ##' NB: copula::log1mexp() is slightly more sophisticated
 ##' NB2: Our R log1mexp(x) is equal to C levels's _Log1_Exp(-x)  {"-" minus sign !}
 log1mexp <- function(x) ifelse(x <= M_LN2, log(-expm1(-x)), log1p(-exp(-x)))
+##' NB3: Now have also log1mexp.() from R's C API, i.e., Rmathlib
 
 
 ## log(1-exp(x)): R_D_LExp(x) == (log1p(- .D_qIv(x))) but even more stable:

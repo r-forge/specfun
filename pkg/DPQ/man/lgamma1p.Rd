@@ -2,6 +2,7 @@
 \title{Accurate \code{log(gamma(a+1))}}
 \alias{lgamma1p}
 \alias{lgamma1p.}
+\alias{lgamma1pC}
 \alias{lgamma1p_series}
 \description{
   Compute
@@ -12,13 +13,17 @@
   accurately also for (very) small \eqn{a} \eqn{(0 < a < 0.5)}.
 }
 \usage{
-lgamma1p (a, tol_logcf = 1e-14)     % ../R/beta-fns.R
-lgamma1p.(a, cutoff.a = 1e-6, k = 3)% ../R/qchisqAppr.R
-lgamma1p_series(x, k)               % ../R/beta-fns.R
+lgamma1p (a, tol_logcf = 1e-14, f.tol = 1)	% ../R/beta-fns.R
+lgamma1p.(a, cutoff.a = 1e-6, k = 3)		% ../R/qchisqAppr.R
+lgamma1p_series(x, k)               		% ../R/beta-fns.R
+lgamma1pC(x)                        		% ../R/utils.R
 }
 \arguments{
   \item{a, x}{a numeric vector.}
-  \item{tol_logcf}{for \code{lgamma1p()}: a non-negative number ...}% FIXME
+  \item{tol_logcf}{for \code{lgamma1p()}: a non-negative number passed to
+    \code{\link{logcf}()}.}
+  \item{f.tol}{numeric (\bold{f}actor) used in
+    \code{\link{log1pmx}(*, tol_logcf = f.tol * tol_logcf)}.}
   \item{cutoff.a}{for \code{lgamma1p.()}: a positive number indicating
     the cutoff to switch from  ...}% FIXME
   \item{k}{an integer, the number of terms in the series expansion used internally.}
@@ -29,8 +34,10 @@ lgamma1p_series(x, k)               % ../R/beta-fns.R
 
   \code{lgamma1p_series(x, k)} is Taylor series approximation of order \code{k},
   (derived via Maple), which is \eqn{-\gamma x + \pi^2 x^2/ 12 +
-  O(x^3)}{gamma*x + pi^2 * x^2/ 12 + O(x^3)}, where \eqn{\gamma}{gamma}
-  is Euler's constant 0.5772156649....
+    O(x^3)}{gamma*x + pi^2 * x^2/ 12 + O(x^3)}, where \eqn{\gamma}{gamma}
+  is Euler's constant 0.5772156649. ...% TODO MORE  write!...
+
+  \code{lgamma1pC()} is an interface to \R C API (\file{Rmathlib}) function.
 }
 \value{
   a numeric vector with the same attributes as \code{a}.
@@ -60,11 +67,12 @@ sfsmisc::eaxis(1); sfsmisc::eaxis(2)
 at <- 10^(1-4*(0:8))
 abline(h = at, v = at, col = "lightgray", lty = "dotted")
 curve(-lgamma( 1+x), add=TRUE, col="red2", lwd=1/2)# underflows even earlier
-curve(-lgamma1p (x), add=TRUE, col="blue")
+curve(-lgamma1p (x), add=TRUE, col="blue") -> lgxy
 curve(-lgamma1p.(x), add=TRUE, col=adjustcolor("forest green",1/4),
       lwd = 5, lty = 2)
 for(k in 1:7)
   curve(-lgamma1p_series(x, k=k), add=TRUE, col=paste0("gray",30+k*8), lty = 3)
+stopifnot(with(lgxy, all.equal(y, -lgamma1pC(x))))
 }
 \keyword{distribution}
 \keyword{math}

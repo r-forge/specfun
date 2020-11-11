@@ -1,7 +1,7 @@
 Package: DPQ
 Title: Density, Probability, Quantile ('DPQ') Computations
-Version: 0.4-2
-Date: 2020-11-07
+Version: 0.4-3
+Date: 2020-mm-dd
 Authors@R: c(person("Martin","Maechler", role=c("aut","cre"),
                     email="maechler@stat.math.ethz.ch", comment = c(ORCID = "0000-0002-8685-9910"))
   , person("Morten",   "Welinder",    role = "ctb", comment = "pgamma C code, see PR#7307, Jan. 2005; further pdhyper()")
@@ -18,7 +18,7 @@ Description: Computations for approximations and alternatives for the 'DPQ'
   distributions such as the chi-squared, F, and t.
   --
   This is for the use of researchers in these numerical approximation
-  implementations, notably for my own use in order to improve R`s own
+  implementations, notably for my own use in order to improve standard
    pbeta(), qgamma(), ..., etc: {'"dpq"'-functions}.
   -- We plan to complement with 'DPQmpfr' to be suggested later.
 Depends: R (>= 3.6.0)

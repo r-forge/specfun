@@ -1,12 +1,14 @@
 \name{log1pmx}
 \alias{log1pmx}
+\alias{log1pmxC}
 \title{Accurate \code{log(1+x) - x}}
 \description{
   Compute \deqn{\log(1+x) - x}{log(1+x) - x}
   accurately also for small \eqn{x}, i.e., \eqn{|x| \ll 1}{|x| << 1}.
 }
 \usage{
-log1pmx(x, tol_logcf = 1e-14)
+log1pmx (x, tol_logcf = 1e-14)
+log1pmxC(x)
 }
 \arguments{
   \item{x}{numeric vector with values \eqn{x > -1}.}
@@ -29,6 +31,8 @@ log1pmx(x, tol_logcf = 1e-14)
   \deqn{\log(1+x) = 2\left(r + \frac{r^3}{3}+ \frac{r^5}{5} + \ldots\right),}{%
     log(1+x) = 2(r + r^3/3  + r^5/5 + ...),}
   where \eqn{r := x/(x+2)}, see the reference.
+
+  \code{log1pmxC()} is an interface to \R C API (\file{Rmathlib}) function.
 }
 \value{a numeric vector (with the same attributes as \code{x}).
 }
@@ -49,9 +53,10 @@ log1pmx(x, tol_logcf = 1e-14)
 \examples{
 l1x <- curve(log1pmx, -.9999, 7, n=1001)
 abline(h=0, v=-1:0, lty=3)
-l1xz  <- curve(log1pmx, -.1, .1, n=1001); abline(h=0, v=0, lty=3)
+l1xz  <- curve(log1pmx, -.1,  .1,  n=1001); abline(h=0, v=0, lty=3)
 l1xz2 <- curve(log1pmx, -.01, .01, n=1001); abline(h=0, v=0, lty=3)
 l1xz3 <- curve(-log1pmx(x), -.002, .002, n=2001, log="y", yaxt="n")
 sfsmisc::eaxis(2); abline(v=0, lty=3)
+with(l1xz3, stopifnot(all.equal(y, -log1pmxC(x))))
 }
 \keyword{math}
