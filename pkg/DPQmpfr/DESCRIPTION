@@ -1,14 +1,15 @@
 Package: DPQmpfr
 Title: DPQ (Density, Probability, Quantile) Distribution Computations using MPFR
 Version: 0.3-0
-Date: 2020-06-12
-Authors@R: person("Martin","Maechler", role=c("aut","cre"), email="maechler@stat.math.ethz.ch")
-Description: An extention to the 'DPQ' package, the computations for 'DPQ'
-  (Density (pdf), Probability (cdf) and Quantile) functions for probability
-  distributions in R.
-  The functions here partly use the 'Rmpfr' package and hence the
-  underlying MPFR and GMP C libraries.
-Depends: R (>= 3.5.0)
-Imports: DPQ, Rmpfr, gmp, stats, graphics, methods, utils
+Date: 2020-11-13
+Authors@R: person("Martin","Maechler", role=c("aut","cre"),
+   email="maechler@stat.math.ethz.ch", comment = c(ORCID = "0000-0002-8685-9910"))
+Description: An extention to the 'DPQ' package with computations for 'DPQ'
+  (Density (pdf), Probability (cdf) and Quantile) functions, where
+  the functions here partly use the 'Rmpfr' package and hence the
+  underlying 'MPFR' and 'GMP' C libraries.
+Depends: R (>= 3.6.0)
+Imports: DPQ (>= 0.4-2), Rmpfr, gmp, stats, graphics, methods, utils
+Suggests: sfsmisc
 License: GPL (>= 2)
 Encoding: UTF-8

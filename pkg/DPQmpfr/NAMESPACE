@@ -1,14 +1,19 @@
 importFrom("DPQ"
          , dntJKBf # ~/R/Pkgs/DPQ/R/t-nonc-fn.R
          , dtWV
-# DPQ 0.4-0: , .suppHyper
+         , logspace.add
+         , logspace.sub
+         , .suppHyper              # DPQ 0.4-0
+         , pnormL_LD10, pnormU_S53 # DPQ 0.4-2
 )
 
 importFrom("Rmpfr"
-         , mpfr, getPrec, Const
+         , getPrec, .getPrec
+         , mpfr, Const
          , asNumeric
          , dnorm, pnorm
          , dpois
+         , log1mexp
 )
 
 importFrom("gmp"
@@ -39,7 +44,8 @@ importFrom("stats"
 importFrom("methods"
          , new # <- seems not sufficient? R CMD check still wants me to import 'new'
            ## trying these additionally to see if it helps -- it does not
-         , initialize, as, coerce
+         , as, coerce
+         , is, initialize
            )
 
 importFrom("utils"
@@ -55,3 +61,5 @@ export(dhyperQ, phyperQ, phyperQall)# simple via chooseZ()
 ## R/t-nonc.R :
 export(dntJKBm)
 
+## Re-export this R/dpq-mpfrized.R :
+export(pnormL_LD10, pnormU_S53)

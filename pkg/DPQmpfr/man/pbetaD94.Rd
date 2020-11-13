@@ -16,8 +16,11 @@
 dbetaD94(x, shape1, shape2, ncp = 0, log = FALSE,
          eps = 1e-10, itrmax = 100000L, verbose = FALSE)
 pbetaD94(q, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALSE,
+	 log_scale = (a * b > 0) && (a + b > 100 || c >= 500),
          eps = 1e-10, itrmax = 100000L, verbose = FALSE)
+
 qbetaD94(p, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALSE,
+	 log_scale = (a * b > 0) && (a + b > 100 || c >= 500),
          delta = 1e-6,
          eps = delta^2,
          itrmax = 100000L,
@@ -47,6 +50,12 @@ qbetaD94(p, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALSE,
     default \code{eps = delta^2} which is sensible but may be too small,
     such that \code{eps} should be specified in addition to \code{delta}.}
   \item{iterN}{[For \code{qbeta*()}:] The maximal number of \bold{N}ewton iterations.}
+  \item{log_scale}{logical indicating if most of the computations should
+    happen in \code{\link{log}} scale, which protects from \dQuote{early}
+    overflow and underflow but takes more computations.  The current
+    default is somewhat \emph{arbitrary}, still derived from the facts that
+    \code{\link{gamma}(172)} overflows to \code{Inf} already and
+    \code{\link{exp}(-750)} underflows to \code{0} already.}
   \item{verbose}{logical (or integer) indicating the amount of
     diagnostic output during computation; by default none.}
 }
@@ -63,7 +72,8 @@ qbetaD94(p, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALSE,
   On the computation of the noncentral beta distribution.
   \emph{Computational Statistics & Data Analysis} \bold{18}, 449--455.
 }
-\author{Martin Maechler}
+\author{Martin Maechler, notably \code{log_scale} was not part of Ding's
+  proposals.}
 \seealso{
   \code{\link{pbeta}}.  Package \CRANpkg{Rmpfr}'s \code{\link{pbetaI}()} needs
   both \code{shape1} and \code{shape2} to be integer but is typically more
@@ -71,31 +81,43 @@ qbetaD94(p, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALSE,
 }
 \examples{%% see also ../tests/beta-Ding94.R
           %%          ~~~~~~~~~~~~~~~~~~~~~~
-## Low precision (eps, delta) values as "e.g." in Ding(94):
+## Low precision (eps, delta) values as "e.g." in Ding(94): ------------------
 
-## Compare with  Table 3  of  Baharev_et_al 2017 %% ===> ./qbBaha2017.Rd <<<<<<<<<<<<
+## Compare with  Table 3  of  Baharev_et_al 2017 %% ===> ./qbBaha2017.Rd <<<<<<<<<<<
 aa <- c(0.5, 1, 1.5, 2, 2.5, 3, 5, 10, 25)
 bb <- c(1:15, 10*c(2:5, 10, 25, 50))
 utime <-
  qbet <- matrix(NA_real_, length(aa), length(bb),
                 dimnames = list(a = formatC(aa), b = formatC(bb)))
+(doExtras <- DPQmpfr:::doExtras())
+if(doExtras) qbetL <- utimeL <- utime
+
 p <- 0.95
 delta <- 1e-4
 eps   <- 1e-6
+system.t.usr <- function(expr)
+  system.time(gcFirst = FALSE, expr)[["user.self"]]
 
 system.time(
 for(ia in seq_along(aa)) {
     a <- aa[ia]; cat("\n--==--\na=",a,":\n")
     for(ib in seq_along(bb)) {
         b <- bb[ib]; cat("\n>> b=",b,"\n")
-        utime[ia, ib] <- system.time(gcFirst=FALSE,
-          qbet[ia, ib] <- qbetaD94(p, a, b, ncp = 0, delta=delta, eps=eps, verbose=TRUE)
-        )[["user.self"]]
+        utime [ia, ib] <- system.t.usr(
+          qbet[ia, ib] <-   qbetaD94(p, a, b, ncp = 0, delta=delta, eps=eps, verbose = 2))
+        if(doExtras)
+          utimeL[ia, ib] <- system.t.usr(
+           qbetL[ia, ib] <-   qbetaD94(p, a, b, ncp = 0, delta=delta, eps=eps,
+                                       verbose = 2, log_scale=TRUE))
     }
     cat("\n")
 }
-)# system.time(.)
-
+)# system.time(.): ~ 1 sec (lynne i7-7700T, Fedora 32, 2020)
+sum(print(table(round(1000*utime)))) # lynne .. :
+##  0  1  2  3  4  5  6  7  8  9 10 11 14 15 16 29
+## 53 94 15  3  3 12  2  2  2  2  1  2  3  1  2  1
+## [1] 198
+if(doExtras) print(sum(print(table(round(1000*utimeL))))) # lynne .. :
 }
 \keyword{distribution}
 \keyword{math}

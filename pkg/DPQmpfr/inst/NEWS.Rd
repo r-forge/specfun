@@ -4,7 +4,7 @@
 \title{DPQmpfr News}
 \encoding{UTF-8}
 
-\section{Version 0.3-0 (2020-06-16, svn r141)}{
+\section{Version 0.3-0 (2020-11-13, svn r155)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{dhyperQ()}, \code{phyperQ()}, and \code{phyperQall()} for
@@ -13,6 +13,11 @@
 
       \item Finally export (and add to svn!) \code{dbetaD94()},
       \code{pbetaD94()}, and \code{qbetaD94()}.
+
+      Add \code{log_scale} option to both \code{pbeta*()} and \code{qbeta*()}.
+
+      \item \dQuote{mpfr-ize} more, notably \code{pnorm*()} from
+      \CRANpkg{DPQ} (0.4-2). % ../R/dpq-m
     }
   }
 }
