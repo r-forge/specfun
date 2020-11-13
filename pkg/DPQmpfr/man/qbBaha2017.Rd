@@ -24,18 +24,24 @@ data("qbBaha2017")
  \code{\link{qbeta}(0.95, a,b)} values, for
  \eqn{a = 0.5, 1, 1.5, 2, 2.5, 3, 5, 10, 25} and
  \eqn{b = }
- with \code{\link{str}()}
- num [1:9, 1:22] 0.902 0.95 0.966 0.975 0.98 ...
- - attr(*, "dimnames")=List of 2
-  ..$ a: chr [1:9] "0.5" "1" "1.5" "2" ...
-  ..$ b: chr [1:22] "1" "2" "3" "4" ...
+ with \code{\link{str}()} \preformatted{
+   num [1:9, 1:22] 0.902 0.95 0.966 0.975 0.98 ...
+   - attr(*, "dimnames")=List of 2
+    ..$ a: chr [1:9] "0.5" "1" "1.5" "2" ...
+    ..$ b: chr [1:22] "1" "2" "3" "4" ...}
 }
 \details{
-  ... TODO ...
+  MM constructed this data as follows  (TODO: say more..):
+  \preformatted{
+        ff <- "~/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/Baharev_et_al-2017_table3.txt"
+        qbB2017 <- t( data.matrix(read.table(ff)) )
+        dimnames(qbB2017) <- dimnames(qbet)
+        saveRDS(qbB2017, "..../qbBaha2017.rds")
+    }
 }
-\source{
+
+\source{% <<< FIXME: can have much better accuracy numbers !!
   This matrix comprises all entries of Table 3, p. 776 of
-  % <<< FIXME: can have much better accuracy numbers !!
   \cr % ~/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/Baharev*
   Baharev, A., Schichl, H. and Rév, E. (2017)
   Computing the noncentral-F distribution and the power of the F-test with
@@ -43,7 +49,7 @@ data("qbBaha2017")
   \emph{Comput. Stat.} \bold{32}(2), 763--779.
   \doi{10.1007/s00180-016-0701-3}
 
-  The paper mentions the first author's github repos where source code and
+  The paper mentions the first author's \file{github} repos where source code and
   executables are available from:
   \url{https://github.com/baharev/mindiffver/}
 }
