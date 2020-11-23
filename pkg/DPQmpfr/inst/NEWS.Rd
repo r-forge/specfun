@@ -4,7 +4,7 @@
 \title{DPQmpfr News}
 \encoding{UTF-8}
 
-\section{Version 0.3-0 (2020-11-13, svn r155)}{
+\section{Version 0.3-0 (2020-11-23, svn r156)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{dhyperQ()}, \code{phyperQ()}, and \code{phyperQall()} for
