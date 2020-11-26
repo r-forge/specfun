@@ -4,12 +4,16 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.4-3 (2020-..., svn r...)}{
+\section{Version 0.4-3 (2020-11-24, svn r153)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item Provide \R functions
       \code{log1mexpC()}, \code{log1pexpC()}, \code{log1pmxC()}, and \code{lgamma1pC()},
       all interfacing to \R's C API (\file{Rmath.h}), aka \sQuote{Rmathlib}.
+
+      \item New \code{pnormAsymp()} for asymptotic (typically upper tail,
+      log scale) approximation of \code{pnorm()}.  With \CRANpkg{Rmpfr}, we
+      can see how accurate these are in detail. % currently on help page ../man/pnormAsymp.Rd
     }
   }
 }

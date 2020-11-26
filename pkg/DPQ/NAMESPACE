@@ -161,6 +161,7 @@ export(
   , qgammaAppr, qgammaApprSmallP, qgammaApprKG
 
   , pnormL_LD10, pnormU_S53
+  , pnormAsymp
   , qnormAppr, qnormUappr
   , qnormR, qnormR1
   , qtAppr

@@ -578,9 +578,9 @@ pnchisqT93.a <- function(q, df, ncp, lower.tail = TRUE, log.p = FALSE) {
         ## return log(Ip) but computed *directly*:
         ##  careful about  log(q/ncp) :
         ok <- .Machine$double.xmin <= (r <- q/ncp)  &  r <= .Machine$double.xmax
-        lg.ql[ ok] <- log(r[ok])
-        lg.ql[!ok] <- log(q[!ok]) - log(ncp[!ok])
-        ((df - 1)/4) * lg.ql +  pnorm(sqrt(2*q) - sqrt(2*ncp), lower.tail=FALSE, log.p=TRUE)
+        r[ ok] <- log(r[ok])
+        r[!ok] <- log(q[!ok]) - log(ncp[!ok])
+        ((df - 1)/4) * r +  pnorm(sqrt(2*q) - sqrt(2*ncp), lower.tail=FALSE, log.p=TRUE)
     }
     else {
         Ip <- (q/ncp)^((df - 1)/4) * pnorm(sqrt(2*q) - sqrt(2*ncp), lower.tail=FALSE)
@@ -606,9 +606,9 @@ pnchisqT93.b <- function(q, df, ncp, lower.tail = TRUE, log.p = FALSE) {
         ## return log(p) but computed *directly*:
         ##  careful about  log(q/ncp) :
         ok <- .Machine$double.xmin <= (r <- q/ncp)  &  r <= .Machine$double.xmax
-        lg.ql[ ok] <- log(r[ok])
-        lg.ql[!ok] <- log(q[!ok]) - log(ncp[!ok])
-        ((df - 1)/4) * lg.ql +  pnorm(sqrt(2*ncp) - sqrt(2*q), lower.tail=FALSE, log.p=TRUE)
+        r[ ok] <- log(r[ok])
+        r[!ok] <- log(q[!ok]) - log(ncp[!ok])
+        ((df - 1)/4) * r +  pnorm(sqrt(2*ncp) - sqrt(2*q), lower.tail=FALSE, log.p=TRUE)
     }
     else {
         p <- (q/ncp)^((df - 1)/4) * pnorm(sqrt(2*ncp) - sqrt(2*q), lower.tail=FALSE)

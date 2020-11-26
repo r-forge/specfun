@@ -47,8 +47,51 @@ pnormL_LD10 <- function(x, lower.tail=FALSE, log.p=FALSE) {
     }
 }
 
+## "Upper tail" asymptotic approximation of Q(x) --
+## Using the asymptotic series of  Abramowitz & Stegun, 26.2.13, p.932
+
+pnormAsymp <- function(x, k, lower.tail=FALSE, log.p=FALSE) {
+    stopifnot(k == round(k), 0 <= (k <- as.integer(k)), k <= 5)
+    ##
+    ## FIXME: Want to keep vectorized; TODO: lower.tail as *vector* ==> can *swap* lower.tail *where* x < 0
+    stopifnot(x >= 0)
+    ## if(x < 0) { ## swap tail
+    ##     x <- -x
+    ##     lower.tail <- ! lower.tail
+    ## }
+    r <- dnorm(x, log=TRUE) - log(x)
+    if(k > 0) {
+        xsq <- x*x
+        del <-
+            switch(k,
+                   1/(xsq + 2.) , # k = 1
+                   (1 - 1/(xsq + 4.))/(xsq + 2.) , # k = 2
+                   ## k = 3:
+                   (1 - (1. - 5./(xsq+6.)) / (xsq+4.)) / (xsq+2.),
+                   ## k = 4:
+                   (1. - (1. - (5. - 9/(xsq+8.)) / (xsq+6.)) / (xsq+4.)) / (xsq+2.),
+                   ## k = 5:
+                   (1. - (1. - (5. - (9 - 129/(xsq+10))/ (xsq+8)) / (xsq+6)) / (xsq+4)) / (xsq+2),
+                   stop("invalid 'k': ", k)) # should never happen
+        r <- r + log1p(-del)
+    }
+    if(log.p) {
+        if(lower.tail) ## log(1 - exp(r)) = log1mexp(-r)
+            log1mexp(-r)
+        else ## upper tail: log(1 - (1 - exp(r))) = r
+            r
+    } else {
+        if(lower.tail) -expm1(r) else exp(r)
+    }
+}
 
 
+## TODO: if 'k' is NA / NULL ==> find optimal 'k' for given 'x'
+## ===   ==> but that needs *separate* function which we need  Vectorize()
+
+
+
+
 ### R version of   ~/R/D/r-devel/R/src/nmath/qnorm.c
 
 ## Mathlib : A C Library of Special Functions
