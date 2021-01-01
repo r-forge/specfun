@@ -225,6 +225,7 @@ logcf <- function (x, i, d, eps, maxit=10000) ##/* ~ relative tolerance */)
 }
 
 ## Accurate calculation of log(1+x)-x, particularly for small x.
+## See also R-interface to R's C API  log1pmx()  --> log1pmxC() in >> ./utils.R
 log1pmx <- function(x, tol_logcf = 1e-14) {
     minLog1Value <- -0.79149064
 

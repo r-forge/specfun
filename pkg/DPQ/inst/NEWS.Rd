@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.4-3 (2020-11-24, svn r153)}{
+\section{Version 0.4-3 (2021-01-01, svn r158)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item Provide \R functions

@@ -4,7 +4,7 @@
 \description{
   Provide the first few terms of the asymptotic series approximation to
   \code{\link{pnorm}()}'s (extreme) tail, from Abramawitz and Stegun's
-  26.2.13 (p.932), \url{http://people.math.sfu.ca/~cbm/aands/page_932.htm}.
+  26.2.13 (p.932), \url{https://people.math.sfu.ca/~cbm/aands/page_932.htm}.
 }
 \usage{
 pnormAsymp(x, k, lower.tail = FALSE, log.p = FALSE)
