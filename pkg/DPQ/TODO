@@ -1,5 +1,6 @@
 ##-*- org -*-->  Emacs .. [Tab] key + [Org] menu; C-c C-o to follow links
 
+* TODO Provide R functions interfacing to the "applied math utilities" in  ./src/DPQ-misc.c
 * TODO tests/pnt-precision-problem.R : *label* the 391 plots: tests/pnt-precision-2.pdf
 * TODO Compare pnchi1sq() with t1() function in tests/chisq-nonc-ex.R
 * TODO Add .LDBLmachine() which gives the "long double" aka 'LDOUBLE' equivalent of `.Machine()`
@@ -36,6 +37,7 @@
 
 * TODO tests/qPoisBinom-ex.R:  *FIX* Bug in qpois / qbinom / qnbinom upper.tail|log.p
 
+* DONE ~/R/MM/NUMERICS/dpq-functions/dbinom_raw.R also has dnbinom.mu() ==> provide also dnbinomR()
 
 * DONE tests/chisq-nonc-ex.R : use result file in inst/safe/  -- parts only if(doExtras)
 * DONE tests/qbeta-dist.R    : use result file in inst/safe/  -- parts only if(doExtras)

@@ -239,3 +239,9 @@ SEXP R_lgamma1p(SEXP x_);
      Computes 'log(gamma(X + 1))' (_log(gamma(1 plus x))_), accurately
      even for small X, i.e., 0 < x < 0.5.
 */
+
+SEXP R_frexp(SEXP x_);
+// returns list(r = <double>, e = <integer>) where  x = r * 2^e , r in [0.5, 1) and integer e
+
+SEXP R_ldexp(SEXP f_, SEXP E_);
+// ldexp(f, E) := f * 2^E

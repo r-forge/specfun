@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.4-3 (2021-01-01, svn r158)}{
+\section{Version 0.4-3 (2021-03-08, svn r159)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item Provide \R functions
@@ -13,7 +13,13 @@
 
       \item New \code{pnormAsymp()} for asymptotic (typically upper tail,
       log scale) approximation of \code{pnorm()}.  With \CRANpkg{Rmpfr}, we
-      can see how accurate these are in detail. % currently on help page ../man/pnormAsymp.Rd
+      can see how accurate these are in detail. % currently on  ../man/pnormAsymp.Rd
+
+      \item New \code{dnbinomR()} finding better code for \R itself,
+      \code{dnbinom.mu()} and \code{dbinom_raw()}.
+
+      \item Several C level utilities to be .Call()ed from \R, from \R's
+      mathlib, \code{ldexp()} and \code{frexp()} even from C math.
     }
   }
 }

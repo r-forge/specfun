@@ -10,6 +10,7 @@ do-now\.org
 auto
 \.bbl$
 \.blg$
+\.grep$
 log$
 .*/.*,v
 svn-

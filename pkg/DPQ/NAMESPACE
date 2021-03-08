@@ -14,6 +14,7 @@ importFrom("stats"
          , dnorm, pnorm, qnorm
          , dbeta, pbeta, qbeta
          , dbinom, pbinom
+         , dnbinom
          , dgamma, pgamma, qgamma
          , dchisq, pchisq, qchisq
          , df, pf, qf
@@ -151,6 +152,9 @@ export(
   , phyperBinMolenaar, phyperBinMolenaar.1, phyperBinMolenaar.2, phyperBinMolenaar.3, phyperBinMolenaar.4
   , phyperIbeta, phyperPeizer, phyperR, phypers
   , pdhyper, phyperR2
+    ##  from R/dbinom-nbinom.R :
+  , dbinom_raw
+  , dnbinomR, dnbinom.mu
 
     ## from R/qnchisq.R
   , qchisqAppr.0, qchisqAppr.1, qchisqAppr.2, qchisqAppr.3
