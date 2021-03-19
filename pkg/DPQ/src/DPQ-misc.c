@@ -98,7 +98,7 @@ SEXP R_frexp(SEXP x_)
     int *e = INTEGER(e_);
     for(R_xlen_t i=0; i < n; i++)
 	r[i] = frexp(x[i], e+i);
-    UNPROTECT(1);
+    UNPROTECT(2);
     return ans;
 }
 

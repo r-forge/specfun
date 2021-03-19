@@ -13,8 +13,8 @@ importFrom("sfsmisc"
 importFrom("stats"
          , dnorm, pnorm, qnorm
          , dbeta, pbeta, qbeta
-         , dbinom, pbinom
-         , dnbinom
+         , dbinom, pbinom, qbinom
+         , dnbinom,pnbinom,qnbinom
          , dgamma, pgamma, qgamma
          , dchisq, pchisq, qchisq
          , df, pf, qf
@@ -124,13 +124,14 @@ export(
   , pntP94, pntP94.1
   , pntR, pntR1
 
-  , ppoisD
+  , ppoisD, qpoisR
 
   , qbetaAppr, qbetaAppr.1, qbetaAppr.2, qbetaAppr.3, qbetaAppr.4, qbeta.R
   , qgamma.R
 
   , dgamma.R
-  , dpois_raw, bd0, stirlerr
+  , dpois_raw
+  , bd0, ebd0, stirlerr
 
     ## from R/qchisqAppr.R :
   , qchisqAppr.R
@@ -155,6 +156,10 @@ export(
     ##  from R/dbinom-nbinom.R :
   , dbinom_raw
   , dnbinomR, dnbinom.mu
+
+   , qbinomR  ## <- R/qbinomR.R
+   , qnbinomR ## <- R/qnbinomR.R
+   , qpoisR   ## <- R/qpoisR.R
 
     ## from R/qnchisq.R
   , qchisqAppr.0, qchisqAppr.1, qchisqAppr.2, qchisqAppr.3

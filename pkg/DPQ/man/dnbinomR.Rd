@@ -38,5 +38,13 @@ dnbinom.mu(x, size, mu,   log = FALSE, eps = 1e-10)
   \code{\link{stirlerr}()}.
 }
 \examples{%% for now have regr.tests only in ../tests/dnbinom-tst.R
+ stopifnot( dnbinomR(0, 1, 1) == 1 )
+ size <- 1000 ; x <- 0:size
+ dnb <- dnbinomR(x, size, prob = 5/8, log = FALSE, eps = 1e-10)
+ plot(x, dnb, type="b")
+ all.equal(dnb, dnbinom(x, size, prob = 5/8)) ## mean rel. diff: 0.00017...
+
+ dnbm <- dnbinom.mu(x, size, mu = 123, eps = 1e-10)
+ all.equal(dnbm, dnbinom(x, size, mu = 123)) #  Mean relative diff: 0.00069...
 }
 \keyword{distribution}

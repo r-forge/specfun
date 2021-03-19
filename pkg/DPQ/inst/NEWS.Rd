@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.4-3 (2021-03-08, svn r159)}{
+\section{Version 0.4-3 (2021-03-19, svn r160)}{ % 'r160': *MUST* fix dbinom_raw() at least
   \subsection{NEW FEATURES}{
     \itemize{
       \item Provide \R functions
@@ -16,10 +16,16 @@
       can see how accurate these are in detail. % currently on  ../man/pnormAsymp.Rd
 
       \item New \code{dnbinomR()} finding better code for \R itself,
-      \code{dnbinom.mu()} and \code{dbinom_raw()}.
+      \code{dnbinom.mu()} and \code{dbinom_raw()}; also new utility
+      functions \code{bd0()} and \code{stirlerr()}, both vectorized.
 
       \item Several C level utilities to be .Call()ed from \R, from \R's
       mathlib, \code{ldexp()} and \code{frexp()} even from C math.
+
+      \item Pure R implementations (somewhat experimental) of corresponding
+      \R Mathlib C functions: \code{qbinomR()}, \code{qnbinomR()}, and \code{qpoisR()}
+      each with several tuning parameters for the underlying algorithm,
+      notably the root-finding parts.
     }
   }
 }

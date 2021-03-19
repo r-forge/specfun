@@ -34,6 +34,15 @@ dbinom_raw (x, n, p, q, log = FALSE)
   \code{\link{stirlerr}()} where the latter currently only provides
   accurate double precision accuracy.
 }
-\examples{%% for now have regr.tests only in ../tests/dnbinom-tst.R
+\examples{%% NB: regr.tests in >>> ../tests/dnbinom-tst.R <<<
+n <- 27
+x <- 0:n
+p <- 3/4
+all.equal(dbinom_raw(x, n, p, q=1-p),
+          dbinom    (x, n, p))  # "large" difference of 0.015... currently
+plot(x, dbinom_raw(x, n, p, q=1-p) - dbinom(x, n, p), type="b")
+par(new=TRUE); Lcol <- adjustcolor(2, 1/4)
+plot(x, dbinom(x,n,p), type="l", col=Lcol, lwd=3, axes=FALSE, ann=FALSE)
+axis(4, col=Lcol, col.axis=adjustcolor(Lcol, 3)) %%--- Something Wrong - FIXME!!
 }
 \keyword{distribution}

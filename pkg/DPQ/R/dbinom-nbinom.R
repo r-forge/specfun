@@ -1,5 +1,5 @@
-#### R version of  dbinom_raw()              from ~/R/D/r-devel/R/src/nmath/dbinom.c
-####           and dnbinom() / dnbinom_mu()   "   ~/R/D/r-devel/R/src/nmath/dnbinom.c
+#### R version of  dbinom_raw()          from ~/R/D/r-devel/R/src/nmath/dbinom.c
+####        and dnbinom() / dnbinom_mu()  "   ~/R/D/r-devel/R/src/nmath/dnbinom.c
 ##
 ##  (orig. was ~/R/MM/NUMERICS/dpq-functions/dbinom_raw.R )
 
@@ -9,9 +9,8 @@ dbinom_raw <- function(x, n, p, q, log = FALSE)# >> ../man/dbinom_raw.Rd <<<
   ## ----------------------------------------------------------------------
   ## Arguments:  p + q == 1
 
-##___________ FIXME ___________ just edited; fully untested !!!
-
-##__________ for Rmpfr mpfr() numbers, need a more accurate stirlerr() -- otherwise cannot get more than double prec.!
+    ##__________ for Rmpfr mpfr() numbers, need a more accurate stirlerr()
+    ##--- otherwise cannot get more than double prec.! >>> ./dgamma.R  (using 'DPQmpfr::stirlerrM()')
 
     stopifnot(is.logical(log), length(log) == 1)
     ## Recycle to common length
@@ -95,9 +94,9 @@ dnbinomR <- function (x, size, prob, log = FALSE, eps = 1e-10)
         if(any(i0s0 <- i0 & size == 0)) {
             r[i0s0] <- .D_1(log)
         }
-        if(any(i0sP <- i0 & size > 0)) {  ## x = 0, size > 0
+        if(any(i0P <- i0 & size > 0)) {  ## x = 0, size > 0
             ## pr(x,...) = pr^n :
-            r[i0sP] <- if(log) size[i0sP]*log(prob[i0sP]) else prob[i0sP] ^ size[i0sP]
+            r[i0P] <- if(log) size[i0P]*log(prob[i0P]) else prob[i0P] ^ size[i0P]
         }
            x <-    x[!i0]
         size <- size[!i0]
@@ -108,7 +107,7 @@ dnbinomR <- function (x, size, prob, log = FALSE, eps = 1e-10)
         x. <-    x[i]
         n. <- size[i]
         pr <- prob[i]
-        r[!i0][B] <- .D_exp(n. * log(pr) + x. * (log(n.) + log1p(-pr))
+        r[!i0][i] <- .D_exp(n. * log(pr) + x. * (log(n.) + log1p(-pr))
                             -lgamma(x.+1) + log1p(x.*(x.-1)/(2*n.)),
                             log)
     }
@@ -143,14 +142,13 @@ dnbinom.mu <- function(x, size, mu, log = FALSE, eps = 1e-10)
     size <- rep_len(size, M)
     mu   <- rep_len(mu,   M)
 
-    ## This is  ** in addition ** to the C code  [and formally part of x < eps * size below]
     if(any(i0 <- x == 0)) {
         i <- which(i0)
         x.  <-   x[i]
         mu. <-  mu[i]
         n. <- size[i]
         ## pr(x,...) = p^n = (n / (n+mu))^n  -- carefully evaluated:
-	r[i0] <- .D_exp(n. * ifelse(n. < mu.,
+	r[i] <- .D_exp(n. * ifelse(n. < mu.,
                                     log(n./(n.+mu.)),
                                     log1p( - mu./(n.+mu.))),
 			 log)
@@ -158,24 +156,24 @@ dnbinom.mu <- function(x, size, mu, log = FALSE, eps = 1e-10)
 	   x <-	   x[!i0]
 	  mu <-	  mu[!i0]
     }
-    if(any(B <- x < eps * size)) { ## don't use dbinom_raw() but MM's formula
+    if(length(i <- which(B <- x < eps * size))) { ## don't use dbinom_raw() but MM's formula
         ## log p__r =
-        i <- which(B)
         x.  <-   x[i]
         mu. <-  mu[i]
         n. <- size[i]
-        r[!i0][B] <- .D_exp(x. * log(n.*mu./(n.+mu.)) - mu. -lgamma(x.+1) + log1p(x.*(x.-1)/(2*n.)),
+        r[!i0][i] <- .D_exp(x. * log(n.*mu./(n.+mu.)) - mu.
+                            -lgamma(x.+1) + log1p(x.*(x.-1)/(2*n.)),
                             log)
     }
-    if(any(!B)) {
-        i <- which(!B)
+    if(length(i <- which(!B))) {
         x    <-    x[i]
         mu   <-   mu[i]
         size <- size[i]
         ans <- dbinom_raw(x= size, n= x+size,
                           p= size/(size+mu), q= mu/(size+mu),
                           log = log)
-        ## p <- size/(size+x) ## == 1 if  |x| << size -- can be better in log case: log(n/(n+x)) = log(1 - x/(n+x))
+        ## p <- size/(size+x) ## == 1 if  |x| << size : can be better in log case:
+        ## log(n/(n+x)) = log(1 - x/(n+x))
         r[!i0][i] <- if(log) log1p(-x/(size+x)) + ans else  size/(size+x) * ans
     }
     r
