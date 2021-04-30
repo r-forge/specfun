@@ -403,8 +403,23 @@ matplot(x, abs(reMat), log="xy", type="l", lty=1)
 abline(v= 3.47548562941137e-08, col = "gray80", lwd=3)#<- the cutoff value of  lgamma1p()
 ##---> should use earlier cutoff!
 ## zoom in:
-matplot(x, abs(reMat), log="xy", type="l", lty=1, xlim=c(8e-9, 1e-3))
+
+matplot(x, abs(reMat), log="xy", type="l", col=1:7, lty=1,
+        lwd=2, xlim=c(8e-9, 1e-3), ylim = c(1e-18, 1e-7), axes=FALSE, frame=TRUE,
+        main = expression(lgamma1p(x) == log(Gamma(x+1)) ~~~ "approximations"
+                          ~~~ abs(rel.Err(.))))
+eaxis(1); eaxis(2)
 abline(v= 3.47548562941137e-08, col = "gray80", lwd=3)#<- the cutoff value of  lgamma1p()
+abline(h= c(1,2,4)*.Machine$double.eps, lty=3, col="skyblue")
+legend("topright", col=1:7, lty=1,lwd=2,
+       c("log(x*gamma(x))", "lgamma(1+x)", "log(x) + lgamma(x)",
+         "lgamma1p.(x, k=1, c=3e-6)",
+         "lgamma1p.(x, k=2, c=1e-4)",
+         "lgamma1p.(x, k=3, c=8e-4)",
+         "lgamma1p(x)"), bty="n", ncol=2)
+abline(v = c(3e-6, 1e-4, 8e-4), col=4:6, lty=2, lwd=1/2)
+
+## FIXME: do the same for the  lgaamma1p_series()
 
     ## rm(x., xct., xc2., reMat., eMat, AllEq)
     detach("package:Rmpfr")

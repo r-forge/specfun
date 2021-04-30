@@ -39,34 +39,111 @@ dgamma.R <- function(x, shape, scale = 1, log)
 
 ## ~/R/D/r-devel/R/src/nmath/dpois.c   --> dpois_raw()
 ## // called also from dgamma.c, pgamma.c, dnbeta.c, dnbinom.c, dnchisq.c :
-dpois_raw <- function(x, lambda, log)
+dpois_raw <- function(x, lambda, log=FALSE,
+                      ## for now:                            NB: R version *broken* \\\\\\\
+                      version = c("bd0_v1", "bd0_p1l1d", "bd0_p1l1d1", "bd0_l1pm", "ebd0_v1"),
+                      ## future ?! version = c("ebd0_v1", "bd0_v1"),
+                      bd0.delta = 0.1,
+                      ## optional arguments of log1pmx() :
+                      tol_logcf = 1e-14, eps2 = 0.01, minL1 = -0.79149064, trace.lcf = verbose,
+                      logCF = if (is.numeric(x)) logcf else logcfR,
+                      verbose = FALSE)
 {
     ##  x >= 0 ; integer for dpois(), but not e.g. for pgamma()!
     ##     lambda >= 0
+    stopifnot(is.logical(log), length(log) == 1)
     R_D__0 <- if(log) -Inf else 0
     R_D__1 <- !log #  (if(log) 0 else 1)
-    if (lambda == 0) {
-        if(x == 0) R_D__1 else R_D__0
+    M <- max(length(x), length(lambda))
+    r <- rep_len(x, M) # result of same number class as 'x' (e.g. "mpfr")
+
+    if(verbose) {
+        cat(sprintf("dpois_raw(): M = %d\n", M))
+        inds <- function(i)
+            if((n <- length(i)) <= 4)
+                paste(i, collapse=", ")
+            else paste(paste(i[1:3], collapse=", "), "..")
     }
-    else if(!is.finite(lambda)) {
-        R_D__0 ## including for the case where  x = lambda = +Inf
-    } else if (x < 0) {
-        R_D__0
-    } else if (x <= lambda * (DBL_MIN <- .Machine$double.xmin)) {
-        .D_exp(-lambda, log)
-    } else if (lambda < x * DBL_MIN) {
-	if (!is.finite(x)) ## lambda < x = +Inf
-	    R_D__0
-	else
-            .D_exp(-lambda + x*log(lambda) -lgamma(x+1), log)
-    } else
-        .D_fexp( 2*pi*x, -stirlerr(x) - bd0(x,lambda), log)
-    ##                     ~~~~~~~~      ~~~
+    verb1 <- pmax(0L, verbose - 1L)
+
+
+    if(M == 0) return(r)
+    ## M >= 1 :
+    x <- r # == rep_len(x,  M)
+    lambda <- rep_len(lambda,  M)
+
+    if(any(B <- lambda == 0))
+        r[B] <- ifelse(x[B] == 0, R_D__1, R_D__0)
+    BB <- !B # BB is true "for remaining cases"
+    if(any(B <- BB & !is.finite(lambda))) {
+        r[B] <- R_D__0 ## including for the case where  x = lambda = +Inf
+        BB <- BB & !B
+    }
+    if(any(B <- BB & x < 0)) {
+        r[B] <- R_D__0
+        BB <- BB & !B
+    }
+    DBL_MIN <- .Machine$double.xmin # 2.225e-308
+    if(any(B <- BB & x <= lambda * DBL_MIN)) {
+        if(verbose & any(i <- B & x > 0))
+           cat(sprintf(" very small x/lambda in [%g,%g]\n for x[%s]\n",
+                       min(x[B & x > 0]), max(x[B & x > 0]), inds(which(i))))
+        r[B] <- .D_exp(-lambda[B], log)
+        BB <- BB & !B
+    }
+    if(any(B <- BB & lambda < x * DBL_MIN)) {
+	if(any(B. <- !is.finite(x[B]))) ## lambda < x = +Inf
+	    r[B][B.] <- R_D__0
+        lamb <- lambda[B][!B.]
+        x.   <- x     [B][!B.]
+        if(verbose && length(lamb))
+           cat(sprintf(" very small lambda/x in [%g,%g]\n for x[%s]\n",
+                       min(lamb/x.), max(lamb/x.), inds(which(B)[!B])))
+        r[B][!B.] <- .D_exp(-lamb + x.*log(lamb) -lgamma(x.+1), log)
+        BB <- BB & !B
+    }
+    if(any(BB)) { ## else remaining "main branch"
+        version <- match.arg(version)
+        x <- x[BB]
+        lambda <- lambda[BB]
+        pi2x <- 2*pi*x
+        del.x <- stirlerr(x, verbose=verb1) # = \delta(x)
+        ## version = c("bd0_v1", "bd0_p1l1d", "bd0_p1l1d1", "bd0_l1pm", "ebd0_v1"),
+        r[BB] <- switch(version,
+           "bd0_v1"    = .D_fexp(pi2x,
+                                 - del.x - bd0(x, lambda, delta=bd0.delta, verbose=verb1), log),
+           "bd0_p1l1d" = .D_fexp(pi2x,
+                                 - del.x - bd0_p1l1d (
+                                               x, lambda, tol_logcf=tol_logcf, eps2=eps2,
+                                               minL1=minL1, trace.lcf=trace.lcf, logCF=logCF),
+                                 log),
+           "bd0_p1l1d1"= .D_fexp(pi2x,
+                                 - del.x - bd0_p1l1d1(
+                                               x, lambda, tol_logcf=tol_logcf, eps2=eps2,
+                                               minL1=minL1, trace.lcf=trace.lcf, logCF=logCF),
+                                 log),
+           "bd0_l1pm"  = .D_fexp(pi2x,
+                                 - del.x - bd0_l1pm  (
+                                               x, lambda, tol_logcf=tol_logcf, eps2=eps2,
+                                               minL1=minL1, trace.lcf=trace.lcf, logCF=logCF),
+                                 log),
+           "ebd0_v1" = {
+               yM <- ebd0(x, lambda, verbose=verb1)
+               yl <- yM["yl",] + del.x
+               ## return
+               if(log)
+                   -yl - yM["yh",] - 0.5 * log(pi2x)
+               else
+                   exp(-yl) * exp(-yM["yh",]) / sqrt(pi2x)
+           },
+           stop("invalid 'version'": version))
+    }
+    r
 }
 
 
 ## ~/R/D/r-devel/R/src/nmath/bd0.c     --> bd0()
-## /* MP:   t := (x-M)/M  ( <==> 1+t = x/M  ==>
+## /* Martin Plummer (in priv. e-mail):   t := (x-M)/M  ( <==> 1+t = x/M  ==>
 ##  *
 ##  * bd0 = M*[ x/M * log(x/M) + 1 - (x/M) ] = M*[ (1+t)*log1p(t) + 1 - (1+t) ]
 ##  *     = M*[ (1+t)*log1p(t) - t ] =: M * p1log1pm(t) =: M * p1l1(t)
@@ -79,48 +156,173 @@ dpois_raw <- function(x, lambda, log)
 ## double p1log1pm(double x) {
 ## }
 
+bd0_p1l1d1 <- function(x, M, tol_logcf = 1e-14, ...) {
+    t <- (x-M)/M
+    M * (log1pmx(t, tol_logcf=tol_logcf, ...) + t*log1p(t)) ## p1l1p <- function(t, ...) ...
+}
+bd0_p1l1d <- function(x, M, tol_logcf = 1e-14, ...) {
+    d <- x-M
+    t <- d/M
+    ## M * (log1pmx(t, tol_logcf=tol_logcf)  +  t*log1p(t))
+    ## slightly better(?) , *not* computing M*t = M*((x-M)/M) for 2nd term:
+    M * log1pmx(t, tol_logcf=tol_logcf, ...)  +  d*log1p(t)
+}
 
-bd0 <- function(x, np, verbose = getOption("verbose"))
+##' Version mentioned by Morten Welinder in PR#15628
+bd0_l1pm <- function(x, M, tol_logcf = 1e-14, ...) {
+    ## FIXME? for x = 0, hence x < eps !
+    s <- (M-x)/x
+    x * log1pmx(s, tol_logcf=tol_logcf, ...)
+}
+
+bd0 <- function(x, np,
+                delta = 0.1, maxit = 1000L,
+                s0 = .Machine$double.xmin, # = DBL_MIN
+                verbose = getOption("verbose"))
 {
     ## stopifnot(length(x) == 1) -- rather vectorize now:
+    stopifnot(0 < delta, delta < 1, maxit >= 1)
     if((n <- length(x)) > (n2 <- length(np))) np <- rep_len(np, n)
     else if(n < n2) x <- rep_len(n2)
-    Vectorize(
-        function(x, np, verbose=verbose) {
+    rm(n2)
+    N <- as.numeric # to be used in verbose / warning printing
+    if(inherits(x, "mpfr") || inherits(np, "mpfr")) {
+        if(requireNamespace("Rmpfr"))
+            I <- Rmpfr::mpfr
+        else
+            stop("need to  install.packages(\"Rmpfr\") ")
+    } else I <- identity
+    I(Vectorize(
+        function(x, np) {
             if(!is.finite(x) || !is.finite(np) || np == 0.0) {
                 ## ML_ERR_return_NAN;
                 warning("invalid argument values in  (x, np)")
                 return(NaN)
             }
-            if(abs(x-np) < 0.1*(x+np)) {
+            if(abs(x-np) < delta * (x+np)) {
                 v <- (x-np)/(x+np) # might underflow to 0
                 s <- (x-np)*v
-                if(abs(s) < .Machine$double.xmin) ## = DBL_MIN
+                if(abs(s) < s0) {
+                    if(verbose)
+                        cat(sprintf(
+                              "bd0(%g, %g): Initial |s| = |%g| < s0=%g -> bd0:=s.\n",
+                              N(x), N(np), N(s), N(s0)))
                     return(s)
+                }
                 ej  <- 2*x*v
                 v  <- v*v # // "v = v^2"
-                for (j in 1:999) { #/* Taylor series; 1000: no infinite loop
+                for (j in seq_len(maxit-1L)) { #/* Taylor series; 1000: no infinite loop
                                         # as |v| < .1,  v^2000 is "zero" */
                     ej <- ej* v ##/ = 2 x v^(2j+1)
                     s_ <- s
-                    s  <- s+ ej/(2*j+1)
+                    s  <- s + ej/(2*j+1)
                     if (s == s_) { ##/* last term was effectively 0 */
                         if(verbose)
                             cat(sprintf("bd0(%g, %g): T.series w/ %d terms -> bd0=%g\n",
-                                        x, np, j, s))
+                                        N(x), N(np), j, N(s)))
                         return(s)
                     }
                 }
                 warning(gettextf(
-                    "bd0(%g, %g): T.series failed to converge in 1000 it.; s=%g, ej/(2j+1)=%g\n",
-                    x, np, s, ej/((2*1000)+1)),
+                    "bd0(%g, %g): T.series failed to converge in %d it.; s=%g, ej/(2j+1)=%g\n",
+                    N(x), N(np), maxit, N(s), N(ej/(2*maxit+1))),
                     domain=NA)
             }
-            ## else #  | x - np |  is not too small ((or the iterations failed !!))
+            ## else   |x - np|  is not too small (or the iterations failed !)
             x*log(x/np) + np-x
+            ##================
         },
-        c("x","np"))(x, np, verbose)
+        c("x","np"))(x, np))
 } ## {bd0}
+
+##' The version calling into C (to the "same" code R's Rmathlib bd0() uses
+bd0C <- function(x, np,
+                 delta = 0.1, maxit = 1000L,
+                 ##s0 = .Machine$double.xmin, # = DBL_MIN
+                 version = "R4.0", # more versions to come ..
+                 verbose = getOption("verbose"))
+{
+    iVer <- pmatch(match.arg(version), eval(formals()$version)) # always 1L for now
+    .Call(C_dpq_bd0, x, np, delta, maxit, iVer, verbose)# >> ../src/bd0.c
+}
+
+
+##' bd0(x,M) = M * p1l1(t),  t := (x-M)/M
+##' -------        =======
+##' p1l1(t) = (t+1)*log(1+t) - t
+p1l1. <- function(t) (t+1)*log1p(t) - t
+##' As we found, this is *MUCH* better -- actually almost perfect
+##' @param ... notably  'tol_logcf = 1e-14' is default in log1pmx()
+p1l1p <- function(t, ...) log1pmx(t, ...) + t*log1p(t)
+
+
+##' The Taylor series approximation (there must be a faster converging one with quadratic terms !???!
+
+p1l1ser <- function(t, k, F = t^2/2) {
+    stopifnot(k == (k <- as.integer(k)), k >= 1)
+    if(k <= 12)
+        switch(k
+               , F			# k = 1
+               , F*(1 - t/3)		# k = 2
+               , F*(1 - t*(1/3 - t/6))	# k = 3
+               , F*(1 - t*(1/3 - t*(1/6 - t/10)))			# k = 4
+               , F*(1 - t*(1/3 - t*(1/6 - t*(1/10 - t/15))))		# k = 5
+               , F*(1 - t*(1/3 - t*(1/6 - t*(1/10 - t*(1/15 - t/21)))))	# k = 6
+               , F*(1 - t*(1/3 - t*(1/6 - t*(1/10 - t*(1/15 - t*(1/21 - t/28)))))) # k = 7
+               , F*(1 - t*(1/3 - t*(1/6 - t*(1/10 - t*(1/15 - t*(1/21 - t*(1/28 - t/36))))))) # k = 8
+               , F*(1 - t*(1/3 - t*(1/6 - t*(1/10 - t*(1/15 - t*(1/21 - t*(1/28 - t*(1/36 - t/45)))))))) # k = 9
+               , F*(1 - t*(1/3 - t*(1/6 - t*(1/10 - t*(1/15 - t*(1/21 - t*(1/28 - t*(1/36 - t*(1/45 - t/55))))))))) # k = 10
+               , F*(1 - t*(1/3 - t*(1/6 - t*(1/10 - t*(1/15 - t*(1/21 - t*(1/28 - t*(1/36 - t*(1/45 - t*(1/55 - t/66)))))))))) # k = 11
+               , F*(1 - t*(1/3 - t*(1/6 - t*(1/10 - t*(1/15 - t*(1/21 - t*(1/28 - t*(1/36 - t*(1/45 - t*(1/55 - t*(1/66 - t/78))))))))))) # k = 12
+               )
+    else {
+        a <- 2/((k+1)*k)
+        for(n in k:2)
+            a <- 2/(n*(n-1)) - t*a
+        F * a
+    }
+}
+
+p1l1 <- function(t, F = t^2/2)  {
+    r <- t
+    for(i in seq_along(r)) {
+        t_ <- t[i]
+        r[i] <-
+            if(-.0724 <= t_ & t_ <= .0718) ## NB: depends on last case dealt with below
+              F[i]*( ## the cutoffs are  t.0  values see the corrDig[] table computations
+                if(-6.60e-16 <= t_ & t_ <= 6.69e-16)
+                    1				# k = 1
+                else if(-3.65e-8 <= t_ & t_ <= 3.65e-8)
+                    1 - t_/3			# k = 2
+                else if(-1.30e-5 <= t_ & t_ <= 1.32e-5)
+                    1 - t_*(1/3 - t_/6) 	# k = 3
+                else if(-2.39e-4 <= t_ & t_ <= 2.42e-4)
+                    1 - t_*(1/3 - t_*(1/6 - t_/10)) # k = 4
+                else if(-1.35e-3 <= t_ & t_ <= 1.38e-3)
+                    1 - t_*(1/3 - t_*(1/6 - t_*(1/10 - t_/15))) # k = 5
+                else if(-4.27e-3 <= t_ & t_ <= 4.34e-3)
+                    1 - t_*(1/3 - t_*(1/6 - t_*(1/10 - t_*(1/15 - t_/21)))) # k = 6
+                else if(-9.60e-3 <= t_ & t_ <= 9.78e-3)
+                    1 - t_*(1/3 - t_*(1/6 - t_*(1/10 - t_*(1/15 - t_*(1/21 - t_/28))))) # k = 7
+                else if(-.0178 <= t_ & t_ <= .0180)
+                    1 - t_*(1/3 - t_*(1/6 - t_*(1/10 - t_*(1/15 - t_*(1/21 - t_*(1/28 - t_/36)))))) # k = 8
+                else if(-.0285 <= t_ & t_ <= .0285)
+                    1 - t_*(1/3 - t_*(1/6 - t_*(1/10 - t_*(1/15 - t_*(1/21 - t_*(1/28 - t_*(1/36 - t_/45))))))) # k = 9
+                else if(-.0413 <= t_ & t_ <= .0414)
+                    1 - t_*(1/3 - t_*(1/6 - t_*(1/10 - t_*(1/15 - t_*(1/21 - t_*(1/28 - t_*(1/36 - t_*(1/45 - t_/55)))))))) # k = 10
+                else if(-.0562 <= t_ & t_ <= .0564)
+                    1 - t_*(1/3 - t_*(1/6 - t_*(1/10 - t_*(1/15 - t_*(1/21 - t_*(1/28 - t_*(1/36 - t_*(1/45 - t_*(1/55 - t_/66))))))))) # k = 11
+                else if(-.0724 <= t_ & t_ <= .0718)
+                    1 - t_*(1/3 - t_*(1/6 - t_*(1/10 - t_*(1/15 - t_*(1/21 - t_*(1/28 - t_*(1/36 - t_*(1/45 - t_*(1/55 - t_*(1/66 - t_/78)))))))))) # k = 12
+              )
+            else if(missing(F)) ## default F = t^2 / 2, i.e. "direct formula" directly
+                              log1pmx(t_) + t_ * log1p(t_)
+            else
+                2*F[i]/t_^2 * log1pmx(t_) + t_ * log1p(t_)
+        ## was:  (t_+1)*log1p(t_) - t_
+    }
+    r
+}
 
 
 ## ebd0(): R Bugzilla PR#15628 -- proposed accuracy improvement by Morten Welinder
@@ -268,6 +470,8 @@ logf_mat <- ## 'bd0_scale' in C
 	 +0x1.ff00acp-9, -0x1.d4ef44p-33, +0x1.2821acp-63, +0x1.5a6d32p-87 , # /* 255: log(1028/1024.) */
 	 0, 0, 0, 0))
 
+
+
 ## instead of  bd0_scale[i][j] in C  where i and j start with 0 !
 ## use         logf_mat[j+1, i+1]  in R   (i+1 and j+1 start with 1)
 
@@ -278,23 +482,24 @@ logf_mat <- ## 'bd0_scale' in C
 ##  *
 ##  * Deliver the result back in two parts, *yh and *yl.
 ##  */
-ebd0.1 <- function(x, M, verbose = getOption("verbose")) # return  c(yl, yh)
+ebd0.1 <- function(x, M, verbose) # return  c(yl, yh)
 {
     stopifnot(length(x) == 1, length(M) == 1)
-    Sb <- 10L
-    S <- 2^Sb #  = 2^10 = 1024
-    N <- ncol(logf_mat) # = 128; // == ? == G_N_ELEMENTS(bd0_scale) - 1; <<<< FIXME:
 
     yl <- yh <- 0
-
-    if (x == M)               return(list(yl=yl, yh=yh))
-    if (x == 0) { yh <- M;    return(list(yl=yl, yh=yh)) }
-    if (M == 0) { yh <- +Inf; return(list(yl=yl, yh=yh)) }
+    if (x == M)               return(c(yl=yl, yh=yh))
+    if (x == 0) { yh <- M;    return(c(yl=yl, yh=yh)) }
+    if (M == 0) { yh <- +Inf; return(c(yl=yl, yh=yh)) }
 
     ## C:  r = frexp (M/x, &e); // => r in  [0.5, 1) and 'e' (int) such that  M/x = r * 2^e
     re <- .Call(C_R_frexp, M/x) ## FIXME: handle overflow/underflow in division 'M/x' !!!
     r <- re[["r"]]
     e <- re[["e"]]
+
+    Sb <- 10L
+    S <- 2^Sb #  = 2^10 = 1024
+    N <- ncol(logf_mat) # = 128; // == ? == G_N_ELEMENTS(bd0_scale) - 1; <<<< FIXME:
+
     i  <- as.integer(floor ((r - 0.5) * (2 * N) + 0.5));
     ## // now,  0 <= i <= N
     f  <- floor (S / (0.5 + i / (2.0 * N)) + 0.5);
@@ -334,9 +539,14 @@ ebd0.1 <- function(x, M, verbose = getOption("verbose")) # return  c(yl, yh)
         yl <<- yl+d2
     }
 
-    ADD1(-x * log1pmx ((M * fg - x) / x));
-    if(verbose)
+    if(verbose) {
+        log1.. <- log1pmx((M * fg - x) / x)
+        d <- -x * log1..
+	cat(sprintf(" 1a. before adding  -x * log1pmx(.) = -x * %g = %g\n", log1.., d))
+        ADD1(d)
 	cat(sprintf(" 1. after ADD1(-x * log1pmx(.): yl,yh=(%g, %g); yl+yh=%g\n", yl, yh, (yl)+(yh)))
+    } else
+        ADD1(-x * log1pmx ((M * fg - x) / x));
 
     if(verbose) {
 	for (j in 1:4) {
@@ -345,14 +555,14 @@ ebd0.1 <- function(x, M, verbose = getOption("verbose")) # return  c(yl, yh)
 	}
 	cat(sprintf("\n 2a. after loop 1 w/ ADD1(+):   yl,yh=(%g, %g); yl+yh=%g\n", yl, yh, (yl)+(yh)))
 	for (j in 1:4) {
-	    ADD1(-x * e * logf_mat[j, 0+1L]);  # /* handles  x*log(1/ 2^e) */
+	    ADD1(-x * logf_mat[j, 0+1L] * e);  # /* handles  x*log(1/ 2^e) */
 	    cat(sprintf(" A(- b[0,%d]): (%g, %g);", j, yl, yh))
 	}
 	cat(sprintf("\n 2b. after loop 2 w/ ADD1(-):   yl,yh=(%g, %g); yl+yh=%g\n", yl, yh, (yl)+(yh)))
   } else { ## not verbose
 	for (j in 1:4) {
-	    ADD1( x     * logf_mat[j, i+1L]);  # /* handles  x*log(fg*2^e) */
-	    ADD1(-x * e * logf_mat[j, 0+1L]);  # /* handles  x*log(1/ 2^e) */
+	    ADD1( x * logf_mat[j, i+1L]    )  # /* handles  x*log(fg*2^e) */
+	    ADD1(-x * logf_mat[j, 0+1L] * e)  # /* handles  x*log(1/ 2^e) */
 	}
   }
 
@@ -362,7 +572,7 @@ ebd0.1 <- function(x, M, verbose = getOption("verbose")) # return  c(yl, yh)
     ADD1(-M * fg);
     if(verbose) cat(sprintf(" 4. after ADD1(- M*fg):         yl,yh=(%g, %g); yl+yh=%g\n\n", yl, yh, (yl)+(yh)))
 
-    list(yl=yl, yh=yh)
+    c(yl=yl, yh=yh)
 } ## end{ ebd0.1() }
 
 ##' The vectorized version we export (and document)
@@ -427,48 +637,140 @@ ebd0 <- function(x, M, verbose = getOption("verbose"))
 stirlerr <- function(n, scheme = c("R3", "R4.1"),
                      cutoffs = switch(scheme
                                     , R3   = c(15, 35, 80, 500)
-                                    , R4.1 = c(15, 40, 85, 600) ## <-- choose lower cutoff to get better precision (for n <= 15, only for half int.!)
+                                    , R4.1 = c(7.5, 8.5, 10.625, 12.125, 20, 26, 55, 200, 3300)
                                       )
+                    , use.halves = missing(cutoffs)
+                    , verbose = FALSE
                      )
 {
-    if(!is.numeric(n) && (inherits(n, "mpfr") || inherits(n, "bigz") || inherits(n, "bigq"))) {
-        if(requireNamespace("DPQmpfr")) {
-            ## this will warn in R CMD check before DPQmpfr is updated there!
-            return(DPQmpfr::stirlerrM(n)) # , precB = <n>   would be possible
-        } else
-            stop("Need CRAN package 'DPQmpfr' for high-accuracy stirlerr() computation")
+    useBig <- (!is.numeric(n) &&
+               (inherits(n, "mpfr") || inherits(n, "bigz") || inherits(n, "bigq")))
+    if(useBig) {
+        if(verbose) cat(sprintf("stirlerr(n): As 'n' is \"%s\", going to use \"mpfr\" numbers", class(n)))
+###  Use this, once DPQmpfr >= 0.3-1 is available from CRAN, i.e., DPQmpfr::stirlerrM() exists :
+        ## if(requireNamespace("DPQmpfr") &&
+        ##    is.function(stirlFn <- get0("stirlerrM", asNamespace("DPQmpfr"), inherits=FALSE))) {
+        ##     ## this will warn in R CMD check before DPQmpfr is updated there!
+        ##     return(stirlFn(n)) # , precB = <n>   would be possible
+        ## } else
+        ##     stop("Need CRAN package 'DPQmpfr' with its new stirlerrM()")
+###  But for now, use this :
+        if(!(requireNamespace("DPQmpfr") &&
+             is.function(stirlFn <- get0("stirlerrM", asNamespace("DPQmpfr"), inherits=FALSE)))) {
+            ## define it locally here :
+            pk <- "Rmpfr"; req <- require
+            if(!req(pk)) stop("Must use 'Rmpfr' for this")
+            ##' [D]irect formula for stirlerr(), notably adapted to mpfr-numbers
+            ## stirlerrM <-
+            stirlFn <- function(n, minPrec = 128L) {
+                if(notNum <- !is.numeric(n)) {
+                    precB <- if(isM <- inherits(n, "mpfr"))
+                                 max(minPrec, Rmpfr::.getPrec(n))
+                             else if(isZQ <- inherits(n, "bigz") || inherits(n, "bigq"))
+                                 max(minPrec, Rmpfr::getPrec(n))
+                             else
+                                 minPrec
+                    pi <- Rmpfr::Const("pi", precB)
+                }
+                if(notNum && !isM) {
+                    if(isZQ)
+                        n <- Rmpfr::mpfr(n, precB)
+                    else ## the object-author "should" provide a method:
+                        n <- as(n, "mpfr")
+                }
+                ## direct formula (suffering from cancellation)
+                ## FIXME: This must use Rmpfr::Math() but it may not if not in search()
+                lgamma(n + 1) - (n + 0.5)*log(n) + n - log(2 * pi)/2
+            }
+        }
+        return(stirlFn(n)) # , precB = <n>   would be possible
     }
     else {
         scheme <- match.arg(scheme)
-        stopifnot(is.numeric(cutoffs), length(cutoffs) == 4, cutoffs[1] == 15, # needed for the sferr_halves[] for now
+        hasC <- !missing(cutoffs)
+        stopifnot(is.numeric(cutoffs), 4 <= (nC <- length(cutoffs)), nC <= 10, # -5+i.c >= 1
+                  cutoffs[1] <= 15, # sferr_halves[] only for n <= 15
                   !is.unsorted(cutoffs))
+        i.c <- nC - 4L # in {0,1,2,..., 6}
+        if(verbose) cat(sprintf("stirlerr(n, %s) :",
+                                if(hasC) paste("cutoffs =", paste(formatC(cutoffs), collapse=","))
+                                else paste0('scheme = "', scheme, '"')))
         r <- rep_len(NA_real_, length(n))
-        if (any(S <- n <= 15.0)) {
+        if(use.halves && any(s15 <- n <= 15) &&
+           any(hlf <- s15 & n+n == (n2 <- as.integer(n+n))))
+        {
+            if(verbose) { cat(" use.halves (n <= 15):  n ="); str(n[hlf], give.head=FALSE) }
+            r[hlf] <- sferr_halves[n2[hlf] + 1L]
+            S <- !hlf
+        } else
+            S <- TRUE
+        if (any(S <- S & n <= cutoffs[1])) {
+            if(verbose) cat(" case I (n <= ",format(cutoffs[1]),"), ", sep="")
             n. <- n[S]
-            nn  <- n. + n.
-            if(any(hlf <- nn == (n2 <- as.integer(nn))))
-                r[S][hlf] <- sferr_halves[n2[hlf] + 1L]
+            ## nn  <- n. + n.
+            ## if(any(hlf <- nn == (n2 <- as.integer(nn)))) {
+            ##     if(verbose) { cat(" using halves for nn=2n=");str(n2[hlf]) }
+            ##     r[S][hlf] <- sferr_halves[n2[hlf] + 1L]
+            ## }
             ## else ## M_LN_SQRT_2PI = ln(sqrt(2*pi)) = 0.918938.. = log(2*pi)/2
-            if(length(i <- which(!hlf))) {
-                n. <- n.[i]
-                r[S][i] <- lgamma(n. + 1.) - (n. + 0.5)*log(n.) + n. - log(2*pi)/2
-            }
+            ## if(length(i <- which(!hlf))) {
+                ## n. <- n.[i]
+                if(verbose) { cat(" using direct formula for n="); str(n.) }
+                ## r[S][i] <- lgamma(n. + 1.) - (n. + 0.5)*log(n.) + n. - log(2*pi)/2
+                r[S] <- lgamma(n. + 1.) - (n. + 0.5)*log(n.) + n. - log(2*pi)/2
+            ## }
         }
-        if (any(!S)) { # has n > 15
+        if (any(!S)) { # has n > cutoffs[1]
+            if(verbose) {
+                cat(" case II (n > ",format(cutoffs[1]),"), ",nC, " cutoffs: (",
+                    paste(cutoffs, collapse=", "),"):  n in cutoff intervals:")
+                print(table(cut(n[n > cutoffs[1]], c(cutoffs,Inf))))
+            }
+            ## From S4 on: Maple asympt(ln(GAMMA(x+1)), x, 23);
+            ##             ----- --> ../Misc/stirlerr-trms.R
             S0 <- 0.083333333333333333333       ## 1/12 */
             S1 <- 0.00277777777777777777778     ## 1/360 */
-            S2 <- 0.00079365079365079365079365  ## 1/1260 */
-            S3 <- 0.000595238095238095238095238 ## 1/1680 */
-            S4 <- 0.0008417508417508417508417508## 1/1188 */
+            S2 <- 0.00079365079365079365079365075 ## 1/1260
+            S3 <- 0.00059523809523809523809523806 ## 1/1680
+            S4 <- 0.00084175084175084175084175104 ## 1/1188
+            S5 <- 0.0019175269175269175269175262  ## 691/360360
+            S6 <- 0.0064102564102564102564102561  ## 1/156
+            S7 <- 0.029550653594771241830065352   ## 3617/122400
+            S8 <- 0.17964437236883057316493850    ## 43867/244188
+            S9 <- 1.3924322169059011164274315     ## 174611/125400
+            S10<- 13.402864044168391994478957     ## 77683/5796
+
             nn  <- n*n
-            if(length(i <- which(n > cutoffs[4])))                    # k = 2 terms
+            if(length(i <- which(n > cutoffs[4+i.c])))                    # k = 2 terms
                 r[i] <- (S0-S1/nn[i])/n[i]
-            if(length(i <- which(cutoffs[4] >= n & n > cutoffs[3])))  # k = 3 terms
+            if(length(i <- which(cutoffs[4+i.c] >= n & n > cutoffs[3+i.c])))  # k = 3 terms
                 r[i] <- (S0-(S1-S2/nn[i])/nn[i])/n[i]
-            if(length(i <- which( cutoffs[3] >= n & n > cutoffs[2]))) # k = 4 terms
+            if(length(i <- which( cutoffs[3+i.c] >= n & n > cutoffs[2+i.c]))) # k = 4 terms
                 r[i] <- (S0-(S1-(S2-S3/nn[i])/nn[i])/nn[i])/n[i]
-            if(length(i <- which( cutoffs[2] >= n & n > cutoffs[1]))) # k = 5 terms --  15 < n <= 35 :
-                r[i] <- (S0-(S1-(S2-(S3-S4/nn[i])/nn[i])/nn[i])/nn[i])/n[i]
+            if(length(i <- which( cutoffs[2+i.c] >= n & n > cutoffs[1+i.c]))) # k = 5 terms --(was 15 < n <= 35)
+                r[i] <- (S0-(S1-(S2-(S3-S4/nn[i])/nn[i])/nn[i])/nn[i])/n[i]   #                now 26 < n <= 55
+            if(i.c >= 1 && length(i <- which( cutoffs[1+i.c] >= n & n > cutoffs[0+i.c]))) # k = 6  20 < n <= 26 :
+                r[i] <- (S0-(S1-(S2-(S3-(S4-S5/nn[i])/nn[i])/nn[i])/nn[i])/nn[i])/n[i]
+            if(i.c >= 2 && length(i <- which( cutoffs[0+i.c] >= n & n > cutoffs[-1+i.c]))) { # k = 7  12 < n <= 20 :
+                n2 <- nn[i]
+                r[i] <- (S0-(S1-(S2-(S3-(S4-(S5-S6/n2)/n2)/n2)/n2)/n2)/n2)/n[i]
+            }
+            if(i.c >= 3 && length(i <- which(cutoffs[-1+i.c] >= n & n > cutoffs[-2+i.c]))) { # k = 8   . < n <= 12 :
+                n2 <- nn[i]
+                r[i] <- (S0-(S1-(S2-(S3-(S4-(S5-(S6-S7/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n[i]
+            }
+            if(i.c >= 4 && length(i <- which(cutoffs[-2+i.c] >= n & n > cutoffs[-3+i.c]))) { # k = 9   . < n <= . :
+                n2 <- nn[i]
+                r[i] <- (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-S8/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n[i]
+            }
+            if(i.c >= 5 && length(i <- which(cutoffs[-3+i.c] >= n & n > cutoffs[-4+i.c]))) { # k =10   . < n <= . :
+                n2 <- nn[i]
+                r[i] <- (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-S9/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n[i]
+            }
+            if(i.c >= 6 && length(i <- which(cutoffs[-4+i.c] >= n & n > cutoffs[-5+i.c]))) { # k =11   . < n <= . :
+                n2 <- nn[i]
+                r[i] <- (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-S10/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n[i]
+            }
         }
         ## return
         r

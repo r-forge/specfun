@@ -13,7 +13,7 @@
   accurately also for (very) small \eqn{a} \eqn{(0 < a < 0.5)}.
 }
 \usage{
-lgamma1p (a, tol_logcf = 1e-14, f.tol = 1)	% ../R/beta-fns.R
+lgamma1p (a, tol_logcf = 1e-14, f.tol = 1, ...)	% ../R/beta-fns.R
 lgamma1p.(a, cutoff.a = 1e-6, k = 3)		% ../R/qchisqAppr.R
 lgamma1p_series(x, k)               		% ../R/beta-fns.R
 lgamma1pC(x)                        		% ../R/utils.R
@@ -21,9 +21,10 @@ lgamma1pC(x)                        		% ../R/utils.R
 \arguments{
   \item{a, x}{a numeric vector.}
   \item{tol_logcf}{for \code{lgamma1p()}: a non-negative number passed to
-    \code{\link{logcf}()}.}
+    \code{\link{logcf}()} (and \code{\link{log1pmx}()} which calls \code{logcf()}).}
   \item{f.tol}{numeric (\bold{f}actor) used in
     \code{\link{log1pmx}(*, tol_logcf = f.tol * tol_logcf)}.}
+  \item{...}{further optional arguments passed on to \code{\link{log1pmx}()}.}
   \item{cutoff.a}{for \code{lgamma1p.()}: a positive number indicating
     the cutoff to switch from  ...}% FIXME
   \item{k}{an integer, the number of terms in the series expansion used internally.}
@@ -73,7 +74,7 @@ curve(-lgamma1p.(x), add=TRUE, col=adjustcolor("forest green",1/4),
 for(k in 1:7)
   curve(-lgamma1p_series(x, k=k), add=TRUE, col=paste0("gray",30+k*8), lty = 3)
 stopifnot(with(lgxy, all.equal(y, -lgamma1pC(x))))
+%% FIXME: Have *relevant* mpfr-based relative error comparisons "hidden"  in ../tests/qgamma-ex.R !!
 }
 \keyword{distribution}
 \keyword{math}
-

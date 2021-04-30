@@ -1,14 +1,14 @@
 Package: DPQ
 Title: Density, Probability, Quantile ('DPQ') Computations
 Version: 0.4-3
-Date: 2021-03-19
+Date: 2021-04-18
 Authors@R: c(person("Martin","Maechler", role=c("aut","cre"),
                     email="maechler@stat.math.ethz.ch", comment = c(ORCID = "0000-0002-8685-9910"))
   , person("Morten",   "Welinder",    role = "ctb", comment = "pgamma C code, see PR#7307, Jan. 2005; further pdhyper()")
   , person("Wolfgang", "Viechtbauer", role = "ctb", comment = "dtWV(), 2002")
   , person("Ross",     "Ihaka",       role = "ctb", comment = "src/qchisq_appr.c")
   , person("Marius",   "Hofert",      role = "ctb", comment = "lsum(), lssum()")
-  , person("R-core", email = "R-core@R-project.org", role = "ctb", comment = "src/{dpq.h, algdiv.c, pnchisq.c}")
+  , person("R-core", email = "R-core@R-project.org", role = "ctb", comment = "src/{dpq.h, algdiv.c, pnchisq.c, bd0.c}")
   , person("R Foundation", role = "cph", comment = "src/qchisq-appr.c")
   	     )
 Description: Computations for approximations and alternatives for the 'DPQ'
@@ -22,7 +22,7 @@ Description: Computations for approximations and alternatives for the 'DPQ'
    pbeta(), qgamma(), ..., etc: {'"dpq"'-functions}.
 Depends: R (>= 3.6.0)
 Imports: stats, graphics, methods, utils, sfsmisc
-Suggests: Rmpfr, DPQmpfr, Matrix, MASS, mgcv, scatterplot3d, akima
+Suggests: Rmpfr, DPQmpfr, gmp, Matrix, MASS, mgcv, scatterplot3d, akima
 SuggestsNote: Matrix only for its "test-tools-1.R"; mgcv,scatt..,akima: some tests/
 License: GPL (>= 2)
 Encoding: UTF-8

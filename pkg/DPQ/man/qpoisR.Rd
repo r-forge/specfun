@@ -58,7 +58,10 @@ qpoisR(p, lambda, lower.tail = TRUE, log.p = FALSE,
 x <- 10*(15:25)
 Pp <- ppois(x, lambda = 100, lower.tail = FALSE)  # no cancellation
 qPp <- qpois(Pp, lambda = 100, lower.tail=FALSE)
-if(getRversion() >= "4.1") stopifnot(x == qPp)
-stopifnot(all.equal(x, qpoisR(Pp, lambda = 100, lower.tail=FALSE), tol=0))
+table(x == qPp) # all TRUE ?
+if(getRversion() >= "4.2") stopifnot(x == qPp) # R-devel
+qpRp <- qpoisR(Pp, lambda = 100, lower.tail=FALSE)
+all.equal(x, qpRp, tol = 0)
+stopifnot(all.equal(x, qpRp, tol = 1e-15))
 }
 \keyword{distribution}

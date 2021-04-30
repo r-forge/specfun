@@ -1,5 +1,4 @@
-useDynLib(DPQ, .registration = TRUE, .fixes = "C_")
-                                        # <--> src/init.c
+useDynLib(DPQ, .registration = TRUE, .fixes = "C_")# <--> .Call(C_<foo>, ..)
 
 ## We do *NOT* import from  Rmpfr here,
 ## as we only __suggest__ the package in ./DESCRIPTION
@@ -27,7 +26,7 @@ importFrom("graphics",
            curve, legend, lines, par, plot
            )
 
-importFrom("methods", is, new
+importFrom("methods", as, is, new
            )
 
 importFrom("utils"
@@ -96,9 +95,11 @@ export(
   , okLongDouble # as with valgrind, it does not work contrary to what .Machine says
 
   , lgamma1p., lgamma1p, lgamma1p_series
+  , lgammacor
   , log1pmx
   , logQab_asy
-  , logcf, logr
+  , logcfR, logcfR., logcf
+  , logr
   , lssum, lsum
 
   , newton # R/pnchisq.R
@@ -131,7 +132,8 @@ export(
 
   , dgamma.R
   , dpois_raw
-  , bd0, ebd0, stirlerr
+  , bd0, bd0C, ebd0, stirlerr
+  , p1l1, p1l1., p1l1p, p1l1ser ## NB: p1l1p() via log1pmx()  is *very* good!
 
     ## from R/qchisqAppr.R :
   , qchisqAppr.R

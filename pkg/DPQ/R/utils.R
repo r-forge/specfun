@@ -30,6 +30,11 @@ log1pexpC <- function(x) .Call(C_R_log1pexp, x)
 log1pmxC  <- function(x) .Call(C_R_log1pmx,  x)
 lgamma1pC <- function(x) .Call(C_R_lgamma1p, x)
 
+logcf <- function (x, i, d, eps, trace = FALSE)
+    .Call(C_R_logcf, x, i, d, eps, trace)
+lgammacor <- function (x, nalgm = 5, xbig = 2^26.5)
+    ## Hardwired in R's C code:  nalgm = 5, xbig = 2^26.5 = 94906265.62425156
+    .Call(C_R_lgammacor, x, nalgm, xbig)
 
 ### was as 'form01.prec' in  source("~/R/MM/MISC/Util.R")
 format01prec <- function(x, digits = getOption("digits"), width = digits + 2,

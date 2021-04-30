@@ -74,12 +74,12 @@ b_chiAsymp <- function(nu, order = 2, one.minus = FALSE)
   if(one.minus) r else 1-r
 }
 
-## Direct log( sqrt(2/nu)*gamma(.5*(nu+1))/gamma(.5*nu) )
+## log(b_chi(nu)) --- Direct log( sqrt(2/nu)*gamma(.5*(nu+1))/gamma(.5*nu) )
 lb_chi00 <- function(nu) {
     n2 <- nu/2
     log(gamma(n2 + 0.5)/ gamma(n2) / sqrt(n2))
 }
-lb_chi0 <- function(nu) {
+lb_chi0 <- function(nu) { # notably when 'nu' is "mpfr"
     n2 <- nu/2
     lgamma(n2 + 0.5) - lgamma(n2) - log(n2)/2
 }
@@ -91,7 +91,7 @@ lb_chiAsymp <- function(nu, order)
     ## ----------------------------------------------------------------------
     ## Arguments: nu >=0  (degrees of freedom)
     ## ----------------------------------------------------------------------
-    ## Author: Martin Maechler, Date: Aug 23 2018.
+    ## Author: Martin Maechler, Date: Aug 23 2018; Apr 2021
 
     stopifnot(length(order) == 1L, order == as.integer(order), order >= 1)
     ## You can derive the first term from
@@ -100,19 +100,26 @@ lb_chiAsymp <- function(nu, order)
     if(order == 1)
         return(- 1/4/nu )
     r <- 1/(2*nu) # --> 0
-    ## I've used Maple expansion etc ==> ~/maple/gamma-exp2.mw or .tex
-    ## from *.tex export of Maple, have
+    ## I've used Maple expansion etc ==> ~/maple/gamma-exp2.mw (or *.txt versions)
+    ## from tex export of Maple [ ~/maple/gamma-exp2.tex ] :
     ## cH := r/2*(-1+(2/3+(-16/5+(272/7+(-7936/9+(353792/11+(-22368256/13+1903757312*r^2*(1/15))*r^2)*r^2)*r^2)*r^2)*r^2)*r^2)
-    rr <- r*r # = r^2
+    ##     = r/2*(-1+(2/3+(-16/5+(272/7+(-7936/9+(353792/11+(-22368256/13+1903757312/15*r^2)*r^2)*r^2)*r^2)*r^2)*r^2)*r^2)
+    rr <- r*r # := r^2
+    ##     = r/2*(-1+(2/3+(-16/5+(272/7+(-7936/9+(353792/11+(-22368256/13+1903757312/15*rr)*rr)*rr)*rr)*rr)*rr)*rr)
     O <- rr*0 # in correct (Rmpfr) precision
     -r/2 *
         switch(order, # polynomial order {written to use full prec w Rmpfr}
-               1,			      # 1  (degree 1)
+               1,			     # 1  (degree 1)
                1 - rr*2/3,                   # 2  (deg.   3)
                1 - rr*((O+2)/3 - rr*16/5),   # 3  (deg.   5)
-               1 - rr*((O+2)/3 - rr*((O+16)/5 - rr*272/7)),   # 4  (deg. 7)
-               1 - rr*((O+2)/3 - rr*((O+16)/5 - rr*(O+272)/7 - rr*7936/9)),# 5 (deg. 9)
-               stop("Currently need 'order <= 5', but order=",order))
+               1 - rr*((O+2)/3 - rr*((O+16)/5 - rr* 272 /7))   # 4  (deg. 7)
+             , 1 - rr*((O+2)/3 - rr*((O+16)/5 - rr*((O+272)/7 - rr* 7936/9))) # 5 (deg. 9)
+             , 1 - rr*((O+2)/3 - rr*((O+16)/5 - rr*((O+272)/7 - rr*((O+7936)/9 - rr* 353792/11)))) # 6 (deg. 11)
+             , 1 - rr*((O+2)/3 - rr*((O+16)/5 - rr*((O+272)/7 - rr*((O+7936)/9 - rr*((O+353792)/11
+                 -rr* 22368256/13))))) # 7 (deg. 13)
+             , 1 - rr*((O+2)/3 - rr*((O+16)/5 - rr*((O+272)/7 - rr*((O+7936)/9 - rr*((O+353792)/11
+                 -rr*((O+22368256)/13+rr*1903757312/15)))))) # 8 (deg.15)
+             , stop("Currently need 'order <= 8', but order=",order))
 }
 
 

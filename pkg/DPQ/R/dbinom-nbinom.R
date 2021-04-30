@@ -3,7 +3,9 @@
 ##
 ##  (orig. was ~/R/MM/NUMERICS/dpq-functions/dbinom_raw.R )
 
-dbinom_raw <- function(x, n, p, q, log = FALSE)# >> ../man/dbinom_raw.Rd <<<
+dbinom_raw <- function(x, n, p, q=1-p, log = FALSE # >> ../man/dbinom_raw.Rd <<<
+                       , verbose = getOption("verbose")
+                       )
 {
   ## Purpose: R version of dbinom_raw()   { from .../R/src/nmath/dbinom.c }
   ## ----------------------------------------------------------------------
@@ -26,16 +28,20 @@ dbinom_raw <- function(x, n, p, q, log = FALSE)# >> ../man/dbinom_raw.Rd <<<
     if(any(B <- p == 0)) r[B] <- ifelse(x[B] ==  0  , .D_1(log), .D_0(log))
     if(any(B <- q == 0)) r[B] <- ifelse(x[B] == n[B], .D_1(log), .D_0(log))
     BB <- !B & (p != 0)
+    if(verbose) cat(sprintf("dbinom_raw(): #(bndr, rglr): (%d,%d)\n",
+                            sum(!BB), sum(BB)))
+    verb1 <- pmax(0L, verbose - 1L)
 
     if(any(B <- BB & x == 0)) {
         ii <- which(B)
+        if(verbose) cat(sprintf("x=0 for i = %s\n", deparse(ii, control="S")))
 	if(any(i0 <- n[ii] == 0)) {
             r[ii[i0]] <- .D_1(log)
             ii <- ii[!i0] # for the rest of this clause
         }
         n. <- n[ii]
 	lc <- ifelse(p[ii] < 0.1,
-                     -bd0(n.,n.*q[ii]) - n.*p[ii],
+                     -bd0(n., n.*q[ii], verbose=verb1) - n.*p[ii],
                      n.*log(q[ii]))
 
         r[ii] <- .D_exp(lc, log)
@@ -43,15 +49,17 @@ dbinom_raw <- function(x, n, p, q, log = FALSE)# >> ../man/dbinom_raw.Rd <<<
     }
     if(any(B <- BB & x == n)) {
         ii <- which(B)
+        if(verbose) cat(sprintf("x=n for i = %s\n", deparse(ii, control="S")))
         n. <- n[ii]
 	lc <- ifelse(q[ii] < 0.1,
-                     -bd0(n.,n.*p[ii]) - n.*q[ii],
+                     -bd0(n.,n.*p[ii], verbose=verb1) - n.*q[ii],
                      n.*log(p[ii]))
 
         r[ii] <- .D_exp(lc, log)
         BB <- BB & !B
     }
     if(any(B <- BB & x < 0 | x > n)) {
+        if(verbose) cat(sprintf("have %d x values outside [0,n]\n", sum(B)))
         r[B] <- .D_0(log)
         BB <- BB & !B
     }
@@ -60,15 +68,19 @@ dbinom_raw <- function(x, n, p, q, log = FALSE)# >> ../man/dbinom_raw.Rd <<<
         ii <- which(BB)
         n <- n[ii]
         x <- x[ii]
+        if(verbose) cat(sprintf("main, i = %s\n", deparse(ii, control="S")))
         ##  n*p or n*q can underflow to zero if n and p or q are small.  This
         ##  used to occur in dbeta, and gives NaN as from R 2.3.0.
-        lc <- { stirlerr(n) - stirlerr(x) - stirlerr(n-x)
-                - bd0(x, n*p[ii]) - bd0(n-x, n*q[ii]) }
+        lc <- { stirlerr(n, verbose=verb1) - stirlerr(x, verbose=verb1) - stirlerr(n-x, verbose=verb1) -
+                    bd0( x , n*p[ii], verbose=verb1) - bd0(n-x, n*q[ii], verbose=verb1)
+        }
 
         ## f = (M.2PI*x*(n-x))/n; could overflow or underflow */
         ##lf <- log(2*pi) + log(x) + log(n-x) - log(n)
         ##                          ---------------- = log((n-x)/n)=log(1 - x/n)
         lf  <- log(2*pi) + log(x) + log1p(-x/n)
+
+        if(verbose) cat(sprintf("  lc=%g, lf=%g ==> lc - 0.5*lf = %g\n", lc,lf,lc - 0.5*lf))
 
         r[BB] <- .D_exp(lc - 0.5*lf, log)
     }
@@ -108,7 +120,7 @@ dnbinomR <- function (x, size, prob, log = FALSE, eps = 1e-10)
         n. <- size[i]
         pr <- prob[i]
         r[!i0][i] <- .D_exp(n. * log(pr) + x. * (log(n.) + log1p(-pr))
-                            -lgamma(x.+1) + log1p(x.*(x.-1)/(2*n.)),
+                            -lgamma1p(x.) + log1p(x.*(x.-1)/(2*n.)),
                             log)
     }
     if(any(!B)) {
@@ -162,7 +174,7 @@ dnbinom.mu <- function(x, size, mu, log = FALSE, eps = 1e-10)
         mu. <-  mu[i]
         n. <- size[i]
         r[!i0][i] <- .D_exp(x. * log(n.*mu./(n.+mu.)) - mu.
-                            -lgamma(x.+1) + log1p(x.*(x.-1)/(2*n.)),
+                            -lgamma1p(x.) + log1p(x.*(x.-1)/(2*n.)),
                             log)
     }
     if(length(i <- which(!B))) {

@@ -84,6 +84,39 @@
        MATHLIB_WARNING(msg, s); \
    } \
 }
+
+
+
+#define ML_WARN_return_NAN { ML_WARNING(ME_DOMAIN, ""); return ML_NAN; }
+
+/* For a long time prior to R 2.3.0 ML_WARNING did nothing.
+   We don't report ME_DOMAIN errors as the callers collect ML_NANs into
+   a single warning.
+ */
+#define ML_WARNING(x, s) { \
+   if(x > ME_DOMAIN) { \
+       char *msg = ""; \
+       switch(x) { \
+       case ME_DOMAIN: \
+	   msg = _("argument out of domain in '%s'\n");	\
+	   break; \
+       case ME_RANGE: \
+	   msg = _("value out of range in '%s'\n");	\
+	   break; \
+       case ME_NOCONV: \
+	   msg = _("convergence failed in '%s'\n");	\
+	   break; \
+       case ME_PRECISION: \
+	   msg = _("full precision may not have been achieved in '%s'\n"); \
+	   break; \
+       case ME_UNDERFLOW: \
+	   msg = _("underflow occurred in '%s'\n");	\
+	   break; \
+       } \
+       MATHLIB_WARNING(msg, s); \
+   } \
+}
+
 // --------- MM_R end_of { #include <nmath.h> substitute } ----------------------
 
 
@@ -209,6 +242,34 @@ double algdiv(double a, double b);
 // .Call()ed :
 SEXP R_algdiv(SEXP a_, SEXP b_)
     ;
+
+// bd0.c: --------------------------------------------------------------------
+double bd0(double x, double np, double delta, int maxit, int trace);
+void  ebd0(double x, double M, double *yh, double *yl);
+
+SEXP dpq_bd0(SEXP x, SEXP np, SEXP delta,
+	     SEXP maxit, SEXP version, SEXP trace);
+
+
+// logcf.c: --------------------------------------------------------------------
+SEXP R_logcf(SEXP x_, SEXP i_, SEXP d_, SEXP eps_, SEXP trace_);
+/*
+ */
+
+
+// lgammacor.c : -------------------------------------------------------------
+double dpq_lgammacor(double x, int nalgm, double xbig);
+SEXP     R_lgammacor(SEXP x_, SEXP nalgm_, SEXP xbig_);
+
+// chebyshev.c : -------------------------------------------------------------
+
+/* Chebyshev Polynomial */
+int	chebyshev_init(const double[], int, double);
+double	chebyshev_eval(double, const double[], const int);
+
+SEXP R_chebyshev_eval(SEXP x_, SEXP a_, SEXP n_);
+SEXP R_chebyshev_init(SEXP coef_, SEXP eta_);
+
 
 // DPQ-misc.c: --------------------------------------------------------------------
 

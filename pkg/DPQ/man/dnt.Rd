@@ -101,10 +101,10 @@ matplot(x, dtm, type="l", log = "x", xaxt="n",
 sfsmisc::eaxis(1)
 legend("right", legend=c("", paste0("ncp = df",c("/2","","*2"))),
        lty=1:4, col=1:4, bty="n")
-\donttest{ # using MPFR high accuracy arithmetic (too slow for routine testing)
+\donttest{ # ---- using MPFR high accuracy arithmetic (too slow for routine testing) ---
 ## no such kink here:
 x. <- if(requireNamespace("Rmpfr")) Rmpfr::mpfr(x, 256) else x
-system.time(dtJKB <- dntJKBf(x., df=df, ncp=df, log=TRUE)) # 7 sec if(Rmpfr)
+system.time(dtJKB <- dntJKBf(x., df=df, ncp=df, log=TRUE)) # 21s (!) was only 7s ???
 lines(x, dtJKB, col=adjustcolor(3, 1/2), lwd=3)
 options(op) # reset to prev.
 

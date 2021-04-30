@@ -172,14 +172,28 @@ M_minExp <- log(2) * .Machine$double.min.exp # ~= -708.396
 ##/* If |x| > |k| * M_cutoff,  then  log[ exp(-x) * k^x ] =~=  -x */
 M_cutoff <- log(2) * .Machine$double.max.exp / .Machine$double.eps ## = 3.196577e18
 
-logcf <- function (x, i, d, eps, maxit=10000) ##/* ~ relative tolerance */)
+## This is the "fast pure R" version that does all iterations "in parallel"
+## The next one, logcfR(), will entirely vectorize, ==> iterations separately
+logcfR. <- function (x, i, d, eps, maxit = 10000L, trace = FALSE) ##/* ~ relative tolerance */)
 {
     ## Continued fraction for calculation of  sum_{k=0}^Inf x^k/(i+k*d) =
     ##		1/i + x/(i+d) + x^2/(i+2*d) + x^3/(i+3*d) + ...
     ##
     ## auxiliary in log1pmx() and lgamma1p()
-
-    stopifnot (i > 0, d >= 0, eps > 0)
+    stopifnot (i > 0, d >= 0, eps > 0
+               ## , abs(x) < 1 # otherwise it does not converge, what about x = -2 (are we 100% sure?)
+               )
+    if(any_mpfr(x, i, d)) {
+        stopifnot(requireNamespace("Rmpfr"))
+        mpfr <- Rmpfr::mpfr ; getPrec <- Rmpfr::getPrec
+        prec <- max(getPrec(x), getPrec(i), getPrec(d))
+        mean <- Rmpfr::mean
+        ## this *is* necessary / improving results!
+        if(!inherits(x, "mpfr")) x <- mpfr(x, prec)
+        if(!inherits(i, "mpfr")) i <- mpfr(i, prec)
+        if(!inherits(d, "mpfr")) d <- mpfr(d, prec)
+        asN <- Rmpfr::asNumeric
+    } else asN <- as.numeric
 
     c1 <- 2 * d
     c2 <- i + d
@@ -190,7 +204,7 @@ logcf <- function (x, i, d, eps, maxit=10000) ##/* ~ relative tolerance */)
     A2 <- c4 * c2 - ddx
     B2 <- c4 * b1 - i * ddx
 
-    it <- 1## vectorize in x (!)
+    it <- 1L ## should we vectorize in x  ?!
     while (any(abs(A2 * b1 - a1 * B2) > abs(eps * b1 * B2))) {
         c3 <- c2*c2*x
 	c2 <- c2 + d
@@ -205,47 +219,157 @@ logcf <- function (x, i, d, eps, maxit=10000) ##/* ~ relative tolerance */)
 	B2 <- c4 * b1 - c3 * B2
 
         m.B2 <- exp(mean(log(abs(B2))))
+        if(trace) cat(sprintf("it=%2d: ==> m.B2=%g", it, asN(m.B2)))
 	if (m.B2 > scalefactor) {
+            if(trace) cat(sprintf("  Lrg m.B2"))
 	    a1 <- a1 / scalefactor
 	    b1 <- b1 / scalefactor
 	    A2 <- A2 / scalefactor
 	    B2 <- B2 / scalefactor
-	} else if (m.B2 < 1 / scalefactor) {
+	}
+        else if (m.B2 < 1 / scalefactor) {
+            if(trace) cat(sprintf("  Sml m.B2"))
 	    a1 <- a1 * scalefactor
 	    b1 <- b1 * scalefactor
 	    A2 <- A2 * scalefactor
 	    B2 <- B2 * scalefactor
 	}
-        it <- it+1
-        if(it > maxit)
+        if(trace) cat("\n")
+        it <- it+1L
+        if(it > maxit) {
             warning("non-convergence in logcf(), iter > ", maxit)
+            break
+        }
     }
+    if(trace && it <= maxit) cat("  logcf(*) end: after", maxit,"iterations.\n")
     ## return
     (A2 / B2)
+} ## logcfR.() -- no longer recommended
+
+## This is the entirely vectorizing "pure R" version
+logcfR <- function (x, i, d, eps, maxit = 10000L, trace = FALSE) ##/* ~ relative tolerance */)
+{
+    ## Continued fraction for calculation of  sum_{k=0}^Inf x^k/(i+k*d) =
+    ##		1/i + x/(i+d) + x^2/(i+2*d) + x^3/(i+3*d) + ...
+    ##
+    ## auxiliary in log1pmx() and lgamma1p()
+    stopifnot (i > 0, d >= 0, eps > 0,
+               length(i) == 1, length(d) == 1, length(eps) == 1
+               ## , abs(x) < 1 # otherwise it does not converge, what about x = -2 (are we 100% sure?)
+               )
+    if(any_mpfr(x, i, d)) {
+        stopifnot(requireNamespace("Rmpfr"))
+        mpfr <- Rmpfr::mpfr ; getPrec <- Rmpfr::getPrec
+        prec <- max(getPrec(x), getPrec(i), getPrec(d))
+        mean <- Rmpfr::mean
+        ## this *is* necessary / improving results!
+        if(!inherits(x, "mpfr")) x <- mpfr(x, prec)
+        if(!inherits(i, "mpfr")) i <- mpfr(i, prec)
+        if(!inherits(d, "mpfr")) d <- mpfr(d, prec)
+        asN <- Rmpfr::asNumeric
+    } else asN <- as.numeric
+
+    r <- x
+    for(i in seq_along(x)) {
+        xi <- x[i]
+        c1 <- 2 * d
+        c2 <- i + d
+        c4 <- c2 + d
+        a1 <- c2
+        b1 <- i * (c2 - i * xi)
+        ddx <- d * d * xi
+        A2 <- c4 * c2 - ddx
+        B2 <- c4 * b1 - i * ddx
+
+        it <- 1L
+        if(trace) cat(sprintf("logcf(x[%d]=%g  iterations:\n", i, xi))
+        while (abs(A2 * b1 - a1 * B2) > eps * abs(b1 * B2)) {
+            c3 <- c2*c2*xi
+            c2 <- c2 + d
+            c4 <- c4 + d
+            a1 <- c4 * A2 - c3 * a1
+            b1 <- c4 * B2 - c3 * b1
+
+            c3 <- c1 * c1 * xi
+            c1 <- c1 + d
+            c4 <- c4 + d
+            A2 <- c4 * a1 - c3 * A2
+            B2 <- c4 * b1 - c3 * B2
+
+            if(trace) cat(sprintf("it=%2d: ==> B2=%g", it, asN(B2)))
+            if (abs(B2) > scalefactor) {
+                if(trace) cat(sprintf("  Lrg m.B2"))
+                a1 <- a1 / scalefactor
+                b1 <- b1 / scalefactor
+                A2 <- A2 / scalefactor
+                B2 <- B2 / scalefactor
+            }
+            else if (abs(B2) < 1 / scalefactor) {
+                if(trace) cat(sprintf("  Sml m.B2"))
+                a1 <- a1 * scalefactor
+                b1 <- b1 * scalefactor
+                A2 <- A2 * scalefactor
+                B2 <- B2 * scalefactor
+            }
+            if(trace) cat(sprintf(" --> New crit. |A2 * b1 - a1 * B2|/|b1 * B2| = %g\n",
+                                  asN(abs(A2 * b1 - a1 * B2)/abs(b1 * B2))))
+            it <- it+1L
+            if(it > maxit) {
+                warning("non-convergence in logcf(), iter > ", maxit)
+                break
+            }
+        }
+        if(trace && it <= maxit) cat("  logcf(*) end: after", maxit,"iterations.\n")
+        ## return
+        r[i] <- (A2 / B2)
+    }
+    r
+} ## logcfR() {"properly" vectorized}
+
+
+logcf <- function (x, i, d, eps, trace = FALSE) {
+    .Call(C_R_logcf, x, i, d, eps, trace)
 }
 
 ## Accurate calculation of log(1+x)-x, particularly for small x.
-## See also R-interface to R's C API  log1pmx()  --> log1pmxC() in >> ./utils.R
-log1pmx <- function(x, tol_logcf = 1e-14) {
-    minLog1Value <- -0.79149064
-
+## See also R-interface to R's C API [src/nmath/pgamma.c] log1pmx()  --> log1pmxC() in >> ./utils.R
+## NB: minL1 was hard-wired 'minLog1Value'  in R's source of log1pmx()
+log1pmx <- function(x, tol_logcf = 1e-14, eps2 = 0.01,
+                    minL1 = -0.79149064, trace.lcf = FALSE,
+                    logCF = if(is.numeric(x)) logcf else logcfR)
+{
+    stopifnot(is.numeric(eps2), eps2 > 0, is.numeric(minL1), -1 <= minL1, minL1 < 0)# < -1/4 ?
     r <- x
-    if(any(c1 <- (x > 1 | x < minLog1Value)))
+    if(any(c1 <- (x > 1 | x < minL1)))
         r[c1] <- log1p(x[c1]) - x[c1]
     ## else { ## ##/* expand in [x/(2+x)]^2 */
     if(any(c2 <- !c1)) {
         x <- x[c2]
 	term <- x / (2 + x)
 	y <- term * term
-        r[c2] <- term *
-            ifelse(abs(x) < 1e-2,
-                   (((2 / 9 * y + 2 / 7) * y + 2 / 5) * y + 2 / 3) * y - x,
-                   2 * y * logcf(y, 3, 2, tol_logcf) - x)
+        r[c2] <- term * { ## not using ifelse(), rather what works with "mpfr"
+            ## ifelse(abs(x) < eps2,
+            ##        (((2 / 9 * y + 2 / 7) * y + 2 / 5) * y + 2 / 3) * y - x,
+            ##        2 * y * logcf(y, 3, 2, tol_logcf) - x)
+            A <- x
+            if(any(isSml <- abs(x) < eps2)) {
+                i <- which(isSml)
+                y. <- y[i]
+                z <- if(is.numeric(x)) 2 else 2 + 0*y. # becomes y-like (e.g. mpfr)
+                A[i] <- (((z / 9 * y. + z / 7) * y. + z / 5) * y. + z / 3) * y. - x[i]
+            }
+            if(length(iLrg <- which(!isSml))) {
+                y. <- y[iLrg]
+                A[iLrg] <- 2 * y. *
+                    logCF(y., 3, 2, tol_logcf, trace = trace.lcf) - x[iLrg]
+            }
+            A
+        }
     }
     r
 }
 
-lgamma1p <- function(a, tol_logcf = 1e-14, f.tol = 1.)
+lgamma1p <- function(a, tol_logcf = 1e-14, f.tol = 1., ...)
 {
     ## Compute  log(gamma(a+1))  accurately also for small a (0 < a < 0.5).
 
@@ -317,7 +441,7 @@ lgamma1p <- function(a, tol_logcf = 1e-14, f.tol = 1.)
 
         ## return
         r[a.sml] <- (a. * lgam - eulers_const) * a. -
-            log1pmx(a., tol_logcf = f.tol * tol_logcf)
+            log1pmx(a., tol_logcf = f.tol * tol_logcf, ...)
     }
     r
 }## lgamma1p
@@ -388,7 +512,7 @@ lgamma1p_series <- function(x, k) {
             }
         }
     }
-    ## return
+   ## return
     switch(k,
            -gamma * x,
            -gamma * x + px4/3,    # k = 2

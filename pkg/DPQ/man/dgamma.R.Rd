@@ -34,6 +34,7 @@ dgamma.R(x, shape, scale = 1, log)
 ## TODO: ... regular case .. use all.equal() ...
 
 
+## From R's  <R>/tests/d-p-q-r-tst-2.R -- replacing dgamma() w/ dgamma.R()
 ## PR#17577 - dgamma(x, shape)  for shape < 1 (=> +Inf at x=0) and very small x
 stopifnot(exprs = {
     all.equal(dgamma.R(2^-1027, shape = .99 , log=TRUE), 7.1127667376, tol=1e-10)
