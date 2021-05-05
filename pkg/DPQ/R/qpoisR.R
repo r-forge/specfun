@@ -135,9 +135,8 @@ qpoisR1 <- function(p, lambda, lower.tail=TRUE, log.p=FALSE,
     z <- ppois(y, lambda, lower.tail=lower.tail, log.p=log.p)
     if(trace) cat(sprintf(" then: y=%g, z= ppois(y,*) = %g\n", y,z))
 
-    ## fuzz to ensure left continuity: */
+    ## fuzz to ensure left continuity: do not loose too much (=> error in upper tail):
     ## p <- p*( 1 - pEps.f *.Machine$double.eps ) ## pEps.f was hard wired to 64
-    ## fuzz to ensure left continuity: do not loose too much (=> error in upper tail)
     c.eps <- .Machine$double.eps
     if(log.p) { ## <==> p \in [-Inf, 0]  different adjustment: "other sign"
         e <- pfEps.L * c.eps
