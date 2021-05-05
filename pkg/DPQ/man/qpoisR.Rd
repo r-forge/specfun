@@ -25,7 +25,7 @@ qpoisR(p, lambda, lower.tail = TRUE, log.p = FALSE,
     argument, see its help page.}
   \item{yLarge}{a positive number; in \R up to 2021, was internally
     hardwired to \code{yLarge = 1e5}:  Uses more careful search for
-    \eqn{y \gt y_L}{y >= yLarge}, where \eqn{y} is the initial approximate result,
+    \eqn{y \ge y_L}{y >= yLarge}, where \eqn{y} is the initial approximate result,
     derived from a Cornish-Fisher expansiion.
     %% we could give it:
     %% sigma <- sqrt(lambda)
