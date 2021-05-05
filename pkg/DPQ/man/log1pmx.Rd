@@ -87,8 +87,9 @@ abline(h=0, v=-1:0, lty=3)
 if(requireNamespace("Rmpfr") && packageVersion("sfsmisc") >= "1.1-10") withAutoprint({
   xM <- Rmpfr::mpfr(xd, 512)
   ## for MPFR numbers, really need more than tol_logcf = eps = 1e-14 (default)
-  system.time(lg1pM <- log1pmx(xM, tol_logcf = 1e-25, eps2 = 1e-4))
-              # 4.5 sec if(doExtras) 0.43s otherwise -- *NOT* really needed!
+  if(doExtras) print( system.time(
+    lg1pM <- log1pmx(xM, tol_logcf = 1e-25, eps2 = 1e-4)
+  )) # 4.5 sec if(doExtras) 0.43s otherwise, but 20s (!) on winbuilder!
   ## MM: But really, this should be more accurate anyway (?!):
   lg1pM. <- log1p(xM) - xM
   xM2k <- Rmpfr::mpfr(xd, 2048)
@@ -97,10 +98,10 @@ if(requireNamespace("Rmpfr") && packageVersion("sfsmisc") >= "1.1-10") withAutop
   asNumeric <- Rmpfr::asNumeric
   reE00 <- asNumeric( relErrV(lg1pM2k, lg1pM.) )
   print(signif(range(reE00)), 2) # [-1.5e-151, 4.8e-151] -- 512 bits is perfect
-  ## the error of the log1pmx() "algorithm" even for "perfect" mpfr-accuracy:
-  rE.log1pm <- asNumeric(relErrV(lg1pM2k, lg1pM))
-  print(signif(range(  rE.log1pm ), 2)) # -1.2e-27 3.7e-49
-
+  if(doExtras) { ## the error of the log1pmx() "algorithm" even for "perfect" mpfr-accuracy:
+    rE.log1pm <- asNumeric(relErrV(lg1pM2k, lg1pM))
+    print(signif(range(  rE.log1pm ), 2)) # -1.2e-27 3.7e-49
+  }
   re <- asNumeric(relErrV(lg1pM., log1pmx(xd)))
   plot(xd, re, type="b", cex=1/2)
   abline(h = (-2:2)*2^-52, lty=2, col=adjustcolor("gray20", 1/2))
