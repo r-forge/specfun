@@ -4,7 +4,7 @@
 #### ----------------
 
 source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
-## list_(), save2RDS(), ...
+## => list_() , loadList() ,  readRDS_() , save2RDS()
 
 (doExtras <- DPQ:::doExtras())
 ## save directory (to read from):

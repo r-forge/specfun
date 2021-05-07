@@ -62,7 +62,7 @@ dpois_raw <- function(x, lambda, log=FALSE,
         inds <- function(i)
             if((n <- length(i)) <= 4)
                 paste(i, collapse=", ")
-            else paste(paste(i[1:3], collapse=", "), "..")
+            else paste(paste(i[1:3], collapse=", "), "..", i[n])
     }
     verb1 <- pmax(0L, verbose - 1L)
 

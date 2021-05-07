@@ -3,12 +3,15 @@
 \usepackage[a4paper, text={15cm,24cm}]{geometry}
 \usepackage{alltt}
 \usepackage[authoryear,round,longnamesfirst]{natbib}% for bibliography citation; same as jss.cls
-\usepackage{hyperref}%-> for clickable links for \url{}, \cite, \ref ...
+\usepackage{hyperref}% *NOT* pkg {url}! -> for clickable links for \url{}, \cite, \ref ...
 \usepackage{amsmath}% for {align} environment
 \usepackage{amsbsy} % for \boldsymbol:  only a small part of \usepackage{amstex}
 % \usepackage{amssymb}% for \intercal
 \usepackage{amsopn}% DeclareMathOperator
 \usepackage{amsfonts}
+\usepackage{color}
+\definecolor{Red}{rgb}{0.5,0,0}
+\definecolor{Blue}{rgb}{0,0,0.5}
 %% From our \usepackage{texab} ----------------------------------------------
 \DeclareMathOperator{\where}{ where }
 \newcommand*{\Nat}{\mathbb{N}}% <-> amsfonts
@@ -29,8 +32,22 @@
 \newcommand*{\pkg}[1]{\texttt{#1}}% R package -- improve?
 \newcommand*{\file}[1]{\texttt{#1}}
 \newcommand*{\code}[1]{\texttt{#1}}
+%----end{R-, Rd-like}--generally----------------------
+\hypersetup{% <--> hyperref package
+    colorlinks = {true},%
+    linktocpage = {true},%
+    plainpages = {false},%
+    linkcolor = {Blue},%
+    citecolor = {Blue},%
+    urlcolor = {Red},%
+    pdfstartview = {Fit},%
+    pdfpagemode = {UseOutlines},%
+    pdfview = {XYZ null null null}}
+%% MM:
+\newcommand{\myHref}[2]{\href{#1}{#2\footnote{\texttt{#1}}}}
+%%---------------------------------------------------------------
 
-%\VignetteIndexEntry{Noncentral Chi-Squared Probabilities -- Algorithms in \R}
+%\VignetteIndexEntry{Noncentral Chi-Squared Probabilities -- Algorithms in R}
 %\VignetteDepends{DPQ}
 \SweaveOpts{engine=R,eps=FALSE,pdf=TRUE,width=7,height=5,strip.white=true,keep.source=TRUE}
 %%%------------------------------------------------------------
@@ -38,9 +55,9 @@
 \bibliographystyle{apalike}
 \begin{document}
 
-\title{Non-central Chi-Squared Probabilities -- Algorithms in R}
+\title{Non-central Chi-Squared Probabilities -- Algorithms in \R}
 \author{Martin M\"achler\\ Seminar f\"ur Statistik \\ ETH Zurich}
-%\date{2019 ff}
+\date{2019 ff {\footnotesize (\LaTeX'ed \today)}}
 \maketitle
 
 \begin{abstract} %maybe  \normalsize

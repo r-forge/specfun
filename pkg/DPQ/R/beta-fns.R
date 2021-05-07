@@ -261,7 +261,6 @@ logcfR <- function (x, i, d, eps, maxit = 10000L, trace = FALSE) ##/* ~ relative
         stopifnot(requireNamespace("Rmpfr"))
         mpfr <- Rmpfr::mpfr ; getPrec <- Rmpfr::getPrec
         prec <- max(getPrec(x), getPrec(i), getPrec(d))
-        mean <- Rmpfr::mean
         ## this *is* necessary / improving results!
         if(!inherits(x, "mpfr")) x <- mpfr(x, prec)
         if(!inherits(i, "mpfr")) i <- mpfr(i, prec)

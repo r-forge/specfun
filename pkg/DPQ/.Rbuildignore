@@ -17,6 +17,7 @@ svn-
 TAGS
 ^do-
 etags
+^(dt|Rplots|stirlerr.*)\.pdf
 vignettes/.*:
 vignettes/.*\.(pdf|aux|out|tex)$
 vignettes/.*-woven
@@ -28,4 +29,4 @@ tests/.*\.Rout*[24]b
 TODO-man
 TODO-merge-
 .*mail$
-Rplots\.pdf
+

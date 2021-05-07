@@ -64,7 +64,7 @@
 %%---------------------------------------------------------------
 %%---------------------------------------------------------------
 
-%\VignetteIndexEntry{log1pmx, bd0, stirlerr - Probability Approximations for \R}
+%\VignetteIndexEntry{log1pmx, bd0, stirlerr - Probability Computations in R}
 %\VignetteDepends{DPQ}
 %\VignetteEncoding{UTF-8}
 \SweaveOpts{engine=R,eps=FALSE,pdf=TRUE,width=7,height=5,strip.white=true,keep.source=TRUE}
@@ -73,7 +73,7 @@
 \bibliographystyle{apalike}
 \begin{document}
 
-\title{log1pmx(), bd0(), stirlerr() -- Utilities for Poisson, Binomial, Gamma Probabilities in R}
+\title{log1pmx(), bd0(), stirlerr() -- Computing Poisson, Binomial, Gamma Probabilities in \R}
 \author{Martin M\"achler\\ Seminar f\"ur Statistik \\ ETH Zurich}
 \date{April 2021 ff {\footnotesize%\tiny
     (\LaTeX'ed \today)}}

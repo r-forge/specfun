@@ -4,7 +4,21 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.4-3 (2021-05-05, svn r166)}{
+\section{Version 0.4-4 (2021-05-.., svn r1..)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item \file{src/bd0.c} gave warning with some compiler settings with \code{-Wself-assign}.
+
+      \item \file{test-tools.R} \code{readRDS_()} thinko fixed.
+    }
+  }
+}
+
+\section{Version 0.4-3 (2021-05-05, svn r166)}{% = CRAN publication
   \subsection{NEW FEATURES}{
     \itemize{
       \item Provide \R functions

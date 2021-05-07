@@ -357,7 +357,7 @@ SEXP dpq_bd0(SEXP x_, SEXP np_, SEXP delta_,
     if(trace) {
 	REprintf("dpq_bd0(x[1:%d], np[1:%d], delta=%g, ... ):", delta, n_x, n_np);
     }
-    version = version; // currently unused
+    version++; // currently unused
 
     for(R_xlen_t i=0; i < n; i++) {
 	r[i] = bd0(x[i % n_x], np[i % n_np], delta, maxit, trace);
