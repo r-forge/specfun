@@ -1,4 +1,5 @@
 importFrom("DPQ"
+         , .D_1, .D_exp, dbinom_raw
          , dntJKBf # ~/R/Pkgs/DPQ/R/t-nonc-fn.R
          , dtWV
          , logspace.add
@@ -17,7 +18,10 @@ importFrom("Rmpfr"
 )
 
 importFrom("gmp"
+         , as.bigq, as.bigz
          , chooseZ
+##_TODO: once gmp_0.6-3 is on CRAN
+##_TODO: , dbinomQ
 )
 
 importClassesFrom("Rmpfr"
@@ -61,5 +65,9 @@ export(dhyperQ, phyperQ, phyperQall)# simple via chooseZ()
 ## R/t-nonc.R :
 export(dntJKBm)
 
+## R/dnbinom-etc.R :
+## NOT yet: export(dnbinomM, dnbinom.mu)
+
 ## Re-export this R/dpq-mpfrized.R :
 export(pnormL_LD10, pnormU_S53)
+export(stirlerrM, stirlerrSer)

@@ -110,6 +110,7 @@ sfsmisc::eaxis(2)
 abline(h=(1:4)*2^-53, col=adjustcolor(1, 1/4))
 
 ## lower.tail=TRUE (w/ log.p=TRUE) works "the same" for x < 0:
+require(Rmpfr)
 x <- - 2^seq(0,    30, by = 1/64)
 ##   ==
 log1mexp <- Rmpfr::log1mexp # Rmpfr version >= 0.8-2 (2020-11-11 on CRAN)
@@ -126,11 +127,10 @@ abline(h=0, lty=3, col=adjustcolor(1, 1/2))
 ## Comparison with  Rmpfr::erf() / erfc() based pnorm():
 
 ## Set the exponential ranges to maximal -- to evade underflow as long as possible
-Rmpfr::.mpfr_erange_set(value = (1-2^-52) *
-                            Rmpfr::.mpfr_erange(c("min.emin","max.emax")))
+.mpfr_erange_set(value = (1-2^-52) * .mpfr_erange(c("min.emin","max.emax")))
 l2t <- seq(0, 32, by=1/4)
 twos <- mpfr(2, 1024)^l2t
-Qt <- Rmpfr::pnorm(twos, lower.tail=FALSE)
+Qt  <- pnorm(twos, lower.tail=FALSE)
 pnU <- pnormU_S53 (twos, log.p=TRUE)
 pnL <- pnormL_LD10(twos, log.p=TRUE)
 logQt <- log(Qt)
@@ -154,7 +154,8 @@ data.frame(l2t, check.names=FALSE
 
 ## *but* the relative errors are around c_epsilon  in all these cases :
 plot (2^l2t, asNumeric(abs(nQt-pnL)/abs(pnU)), type="o", cex=1/4, log="xy", axes=FALSE)
-  eaxis(1); eaxis(2)
+sfsmisc::eaxis(1, sub10 = 2)
+sfsmisc::eaxis(2)
 lines(2^l2t, asNumeric(abs(nQt-pnU)/abs(pnU)), type="o", cex=1/4, col=2)
 abline(h=c(1:4)*2^-53, lty=2, col=adjustcolor(1, 1/4))
 

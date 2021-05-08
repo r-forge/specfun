@@ -1,3 +1,4 @@
+library(DPQ)
 library(DPQmpfr)
 
 ## Imported from 'DPQ', support of the hypergeometric distrib. as function of its parameters:

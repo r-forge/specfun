@@ -2,28 +2,28 @@ require(DPQmpfr)
 require("Rmpfr") # (is in DPQmpfr's strict dependencies)
 
 options(warn = 1)# warnings *immediately*
-(doExtras <- DPQmpfr:::doExtras())
 
 ##  *.time()  utilities   from
-if(FALSE)
-source(system.file("test-tools-1.R", package="Matrix"), keep.source=FALSE)
-##    MM = ~/R/Pkgs/Matrix/inst/test-tools-1.R
-
-showSys.time <- function(expr, ...) {
-    ## prepend 'Time' for R CMD Rdiff
-    st <- system.time(expr, ...)
-    writeLines(paste("Time", capture.output(print(st))))
-    invisible(st)
+source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
+source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
+## => list_() , loadList() ,  readRDS_() , save2RDS()
+## Fixing thinko in DPQ <= 0.4-3 's test-tools.R:
+readRDS_ <- function(file, do.time=TRUE, verbose=TRUE, ...) {
+    if(verbose) cat("Reading from ", file, "\n")
+    if(do.time) on.exit(showProc.time())
+    readRDS(file=file, ...)
 }
-showProc.time <- local({ ## function + 'pct' variable
-    pct <- summary(proc.time())# length 3, shorter names
-    function(final="\n", ind=TRUE) { ## CPU elapsed __since last called__
-	ot <- pct ; pct <<- summary(proc.time())
-        delta <- (pct - ot)[ind]
-	##  'Time' *not* to be translated:  tools::Rdiff() skips its lines!
-        cat('Time', paste0("(",paste(names(delta),collapse=" "),"):"), delta, final)
-    }
-})
+
+(doExtras <- DPQmpfr:::doExtras())
+## save directory (to read from):
+(sdir <- system.file("safe", package="DPQmpfr"))
+## initially, when we have old version of pkg:
+if(!nzchar(sdir) && dir.exists(pDir <- "~/R/Pkgs/DPQmpfr")) {
+    sdir <- file.path(pDir, "inst/safe")
+    if(!dir.exists(sdir)) dir.create(sdir)
+}
+if(!dir.exists(sdir)) stop("safe directory ", sQuote(sdir), " does not exist")
+
 
 showProc.time(,1) # 1: only 'user'
 
@@ -57,7 +57,7 @@ if(doExtras) withAutoprint({
   ## double the precBits again + eps !!
   show_pbD94(mpfr(0.93,  1024), 20,25, 10000, eps=1e-50) # n= 6520 1.008067956082285281381936816363684457888595749378086614..e-116
   ## and much more extreme accuracy.. seems to work, too:
-show_pbD94(mpfr(0.93,  1024), 20,25, 10000, eps=1e-150)# n= 9828 1.00806795608228528138193681636368445788859574937809624269896.......e-116
+  show_pbD94(mpfr(0.93,  1024), 20,25, 10000, eps=1e-150)# n= 9828 1.00806795608228528138193681636368445788859574937809624269896.......e-116
 })
 
 showProc.time()
@@ -79,48 +79,91 @@ showProc.time()
 
 
 ## Compare with  Table 3  of  Baharev_et_al 2017 %% ===> ../man/qbBaha2017.Rd <<<<<<<<<<<<
-aa <- c(0.5, 1, 1.5, 2, 2.5, 3, 5, 10, 25)
-bb <- c(1:15, 10*c(2:5, 10, 25, 50))
-
-" MM __FIXME__ :  do *both* and compare ! "
-## Choose one of these
-p <- 0.95      # = 1 - alpha <<<--- using double precision everywhere below
-delta <- 1e-7  # <=> eps = delta^2 = 1e-14
-if(FALSE) { ## This takes *VERY LONG* (> 20 minutes) in the loop below  ((why ???))
-    p <- 1 - 1/mpfr(20,128) # = 1 - alpha <<<--- using MPFR everywhere below
-    delta <- 1e-18
+qbetaD94sim <- function(p = 0.95, # p = 1 - alpha
+                        delta = NULL,
+                        precBits = 128,
+                        aa = c(0.5, 1, 1.5, 2, 2.5, 3, 5, 10, 25),
+                        bb = c(1:15, 10*c(2:5, 10, 25, 50)))
+{
+    r <- lapply(c(double=FALSE, mpfr=TRUE), function(simMpfr) { ## do *both*: without / with mpfr(.)
+        cat("simMpfr =", simMpfr, ":\n")
+        sfil1 <- file.path(sdir,
+                           paste0("tests_qbetaD94_", as.character(precBits),"b_p-",
+                                  formatC(asNumeric(p), digits=4, width=1),
+                                  if(simMpfr)"_mpfr", ".rds"))
+        if(file.exists(sfil1) && (simMpfr || !doExtras)) {
+            cat("reading simulation results from", sQuote(sfil1), ".. ")
+            ssR_l <- readRDS_(sfil1)
+            str(ssR_l)
+            loadList(ssR_l, envir = environment())
+            cat("[Ok]\n")
+        } else { ## do run the simulation  -- always if(!simMpfr & doExtras) :
+            qbet <- matrix(NA_real_, length(aa), length(bb),
+                           dimnames = list(a = formatC(aa), b = formatC(bb)))
+            if(!simMpfr) {
+                ## p <- 0.95      # = 1 - alpha <<<--- using double precision everywhere below
+                ## delta <- 1e-7  # <=> eps = delta^2 = 1e-14
+            } else { ## simMpfr: takes *VERY LONG* (> 20 minutes) in the loop below  ((why ???))
+                ## p <- 1 - 1/mpfr(20,128) # = 1 - alpha <<<--- using MPFR everywhere below
+                ## delta <- 1e-18
+                p <- mpfr(p, precBits=precBits)
+                qbet <- as(qbet, "mpfr")
+            }
+            if(is.null(delta))
+                delta <- if(simMpfr) 1e-18 else 1e-7
+            else stopifnot(is.numeric(delta), delta >= 0)
+            eps <- delta^2 # default; (delta,eps) are needed for safe-file name
+            showSys.time(
+                for(ia in seq_along(aa)) {
+                    a <- aa[ia]; cat("\na=",a,": b=")
+                    for(ib in seq_along(bb)) {
+                        b <- bb[ib]; cat(b," ")
+                        qbet[ia, ib] <- qbetaD94(p, a, b, ncp = 0, delta=delta)# def.  eps = delta^2
+                    } ##~~~~            ~~~~~~~~
+                    cat("\n")
+                }
+            )
+            print(summary(warnings())) # many warnings from qbeta() inaccuracies
+            ## save2RDS() writes ..
+            save2RDS(list_(aa, bb, qbet), file = sfil1)
+            cat("[Ok]\n")
+        } ## --- do run simulation ---------------------------- 0
+        qbet
+    }) # F (simMpfr)
+    ## return
+    c(list_(aa, bb), r)
 }
-eps <- delta^2 # default; (delta,eps) are needed for safe-file name
-qbet <- matrix(NA_real_, length(aa), length(bb),
-               dimnames = list(a = formatC(aa), b = formatC(bb)))
-if(inherits(p, "mpfr"))
-    qbet <- as(qbet, "mpfr")
-showSys.time(
-    for(ia in seq_along(aa)) {
-        a <- aa[ia]; cat("\na=",a,": b=")
-        for(ib in seq_along(bb)) {
-            b <- bb[ib]; cat(b," ")
-            qbet[ia, ib] <- qbetaD94(p, a, b, ncp = 0, delta=delta)# def.  eps = delta^2
-        }
-        cat("\n")
-    }
-)
 
-## Safe the expensive computations !!  (FIXME: use ../inst/safe/  the same as in ~/R/Pkgs/DPQ/ !)
-if(inherits(p,"mpfr")) {
-    prec <- getPrec(p)
-    ## FIXME  eps, delta                                    delta eps
-    saveF <- paste0("qbetaD94_tab3_Rmpfr_pr", prec,
-                    "_",formatC(delta),"_",formatC(eps), ".rds")
-    od <- setwd("~/R/MM/Pkg-ex/Rmpfr")####################<<<<<<<<<<<<<<<<<<<<<<< FIXME >>>>>>>>>>>>>>>>>>
-    saveRDS(qbet, file=saveF)
-    setwd(od)
-}
-## number of correct digits:
+if(interactive()) ## try it out small
+    rdummy <- qbetaD94sim(a=1, b=1:2)
+
+r.95 <- qbetaD94sim(p = 0.95)
+str(r.95)
+## $ aa
+## $ bb
+## $ double [qbet]
+## $ mpfr   [qbet]
+loadList(r.95)
+rm(double, mpfr) # they shadow R functions
+
+## number of correct digits [mpfr is only slightly better -- ??}
 data(qbBaha2017, package="DPQmpfr")
-summary(nDig <- asNumeric(-log10(abs(1- qbet/qbBaha2017))))
+dm <- with(r.95, c(length(aa), length(bb)))
+stopifnot(exprs = {
+    is.matrix(qbBaha2017)
+    identical(dm, dim(qbBaha2017))
+    identical(dm, dim(r.95$double))
+    identical(dm, dim(r.95$ mpfr ))
+})
 
-matplot(bb, t(asNumeric(-log10(abs(1- qbet/qbBaha2017)))), type = "o", log="xy", xaxt="n")
+ver <- setNames(, names(r.95)[3:4])
+nD <- lapply(ver, function(nm) asNumeric(-log10(abs(1 - r.95[[nm]] / qbBaha2017))))
+
+lapply(nD, round, digits=1)
+## well,  Ding(1994)  may not be so good?
+
+matplot (bb, t(nD$ double), type = "o", log="xy", xaxt="n")
+matlines(bb, t(nD$ mpfr  )) # again:  mpfr is almost the same
 axis(1, at=bb, cex.axis = 0.8, mgp = (2:0)/2)
 
 showProc.time()
@@ -130,25 +173,27 @@ showProc.time()
 ## NB: *relative* convergence is not good here for f() ~= 0 !!! <<< Ding *did* have absolute
 ## ==> use same idea as  'nls(... control = list(scaleOffset=1))' !!
 
-##  verbose=3 now  suggest it's hopeless (?!!)
-try({
-if(inherits(p,"mpfr")) {
-    qbb <- qbetaD94(p, a, b, ncp = 100, delta=1e-18, itrmax = 2000, verbose=3)
-} else {
-    qbb <- qbetaD94(p, a, b, ncp = 100, delta=1e-7,  itrmax =  600, verbose=3)
+a <- 1.5
+b <- 7
+
+if(interactive())##  verbose=3 now  suggest it's hopeless (?!!)
+try({ ## the 'mpfr' version *does* converge  "n = 372"
+    qbb <- list(mpfr = qbetaD94(mpfr(0.95, 128), shape1= a, shape2 = b, ncp = 100, delta=1e-18, itrmax = 2000, verbose=3),
+                dble = qbetaD94(0.95,            shape1= a, shape2 = b, ncp = 100, delta=1e-7,  itrmax =  600, verbose=3))
     ## also itrmax = 1e6 fails the same
     ## even delta = 1e-2 fails: reason: f() = F'() = 1.25e-59 <<< bound2 ~= 3e-16
-}
 })
 
 ## Note how silly it is to have a very small 'eps' in a situation were 'x' is still far from the truth
 ## ===> Idea:  Much faster if 'eps' is "large" at the beginning, when the Newton 'd.x' will be inaccurate anyway !!
 
 ## Before we had 'log_scale', ncp=100  could not work
-try( pbetaD94(.99, a, b, ncp = 100, log_scale=FALSE,
-              verbose=TRUE) ) # shows 'F=NaN' ...
+pbetaD94(.99,  a, b, ncp = 100, log_scale=FALSE, verbose=TRUE) -> pb. # now works!
 ## Now that pbetaD94() can use  'log_scale', this converges at n=64974 (!):
-pb <- pbetaD94(.99, a, b, ncp = 100, verbose=TRUE)
+pbetaD94(.99,  a, b, ncp = 100, log_scale= TRUE, verbose=TRUE) -> pbL
+
+all.equal(0.9999976, pb.)
+all.equal(0.9999976, pbL)
 
 showProc.time()
 
