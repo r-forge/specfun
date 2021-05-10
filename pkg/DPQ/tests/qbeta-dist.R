@@ -3,6 +3,8 @@
 #### Testing  qbeta(.),   pbeta(.),   qt(.), .....
 #### ----------------
 
+source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
+## -> showProc.time(), assertError(), relErrV(), ...
 source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
 ## => list_() , loadList() ,  readRDS_() , save2RDS()
 

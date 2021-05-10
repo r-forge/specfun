@@ -1,4 +1,5 @@
-source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
+## Be *more* modular ==> do *not* load  Matrix test-tools here !
+## source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
 
 ##--> showProc.time(), assertError(), relErrV(), ...
 ## to be used in saveRDS(list_(nam1, nam2, ...),  file=*) :
@@ -25,5 +26,3 @@ readRDS_ <- function(file, do.time=TRUE, verbose=TRUE, ...) {
 ##' load a named list
 loadList <- function(L, envir = .GlobalEnv)
     invisible(lapply(names(L), function(nm) assign(nm, L[[nm]], envir=envir)))
-
-showProc.time()

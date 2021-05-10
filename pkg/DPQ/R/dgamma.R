@@ -727,7 +727,7 @@ stirlerr <- function(n, scheme = c("R3", "R4.1"),
                 print(table(cut(n[n > cutoffs[1]], c(cutoffs,Inf))))
             }
             ## From S4 on: Maple asympt(ln(GAMMA(x+1)), x, 23);
-            ##             ----- --> ../Misc/stirlerr-trms.R
+            ##             ----- --> ../Misc/stirlerr-trms.R <-----
             S0 <- 0.083333333333333333333       ## 1/12 */
             S1 <- 0.00277777777777777777778     ## 1/360 */
             S2 <- 0.00079365079365079365079365075 ## 1/1260

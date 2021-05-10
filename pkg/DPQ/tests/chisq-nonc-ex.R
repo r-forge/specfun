@@ -14,8 +14,10 @@ stopifnot(exprs = {
     require(sfsmisc) # eaxis(), lseq(), p.m(), mult.fig(), sessionInfoX()
 })
 
+source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
+## -> showProc.time(), assertError(), relErrV(), ...
 source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
-## list_(), save2RDS(), ... showProc.time(), assertError(), relErrV(), ...
+## list_(), save2RDS(), ..
 ## For package-testing "diagnostics":
 sessionInfoX(c("DPQ","Rmpfr"))
 

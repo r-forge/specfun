@@ -9,8 +9,10 @@ stopifnot(exprs = {
     require(sfsmisc) # lseq(), p.m(), mult.fig()
 })
 
+source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
+## -> showProc.time(), assertError(), relErrV(), ...
 source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
-## list_(), save2RDS(), ... showProc.time(), assertError(), relErrV(), ...
+## list_(), save2RDS(), ..
 (doExtras <- DPQ:::doExtras())
 ## save directory (to read from):
 (sdir <- system.file("safe", package="DPQ"))

@@ -19,7 +19,7 @@ stopifnot(exprs = {
     require(sfsmisc)
 })
 
-source(system.file("test-tools-1.R", package="Matrix"), keep.source=FALSE)
+source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
 ## relerrV()
 
 if(!dev.interactive(orNone=TRUE)) pdf("t-nonc_P-1.pdf")
