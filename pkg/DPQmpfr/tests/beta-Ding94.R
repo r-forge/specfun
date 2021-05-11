@@ -17,12 +17,16 @@ readRDS_ <- function(file, do.time=TRUE, verbose=TRUE, ...) {
 (doExtras <- DPQmpfr:::doExtras())
 ## save directory (to read from):
 (sdir <- system.file("safe", package="DPQmpfr"))
-## initially, when we have old version of pkg:
+## initially, when we have old version of pkg (only for pkg maintainer!!)
 if(!nzchar(sdir) && dir.exists(pDir <- "~/R/Pkgs/DPQmpfr")) {
     sdir <- file.path(pDir, "inst/safe")
     if(!dir.exists(sdir)) dir.create(sdir)
 }
-if(!dir.exists(sdir)) stop("safe directory ", sQuote(sdir), " does not exist")
+## IGNORE_RDIFF_BEGIN
+(has.sdir <- dir.exists(sdir))
+if(!has.sdir)
+    cat("safe directory ", sQuote(sdir), " does not exist!\n")
+## IGNORE_RDIFF_END
 
 
 showProc.time(,1) # 1: only 'user'
@@ -78,22 +82,30 @@ qbetaD94(1 - 1/mpfr(20,128), .5, 250, eps = 1e-30, delta=1e-20) # 0.007661102467
 showProc.time()
 
 
+qb_sfile <- function(p, precB, mpfr) {
+    stopifnot(is.numeric(precB), precB == trunc(precB), precB >= 10,
+              0 <= p, p < 1, is.logical(mpfr))
+    paste0("tests_qbD94_", as.character(precB),"_p",
+           as.character(round(100*asNumeric(p))),
+           if(mpfr)"_mpfr", ".rds")
+}
+
+
 ## Compare with  Table 3  of  Baharev_et_al 2017 %% ===> ../man/qbBaha2017.Rd <<<<<<<<<<<<
 qbetaD94sim <- function(p = 0.95, # p = 1 - alpha
                         delta = NULL,
                         precBits = 128,
+                        saveDir,
                         aa = c(0.5, 1, 1.5, 2, 2.5, 3, 5, 10, 25),
                         bb = c(1:15, 10*c(2:5, 10, 25, 50)))
 {
+    stopifnot(dir.exists(saveDir))
     r <- lapply(c(double=FALSE, mpfr=TRUE), function(simMpfr) { ## do *both*: without / with mpfr(.)
         cat("simMpfr =", simMpfr, ":\n")
-        sfil1 <- file.path(sdir,
-                           paste0("tests_qbetaD94_", as.character(precBits),"b_p-",
-                                  formatC(asNumeric(p), digits=4, width=1),
-                                  if(simMpfr)"_mpfr", ".rds"))
-        if(file.exists(sfil1) && (simMpfr || !doExtras)) {
-            cat("reading simulation results from", sQuote(sfil1), ".. ")
-            ssR_l <- readRDS_(sfil1)
+        sFile <- file.path(saveDir, qb_sfile(p, precBits, simMpfr))
+        if(file.exists(sFile) && (simMpfr || !doExtras)) {
+            cat("reading simulation results from", sQuote(sFile), ".. ")
+            ssR_l <- readRDS_(sFile)
             str(ssR_l)
             loadList(ssR_l, envir = environment())
             cat("[Ok]\n")
@@ -103,7 +115,7 @@ qbetaD94sim <- function(p = 0.95, # p = 1 - alpha
             if(!simMpfr) {
                 ## p <- 0.95      # = 1 - alpha <<<--- using double precision everywhere below
                 ## delta <- 1e-7  # <=> eps = delta^2 = 1e-14
-            } else { ## simMpfr: takes *VERY LONG* (> 20 minutes) in the loop below  ((why ???))
+            } else { ## simMpfr: takes *VERY LONG* (~ 60 minutes!) in the loop below  ((why ???))
                 ## p <- 1 - 1/mpfr(20,128) # = 1 - alpha <<<--- using MPFR everywhere below
                 ## delta <- 1e-18
                 p <- mpfr(p, precBits=precBits)
@@ -118,14 +130,14 @@ qbetaD94sim <- function(p = 0.95, # p = 1 - alpha
                     a <- aa[ia]; cat("\na=",a,": b=")
                     for(ib in seq_along(bb)) {
                         b <- bb[ib]; cat(b," ")
-                        qbet[ia, ib] <- qbetaD94(p, a, b, ncp = 0, delta=delta)# def.  eps = delta^2
+                        qbet[ia, ib] <- qbetaD94(p, a, b, ncp = 0, delta=delta)# eps := delta^2
                     } ##~~~~            ~~~~~~~~
                     cat("\n")
                 }
             )
             print(summary(warnings())) # many warnings from qbeta() inaccuracies
             ## save2RDS() writes ..
-            save2RDS(list_(aa, bb, qbet), file = sfil1)
+            save2RDS(list_(aa, bb, qbet), file = sFile)
             cat("[Ok]\n")
         } ## --- do run simulation ---------------------------- 0
         qbet
@@ -135,9 +147,10 @@ qbetaD94sim <- function(p = 0.95, # p = 1 - alpha
 }
 
 if(interactive()) ## try it out small
-    rdummy <- qbetaD94sim(a=1, b=1:2)
+    rdummy <- qbetaD94sim(a=1, b=1:2, saveDir = tempdir())
 
-r.95 <- qbetaD94sim(p = 0.95)
+if(has.sdir || doExtras)
+    r.95 <- qbetaD94sim(p = 0.95, saveDir = if(has.sdir) sdir else tempdir())
 str(r.95)
 ## $ aa
 ## $ bb

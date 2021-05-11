@@ -4,12 +4,11 @@
 \title{DPQmpfr News}
 \encoding{UTF-8}
 
-\section{Version 0.3-1 (2021-03-12, svn r...)}{
+\section{Version 0.3-1 (2021-05-10, svn r...)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{stirlerrM(n)} and \code{stirlerrSer(n,k)} providing
       Stirling's formula approximation errors for bigrational ("bigz") or "mpfr" numbers.
-
     }
   }
 }
