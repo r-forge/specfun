@@ -14,11 +14,31 @@ stirlerrM(n, minPrec = 128L)
 stirlerrSer(n, k)
 }
 \arguments{
-  \item{n}{numeric vector, typically but necessarily positive integer or
-    half integer.}
+  \item{n}{numeric or \dQuote{numeric-alike} vector, typically
+    \dQuote{large} positive integer or half integer valued, here typically an
+    \code{"mpfr"}-number vector.}
   \item{k}{integer \emph{scalar}, now in \code{1:11}.}
   \item{minPrec}{minimal precision (in bits) to be used when coercing
     number-alikes, say, biginteger (\code{\link[gmp]{bigz}}) to \code{"mpfr"}.}
+}
+\details{
+  Stirling's approximation to \eqn{n!} has been
+  \deqn{n! \approx \bigl(\frac{n}{e}\bigr)^n \sqrt{2\pi n}}{%
+    n! ~= (n/e)^n * sqrt(2*pi*n)},
+  where by definition the error is the difference of the left and right
+  hand side of this formula, in  \eqn{\log}-scale,
+  \deqn{\delta(n) =  \log\Gamma(n + 1) - n \log(n) + n - \log(2 \pi n)/2.}{%
+         delta(n) =   log\Gamma(n + 1) - n* log(n) + n -  log(2*pi*n)/2.}
+
+  See the vignette \href{log1pmx, bd0, stirlerr - Probability
+    Approximations for \R}{%
+    https://CRAN.R-project.org/package=DPQ/vignettes/log1pmx-etc.pdf}
+  from package \CRANpkg{DPQ}.
+  where the series expansion of \eqn{\delta(n)} is used with 11 terms,
+  starting with
+  \deqn{\delta(n) = \frac 1{12 n} - \frac 1{360 n^3} + \frac 1{1260 n^5}
+                    \pm O(n^{-7}).}{%
+	 delta(n) = 1/(12 n) - 1/(360 n^3) + 1/(1260 n^5) +/- O(n^{-7}).}
 }
 \note{
   In principle, the direct formula should be replaced by a few terms of the

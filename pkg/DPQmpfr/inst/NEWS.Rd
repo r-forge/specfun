@@ -4,11 +4,12 @@
 \title{DPQmpfr News}
 \encoding{UTF-8}
 
-\section{Version 0.3-1 (2021-05-10, svn r...)}{
+\section{Version 0.3-1 (2021-05-17, svn r172)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{stirlerrM(n)} and \code{stirlerrSer(n,k)} providing
-      Stirling's formula approximation errors for bigrational ("bigz") or "mpfr" numbers.
+      Stirling's formula approximation errors for bigrational ("bigz") or
+      "mpfr" numbers.
     }
   }
 }
@@ -26,7 +27,7 @@
       Add \code{log_scale} option to both \code{pbeta*()} and \code{qbeta*()}.
 
       \item \dQuote{mpfr-ize} more, notably \code{pnorm*()} from
-      \CRANpkg{DPQ} (0.4-2). % ../R/dpq-m
+      \CRANpkg{DPQ} (0.4-2). % ../R/dpq-mpfrized.R
     }
   }
 }
