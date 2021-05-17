@@ -30,12 +30,9 @@ stirlerrSer(n, k)
   \deqn{\delta(n) =  \log\Gamma(n + 1) - n \log(n) + n - \log(2 \pi n)/2.}{%
          delta(n) =   log\Gamma(n + 1) - n* log(n) + n -  log(2*pi*n)/2.}
 
-  See the vignette \href{log1pmx, bd0, stirlerr - Probability
-    Approximations for \R}{%
-    https://CRAN.R-project.org/package=DPQ/vignettes/log1pmx-etc.pdf}
-  from package \CRANpkg{DPQ}.
-  where the series expansion of \eqn{\delta(n)} is used with 11 terms,
-  starting with
+  See the vignette \emph{log1pmx, bd0, stirlerr, ...} from package
+  \CRANpkg{DPQ}, where the series expansion of \eqn{\delta(n)} is used with
+  11 terms, starting with
   \deqn{\delta(n) = \frac 1{12 n} - \frac 1{360 n^3} + \frac 1{1260 n^5}
                     \pm O(n^{-7}).}{%
 	 delta(n) = 1/(12 n) - 1/(360 n^3) + 1/(1260 n^5) +/- O(n^{-7}).}

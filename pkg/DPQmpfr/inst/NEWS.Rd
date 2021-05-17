@@ -4,7 +4,7 @@
 \title{DPQmpfr News}
 \encoding{UTF-8}
 
-\section{Version 0.3-1 (2021-05-17, svn r172)}{
+\section{Version 0.3-1 (2021-05-17, svn r174)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{stirlerrM(n)} and \code{stirlerrSer(n,k)} providing
