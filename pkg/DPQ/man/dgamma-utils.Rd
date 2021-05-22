@@ -1,6 +1,9 @@
 \name{dgamma-utils}
 \title{Utility Functions for \code{dgamma()} -- Pure R Versions}
 \alias{bd0}
+\alias{bd0_p1l1d1}
+\alias{bd0_p1l1d}
+\alias{bd0_l1pm}
 \alias{bd0C}
 \alias{ebd0}
 \alias{dpois_raw}
@@ -31,7 +34,12 @@ bd0(x, np,
     s0 = .Machine$double.xmin,
     verbose = getOption("verbose"))
 bd0C(x, np, delta = 0.1, maxit = 1000L, version = "R4.0", verbose = getOption("verbose"))
-ebd0(x, M, verbose = getOption("verbose"))
+# "simple" log1pmx() based versions :
+bd0_p1l1d1(x, M, tol_logcf = 1e-14, ...)
+bd0_p1l1d (x, M, tol_logcf = 1e-14, ...)
+bd0_l1pm  (x, M, tol_logcf = 1e-14, ...)
+
+ebd0(x, M, verbose = getOption("verbose")) # experimental, may disappear !!
 
 stirlerr(n, scheme = c("R3", "R4.1"),
          cutoffs = switch(scheme
@@ -52,7 +60,7 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
   \item{delta, bd0.delta}{a positive number, a cutoff for \code{bd0()}
     where the \code{\link{logcf}()} series expansion is used when
     \eqn{|x - M| < delta*(x+M)}.}
-  \item{tol_logcf, eps2, minL1, trace.lcf, logCF}{
+  \item{tol_logcf, eps2, minL1, trace.lcf, logCF, ...}{
     optional tuning arguments passed to \code{\link{log1pmx}()}.}
   \item{maxit}{the number of \code{logcf()} terms to be used in
     \code{bd0()} when \eqn{|x-M|} is small.}
@@ -132,6 +140,9 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
 \seealso{
   \code{\link{dgamma}}, % ~/R/D/r-devel/R/src/library/stats/man/GammaDist.Rd
   \code{\link{dpois}}.
+  High precision versions \code{\link[DPQmpfr]{stirlerrM}(n)} and
+  \code{stirlerrSer(n,k)} in package \CRANpkg{DPQmpfr} (via the
+  \CRANpkg{Rmpfr} and \CRANpkg{gmp} packages).
 }
 \examples{
 n <- seq(1, 50, by=1/4)
@@ -144,7 +155,19 @@ bd0x1k <- bd0(x, np = 1000)
 plot(x, bd0x1k, type="l", ylab = "bd0(x, np=1000)")
 bd0x1kC <- bd0C(x, np = 1000)
 lines(x, bd0x1kC, col=2)
-stopifnot(all.equal(bd0x1kC, bd0x1k, tol=1e-15)) # even tol=0 currently ..
+bd0.1d1 <- bd0_p1l1d1(x, 1000)
+bd0.1d  <- bd0_p1l1d (x, 1000)
+bd0.1pm <- bd0_l1pm  (x, 1000)
+stopifnot(exprs = {
+    all.equal(bd0x1kC, bd0x1k,  tol=1e-15) # even tol=0 currently ..
+    all.equal(bd0x1kC, bd0.1d1, tol=1e-15)
+    all.equal(bd0x1kC, bd0.1d , tol=1e-15)
+    all.equal(bd0x1kC, bd0.1pm, tol=1e-15)
+})
+
+str(log1pmx) ##--> play with  { tol_logcf, eps2, minL1, trace.lcf, logCF }
+
+
 if(FALSE) ## FIXME !
 ebd0x1k <- ebd0(x, 1000) # FIXME: subscript out of bout
 if(FALSE) # the bug is  only here:

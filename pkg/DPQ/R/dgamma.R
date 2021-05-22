@@ -172,7 +172,7 @@ bd0_p1l1d <- function(x, M, tol_logcf = 1e-14, ...) {
 bd0_l1pm <- function(x, M, tol_logcf = 1e-14, ...) {
     ## FIXME? for x = 0, hence x < eps !
     s <- (M-x)/x
-    x * log1pmx(s, tol_logcf=tol_logcf, ...)
+    - x * log1pmx(s, tol_logcf=tol_logcf, ...)
 }
 
 bd0 <- function(x, np,

@@ -133,8 +133,8 @@ considerably, also for R's internal \verb|dpois_raw()| function which is
 used further directly in % ~/R/D/r-devel/R/src/nmath/dpois_raw.grep
 \code{dpois()}, \code{dnbinom()}, \code{dgamma()}, the non-central
 \code{dbeta()} and \code{dchisq()} and even the \emph{cumulative}
-$\Gamma()$ probalities \code{pgamma()} and hence indirectly e.g., for
-cumulative central and non-central chisquare probablities (\code{pchisq()}).
+$\Gamma()$ probabilities \code{pgamma()} and hence indirectly e.g., for
+cumulative central and non-central chisquare probabilities (\code{pchisq()}).
 
 \citeauthor{LoaC2000} noticed that for large $n$, the usual way to compute $p(x; n,p)$ via
 its logarithm $\log(p(x; n, p)) = \log(n!) - \log(x!) - \log((n - x)!) + x
@@ -147,7 +147,7 @@ substraction of the log factorials).
 Instead, she wrote
 \begin{align}
   \label{eq:p-D}
-  p(x; n, p) = p(x; n, \frac{x}{n})  e^{-D(x;n,p)},
+  p(x; n, p) = p(x; n, \frac{x}{n}) \cdot e^{-D(x;n,p)},
 \end{align}
 where the ``Deviance'' $D(.)$ is defined as
 \begin{align}
@@ -187,7 +187,7 @@ mirrored, e.g., at
 \myHref{https://github.com/wch/r-source/blob/trunk/src/nmath/bd0.c}{Winston Chen's github mirror}.
 In 2014, Morten Welinder suggested in
 \myHref{https://bugs.r-project.org/bugzilla/show\_bug.cgi?id=15628}{R's \PR{15628}}
-that the current \code{bd0()} implentation is still inaccurate in some
+that the current \code{bd0()} implementation is still inaccurate in some
 regions (mostly \emph{not} in the one it has been carefully implemented to
 be accurate, i.e., when $x \approx M$) notably for computing Poisson
 probabilities, \code{dpois()} in R; see more below.
@@ -243,7 +243,7 @@ Also, negative binomial probabilities, \code{dnbinom()}, \dots \dots \dots TODO 
 Even for the $t_\nu$ density, \code{dt()}, \dots \dots \dots
 \\ \dots
 but there have a direct approximations in package \pkg{DPQ}, currently functions
-\code{c\_dt(nu)} and even more promissingly, \code{lb\_chi(nu)}.
+\code{c\_dt(nu)} and even more promisingly, \code{lb\_chi(nu)}.
  \dots \dots \dots TODO \dots \dots
 
 
@@ -260,7 +260,26 @@ here repeated from (\ref{eq:D0-def}) :
   D_0(x,M)      &:= M \cdot \tilde D_0\bigl(\frac{x}{M}\bigr), \ \ \mathrm{where}\\
   \tilde D_0(u) &:= u \log(u) + 1-u = u(\log(u) - 1) + 1.
 \end{align*}
-Hence,
+
+\pagebreak[3]
+Note the graph of $\tilde D_0(u)$,
+\setkeys{Gin}{width=0.5\textwidth}% set figure width
+\begin{center}% \begin{figure}[htb!] \centering\small
+<<plot_D0tilde, fig=TRUE, width=4.6, height=4.3, echo=FALSE>>=
+par(mar = 0.1 + c(2.5, 3, 0, 0), mgp = c(1.5, 0.6, 0), las=1)
+curve(x*log(x)+1-x, 1e-7, 6, n=1001, col=2, lwd=2,
+      panel.first=grid(), xlab=quote(u), ylab="")
+mtext(quote(tilde(D[0])(u) == ~ u %.%~ log(u)+1-~u), line=-2, col=2)
+abline(a = 1-exp(1), b=1, col=adjustcolor(4, 3/4), lwd=1.5, lty=2)
+text(5, 2.5, quote(1%.%u - e+1), col=4)
+axis(1, at=exp(1), quote(e), tck=0.2, col=4, col.axis=4, lty=3)
+@
+\end{center}
+\vspace*{-1.5ex}
+has a double zero at $u=1$, such that for large $M$ and $x \approx M$, i.e.,
+$\frac x M \approx 1$, the direct computation of
+$D_0(x,M) = M \cdot \tilde D_0\bigl(\frac{x}{M}\bigr)$ is numerically problematic.
+Further,
 \begin{align}
   \label{eq:bd0-trafo}
   D_0(x,M) & = M \cdot \bigl(\frac{x}{M}(\log(\frac{x}{M}) -1) +1 \bigr) =
@@ -347,7 +366,7 @@ p.p1l1 <- function(from, to, ylim=NULL, cS = adjustcolor(6, 1/2),
 \centering\small
 %% sfsmisc::mult.fig(mfcol=c(1,2)) # FAILS with Sweave setup ?!
 <<l1p1-curves, fig=TRUE, width=10>>=
-par(mfcol=1:2, mar = 0.1 + c(2.5, 3, 1, 2), mgp = c(1.5, 0.6, 0), las=1) -> op
+par(mfcol=1:2, mar = 0.1 + c(2.5, 3, 1, 2), mgp = c(1.5, 0.6, 0), las=1)
 p.p1l1(-7/8, 2, ylim = c(-1,2))
 arrows(.3,-.3, 0, 0); text(.3, -.3, "zoom in")
 p.p1l1(-1e-4, 1.5e-4, ylim=1e-8*c(-.6, 1), do.leg=FALSE)

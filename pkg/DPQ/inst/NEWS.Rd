@@ -4,10 +4,10 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.4-4 (2021-05-.., svn r1..)}{
+\section{Version 0.4-4 (2021-05-22, svn r175)}{
   \subsection{NEW FEATURES}{
     \itemize{
-      \item (.)
+      \item new \code{bd0_*()} versions of \code{bd0()}, based mainly on \code{log1pmx()}.
     }
   }
   \subsection{REFACTORING}{
