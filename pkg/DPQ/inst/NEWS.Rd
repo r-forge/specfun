@@ -4,7 +4,25 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.4-4 (2021-05-22, svn r175)}{
+\section{Version 0.4-5 (2021-06-01, svn r176)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item new \code{ebd0C()} interface to C version; helps to fix
+      lapsus in pure \R version \code{ebd0()}.
+
+      \item new \R functions \code{frexp()} and \code{ldexp()} for getting
+      and setting base-2 representations of numbers, interfacing the C99
+      standard functions of the same name.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item .
+    }
+  }
+}
+
+\section{Version 0.4-4 (2021-05-22, svn r175)}{% CRAN publication 05-27
   \subsection{NEW FEATURES}{
     \itemize{
       \item new \code{bd0_*()} versions of \code{bd0()}, based mainly on \code{log1pmx()}.

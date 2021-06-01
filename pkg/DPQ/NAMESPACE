@@ -52,6 +52,8 @@ export(
   , M_LN2, M_cutoff, M_minExp
   , G_half
 
+  , frexp, ldexp
+
   , .dntJKBch, .dntJKBch1
 
 
@@ -134,7 +136,7 @@ export(
   , dpois_raw
   , bd0, bd0C, stirlerr
   , bd0_p1l1d1, bd0_p1l1d, bd0_l1pm
-  , ebd0
+  , ebd0, ebd0C
   , p1l1, p1l1., p1l1p, p1l1ser ## NB: p1l1p() via log1pmx()  is *very* good!
 
     ## from R/qchisqAppr.R :

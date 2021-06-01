@@ -62,6 +62,7 @@ static R_CallMethodDef CallEntries[] = {
     CALLDEF(R_chebyshev_eval, 3), // <--> chebyshev.c
     CALLDEF(R_chebyshev_init, 2), // <-->    "
     CALLDEF(dpq_bd0, 6),     // <--> bd0.c
+    CALLDEF(dpq_ebd0, 3),    //  "    "
 
     {NULL, NULL, 0}
 };

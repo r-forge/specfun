@@ -124,7 +124,7 @@ p.stirlerrDev(n=n, stnM=st.nM, cex=1/4, type="o", cutoffs = cuts, abs=TRUE)
 lines((0:30)/2, abs(stirlerr((0:30)/2, cutoffs=cuts, verbose=TRUE)/DPQ:::sferr_halves - 1), type="o", col=2,lwd=2)
 ## should we e.g., use interpolation spline through sfserr_halves[] for n <= 7.5
 ## -- doing the interpolation on the  log(1 - 12*x*stirlerr(x)) vs  log2(x)  scale -- maybe ?
-curve(1-12*x*stirlerr(x, verbose=TRUE), 1/64, 8, log="xy", n=2048) 
+curve(1-12*x*stirlerr(x, verbose=TRUE), 1/64, 8, log="xy", n=2048)
 ## just need "true" values for x = 2^-(6,5,4,3,2) in addition to those we already have at x = 1/2, 1.5, 2, 2.5, ..., 7.5, 8
 
 p.stirlerrDev(n=n, stnM=st.nM, cex=1/4, type="o", cutoffs = cuts, ylim=c(-1,1)*4e-14)
@@ -181,3 +181,11 @@ identical(bd0.n, 1024 * exp(colSums(DPQ:::logf_mat))) # amazingly to me
 ## their differences are close to, but *not* monotone:
 diff(bd0.n) # -16 -16 -15 -15 -15 -15 -14 -14 -15 -13 -14 ...
             #                             ^^^^^^^^^^^^^^  (etc)
+
+if(!dev.interactive(orNone=TRUE)) pdf("diff-bd0_tab.pdf")
+plot(diff(bd0.n), type="b")
+c2 <- adjustcolor(2, 1/2)
+par(new=TRUE)
+plot(diff(bd0.n, differences = 2), type="b", col=c2, axes=FALSE, ann=FALSE)
+axis(4, at=-1:2, col=c2, col.axis=c2)
+

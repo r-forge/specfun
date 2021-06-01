@@ -40,8 +40,8 @@ dgamma.R <- function(x, shape, scale = 1, log)
 ## ~/R/D/r-devel/R/src/nmath/dpois.c   --> dpois_raw()
 ## // called also from dgamma.c, pgamma.c, dnbeta.c, dnbinom.c, dnchisq.c :
 dpois_raw <- function(x, lambda, log=FALSE,
-                      ## for now:                            NB: R version *broken* \\\\\\\
-                      version = c("bd0_v1", "bd0_p1l1d", "bd0_p1l1d1", "bd0_l1pm", "ebd0_v1"),
+                      ## for now:                            NB: ebd0_v1    R version *broken* \\\\\\\
+                      version = c("bd0_v1", "bd0_p1l1d", "bd0_p1l1d1", "bd0_l1pm", "ebd0_C1", "ebd0_v1"),
                       ## future ?! version = c("ebd0_v1", "bd0_v1"),
                       bd0.delta = 0.1,
                       ## optional arguments of log1pmx() :
@@ -55,7 +55,7 @@ dpois_raw <- function(x, lambda, log=FALSE,
     R_D__0 <- if(log) -Inf else 0
     R_D__1 <- !log #  (if(log) 0 else 1)
     M <- max(length(x), length(lambda))
-    r <- rep_len(x, M) # result of same number class as 'x' (e.g. "mpfr")
+    r <- rep_len(x+0*lambda, M) # result of same number class as 'x+lambda' (e.g. "mpfr")
 
     if(verbose) {
         cat(sprintf("dpois_raw(): M = %d\n", M))
@@ -69,8 +69,8 @@ dpois_raw <- function(x, lambda, log=FALSE,
 
     if(M == 0) return(r)
     ## M >= 1 :
-    x <- r # == rep_len(x,  M)
-    lambda <- rep_len(lambda,  M)
+    x      <- rep_len(x,      M)
+    lambda <- rep_len(lambda, M)
 
     if(any(B <- lambda == 0))
         r[B] <- ifelse(x[B] == 0, R_D__1, R_D__0)
@@ -127,8 +127,10 @@ dpois_raw <- function(x, lambda, log=FALSE,
                                                x, lambda, tol_logcf=tol_logcf, eps2=eps2,
                                                minL1=minL1, trace.lcf=trace.lcf, logCF=logCF),
                                  log),
-           "ebd0_v1" = {
-               yM <- ebd0(x, lambda, verbose=verb1)
+           "ebd0_v1" = , "ebd0_C1" = {
+               FNebd0 <- switch(version, "ebd0_v1" = ebd0, "ebd0_C1" = ebd0C,
+                                stop("internal version error:", version))
+               yM <- FNebd0(x, lambda, verbose=verb1)
                yl <- yM["yl",] + del.x
                ## return
                if(log)
@@ -170,9 +172,13 @@ bd0_p1l1d <- function(x, M, tol_logcf = 1e-14, ...) {
 
 ##' Version mentioned by Morten Welinder in PR#15628
 bd0_l1pm <- function(x, M, tol_logcf = 1e-14, ...) {
-    ## FIXME? for x = 0, hence x < eps !
-    s <- (M-x)/x
-    - x * log1pmx(s, tol_logcf=tol_logcf, ...)
+    r <- s <- (M-x)/x
+    ## NB,  for x = 0,  s=Inf (or NaN) ==> use  M * D~(x/M) there
+    L <- !is.na(s) & abs(s) > 1e10
+    r[L] <- M*(1 + {a <- u <- (x/M)[L]; p <- u > 0; a[p] <- u[p] * (log(u[p]) - 1); a })
+    ok <- !L
+    r[ok]  <- - x[ok] * log1pmx(s[ok], tol_logcf=tol_logcf, ...)
+    r
 }
 
 bd0 <- function(x, np,
@@ -245,6 +251,10 @@ bd0C <- function(x, np,
     iVer <- pmatch(match.arg(version), eval(formals()$version)) # always 1L for now
     .Call(C_dpq_bd0, x, np, delta, maxit, iVer, verbose)# >> ../src/bd0.c
 }
+
+ebd0C <- function(x, M, verbose = getOption("verbose"))
+    .Call(C_dpq_ebd0, x, M, verbose)# >> ../src/bd0.c
+
 
 
 ##' bd0(x,M) = M * p1l1(t),  t := (x-M)/M
@@ -482,23 +492,23 @@ logf_mat <- ## 'bd0_scale' in C
 ##  *
 ##  * Deliver the result back in two parts, *yh and *yl.
 ##  */
-ebd0.1 <- function(x, M, verbose) # return  c(yl, yh)
+ebd0.1 <- function(x, M, verbose) # return  c(yh, yl)
 {
     stopifnot(length(x) == 1, length(M) == 1)
 
     yl <- yh <- 0
-    if (x == M)               return(c(yl=yl, yh=yh))
-    if (x == 0) { yh <- M;    return(c(yl=yl, yh=yh)) }
-    if (M == 0) { yh <- +Inf; return(c(yl=yl, yh=yh)) }
+    if (x == M)               return(c(yh=yh, yl=yl))
+    if (x == 0) { yh <- M;    return(c(yh=yh, yl=yl)) }
+    if (M == 0) { yh <- +Inf; return(c(yh=yh, yl=yl)) }
 
-    ## C:  r = frexp (M/x, &e); // => r in  [0.5, 1) and 'e' (int) such that  M/x = r * 2^e
+
     re <- .Call(C_R_frexp, M/x) ## FIXME: handle overflow/underflow in division 'M/x' !!!
     r <- re[["r"]]
     e <- re[["e"]]
 
     Sb <- 10L
     S <- 2^Sb #  = 2^10 = 1024
-    N <- ncol(logf_mat) # = 128; // == ? == G_N_ELEMENTS(bd0_scale) - 1; <<<< FIXME:
+    N <- ncol(logf_mat)-1L # = 128; // == ? == G_N_ELEMENTS(bd0_scale) - 1; <<<< FIXME:
 
     i  <- as.integer(floor ((r - 0.5) * (2 * N) + 0.5));
     ## // now,  0 <= i <= N
@@ -572,7 +582,7 @@ ebd0.1 <- function(x, M, verbose) # return  c(yl, yh)
     ADD1(-M * fg);
     if(verbose) cat(sprintf(" 4. after ADD1(- M*fg):         yl,yh=(%g, %g); yl+yh=%g\n\n", yl, yh, (yl)+(yh)))
 
-    c(yl=yl, yh=yh)
+    c(yh=yh, yl=yl)
 } ## end{ ebd0.1() }
 
 ##' The vectorized version we export (and document)

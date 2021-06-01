@@ -6,6 +6,7 @@
 \alias{bd0_l1pm}
 \alias{bd0C}
 \alias{ebd0}
+\alias{ebd0C}
 \alias{dpois_raw}
 \alias{stirlerr}
 \alias{lgammacor}
@@ -39,7 +40,8 @@ bd0_p1l1d1(x, M, tol_logcf = 1e-14, ...)
 bd0_p1l1d (x, M, tol_logcf = 1e-14, ...)
 bd0_l1pm  (x, M, tol_logcf = 1e-14, ...)
 
-ebd0(x, M, verbose = getOption("verbose")) # experimental, may disappear !!
+ebd0 (x, M, verbose = getOption("verbose")) # experimental, may disappear !!
+ebd0C(x, M, verbose = getOption("verbose"))
 
 stirlerr(n, scheme = c("R3", "R4.1"),
          cutoffs = switch(scheme
@@ -52,7 +54,7 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
 }
 \arguments{
   \item{x, n}{\code{\link{numeric}} (or number-alike such as "mpfr").}
-  \item{lambda, np, M}{each \code{\link{numeric}}; distrubution parameters.}
+  \item{lambda, np, M}{each \code{\link{numeric}} (or number-alike ..); distribution parameters.}
   \item{log}{logical indicating if the log-density should be returned,
     otherwise the density at \code{x}.}
   \item{verbose}{logical indicating if some information about the
@@ -167,15 +169,10 @@ stopifnot(exprs = {
 
 str(log1pmx) ##--> play with  { tol_logcf, eps2, minL1, trace.lcf, logCF }
 
-
-if(FALSE) ## FIXME !
-ebd0x1k <- ebd0(x, 1000) # FIXME: subscript out of bout
-if(FALSE) # the bug is  only here:
-    ebd0(1001, 1000)
-## so this works:
-ex. <- ebd0(x[x != 1001], 1000)
-## but there is more wrong currently:
-lines(x[x!=1001], colSums(ex.), col=3)
+ebd0x1k <- ebd0 (x, 1000) # FIXME: subscript out of bout
+exC     <- ebd0C(x, 1000)
+stopifnot(all.equal(exC, ebd0x1k, tol=4e-16))
+lines(x, colSums(ebd0x1k), col=adjustcolor(4, 1/2), lwd=4)
 
 x <- 1:80
 dp   <- dpois    (x, 48, log=TRUE)# R's 'stats' pkg function

@@ -80,7 +80,7 @@ sfsmisc::eaxis(2); abline(v=0, lty=3)
 with(l1xz3, stopifnot(all.equal(y, -log1pmxC(x))))
 
 e <- if(doExtras) 2^-12 else 2^-8; by.p <- 1/(if(doExtras) 256 else 64)
-xd <- c(seq(-1+e, 0+100*e, by=e), seq(by.p, 5, by=by.p))
+xd <- c(seq(-1+e, 0+100*e, by=e), seq(by.p, 5, by=by.p)) # length 676 or 5476 if do.X.
 plot(xd, log1pmx(xd), type="l", col=2, main = "log1pmx(x)")
 abline(h=0, v=-1:0, lty=3)
 
@@ -89,7 +89,7 @@ if(requireNamespace("Rmpfr") && packageVersion("sfsmisc") >= "1.1-10") withAutop
   ## for MPFR numbers, really need more than tol_logcf = eps = 1e-14 (default)
   if(doExtras) print( system.time(
     lg1pM <- log1pmx(xM, tol_logcf = 1e-25, eps2 = 1e-4)
-  )) # 4.5 sec if(doExtras) 0.43s otherwise, but 20s (!) on winbuilder!
+  )) # 73 sec if(doExtras) 0.43s otherwise, but 20s (!) on winbuilder!
   ## MM: But really, this should be more accurate anyway (?!):
   lg1pM. <- log1p(xM) - xM
   xM2k <- Rmpfr::mpfr(xd, 2048)

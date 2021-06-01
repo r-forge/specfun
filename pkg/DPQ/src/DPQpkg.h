@@ -245,10 +245,12 @@ SEXP R_algdiv(SEXP a_, SEXP b_)
 
 // bd0.c: --------------------------------------------------------------------
 double bd0(double x, double np, double delta, int maxit, int trace);
-void  ebd0(double x, double M, double *yh, double *yl);
+void  ebd0(double x, double M, double *yh, double *yl, int trace);
 
 SEXP dpq_bd0(SEXP x, SEXP np, SEXP delta,
 	     SEXP maxit, SEXP version, SEXP trace);
+
+SEXP dpq_ebd0(SEXP x, SEXP np, SEXP trace);
 
 
 // logcf.c: --------------------------------------------------------------------
@@ -266,7 +268,6 @@ SEXP     R_lgammacor(SEXP x_, SEXP nalgm_, SEXP xbig_);
 /* Chebyshev Polynomial */
 int	chebyshev_init(const double[], int, double);
 double	chebyshev_eval(double, const double[], const int);
-
 SEXP R_chebyshev_eval(SEXP x_, SEXP a_, SEXP n_);
 SEXP R_chebyshev_init(SEXP coef_, SEXP eta_);
 

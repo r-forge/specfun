@@ -12,7 +12,7 @@
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
+ *  the Free Software Foundation; either version 3 of the License, or
  *  (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -231,7 +231,7 @@ static const float bd0_scale[128 + 1][4] = {
  *
  * Deliver the result back in two parts, *yh and *yl.
  */
-void ebd0(double x, double M, double *yh, double *yl)
+void ebd0(double x, double M, double *yh, double *yl, int trace)
 {
 	const int Sb = 10;
 	const double S = 1u << Sb; // = 2^10 = 1024
@@ -254,12 +254,15 @@ void ebd0(double x, double M, double *yh, double *yl)
 	// now,  0 <= i <= N
 	double f = floor (S / (0.5 + i / (2.0 * N)) + 0.5);
 	double fg = ldexp (f, -(e + Sb)); // ldexp(f, E) := f * 2^E
-#ifdef DEBUG_bd0
+
+// #ifdef DEBUG_bd0
+    if(trace) {
 	REprintf("ebd0(%g, %g): M/x = r*2^e = %g * 2^%d; i=%d, f=%g, fg=f*2^E=%g\n", x, M, r,e, i, f, fg);
 	REprintf("     bd0_sc[0][0..3]= ("); for(int j=0; j < 4; j++) REprintf("%g ", bd0_scale[0][j]); REprintf(")\n");
 	REprintf("i -> bd0_sc[i][0..3]= ("); for(int j=0; j < 4; j++) REprintf("%g ", bd0_scale[i][j]); REprintf(")\n");
 	REprintf( "  small(?)  (M*fg-x)/x = (M*fg)/x - 1 = %.16g\n", (M*fg-x)/x);
-#endif
+    }
+// #endif
 
 	/* We now have (M * fg / x) close to 1.  */
 
@@ -290,7 +293,8 @@ void ebd0(double x, double M, double *yh, double *yl)
 	    *yl += d2;				\
 	} while(0)
 
-#ifdef DEBUG_bd0
+// #ifdef DEBUG_bd0
+    if(trace) {
 	{
 	    double log1__ = log1pmx((M * fg - x) / x),
 		d = -x * log1__;
@@ -309,22 +313,26 @@ void ebd0(double x, double M, double *yh, double *yl)
 	    REprintf(" A(- b[0,%d]): (%g, %g);", j, *yl, *yh);
 	}
 	REprintf("\n 2b. after loop 2 w/ ADD1(-):   yl,yh=(%g, %g); yl+yh=%g\n", *yl, *yh, (*yl)+(*yh));
-#else
+    } else {
+// #else
 	ADD1(-x * log1pmx ((M * fg - x) / x));
 	for (int j = 0; j < 4; j++) {
 	    ADD1( x     * bd0_scale[i][j]);  /* handles  x*log(fg*2^e) */
 	    ADD1(-x * e * bd0_scale[0][j]);  /* handles  x*log(1/ 2^e) */
 	}
-#endif
+    }
+// #endif
 
 	ADD1(M);
-#ifdef DEBUG_bd0
+// #ifdef DEBUG_bd0
+    if(trace)
 	REprintf(" 3. after ADD1(M):              yl,yh=(%g, %g); yl+yh=%g\n", *yl, *yh, (*yl)+(*yh));
-#endif
+// #endif
 	ADD1(-M * fg);
-#ifdef DEBUG_bd0
+// #ifdef DEBUG_bd0
+    if(trace)
 	REprintf(" 4. after ADD1(- M*fg):         yl,yh=(%g, %g); yl+yh=%g\n\n", *yl, *yh, (*yl)+(*yh));
-#endif
+// #endif
 }
 
 #undef ADD1
@@ -366,3 +374,50 @@ SEXP dpq_bd0(SEXP x_, SEXP np_, SEXP delta_,
     UNPROTECT(3);
     return(r_);
 }
+
+// R Interface :
+SEXP dpq_ebd0(SEXP x_, SEXP np_, SEXP trace_)
+{
+    R_xlen_t
+	n_x  = XLENGTH(x_),
+	n_np  = XLENGTH(np_),
+	n = (n_x >= n_np ? n_x : n_np);
+    if(!n_x || !n_np) return allocVector(REALSXP, 0); // length 0
+    /* if(length(delta_) != 1)   error("'length(%s)' must be 1, but is %d", "delta",  length(delta_)); */
+    /* if(length(maxit_) != 1)   error("'length(%s)' must be 1, but is %d", "maxit",  length(maxit_)); */
+    // if(length(version_) != 1) error("'length(%s)' must be 1, but is %d", "version",length(version_));
+    if(length(trace_) != 1)   error("'length(%s)' must be 1, but is %d", "trace",  length(trace_));
+    // otherwise, recycle to common length n :
+    PROTECT(x_  = isReal(x_)  ? x_  : coerceVector(x_,  REALSXP));
+    PROTECT(np_ = isReal(np_) ? np_ : coerceVector(np_, REALSXP));
+    SEXP r_ = PROTECT(allocMatrix(REALSXP, 2, n)); // result =^= rbind(yh=yh, yl=yl)
+    double *x = REAL(x_), *np = REAL(np_)
+	/* , delta = asReal(delta_) */
+	, *r = REAL(r_);
+    int
+	/* maxit   = asInteger(maxit_), */
+	// version = asInteger(version_),
+	trace   = asInteger(trace_);
+
+    if(trace) {
+	REprintf("dpq_ebd0(x[1:%d], np[1:%d], ... ):", n_x, n_np);
+    }
+    // version++; // currently unused
+
+    for(R_xlen_t i=0, i2=0; i < n; i++, i2+=2) {
+        // void ebd0(double x, double M, double *yh, double *yl, int trace)
+	ebd0(x[i % n_x], np[i % n_np], r+i2, r+(i2+1), trace);
+    }
+    // add row names to  returned matrix :
+    SEXP dm = PROTECT(allocVector(VECSXP, 2)); // dimnames(r_)
+    SEXP rnames = PROTECT(allocVector(STRSXP, 2));
+    SET_STRING_ELT(rnames, 0, mkChar("yh"));
+    SET_STRING_ELT(rnames, 1, mkChar("yl"));
+    SET_VECTOR_ELT(dm, 0, rnames);
+    // SET_VECTOR_ELT(dm, 1, R_NilValue); // empty colnames
+    setAttrib(r_, R_DimNamesSymbol, dm);
+
+    UNPROTECT(5);
+    return(r_);
+}
+

@@ -105,16 +105,15 @@ SEXP R_frexp(SEXP x_)
 // ldexp(f, E) := f * 2^E
 SEXP R_ldexp(SEXP f_, SEXP E_)
 {
-    R_xlen_t n = XLENGTH(PROTECT(f_ = isReal(f_) ?
-				 Rf_duplicate(f_) : coerceVector(f_, REALSXP)));
-    PROTECT(E_ = isInteger(E_) ? Rf_duplicate(E_) : coerceVector(E_, INTSXP));
-    if(XLENGTH(E_) != n) // FIXME(?) --> recycling (f, E) !
-	error(_("'E' is not of the same length as 'f': %.0f != %.0f"), (double)n, (double)XLENGTH(E_));
+    R_xlen_t n_f = XLENGTH(PROTECT(f_ = isReal(f_) ?
+				 Rf_duplicate(f_) : coerceVector(f_, REALSXP))),
+	n_E = XLENGTH(PROTECT(E_ = isInteger(E_) ? Rf_duplicate(E_) : coerceVector(E_, INTSXP))),
+	n = (n_f >= n_E) ? n_f : n_E; // and recycle f_ or E_ when needed
     SEXP r_ = PROTECT(allocVector(REALSXP, n));
     double *f = REAL(f_), *r = REAL(r_);
     int *E = INTEGER(E_);
     for(R_xlen_t i=0; i < n; i++)
-	r[i] = ldexp(f[i], E[i]);
+	r[i] = ldexp(f[i % n_f], E[i % n_E]);
     UNPROTECT(3);
     return r_;
 }
