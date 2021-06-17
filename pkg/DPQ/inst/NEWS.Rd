@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.4-5 (2021-06-01, svn r176)}{
+\section{Version 0.4-5 (2021-06-17, svn r177)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item new \code{ebd0C()} interface to C version; helps to fix
@@ -17,7 +17,10 @@
   }
   \subsection{BUG FIXES}{
     \itemize{
-      \item .
+      \item \code{stirlerr(n)} now also works when \code{is.integer(n)} and
+      \code{n} is large enough for \code{n * n} to overflow (to \code{NA}).
+
+      \item fix typo/thinko in \code{dnbinomR()}
     }
   }
 }

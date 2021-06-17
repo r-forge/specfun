@@ -131,7 +131,7 @@ dnbinomR <- function (x, size, prob, log = FALSE, eps = 1e-10)
         ans <- dbinom_raw(x = n., n = x.+n., p = pr, q = 1-pr, log = log)
         ## p <- n./(n.+x) ## == 1 if |x| << n.;
         ## better in log case: log(n/(n+x)) = log(1 - x/(n+x))
-        r[!i0][i] <- if(log) log1p(-x/(n.+x)) + ans  else  n./(n.+x) * ans
+        r[!i0][i] <- if(log) log1p(-x./(n.+x.)) + ans  else  n./(n.+x.) * ans
     }
     r
 }

@@ -8,10 +8,8 @@
 
 dgamma.R <- function(x, shape, scale = 1, log)
 {
-
     if (is.na(x) || is.na(shape) || is.na(scale))
         return (x + shape + scale)
-
     if (shape < 0 || scale <= 0)
         stop("invalid 'shape' or 'scale'")
     if (x < 0) {
@@ -508,7 +506,7 @@ ebd0.1 <- function(x, M, verbose) # return  c(yh, yl)
 
     Sb <- 10L
     S <- 2^Sb #  = 2^10 = 1024
-    N <- ncol(logf_mat)-1L # = 128; // == ? == G_N_ELEMENTS(bd0_scale) - 1; <<<< FIXME:
+    N <- ncol(logf_mat)-1L # = 128
 
     i  <- as.integer(floor ((r - 0.5) * (2 * N) + 0.5));
     ## // now,  0 <= i <= N
@@ -750,7 +748,7 @@ stirlerr <- function(n, scheme = c("R3", "R4.1"),
             S9 <- 1.3924322169059011164274315     ## 174611/125400
             S10<- 13.402864044168391994478957     ## 77683/5796
 
-            nn  <- n*n
+            nn  <- n^2 # = n*n  (but that integer-overflows)
             if(length(i <- which(n > cutoffs[4+i.c])))                    # k = 2 terms
                 r[i] <- (S0-S1/nn[i])/n[i]
             if(length(i <- which(cutoffs[4+i.c] >= n & n > cutoffs[3+i.c])))  # k = 3 terms
