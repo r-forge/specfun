@@ -3,7 +3,7 @@
 \alias{dnbinom.mu}
 \title{Pure R Versions of R's C (Mathlib) dnbinom() Negative Binomial Probabilities}
 \description{
-  Computer pure \R implementations of \R's C (Mathlib)
+  Compute pure \R implementations of \R's C (Mathlib)
   \code{\link{dnbinom}()} binomial probabilities, allowing to see the
   effect of the cutoff \code{eps}.
 }
@@ -20,7 +20,7 @@ dnbinom.mu(x, size, mu,   log = FALSE, eps = 1e-10)
 }
 \value{
   numeric vector of the same length as \code{x} (which may have to be
-  thought of recycled along \code{size}, \code{prob} and/or \code{mu}.
+  thought of recycled along \code{size} and \code{prob} or \code{mu}.
 }
 \references{
   Abramowitz, M. and Stegun, I. A. (1972)
@@ -37,7 +37,7 @@ dnbinom.mu(x, size, mu,   log = FALSE, eps = 1e-10)
   used instead of \R's (and our pure \R version of) \code{\link{bd0}()} and
   \code{\link{stirlerr}()}.
 }
-\examples{%% for now have regr.tests only in ../tests/dnbinom-tst.R
+\examples{%% regr.tests are in ../tests/dnbinom-tst.R
  stopifnot( dnbinomR(0, 1, 1) == 1 )
  size <- 1000 ; x <- 0:size
  dnb <- dnbinomR(x, size, prob = 5/8, log = FALSE, eps = 1e-10)

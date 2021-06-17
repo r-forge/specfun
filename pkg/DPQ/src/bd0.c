@@ -73,7 +73,7 @@ double bd0(double x, double np, double delta, int maxit, int trace)
 	    }
 	}
 	MATHLIB_WARNING5("bd0(%g, %g): T.series failed to converge in %d it.; s=%g, ej/(2j+1)=%g\n",
-			 x, np, maxit, s, ej/((2*1000)+1));
+			 x, np, maxit, s, ej/((maxit<<1)+1));
     }
     /* else:  | x - np |  is not too small */
     return(x*log(x/np)+np-x);
@@ -243,8 +243,10 @@ void ebd0(double x, double M, double *yh, double *yl, int trace)
 	if (x == 0) { *yh = M;         return; }
 	if (M == 0) { *yh = ML_POSINF; return; }
 
+	if (M/x == ML_POSINF) { *yh = M; return; }//  as when (x == 0)
+
 	int e;
-	/* FIXME: handle overflow/underflow in division below */
+	// NB: M/x overflow handled above; underflow should be handled by fg = Inf
 	double r = frexp (M / x, &e); // => r in  [0.5, 1) and 'e' (int) such that  M/x = r * 2^e
 
 	// prevent later overflow
@@ -257,12 +259,19 @@ void ebd0(double x, double M, double *yh, double *yl, int trace)
 
 // #ifdef DEBUG_bd0
     if(trace) {
-	REprintf("ebd0(%g, %g): M/x = r*2^e = %g * 2^%d; i=%d, f=%g, fg=f*2^E=%g\n", x, M, r,e, i, f, fg);
+	REprintf("ebd0(%g, %g): M/x = (r=%.15g) * 2^(e=%d); i=%d, f=%g, fg=f*2^-(e+10)=%g\n",
+		 x, M, r,e, i, f, fg);
+	if (fg == ML_POSINF) {
+	    REprintf(" --> fg = +Inf --> return( +Inf )\n");
+	    *yh = fg; return;
+	}
 	REprintf("     bd0_sc[0][0..3]= ("); for(int j=0; j < 4; j++) REprintf("%g ", bd0_scale[0][j]); REprintf(")\n");
 	REprintf("i -> bd0_sc[i][0..3]= ("); for(int j=0; j < 4; j++) REprintf("%g ", bd0_scale[i][j]); REprintf(")\n");
 	REprintf( "  small(?)  (M*fg-x)/x = (M*fg)/x - 1 = %.16g\n", (M*fg-x)/x);
     }
+    else
 // #endif
+	if (fg == ML_POSINF) { *yh = fg; return; }
 
 	/* We now have (M * fg / x) close to 1.  */
 
@@ -297,28 +306,37 @@ void ebd0(double x, double M, double *yh, double *yl, int trace)
     if(trace) {
 	{
 	    double log1__ = log1pmx((M * fg - x) / x),
-		d = -x * log1__;
-	    REprintf(" 1a. before adding  -x * log1pmx(.) = -x * %g = %g\n", log1__, d);
-	    ADD1(d);
-	    REprintf(" 1. after ADD1(-x * log1pmx(.): yl,yh=(%g, %g); yl+yh=%g\n", *yl, *yh, (*yl)+(*yh));
+		xl = -x * log1__;
+	    REprintf(" 1a. before adding  -x * log1pmx(.) = -x * %g = %g\n", log1__, xl);
+	    ADD1(xl);
+	    REprintf(" 1. after A.(-x*l..):       yl,yh = (%13g, %13g); yl+yh= %g\n",
+		     *yl, *yh, (*yl)+(*yh));
 	}
-
+        if(fg == 1) {
+            REprintf("___ fg = 1 ___ skipping further steps\n");
+            return;
+        }
+	// else  [ fg != 1 ]
+	REprintf(" 2:  A(x*b[i,j]) and A(-x*b[0,j]), j=1:4:\n");
 	for (int j = 0; j < 4; j++) {
 	    ADD1( x     * bd0_scale[i][j]);  /* handles  x*log(fg*2^e) */
-	    REprintf(" A(+ b[i,%d]): (%g, %g);", j, *yl, *yh);
-	}
-	REprintf("\n 2a. after loop 1 w/ ADD1(+):   yl,yh=(%g, %g); yl+yh=%g\n", *yl, *yh, (*yl)+(*yh));
-	for (int j = 0; j < 4; j++) {
+	    REprintf(" j=%d: (%13g, %13g);", j, *yl, *yh);
 	    ADD1(-x * e * bd0_scale[0][j]);  /* handles  x*log(1/ 2^e) */
-	    REprintf(" A(- b[0,%d]): (%g, %g);", j, *yl, *yh);
+	    REprintf(" (%13g, %13g); yl+yh= %g\n", *yl, *yh, (*yl)+(*yh));
+            if(!R_FINITE(*yh)) {
+                REprintf(" non-finite yh --> return((yh=Inf, yl=0))\n");
+		*yh = ML_POSINF; *yl = 0; return;
+            }
 	}
-	REprintf("\n 2b. after loop 2 w/ ADD1(-):   yl,yh=(%g, %g); yl+yh=%g\n", *yl, *yh, (*yl)+(*yh));
     } else {
 // #else
 	ADD1(-x * log1pmx ((M * fg - x) / x));
+        if(fg == 1) return;
+	// else (fg != 1) :
 	for (int j = 0; j < 4; j++) {
 	    ADD1( x     * bd0_scale[i][j]);  /* handles  x*log(fg*2^e) */
 	    ADD1(-x * e * bd0_scale[0][j]);  /* handles  x*log(1/ 2^e) */
+            if(!R_FINITE(*yh)) { *yh = ML_POSINF; *yl = 0; return; }
 	}
     }
 // #endif
@@ -326,12 +344,12 @@ void ebd0(double x, double M, double *yh, double *yl, int trace)
 	ADD1(M);
 // #ifdef DEBUG_bd0
     if(trace)
-	REprintf(" 3. after ADD1(M):              yl,yh=(%g, %g); yl+yh=%g\n", *yl, *yh, (*yl)+(*yh));
+	REprintf(" 3. after ADD1(M):            yl,yh = (%13g, %13g); yl+yh= %g\n", *yl, *yh, (*yl)+(*yh));
 // #endif
 	ADD1(-M * fg);
 // #ifdef DEBUG_bd0
     if(trace)
-	REprintf(" 4. after ADD1(- M*fg):         yl,yh=(%g, %g); yl+yh=%g\n\n", *yl, *yh, (*yl)+(*yh));
+	REprintf(" 4. after ADD1(- M*fg):       yl,yh = (%13g, %13g); yl+yh= %g\n\n", *yl, *yh, (*yl)+(*yh));
 // #endif
 }
 

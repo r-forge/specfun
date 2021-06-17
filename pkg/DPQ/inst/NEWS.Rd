@@ -4,11 +4,16 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.4-5 (2021-06-17, svn r177)}{
+\section{Version 0.4-5 (2021-06-17, svn r178)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item new \code{ebd0C()} interface to C version; helps to fix
-      lapsus in pure \R version \code{ebd0()}.
+      lapsus in pure \R version \code{ebd0()}:
+
+      \code{ebd0(x, M)} for large \code{M} now checks for overflow in
+      \code{M/x}, and notably the case \code{f * 2^-(e+10) =: fg == Inf}.
+
+      \item In \code{bd0()} work around underflow of \code{(x-np)/(x+np)}.
 
       \item new \R functions \code{frexp()} and \code{ldexp()} for getting
       and setting base-2 representations of numbers, interfacing the C99

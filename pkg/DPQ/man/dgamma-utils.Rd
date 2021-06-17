@@ -31,7 +31,7 @@ dpois_raw(x, lambda, log=FALSE,
           logCF = if (is.numeric(x)) logcf else logcfR,
           verbose = FALSE)
 bd0(x, np,
-    delta = 0.1, maxit = 1000L,
+    delta = 0.1, maxit = as.integer(-1100 / log2(delta)),
     s0 = .Machine$double.xmin,
     verbose = getOption("verbose"))
 bd0C(x, np, delta = 0.1, maxit = 1000L, version = "R4.0", verbose = getOption("verbose"))
@@ -40,7 +40,7 @@ bd0_p1l1d1(x, M, tol_logcf = 1e-14, ...)
 bd0_p1l1d (x, M, tol_logcf = 1e-14, ...)
 bd0_l1pm  (x, M, tol_logcf = 1e-14, ...)
 
-ebd0 (x, M, verbose = getOption("verbose")) # experimental, may disappear !!
+ebd0 (x, M, verbose = getOption("verbose"), ...) # experimental, may disappear !!
 ebd0C(x, M, verbose = getOption("verbose"))
 
 stirlerr(n, scheme = c("R3", "R4.1"),
@@ -59,13 +59,15 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
     otherwise the density at \code{x}.}
   \item{verbose}{logical indicating if some information about the
     computations are to be printed.}
-  \item{delta, bd0.delta}{a positive number, a cutoff for \code{bd0()}
+  \item{delta, bd0.delta}{a positive number \eqn{< 1} (practically required
+    to be \eqn{\le .99}), a cutoff for \code{bd0()}
     where the \code{\link{logcf}()} series expansion is used when
     \eqn{|x - M| < delta*(x+M)}.}
   \item{tol_logcf, eps2, minL1, trace.lcf, logCF, ...}{
     optional tuning arguments passed to \code{\link{log1pmx}()}.}
   \item{maxit}{the number of \code{logcf()} terms to be used in
-    \code{bd0()} when \eqn{|x-M|} is small.}
+    \code{bd0()} when \eqn{|x-M|} is small.  The default is \eqn{k} such
+    that \eqn{\delta^{2k} \le 2^{-1022-52}}, i.e., will underflow to zero.}
   \item{s0}{the very small \eqn{s_0} determining that \code{bd0() = s}
     already before the locf series expansion.}
   \item{version}{a \code{\link{character}} string specifying the version of
@@ -174,14 +176,38 @@ exC     <- ebd0C(x, 1000)
 stopifnot(all.equal(exC, ebd0x1k, tol=4e-16))
 lines(x, colSums(ebd0x1k), col=adjustcolor(4, 1/2), lwd=4)
 
-x <- 1:80
+x <- 0:250
 dp   <- dpois    (x, 48, log=TRUE)# R's 'stats' pkg function
 dp.r <- dpois_raw(x, 48, log=TRUE)
 all.equal(dp, dp.r, tol = 0) # on Linux 64b, see TRUE
 stopifnot(all.equal(dp, dp.r, tol = 1e-14))
-# matplot(x, cbind(dp, dp.r), type = "b") # looks "ok", .. but not if you look closely:
-# plot(x, dp.r - dp, type = "b",
-#      main = "dpois_raw(x, 48, log=T)  -  dpois(..)  -- something's wrong!")
-# abline(h=0, lty=3)
+## dpois_raw()  versions:
+(vers <- eval(formals(dpois_raw)$version))
+mv <- sapply(vers, function(v) dpois_raw(x, 48, version=v))
+matplot(x, mv, type="h", log="y") # "fine"
+if(all(abs(1 - mv[,"ebd0_C1"]/mv[,"ebd0_v1"]) < 2e-16)) mv <- mv[, vers != "ebd0_C1"]
+## now look at *relative* errors -- need "Rmpfr" for "truth"
+if(requireNamespace("Rmpfr")) {
+
+    dM <- Rmpfr::dpois(Rmpfr::mpfr(x, 256), 48)
+    asN <- Rmpfr::asNumeric
+    relE <- asN(mv / dM - 1)
+    cols <- adjustcolor(1:ncol(mv), 1/2)
+
+    mtit <- "relative Errors of dpois_raw(x, 48, version = * )"
+    matplot(x, relE, type="l", col=cols, lwd=3, lty=1, main=mtit)
+    legend("topleft", colnames(mv), col=cols, lwd=3, bty="n")
+
+    matplot(x, abs(relE), ylim=pmax(1e-18, range(abs(relE))), type="l", log="y",
+            main=mtit, col=cols, lwd=2, lty=1, yaxt="n")
+    sfsmisc::eaxis(2)
+    legend("bottomright", colnames(mv), col=cols, lwd=2, bty="n", ncol=3)
+    ee <- c(.5, 1, 2)* 2^-52; eC <- quote(epsilon[C])
+    abline(h=ee, lty=2, col="gray", lwd=c(1,2,1))
+    axis(4, at=ee[2:3], expression(epsilon[C], 2 * epsilon[C]), col="gray", las=1)
+    par(new=TRUE)
+    plot(x, asN(dM), type="h", col=adjustcolor("darkgreen", 1/3), axes=FALSE, ann=FALSE)
+    stopifnot(abs(relE) < 8e-13) # seen 2.57e-13
+}# Rmpfr
 }
 \keyword{distribution}

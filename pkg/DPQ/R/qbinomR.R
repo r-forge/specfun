@@ -200,7 +200,7 @@ qbinomR1 <- function(p, size, prob, lower.tail=TRUE, log.p=FALSE,
         ## return
 	y
     }
-} ## qbinomR()
+} ## qbinomR1()
 
 ## A version vectorized in 'p' :
 qbinomR <- Vectorize(qbinomR1, c("p", "size", "prob"))

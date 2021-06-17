@@ -1,5 +1,5 @@
 \name{fr_ld_exp}
-\title{Get and Set 2-Exponent Representation of Numbers}
+\title{Base-2 Representation and Multiplication of Numbers}
 \alias{frexp}
 \alias{ldexp}
 \description{
@@ -15,6 +15,8 @@
   \code{ldexp(f, E)} is the \emph{inverse} of \code{frexp()}: Given
   fraction or mantissa \code{f} and integer exponent \code{E}, it returns
   \eqn{x = f * 2^E}.
+  Viewed differently, it's the fastest way to multiply or divide (double
+  precision) numbers with \eqn{2^E}.
 }
 \usage{
 frexp(x)

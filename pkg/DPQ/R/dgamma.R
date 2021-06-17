@@ -126,9 +126,11 @@ dpois_raw <- function(x, lambda, log=FALSE,
                                                minL1=minL1, trace.lcf=trace.lcf, logCF=logCF),
                                  log),
            "ebd0_v1" = , "ebd0_C1" = {
-               FNebd0 <- switch(version, "ebd0_v1" = ebd0, "ebd0_C1" = ebd0C,
-                                stop("internal version error:", version))
-               yM <- FNebd0(x, lambda, verbose=verb1)
+               yM <- switch(version,
+                            "ebd0_v1" = ebd0 (x, lambda, verbose=verb1,
+                                              tol_logcf=tol_logcf, eps2=eps2, minL1=minL1, trace.lcf=trace.lcf, logCF=logCF),
+                            "ebd0_C1" = ebd0C(x, lambda, verbose=verb1),
+                            stop("internal version error:", version))
                yl <- yM["yl",] + del.x
                ## return
                if(log)
@@ -180,23 +182,23 @@ bd0_l1pm <- function(x, M, tol_logcf = 1e-14, ...) {
 }
 
 bd0 <- function(x, np,
-                delta = 0.1, maxit = 1000L,
+                delta = 0.1, maxit = as.integer(-1100 / log2(delta)),
                 s0 = .Machine$double.xmin, # = DBL_MIN
                 verbose = getOption("verbose"))
 {
     ## stopifnot(length(x) == 1) -- rather vectorize now:
-    stopifnot(0 < delta, delta < 1, maxit >= 1)
-    if((n <- length(x)) > (n2 <- length(np))) np <- rep_len(np, n)
-    else if(n < n2) x <- rep_len(n2)
+    stopifnot(0 < delta, delta <= .99, maxit >= 1)
+    if((n <- length(x)) > (n2 <- length(np)))
+        np <- rep_len(np, n)
+    else if(n < n2)
+        x <- rep_len(x, n2)
     rm(n2)
     N <- as.numeric # to be used in verbose / warning printing
-    if(inherits(x, "mpfr") || inherits(np, "mpfr")) {
-        if(requireNamespace("Rmpfr"))
-            I <- Rmpfr::mpfr
-        else
+    if(useMpfr <- inherits(x, "mpfr") || inherits(np, "mpfr")) {
+        if(!requireNamespace("Rmpfr"))
             stop("need to  install.packages(\"Rmpfr\") ")
-    } else I <- identity
-    I(Vectorize(
+    }
+    bd0.1 <- # (name it; easier when debugging)
         function(x, np) {
             if(!is.finite(x) || !is.finite(np) || np == 0.0) {
                 ## ML_ERR_return_NAN;
@@ -204,7 +206,14 @@ bd0 <- function(x, np,
                 return(NaN)
             }
             if(abs(x-np) < delta * (x+np)) {
-                v <- (x-np)/(x+np) # might underflow to 0
+                v <- (x-np)/(x+np)
+                if(v == 0 && x != np) { # had underflow
+                    F <- sqrt(x) * sqrt(np) # scaling factor --
+                    ## could do better: replace  v * N  with  sv * N * sv  where sv := sqrt(v)
+                    x. <- x/F
+                    n. <- np/F
+                    v <- (x. - n.)/(x. + n.)
+                }
                 s <- (x-np)*v
                 if(abs(s) < s0) {
                     if(verbose)
@@ -235,8 +244,11 @@ bd0 <- function(x, np,
             ## else   |x - np|  is not too small (or the iterations failed !)
             x*log(x/np) + np-x
             ##================
-        },
-        c("x","np"))(x, np))
+        } # {bd0.1}
+
+    if(useMpfr)
+        Rmpfr::mpfr(Vectorize(bd0.1, c("x","np"))(x, np))
+    else            Vectorize(bd0.1, c("x","np"))(x, np)
 } ## {bd0}
 
 ##' The version calling into C (to the "same" code R's Rmathlib bd0() uses
@@ -490,16 +502,16 @@ logf_mat <- ## 'bd0_scale' in C
 ##  *
 ##  * Deliver the result back in two parts, *yh and *yl.
 ##  */
-ebd0.1 <- function(x, M, verbose) # return  c(yh, yl)
+ebd0.1 <- function(x, M, verbose, ...) # return  c(yh, yl)
 {
-    stopifnot(length(x) == 1, length(M) == 1)
+    stopifnot(length(x) == 1, length(M) == 1, x >= 0, M >= 0)
 
     yl <- yh <- 0
     if (x == M)               return(c(yh=yh, yl=yl))
     if (x == 0) { yh <- M;    return(c(yh=yh, yl=yl)) }
     if (M == 0) { yh <- +Inf; return(c(yh=yh, yl=yl)) }
 
-
+    if (is.infinite(M/x)) { yh <- M; return(c(yh=yh, yl=yl)) } # as when (x == 0)
     re <- .Call(C_R_frexp, M/x) ## FIXME: handle overflow/underflow in division 'M/x' !!!
     r <- re[["r"]]
     e <- re[["e"]]
@@ -513,11 +525,18 @@ ebd0.1 <- function(x, M, verbose) # return  c(yh, yl)
     f  <- floor (S / (0.5 + i / (2.0 * N)) + 0.5);
     fg  <- .Call(C_R_ldexp, f, -(e + Sb)) # // ldexp(f, E) := f * 2^E
     if(verbose) {
-	cat(sprintf("ebd0(%g, %g): M/x = r*2^e = %g * 2^%d; i=%d, f=%g, fg=f*2^E=%g\n", x, M, r,e, i, f, fg))
+	cat(sprintf("ebd0(%g, %g): M/x = (r=%.15g) * 2^(e=%d); i=%d, f=%g, fg=f*2^-(e+10)=%g\n",
+                    x, M, r,e, i, f, fg))
+	if (fg == Inf) {
+	    cat(sprintf(" --> fg = +Inf --> return( +Inf )\n"))
+            return(c(yh=fg, yl=yl))
+	}
 	cat("     bd0_sc[0][0..3]= ("); for(j in 1:4) cat(sprintf("%g ", logf_mat[j, 0+1L])); cat(")\n")
 	cat("i -> bd0_sc[i][0..3]= ("); for(j in 1:4) cat(sprintf("%g ", logf_mat[j, i+1L])); cat(")\n")
 	cat(sprintf( "  small(?)  (M*fg-x)/x = (M*fg)/x - 1 = %.16g\n", (M*fg-x)/x))
     }
+    else
+        if (fg == Inf) { return(c(yh=fg, yl=yl)) }
 
 	## /* We now have (M * fg / x) close to 1.  */
 
@@ -548,44 +567,52 @@ ebd0.1 <- function(x, M, verbose) # return  c(yh, yl)
     }
 
     if(verbose) {
-        log1.. <- log1pmx((M * fg - x) / x)
+        log1.. <- log1pmx((M * fg - x) / x, ...)
         d <- -x * log1..
 	cat(sprintf(" 1a. before adding  -x * log1pmx(.) = -x * %g = %g\n", log1.., d))
         ADD1(d)
-	cat(sprintf(" 1. after ADD1(-x * log1pmx(.): yl,yh=(%g, %g); yl+yh=%g\n", yl, yh, (yl)+(yh)))
-    } else
-        ADD1(-x * log1pmx ((M * fg - x) / x));
+	cat(sprintf(        " 1. after A.(-x*l..):       yl,yh = (%13g, %13g); yl+yh= %g\n",
+                    yl, yh, (yl)+(yh)))
+        if(fg == 1) {
+            cat("___ fg = 1 ___ skipping further steps\n")
+            return(c(yh=yh, yl=yl))
+        }
+        ##  else -- fg != 1
+        cat(sprintf(" 2:  A(x*b[i,j]) and A(-x*b[0,j]), j=1:4:\n"))
+        for (j in 1:4) {
+            ADD1( x * logf_mat[j, i+1L]);  # /* handles  x*log(fg*2^e) */
+            cat(sprintf(" j=%d: (%13g, %13g);", j, yl, yh))
+            ADD1((-x * logf_mat[j, 0+1L]) * e);  # /* handles  x*log(1/ 2^e) -- *order* important
+            cat(sprintf(" (%13g, %13g); yl+yh= %g\n", yl, yh, (yl)+(yh)))
+            if(!is.finite(yh)) {
+                cat(" non-finite yh --> return((yh=Inf, yl=0))\n")
+                return(c(yh=Inf, yl=0))
+            }
+        }
+    } else { ## not verbose
+        ADD1(-x * log1pmx ((M * fg - x) / x, ...))
+        if(fg == 1) return(c(yh=yh, yl=yl))
 
-    if(verbose) {
 	for (j in 1:4) {
-	    ADD1( x     * logf_mat[j, i+1L]);  # /* handles  x*log(fg*2^e) */
-	    cat(sprintf(" A(+ b[i,%d]): (%g, %g);", j, yl, yh))
+	    ADD1(  x * logf_mat[j, i+1L])  # /* handles  x*log(fg*2^e) */
+	    ADD1((-x * logf_mat[j, 0+1L]) * e)  # /* handles  x*log(1/ 2^e)  -- *order* important
+            if(!is.finite(yh)) return(c(yh=Inf, yl=0))
 	}
-	cat(sprintf("\n 2a. after loop 1 w/ ADD1(+):   yl,yh=(%g, %g); yl+yh=%g\n", yl, yh, (yl)+(yh)))
-	for (j in 1:4) {
-	    ADD1(-x * logf_mat[j, 0+1L] * e);  # /* handles  x*log(1/ 2^e) */
-	    cat(sprintf(" A(- b[0,%d]): (%g, %g);", j, yl, yh))
-	}
-	cat(sprintf("\n 2b. after loop 2 w/ ADD1(-):   yl,yh=(%g, %g); yl+yh=%g\n", yl, yh, (yl)+(yh)))
-  } else { ## not verbose
-	for (j in 1:4) {
-	    ADD1( x * logf_mat[j, i+1L]    )  # /* handles  x*log(fg*2^e) */
-	    ADD1(-x * logf_mat[j, 0+1L] * e)  # /* handles  x*log(1/ 2^e) */
-	}
-  }
+    }
+    ## if(!is.finite(yh)) return(c(yh=Inf, yl=0))
 
     ADD1(M);
-    if(verbose) cat(sprintf(" 3. after ADD1(M):              yl,yh=(%g, %g); yl+yh=%g\n", yl, yh, (yl)+(yh)))
-
+    if(verbose) cat(sprintf(" 3. after ADD1(M):            yl,yh = (%13g, %13g); yl+yh= %g\n",
+                            yl, yh, (yl)+(yh)))
     ADD1(-M * fg);
-    if(verbose) cat(sprintf(" 4. after ADD1(- M*fg):         yl,yh=(%g, %g); yl+yh=%g\n\n", yl, yh, (yl)+(yh)))
-
+    if(verbose) cat(sprintf(" 4. after ADD1(- M*fg):       yl,yh = (%13g, %13g); yl+yh= %g\n\n",
+                            yl, yh, (yl)+(yh)))
     c(yh=yh, yl=yl)
 } ## end{ ebd0.1() }
 
 ##' The vectorized version we export (and document)
-ebd0 <- function(x, M, verbose = getOption("verbose"))
-    Vectorize(ebd0.1, vectorize.args = c("x", "M"))(x, M=M, verbose=verbose)
+ebd0 <- function(x, M, verbose = getOption("verbose"), ...)
+    Vectorize(ebd0.1, vectorize.args = c("x", "M"))(x, M=M, verbose=verbose, ...)
 
 
 ## #undef ADD1
