@@ -3,7 +3,7 @@
 * TODO Provide R functions interfacing to the "applied math utilities" in  ./src/DPQ-misc.c
 * TODO tests/pnt-precision-problem.R : *label* the 391 plots: tests/pnt-precision-2.pdf
 * TODO Compare pnchi1sq() with t1() function in tests/chisq-nonc-ex.R
-* TODO Add .LDBLmachine() which gives the "long double" aka 'LDOUBLE' equivalent of `.Machine()`
+* DONE in R >= 4.0.0, now .Machine has 10 "longdouble.*" components (when the configuration found long double)
   Note that from `#include <float.h>` we should just return the `LDBL_*` values.
 * TODO tests/chisq-nonc-ex.R : move "things" to a vignette -- DONE partly : vignettes/Noncentral-Chisq.Rnw
 * TODO tests/qbeta-dist.R    : move "things" to a vignette

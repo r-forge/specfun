@@ -104,39 +104,41 @@ dpois_raw <- function(x, lambda, log=FALSE,
         version <- match.arg(version)
         x <- x[BB]
         lambda <- lambda[BB]
-        pi2x <- 2*pi*x
+        BL <- x >= 2^1023 / pi # really large x ( <==> 2*pi*x  overflows to Inf)
+        D_fE <- function(x, T0, log) {
+            r <- x
+            r[ BL] <- .D_rtxp(sqrt(2*pi)*sqrt(x[BL]), -T0[ BL], log) # avoid overflow for really large x
+            r[!BL] <- .D_fexp(     2*pi *    x[!BL],  -T0[!BL], log)
+            r
+        }
         del.x <- stirlerr(x, verbose=verb1) # = \delta(x)
         ## version = c("bd0_v1", "bd0_p1l1d", "bd0_p1l1d1", "bd0_l1pm", "ebd0_v1"),
         r[BB] <- switch(version,
-           "bd0_v1"    = .D_fexp(pi2x,
-                                 - del.x - bd0(x, lambda, delta=bd0.delta, verbose=verb1), log),
-           "bd0_p1l1d" = .D_fexp(pi2x,
-                                 - del.x - bd0_p1l1d (
-                                               x, lambda, tol_logcf=tol_logcf, eps2=eps2,
-                                               minL1=minL1, trace.lcf=trace.lcf, logCF=logCF),
-                                 log),
-           "bd0_p1l1d1"= .D_fexp(pi2x,
-                                 - del.x - bd0_p1l1d1(
-                                               x, lambda, tol_logcf=tol_logcf, eps2=eps2,
-                                               minL1=minL1, trace.lcf=trace.lcf, logCF=logCF),
-                                 log),
-           "bd0_l1pm"  = .D_fexp(pi2x,
-                                 - del.x - bd0_l1pm  (
-                                               x, lambda, tol_logcf=tol_logcf, eps2=eps2,
-                                               minL1=minL1, trace.lcf=trace.lcf, logCF=logCF),
-                                 log),
+           "bd0_v1"    = D_fE(x, del.x + bd0(x, lambda, delta=bd0.delta, verbose=verb1), log),
+           "bd0_p1l1d" = D_fE(x, del.x + bd0_p1l1d (x, lambda, tol_logcf=tol_logcf, eps2=eps2,
+                                                    minL1=minL1, trace.lcf=trace.lcf, logCF=logCF),
+                              log),
+           "bd0_p1l1d1"= D_fE(x, del.x + bd0_p1l1d1(x, lambda, tol_logcf=tol_logcf, eps2=eps2,
+                                                    minL1=minL1, trace.lcf=trace.lcf, logCF=logCF),
+                              log),
+           "bd0_l1pm"  = D_fE(x, del.x + bd0_l1pm  (x, lambda, tol_logcf=tol_logcf, eps2=eps2,
+                                                    minL1=minL1, trace.lcf=trace.lcf, logCF=logCF),
+                              log),
            "ebd0_v1" = , "ebd0_C1" = {
                yM <- switch(version,
                             "ebd0_v1" = ebd0 (x, lambda, verbose=verb1,
-                                              tol_logcf=tol_logcf, eps2=eps2, minL1=minL1, trace.lcf=trace.lcf, logCF=logCF),
+                                              tol_logcf=tol_logcf, eps2=eps2, minL1=minL1,
+                                              trace.lcf=trace.lcf, logCF=logCF),
                             "ebd0_C1" = ebd0C(x, lambda, verbose=verb1),
                             stop("internal version error:", version))
                yl <- yM["yl",] + del.x
                ## return
-               if(log)
-                   -yl - yM["yh",] - 0.5 * log(pi2x)
+               if(log) ## "FIXME" ifelse() is inefficient (and fails for MPFR!)
+                   -yl - yM["yh",] - ifelse(BL,
+                                            0.5 * (log(2*pi)+log(x)),
+                                            0.5 * log(2*pi*x))
                else
-                   exp(-yl) * exp(-yM["yh",]) / sqrt(pi2x)
+                   exp(-yl) * exp(-yM["yh",]) / ifelse(BL, sqrt(2*pi)*sqrt(x), sqrt(2*pi*x))
            },
            stop("invalid 'version'": version))
     }

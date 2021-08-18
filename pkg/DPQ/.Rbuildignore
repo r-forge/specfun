@@ -26,6 +26,7 @@ inst/doc/.*woven
 tests/.*\.pdf
 tests/.*\.Rout[-_]?
 tests/.*\.Rout*[24]b
+tests/\.RData
 TODO-man
 TODO-merge-
 .*mail$

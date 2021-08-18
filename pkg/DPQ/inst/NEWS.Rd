@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.4-5 (2021-06-17, svn r178)}{
+\section{Version 0.4-5 (2021-08-18, svn r179)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item new \code{ebd0C()} interface to C version; helps to fix
@@ -26,6 +26,9 @@
       \code{n} is large enough for \code{n * n} to overflow (to \code{NA}).
 
       \item fix typo/thinko in \code{dnbinomR()}
+
+      \item \code{dpois_raw(x, *)} now works up to maximal \code{x}, now
+      preventing overflow in previous \code{2*pi*x} computation.
     }
   }
 }

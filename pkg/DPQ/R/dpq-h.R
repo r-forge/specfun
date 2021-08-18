@@ -77,3 +77,10 @@ log1mexp <- function(x) ifelse(x <= M_LN2, log(-expm1(-x)), log1p(-exp(-x)))
 
 ##/* additions for density functions (C.Loader) */
 .D_fexp <- function(f, x, log.p) if(log.p) -0.5*log(f)+ x else exp(x)/sqrt(f)
+## MM: is used with  f := 2*pi*x  which overflows for
+## ---  2*pi*x >= 2^1024
+## <=>       x >= 2^1023 / pi = 2.86111748576e+307  ;  in that case, at least, replace
+## .D_fexp(2*pi*x,             x, log.p)   by
+## .D_rtxp(sqrt(2*pi)*sqrt(x), x, log.p)
+.D_rtxp <- function(rf, x, log.p) if(log.p) -log(rf) + x else exp(x)/rf
+
