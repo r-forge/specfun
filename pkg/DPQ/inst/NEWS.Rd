@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.4-5 (2021-08-18, svn r179)}{
+\section{Version 0.4-5 (2021-08-19, svn r180)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item new \code{ebd0C()} interface to C version; helps to fix

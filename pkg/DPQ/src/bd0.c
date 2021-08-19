@@ -1,5 +1,11 @@
 /*
- * This is a possibly *TEMPORARY* copy in Martin Maechler's  DPQ  CRAN package
+ * Originally a copy of <Rsrc>/src/nmath/bd0.c  (by R Core et al, see below)
+ *                      ----------------------
+ * The version here provide *more* options, notably for experimentation and in order
+ * to provide compatibility to *previous* R (and DPQ) implementations.
+ * These are
+ *
+ *	Copyright (C) 2021 Martin Maechler,  maechler@stat.math.ethz.ch
  *
  *
  *  AUTHORS
@@ -12,7 +18,7 @@
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
+ *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -369,7 +375,7 @@ SEXP dpq_bd0(SEXP x_, SEXP np_, SEXP delta_,
     if(length(maxit_) != 1)   error("'length(%s)' must be 1, but is %d", "maxit",  length(maxit_));
     if(length(version_) != 1) error("'length(%s)' must be 1, but is %d", "version",length(version_));
     if(length(trace_) != 1)   error("'length(%s)' must be 1, but is %d", "trace",  length(trace_));
-    // otherwise, recycle to common length n :
+    // otherwise, recycle (x, np) to common length n :
     PROTECT(x_  = isReal(x_)  ? x_  : coerceVector(x_,  REALSXP));
     PROTECT(np_ = isReal(np_) ? np_ : coerceVector(np_, REALSXP));
     SEXP r_ = PROTECT(allocVector(REALSXP, n)); // result
@@ -401,11 +407,8 @@ SEXP dpq_ebd0(SEXP x_, SEXP np_, SEXP trace_)
 	n_np  = XLENGTH(np_),
 	n = (n_x >= n_np ? n_x : n_np);
     if(!n_x || !n_np) return allocVector(REALSXP, 0); // length 0
-    /* if(length(delta_) != 1)   error("'length(%s)' must be 1, but is %d", "delta",  length(delta_)); */
-    /* if(length(maxit_) != 1)   error("'length(%s)' must be 1, but is %d", "maxit",  length(maxit_)); */
-    // if(length(version_) != 1) error("'length(%s)' must be 1, but is %d", "version",length(version_));
     if(length(trace_) != 1)   error("'length(%s)' must be 1, but is %d", "trace",  length(trace_));
-    // otherwise, recycle to common length n :
+    // otherwise, recycle (x, np) to common length n :
     PROTECT(x_  = isReal(x_)  ? x_  : coerceVector(x_,  REALSXP));
     PROTECT(np_ = isReal(np_) ? np_ : coerceVector(np_, REALSXP));
     SEXP r_ = PROTECT(allocMatrix(REALSXP, 2, n)); // result =^= rbind(yh=yh, yl=yl)

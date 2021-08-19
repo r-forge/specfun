@@ -57,7 +57,7 @@ pdhyper (q, m, n, k,                    log.p = FALSE,
 \references{
   Morten Welinder (2004)
   phyper accuracy and efficiency;
-  R bug report \PR{6772}. %\url{https://bugs.r-project.org/bugzilla/show_bug.cgi?id=6772}
+  R bug report \PR{6772}. %\url{https://bugs.r-project.org/show_bug.cgi?id=6772}
 }
 \author{Martin Maechler, based on \R's C code originally provided by Morton
   Welinder from the Gnumeric project, who thanks Ian Smith for ideas.

@@ -84,7 +84,7 @@
   had been introduced when R's \code{pgamma()} (incomplete $\Gamma$
   function) had been numerically improved by Morten Welinder's contribution
   to  % ~/R/D/r-devel/R/src/nmath/pgamma.c
-  \myHref{https://bugs.R-project.org/bugzilla/show\_bug.cgi?id=7307\#c6}{R's \PR{7307}, in Jan.\ 2005},
+  \myHref{https://bugs.R-project.org/show\_bug.cgi?id=7307\#c6}{R's \PR{7307}, in Jan.\ 2005},
   it is mathematically defined as
   \begin{align}
     \label{eq:log1pmx}
@@ -97,7 +97,7 @@
   binomial, Poisson and negative binomial probabilities, \cite{LoaC2000}, had introduced
   auxiliary functions   \code{bd0()} and \code{stirlerr()}, see below.
 
-  Much later, in \myHref{https://bugs.r-project.org/bugzilla/show\_bug.cgi?id=15628}{%
+  Much later, in \myHref{https://bugs.r-project.org/show\_bug.cgi?id=15628}{%
     R's \PR{15628}, in Jan.\ 2014},
   Welinder noticed that in spite of Loader's improvements, Poisson probabilities were not
   perfectly accurate (only ca.~13 accurate digits instead of $15.6 \approx \log_{10}(2^{52})$),
@@ -186,7 +186,7 @@ in Loader's C code and now R's Mathlib at
 mirrored, e.g., at
 \myHref{https://github.com/wch/r-source/blob/trunk/src/nmath/bd0.c}{Winston Chen's github mirror}.
 In 2014, Morten Welinder suggested in
-\myHref{https://bugs.r-project.org/bugzilla/show\_bug.cgi?id=15628}{R's \PR{15628}}
+\myHref{https://bugs.r-project.org/show\_bug.cgi?id=15628}{R's \PR{15628}}
 that the current \code{bd0()} implementation is still inaccurate in some
 regions (mostly \emph{not} in the one it has been carefully implemented to
 be accurate, i.e., when $x \approx M$) notably for computing Poisson
