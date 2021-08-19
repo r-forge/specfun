@@ -48,16 +48,27 @@ ldexp(f, E)
 set.seed(47)
 x <- c(0, 2^(-3:3), (-1:1)/0,
        rlnorm(2^12, 10, 20) * sample(c(-1,1), 512, replace=TRUE))
-head(x, 11)
+head(x, 12)
+which(!(iF <- is.finite(x))) # 9 10 11
 rF <- frexp(x)
 sapply(rF, summary) # (nice only when x had no NA's ..)
+data.frame(x=x[!iF], lapply(rF, `[`, !iF))
+##  by C.99/POSIX  'r' should be the same as 'x'  for these,
+##      x    r e
+## 1 -Inf -Inf 0
+## 2  NaN  NaN 0
+## 3  Inf  Inf 0
+## but on Windows, we've seen  3 NA's :
 ar <- abs(rF$r)
-stopifnot(0.5 <= ar[is.finite(x) & x != 0], ar[is.finite(x)] < 1,
-          is.integer(rF$e))
 ldx <- with(rF, ldexp(r, e))
-stopifnot(all.equal(x, ldx, tol= 4*.Machine$double.eps))
-## but actually, they should even be identical :
-identical(x, ldx) # TRUE  on all (? / decent) platforms
+stopifnot(exprs = {
+  0.5 <= ar[iF & x != 0]
+  ar[iF] < 1
+  is.integer(rF$e)
+  all.equal(x[iF], ldx[iF], tol= 4*.Machine$double.eps)
+  ## but actually, they should even be identical, well at least when finite
+  identical(x[iF], ldx[iF])
+})
 }
 \keyword{arith}
 
