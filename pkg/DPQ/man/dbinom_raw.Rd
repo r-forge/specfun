@@ -1,5 +1,5 @@
 \name{dbinom_raw}
-\title{R's C (Mathlib) dbinom_raw() Binomial Probability pure R Function}
+\title{R's C Mathlib (Rmath) dbinom_raw() Binomial Probability pure R Function}
 \alias{dbinom_raw}% >> ../R/dbinom-nbinom.R
 \description{
   A pure \R implementation of R's C API (\sQuote{Mathlib} specifically)

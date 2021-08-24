@@ -271,15 +271,17 @@ ebd0C <- function(x, M, verbose = getOption("verbose"))
 
 ##' bd0(x,M) = M * p1l1(t),  t := (x-M)/M
 ##' -------        =======
-##' p1l1(t) = (t+1)*log(1+t) - t
+##'
+##' p1l1(t) = (t+1)*log(1+t) - t   -- the "naive" :
 p1l1. <- function(t) (t+1)*log1p(t) - t
+
 ##' As we found, this is *MUCH* better -- actually almost perfect
 ##' @param ... notably  'tol_logcf = 1e-14' is default in log1pmx()
 p1l1p <- function(t, ...) log1pmx(t, ...) + t*log1p(t)
 
 
-##' The Taylor series approximation (there must be a faster converging one with quadratic terms !???!
-
+##' p1l1 Taylor series approximation (there must be a faster converging one with quadratic terms !???!
+##  ~~~~        ~~~
 p1l1ser <- function(t, k, F = t^2/2) {
     stopifnot(k == (k <- as.integer(k)), k >= 1)
     if(k <= 12)
@@ -307,8 +309,8 @@ p1l1ser <- function(t, k, F = t^2/2) {
 
 p1l1 <- function(t, F = t^2/2)  {
     r <- t
-    for(i in seq_along(r)) {
-        t_ <- t[i]
+    for(i in seq_along(r)) { # (manual vectorization)
+        t_ <- t[i] # with t_ := t[i], compute r[i] := F[i] * p1l1(t_) / (t_^2/2)  = p1l1(t_) {for default F[i]}
         r[i] <-
             if(-.0724 <= t_ & t_ <= .0718) ## NB: depends on last case dealt with below
               F[i]*( ## the cutoffs are  t.0  values see the corrDig[] table computations
@@ -339,7 +341,7 @@ p1l1 <- function(t, F = t^2/2)  {
               )
             else if(missing(F)) ## default F = t^2 / 2, i.e. "direct formula" directly
                               log1pmx(t_) + t_ * log1p(t_)
-            else
+            else # F not missing, relatively large |t_|
                 2*F[i]/t_^2 * log1pmx(t_) + t_ * log1p(t_)
         ## was:  (t_+1)*log1p(t_) - t_
     }

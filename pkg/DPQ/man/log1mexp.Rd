@@ -8,12 +8,12 @@
   Compute  f(a) = log(1 - exp(-a))   quickly and numerically accurately.
 
   \code{log1mexp()} is simple pure \R code;\cr
-  \code{log1mexpC()} is an interface to \R C API (\file{Rmathlib})
+  \code{log1mexpC()} is an interface to \R C API (\file{Mathlib} / \file{Rmath.h})
   function.
 
-  \code{log1pexpC()} is an interface to \R C API (\file{Rmathlib})
-  \code{double} function \code{log1pexp()} which computes \eqn{\log(1 +
-  \exp(x))}{log(1 + exp(x))}, accurately, notably for large \eqn{x}, say, \eqn{x > 720}.
+  \code{log1pexpC()} is an interface to \R's \file{Mathlib} \code{double}
+  function \code{log1pexp()} which computes \eqn{\log(1 + \exp(x))}{log(1 + exp(x))},
+  accurately, notably for large \eqn{x}, say, \eqn{x > 720}.
 }
 \usage{
 log1mexp (x)
@@ -37,6 +37,12 @@ log1pexpC(x)
 \examples{
 l1m.xy <- curve(log1mexp(x), -10, 10, n=1001)
 stopifnot(with(l1m.xy, all.equal(y, log1mexpC(x))))
-%% FIXME: add example for log1pexp()
+
+x <- seq(0, 710, length=1+710*2^4); stopifnot(diff(x) == 1/2^4)
+l1pm <- cbind(log1p(exp(x)),
+              log1pexpC(x))
+matplot(x, l1pm, type="l", log="xy") # both look the same
+iF <- is.finite(l1pm[,1])
+stopifnot(all.equal(l1pm[iF,2], l1pm[iF,1], tol=1e-15))
 }
 \keyword{math}

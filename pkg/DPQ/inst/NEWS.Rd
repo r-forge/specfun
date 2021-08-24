@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.4-5 (2021-08-19, svn r180)}{
+\section{Version 0.4-5 (2021-08-23, svn r182)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item new \code{ebd0C()} interface to C version; helps to fix
@@ -18,14 +18,25 @@
       \item new \R functions \code{frexp()} and \code{ldexp()} for getting
       and setting base-2 representations of numbers, interfacing the C99
       standard functions of the same name.
+
+      \item \code{logcfR.(x)} has been \dQuote{vectorized} in \code{x} even
+      though it's iterative with different number of iterations for each
+      \code{x[i]}, and is hence considerably faster when \code{x} is an
+      \code{"mpfr"} vector.
+
+      TODO: Consider renaming the two logcfR versions; at least neither is deprecated!
     }
   }
   \subsection{BUG FIXES}{
     \itemize{
+      \item fixed embarrassing typo (two \code{i}'s) bug in \code{logcfR()}
+
       \item \code{stirlerr(n)} now also works when \code{is.integer(n)} and
       \code{n} is large enough for \code{n * n} to overflow (to \code{NA}).
 
       \item fix typo/thinko in \code{dnbinomR()}
+
+      \item ditto in \code{logcfR(*, trace=TRUE)} iteration report.
 
       \item \code{dpois_raw(x, *)} now works up to maximal \code{x}, now
       preventing overflow in previous \code{2*pi*x} computation.

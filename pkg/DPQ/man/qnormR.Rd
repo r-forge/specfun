@@ -4,7 +4,7 @@
 \alias{qnormR}
 \description{
   Compute's \R level implementations of \R's \code{\link{qnorm}()} as
-  implemented in C code (in \R's \file{mathlib}).
+  implemented in C code (in \R's \file{Rmathlib}).
 }
 \usage{
 qnormR1(p, mu = 0, sd = 1, lower.tail = TRUE, log.p = FALSE, trace = 0, version = )

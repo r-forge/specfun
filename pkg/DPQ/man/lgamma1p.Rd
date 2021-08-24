@@ -38,7 +38,7 @@ lgamma1pC(x)                        		% ../R/utils.R
     O(x^3)}{gamma*x + pi^2 * x^2/ 12 + O(x^3)}, where \eqn{\gamma}{gamma}
   is Euler's constant 0.5772156649. ...% TODO MORE  write!...
 
-  \code{lgamma1pC()} is an interface to \R C API (\file{Rmathlib}) function.
+  \code{lgamma1pC()} is an interface to \R C API (\file{Mathlib} / \file{Rmath.h}) function.
 }
 \value{
   a numeric vector with the same attributes as \code{a}.

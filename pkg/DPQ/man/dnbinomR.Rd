@@ -3,7 +3,7 @@
 \alias{dnbinom.mu}
 \title{Pure R Versions of R's C (Mathlib) dnbinom() Negative Binomial Probabilities}
 \description{
-  Compute pure \R implementations of \R's C (Mathlib)
+  Compute pure \R implementations of \R's C Mathlib (Rmath)
   \code{\link{dnbinom}()} binomial probabilities, allowing to see the
   effect of the cutoff \code{eps}.
 }

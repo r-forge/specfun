@@ -3,7 +3,7 @@
 \title{Pure R Implementation of R's qbinom()  with Tuning Parameters}
 \description{%-->>> ../R/qbinomR.R <<<<<<<<<
   A pure R implementation, including many tuning parameter arguments, of
-  \R's own Mathlib C code algorithm, but with more flexibility.
+  \R's own Rmathlib C code algorithm, but with more flexibility.
 
   It is using \code{\link{Vectorize}(qbinomR1, *)} where the hidden
   \code{qbinomR1} works for numbers (aka \sQuote{scalar}, length one)

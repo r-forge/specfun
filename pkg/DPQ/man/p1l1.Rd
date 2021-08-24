@@ -60,7 +60,7 @@ stopifnot(!is.unsorted(t))
 k.s <- 1:12; names(k.s) <- paste0("k=", 1:12)
 
 ## True function values: use Rmpfr with 256 bits precision: ---
-### eventually move this to ../tests/ & ../vignettes/
+### eventually move this to ../tests/ & ../vignettes/log1pmx-etc.Rnw
 #### FIXME: eventually replace with  if(requireNamespace("Rmpfr")){ ......}
 #### =====
 if((needRmpfr <- is.na(match("Rmpfr", (srch0 <- search())))))
@@ -217,8 +217,6 @@ lines(lowess(x, abs(rEx.25), f=1/20), col=adjustcolor(6,offset=rep(1,4)/3), lwd=
 
 rEx.4 <- asNumeric(p1l1p(x, tol_logcf=1e-15, minL1 = -0.4) / p1l1Xct - 1)
 lines(x, abs(rEx.4), lwd=5.5, col=adjustcolor("brown", 1/2)); abline(v=-.25, lty=2,col="brown")
-
-
 
 if(needRmpfr && isNamespaceLoaded("Rmpfr"))
     detach("package:Rmpfr")

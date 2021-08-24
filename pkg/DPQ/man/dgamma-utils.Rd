@@ -15,11 +15,11 @@
   \code{\link{dgamma}()} and similar \dQuote{base} density functions by
   Catherine Loader.
 
-  \code{bd0C()} interfaces to C code which corresponds to \R's C Mathlib
+  \code{bd0C()} interfaces to C code which corresponds to \R's C Mathlib (Rmath)
   \code{bd0()}.
 
   These have extra arguments with defaults that correspond
-  to the C Mathlib code hardwired cutoffs and tolerances.
+  to \R's Mathlib C code hardwired cutoffs and tolerances.
 }
 \usage{% >>> ../R/dgamma.R <<<
 dpois_raw(x, lambda, log=FALSE,
@@ -108,7 +108,7 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
   \eqn{u := 2t^2 -1 \in [-1 + \epsilon_B, 1]}.
 }
 \details{
-  \describe{% >> TODO: Write Vignette w/ proper LaTeX :
+  \describe{% >> TODO: Move this mostly into this vignette ((or ../tests/
 	    % ===>  ../vignettes/log1pmx-etc.Rnw
     \item{\code{bd0()}:}{Loader's \dQuote{Binomial Deviance} function; for
       \eqn{x, M > 0} (where the limit \eqn{x \to 0}{x -> 0} is allowed).
@@ -171,7 +171,7 @@ stopifnot(exprs = {
 
 str(log1pmx) ##--> play with  { tol_logcf, eps2, minL1, trace.lcf, logCF }
 
-ebd0x1k <- ebd0 (x, 1000) # FIXME: subscript out of bout
+ebd0x1k <- ebd0 (x, 1000)
 exC     <- ebd0C(x, 1000)
 stopifnot(all.equal(exC, ebd0x1k, tol=4e-16))
 lines(x, colSums(ebd0x1k), col=adjustcolor(4, 1/2), lwd=4)
@@ -184,8 +184,12 @@ stopifnot(all.equal(dp, dp.r, tol = 1e-14))
 ## dpois_raw()  versions:
 (vers <- eval(formals(dpois_raw)$version))
 mv <- sapply(vers, function(v) dpois_raw(x, 48, version=v))
-matplot(x, mv, type="h", log="y") # "fine"
-if(all(abs(1 - mv[,"ebd0_C1"]/mv[,"ebd0_v1"]) < 2e-16)) mv <- mv[, vers != "ebd0_C1"]
+matplot(x, mv, type="h", log="y", main="dpois_raw(x, 48, version=*)") # "fine"
+
+if(all(mv[,"ebd0_C1"] == mv[,"ebd0_v1"])) {
+    cat("versions 'ebd0_C1' and 'ebd0_v1' are identical for lambda=48\n")
+    mv <- mv[, vers != "ebd0_C1"]
+}
 ## now look at *relative* errors -- need "Rmpfr" for "truth"
 if(requireNamespace("Rmpfr")) {
 

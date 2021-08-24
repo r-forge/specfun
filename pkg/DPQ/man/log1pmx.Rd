@@ -1,7 +1,7 @@
 \name{log1pmx}
 \alias{log1pmx}
 \alias{log1pmxC}
-\title{Accurate \code{log(1+x) - x}}
+\title{Accurate  \code{log(1+x) - x}  Computation}
 \description{
   Compute \deqn{\log(1+x) - x}{log(1+x) - x}
   accurately also for small \eqn{x}, i.e., \eqn{|x| \ll 1}{|x| << 1}.
@@ -12,18 +12,23 @@
 \usage{
 log1pmx (x, tol_logcf = 1e-14, eps2 = 0.01, minL1 = -0.79149064,
          trace.lcf = FALSE,
-         logCF = if(is.numeric(x)) logcf else logcfR)
-log1pmxC(x)
+         logCF = if(is.numeric(x)) logcf else logcfR.)
+log1pmxC(x)  # TODO in future: arguments (minL1, eps2, tol_logcf),
+             # possibly with *different* defaults (!)
 }
 \arguments{
-  \item{x}{numeric vector with values \eqn{x > -1}.}
+  \item{x}{numeric (or \code{"\link[Rmpfr]{mpfr}"} number) vector with values \eqn{x > -1}.}
   \item{tol_logcf}{a non-negative number indicating the tolerance
     (maximal relative error) for the auxiliary \code{\link{logcf}()} function.}
   \item{eps2}{positive cutoff where the algorithm switches from a few
-    terms, to using \code{\link{logcf}()} explicitly.}
+    terms, to using \code{\link{logcf}()} explicitly.  Note that for
+    more accurate mpfr-numbers the default \code{eps = .01} is too large,
+    even more though when the tolerance is lowered (from \code{1e-14}).}
   \item{minL1}{negative cutoff, called \code{minLog1Value} in Morten
-    Welinder's C code for \code{log1pmx()} in \file{R/src/nmath/pgamma.c}.
-    It seems to Martin M that it is not quite optimal, at least in some cases.}
+    Welinder's C code for \code{log1pmx()} in \file{R/src/nmath/pgamma.c},
+    hard coded there to -0.79149064 which seems not optimal for
+    computation of \code{log1pmx()}, at least in some cases, and hence
+    \bold{the default may be changed in the future}.}
   \item{trace.lcf}{\code{\link{logical}} used in
     \code{\link{logcf}(.., trace=trace.lcf)}.}
   \item{logCF}{the \code{\link{function}} to be used as
@@ -60,9 +65,16 @@ log1pmxC(x)
   \url{https://en.wikipedia.org/wiki/Abramowitz_and_Stegun} provides
   links to the full text which is in public domain.\cr
   Formula (4.1.29), p.68.
+
+  Martin \enc{Mächler}{Maechler} (2021).
+  %log1pmx(), bd0(), stirlerr() -- Computing Poisson, Binomial, Gamma Probabilities in \R}
+  \emph{log1pmx, \dots Computing \dots Probabilities in \R}.
+  (\pkg{DPQ} package vignette)% ../vignettes/log1pmx-etc.Rnw
+  % FIXME -- not yet:
+  % \url{https://CRAN.R-project.org/package=DPQ/vignettes/log1pmx-etc.pdf}.
 }
 \author{A translation of Morten Welinder's C code of Jan 2005, see R's bug
-  issue \PR{7307}.
+  issue \PR{7307}, parametrized and tuned by Martin Maechler.
 }
 \seealso{
   \code{\link{logcf}}, the auxiliary function,
@@ -71,93 +83,17 @@ log1pmxC(x)
 \examples{
 (doExtras <- DPQ:::doExtras()) # TRUE e.g. if interactive()
 n1 <- if(doExtras) 1001 else 201
-l1x <- curve(log1pmx, -.9999, 7, n=n1)
-abline(h=0, v=-1:0, lty=3)
-l1xz  <- curve(log1pmx, -.1,  .1,  n=n1); abline(h=0, v=0, lty=3)
-l1xz2 <- curve(log1pmx, -.01, .01, n=n1); abline(h=0, v=0, lty=3)
-l1xz3 <- curve(-log1pmx(x), -.002, .002, n=n1, log="y", yaxt="n")
-sfsmisc::eaxis(2); abline(v=0, lty=3)
-with(l1xz3, stopifnot(all.equal(y, -log1pmxC(x))))
+curve(log1pmx, -.9999, 7, n=n1); abline(h=0, v=-1:0, lty=3)
+curve(log1pmx, -.1,  .1,  n=n1); abline(h=0, v=0, lty=3)
+curve(log1pmx, -.01, .01, n=n1) -> l1xz2; abline(h=0, v=0, lty=3)
+## C and R versions correspond closely:
+with(l1xz2, stopifnot(all.equal(y, log1pmxC(x), tol = 1e-15)))
 
 e <- if(doExtras) 2^-12 else 2^-8; by.p <- 1/(if(doExtras) 256 else 64)
 xd <- c(seq(-1+e, 0+100*e, by=e), seq(by.p, 5, by=by.p)) # length 676 or 5476 if do.X.
 plot(xd, log1pmx(xd), type="l", col=2, main = "log1pmx(x)")
 abline(h=0, v=-1:0, lty=3)
 
-if(requireNamespace("Rmpfr") && packageVersion("sfsmisc") >= "1.1-10") withAutoprint({
-  xM <- Rmpfr::mpfr(xd, 512)
-  ## for MPFR numbers, really need more than tol_logcf = eps = 1e-14 (default)
-  if(doExtras) print( system.time(
-    lg1pM <- log1pmx(xM, tol_logcf = 1e-25, eps2 = 1e-4)
-  )) # 73 sec if(doExtras) 0.43s otherwise, but 20s (!) on winbuilder!
-  ## MM: But really, this should be more accurate anyway (?!):
-  lg1pM. <- log1p(xM) - xM
-  xM2k <- Rmpfr::mpfr(xd, 2048)
-  lg1pM2k <- log1p(xM2k) - xM2k # even more accurate
-  relErrV <- sfsmisc::relErrV
-  asNumeric <- Rmpfr::asNumeric
-  reE00 <- asNumeric( relErrV(lg1pM2k, lg1pM.) )
-  print(signif(range(reE00)), 2) # [-1.5e-151, 4.8e-151] -- 512 bits is perfect
-  if(doExtras) { ## the error of the log1pmx() "algorithm" even for "perfect" mpfr-accuracy:
-    rE.log1pm <- asNumeric(relErrV(lg1pM2k, lg1pM))
-    print(signif(range(  rE.log1pm ), 2)) # -1.2e-27 3.7e-49
-  }
-  re <- asNumeric(relErrV(lg1pM., log1pmx(xd)))
-  plot(xd, re, type="b", cex=1/2)
-  abline(h = (-2:2)*2^-52, lty=2, col=adjustcolor("gray20", 1/2))
-  ## only negative x:
-  iN <- xd < 0
-  iN <- -0.84 < xd & xd < -0.4
-  plot(xd[iN], re[iN], type="b", cex=1/2)
-  abline(h = (-2:2)*2^-52, lty=2, col=adjustcolor("gray20", 1/2))
-
-  plot(xd[iN], abs(re[iN]), type="b", cex=1/2, log="y",
-       main = "| relErr( log1pmx(x) ) |  {via 'Rmpfr'}",
-       ylim = c(4e-17, max(abs(asNumeric(re)[iN]))))
-  abline(h = c(1:2,4)*2^-52, lty=2, col=adjustcolor("gray20", 1/2))
-  mL1 <- eval(formals(log1pmx)$minL1)
-  abline(v = mL1, lwd=3, col=adjustcolor(2, 1/2))
-  axis(3, at=mL1, "minL1", col.axis=2, col=2)
-
-  re2 <- asNumeric(sfsmisc::relErrV(lg1pM.[iN], log1pmx(xd[iN], minL1 = -0.7)))
-  lines(xd[iN], abs(re2), col=adjustcolor(4, 1/2), lwd=2)
-  abline(v = -0.7, lwd=3, col=adjustcolor(4, 2/3), lty=3)
-  axis(3, line=-1, at=-0.7, "mL1 = -0.7", col.axis=4, col=4) ## it seems that would be better
-
-  re3 <- asNumeric(sfsmisc::relErrV(lg1pM.[iN], log1pmx(xd[iN], minL1 = -0.67)))
-  lines(xd[iN], abs(re3), col=adjustcolor(6, 1/3), lwd=2)
-  abline(v = -0.67, lwd=3, col=adjustcolor(6, 2/3), lty=3)
-  axis(3, line=-2, at=-0.67, "mL1 = -0.67", col.axis=6, col=6)
-  lines(lowess(xd[iN], abs(re[iN]), f=1/50), col=adjustcolor("gray", 1/2), lwd=6)
-  lines(lowess(xd[iN], abs(re2),    f=1/50), col=adjustcolor(4, 1/2), lwd=6)
-  lines(lowess(xd[iN], abs(re3),    f=1/50), col=adjustcolor(6, 1/2), lwd=6)
-   # MM: I'm confused -- why does -0.7 not show problems to the right, but
-   #                     but      -0.67 *does* show them .. ?
-
-
-  re4 <- asNumeric(sfsmisc::relErrV(lg1pM.[iN], log1pmx(xd[iN], minL1 = -0.64)))
-  lines(xd[iN], abs(re4), col=adjustcolor(7, 1/3), lwd=2)
-  abline(v = -0.64, lwd=3, col=adjustcolor(7, 2/3), lty=3)
-  axis(3, line=-2, at=-0.64, "mL1 = -0.64", col.axis=7, col=7)
-  lines(lowess(xd[iN], abs(re[iN]), f=1/50), col=adjustcolor("gray", 1/2), lwd=6)
-  lines(lowess(xd[iN], abs(re2),    f=1/50), col=adjustcolor(4, 1/2), lwd=6)
-  lines(lowess(xd[iN], abs(re3),    f=1/50), col=adjustcolor(6, 1/2), lwd=6)
-  lines(lowess(xd[iN], abs(re4),    f=1/50), col=adjustcolor(7, 1/2), lwd=6)
-                             # ...
-
-  re5 <- asNumeric(sfsmisc::relErrV(lg1pM.[iN], log1pmx(xd[iN], minL1 = -0.6)))
-  lines(xd[iN], abs(re5), col=adjustcolor(8, 1/3), lwd=2)
-  abline(v = -0.6, lwd=3, col=adjustcolor(8, 2/3), lty=3)
-  axis(3, line=-1, at=-0.6, "mL1 = -0.6", col.axis=8, col=8)
-  lines(lowess(xd[iN], abs(re[iN]), f=1/50), col=adjustcolor("gray", 1/2), lwd=6)
-  lines(lowess(xd[iN], abs(re2),    f=1/50), col=adjustcolor(4, 1/2), lwd=6)
-  lines(lowess(xd[iN], abs(re3),    f=1/50), col=adjustcolor(6, 1/2), lwd=6)
-  lines(lowess(xd[iN], abs(re4),    f=1/50), col=adjustcolor(7, 1/2), lwd=6)
-  lines(lowess(xd[iN], abs(re5),    f=1/50), col=adjustcolor(8, 1/2), lwd=6)
-
-   # -0.6  now is clearly too large, -0.7 was better
-
-})# if "Rmpfr"
-
+## much more graphics etc in ../tests/dnbinom-tst.R  (and the vignette, see above)
 }
 \keyword{math}
