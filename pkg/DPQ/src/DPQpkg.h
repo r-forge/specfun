@@ -307,3 +307,9 @@ SEXP R_frexp(SEXP x_);
 
 SEXP R_ldexp(SEXP f_, SEXP E_);
 // ldexp(f, E) := f * 2^E
+
+SEXP R_modf(SEXP x_);
+/* \-> list(fr = <double>, i = <double>) where  x = i + fr, fr in (-1,1); i in Z
+ *					                    sign(i) = sign(fr) = sign(x)
+ */
+

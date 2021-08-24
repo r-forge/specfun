@@ -117,3 +117,27 @@ SEXP R_ldexp(SEXP f_, SEXP E_)
     UNPROTECT(3);
     return r_;
 }
+
+/* in C have     fr = modf (x, &i);
+ * modf stores the integer part in *i, and returns the fractional part.
+ *
+ * returning the "two results" as list(fr=., i=.) in R */
+SEXP R_modf(SEXP x_)
+{
+    R_xlen_t n = XLENGTH(PROTECT(x_ = isReal(x_) ?
+				 Rf_duplicate(x_) : coerceVector(x_, REALSXP)));
+    SEXP r_ = allocVector(REALSXP, n), // (r_, i_) will be protected as parts of ans
+	 i_ = allocVector(REALSXP, n),
+	ans = PROTECT(allocVector(VECSXP, 2)), nms; // --> list(r = ., e = .)
+    SET_VECTOR_ELT(ans, 0, r_);
+    SET_VECTOR_ELT(ans, 1, i_);
+    setAttrib(ans, R_NamesSymbol, nms = allocVector(STRSXP, 2));
+    SET_STRING_ELT(nms, 0, mkChar("fr"));
+    SET_STRING_ELT(nms, 1, mkChar("i"));
+
+    double *x = REAL(x_), *r = REAL(r_), *e = REAL(i_);
+    for(R_xlen_t i=0; i < n; i++)
+	r[i] = modf(x[i], e+i);
+    UNPROTECT(2);
+    return ans;
+}

@@ -77,3 +77,5 @@ format01prec <- function(x, digits = getOption("digits"), width = digits + 2,
 frexp <- function(x) .Call(C_R_frexp, x)
 
 ldexp <- function(f, E) .Call(C_R_ldexp, f, E) # // ldexp(f, E) := f * 2^E
+
+modf <- function(x) .Call(C_R_modf, x)

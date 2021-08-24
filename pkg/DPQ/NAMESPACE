@@ -53,6 +53,7 @@ export(
   , G_half
 
   , frexp, ldexp
+  , modf
 
   , .dntJKBch, .dntJKBch1
 

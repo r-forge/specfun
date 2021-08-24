@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.4-5 (2021-08-23, svn r182)}{
+\section{Version 0.4-5 (2021-08-24, svn r183)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item new \code{ebd0C()} interface to C version; helps to fix
@@ -16,8 +16,9 @@
       \item In \code{bd0()} work around underflow of \code{(x-np)/(x+np)}.
 
       \item new \R functions \code{frexp()} and \code{ldexp()} for getting
-      and setting base-2 representations of numbers, interfacing the C99
-      standard functions of the same name.
+      and setting base-2 representations of numbers,
+      and new \R function \code{modf()} to split number into integer and fractional part,
+      all interfacing the C99 (math lib) standard functions of the same name.
 
       \item \code{logcfR.(x)} has been \dQuote{vectorized} in \code{x} even
       though it's iterative with different number of iterations for each
