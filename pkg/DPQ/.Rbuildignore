@@ -3,6 +3,7 @@
 DESCRIPTION_Author
 ^MM
 ^Resnikoff
+_CRAN
 [a-z]_README
 do-now\.org
 ^Misc
@@ -17,7 +18,7 @@ svn-
 TAGS
 ^do-
 etags
-^(dt|Rplots|stirlerr.*)\.pdf
+^(dt|Rplots|p1l1|stirlerr.*)\.pdf
 vignettes/.*:
 vignettes/.*\.(pdf|aux|out|tex)$
 vignettes/.*-woven

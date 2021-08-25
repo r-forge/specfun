@@ -85,20 +85,16 @@ SEXP R_frexp(SEXP x_)
 {
     R_xlen_t n = XLENGTH(PROTECT(x_ = isReal(x_) ?
 				 Rf_duplicate(x_) : coerceVector(x_, REALSXP)));
-    SEXP r_ = allocVector(REALSXP, n), // (r_, e_) will be protected as parts of ans
-	 e_ = allocVector(INTSXP,  n),
-	ans = PROTECT(allocVector(VECSXP, 2)), nms; // --> list(r = ., e = .)
-    SET_VECTOR_ELT(ans, 0, r_);
-    SET_VECTOR_ELT(ans, 1, e_);
-    setAttrib(ans, R_NamesSymbol, nms = allocVector(STRSXP, 2));
-    SET_STRING_ELT(nms, 0, mkChar("r"));
-    SET_STRING_ELT(nms, 1, mkChar("e"));
+    static const char *ans_nms[] = {"r", "e", ""};
+    SEXP ans = PROTECT(mkNamed(VECSXP, ans_nms)), r_, e_; // --> ans = list(r = r_, e = e_)
+    SET_VECTOR_ELT(ans, 0, r_ = PROTECT(allocVector(REALSXP, n)));
+    SET_VECTOR_ELT(ans, 1, e_ = PROTECT(allocVector(INTSXP,  n)));
 
     double *x = REAL(x_), *r = REAL(r_);
     int *e = INTEGER(e_);
     for(R_xlen_t i=0; i < n; i++)
 	r[i] = frexp(x[i], e+i);
-    UNPROTECT(2);
+    UNPROTECT(4);
     return ans;
 }
 
@@ -126,18 +122,13 @@ SEXP R_modf(SEXP x_)
 {
     R_xlen_t n = XLENGTH(PROTECT(x_ = isReal(x_) ?
 				 Rf_duplicate(x_) : coerceVector(x_, REALSXP)));
-    SEXP r_ = allocVector(REALSXP, n), // (r_, i_) will be protected as parts of ans
-	 i_ = allocVector(REALSXP, n),
-	ans = PROTECT(allocVector(VECSXP, 2)), nms; // --> list(r = ., e = .)
-    SET_VECTOR_ELT(ans, 0, r_);
-    SET_VECTOR_ELT(ans, 1, i_);
-    setAttrib(ans, R_NamesSymbol, nms = allocVector(STRSXP, 2));
-    SET_STRING_ELT(nms, 0, mkChar("fr"));
-    SET_STRING_ELT(nms, 1, mkChar("i"));
-
+    static const char *ans_nms[] = {"fr", "i", ""};
+    SEXP ans = PROTECT(mkNamed(VECSXP, ans_nms)), r_, i_; // --> ans = list(fr = r_, i = i_)
+    SET_VECTOR_ELT(ans, 0, r_ = PROTECT(allocVector(REALSXP, n)));
+    SET_VECTOR_ELT(ans, 1, i_ = PROTECT(allocVector(REALSXP, n)));
     double *x = REAL(x_), *r = REAL(r_), *e = REAL(i_);
     for(R_xlen_t i=0; i < n; i++)
 	r[i] = modf(x[i], e+i);
-    UNPROTECT(2);
+    UNPROTECT(4);
     return ans;
 }
