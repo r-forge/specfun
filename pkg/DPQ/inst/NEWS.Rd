@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.4-5 (2021-08-24, svn r183)}{
+\section{Version 0.5-0 (2021-09-10, svn r183)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item new \code{ebd0C()} interface to C version; helps to fix
@@ -41,6 +41,10 @@
 
       \item \code{dpois_raw(x, *)} now works up to maximal \code{x}, now
       preventing overflow in previous \code{2*pi*x} computation.
+
+      \item \code{dnbinomR()} and \code{dnbinom.mu()} fix for \code{x >
+	size} when \code{log=TRUE}, notably for \code{x >> size}.
+
     }
   }
 }

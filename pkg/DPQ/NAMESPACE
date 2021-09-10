@@ -139,6 +139,7 @@ export(
   , bd0_p1l1d1, bd0_p1l1d, bd0_l1pm
   , ebd0, ebd0C
   , p1l1, p1l1., p1l1p, p1l1ser ## NB: p1l1p() via log1pmx()  is *very* good!
+  , .p1l1ser
 
     ## from R/qchisqAppr.R :
   , qchisqAppr.R

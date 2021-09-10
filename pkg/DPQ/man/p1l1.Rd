@@ -4,6 +4,7 @@
 \alias{p1l1.}
 \alias{p1l1p}
 \alias{p1l1ser}
+\alias{.p1l1ser}
 \description{
   The binomial deviance function \code{\link{bd0}(x,M)} can mathematically
   be re-written as \eqn{bd0(x,M) = M * p1l1((x-M)/M)} where we look into providing
@@ -22,13 +23,14 @@
   \code{\link{log1pmx}()}'s internal cutoff seems sub optimal.
 }
 \usage{% -->  ../R/dgamma.R <<<<<
-p1l1p  (t, ...)
-p1l1.  (t)
-p1l1   (t,    F = t^2/2)
-p1l1ser(t, k, F = t^2/2)
+ p1l1p  (t, ...)
+ p1l1.  (t)
+ p1l1   (t,    F = t^2/2)
+ p1l1ser(t, k, F = t^2/2)
+.p1l1ser(t, k, F = t^2/2)
 }
 \arguments{
-  \item{t}{numeric vector ("mpfr" included), larger (or equal) to -1.}
+  \item{t}{numeric a-like vector ("mpfr" included), larger (or equal) to -1.}
   \item{...}{optional (tuning) arguments, passed to \code{\link{log1pmx}()}.}
   \item{k}{small positive integer, the number of terms to use in the Taylor
     series approximation \code{p1l1ser(t,k)} of \code{p1l1(t)}.}
@@ -40,7 +42,7 @@ p1l1ser(t, k, F = t^2/2)
   for now see in \code{\link{bd0}()}.
 }
 \value{
-  numeric vector \dQuote{as} \code{x}.
+  numeric vector \dQuote{as} \code{t}.
 }
 \author{Martin Maechler}
 \seealso{
@@ -67,6 +69,8 @@ if((needRmpfr <- is.na(match("Rmpfr", (srch0 <- search())))))
     require("Rmpfr")
 p1l1.T <- p1l1.(mpfr(t, 256)) # "true" values
 p1l1.n <- asNumeric(p1l1.T)
+all.equal(sapply(k.s, function(k)  p1l1ser(t,k)) -> m.p1l1,
+          sapply(k.s, function(k) .p1l1ser(t,k)) -> m.p1l., tolerance = 0)
 p1tab <-
     cbind(b1 = bd0(t+1, 1),
           b.10 = bd0(10*t+10,10)/10,

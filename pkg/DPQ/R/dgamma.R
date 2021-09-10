@@ -282,33 +282,49 @@ p1l1p <- function(t, ...) log1pmx(t, ...) + t*log1p(t)
 
 ##' p1l1 Taylor series approximation (there must be a faster converging one with quadratic terms !???!
 ##  ~~~~        ~~~
+.p1l1ser <- function(t, k, F = t^2/2) {
+    two <- if(is.numeric(t)) 2 else 0*t[1] + 2
+    if(k == 1L)
+        return(F + t*0) # incl recycling
+    ## else k >= 2 :
+    a <- two/((k+1)*k)
+    for(n in k:2)
+        a <- two/(n*(n-1)) - t*a
+    F * a
+}
+
 p1l1ser <- function(t, k, F = t^2/2) {
+    if(!length(t)) return(t) # else can use t[1]
     stopifnot(k == (k <- as.integer(k)), k >= 1)
-    if(k <= 12)
+    if(k <= 12) { # i(.) for "inverse"
+        i <- if(is.numeric(t))
+                   function(N) 1/N
+               else { # one := 1, but should inherit 'numeric class', e.g., "mpfr" from t
+                   one <- t[1]*0 + 1
+                   function(N) one/N
+               }
         switch(k
                , F			# k = 1
                , F*(1 - t/3)		# k = 2
-               , F*(1 - t*(1/3 - t/6))	# k = 3
-               , F*(1 - t*(1/3 - t*(1/6 - t/10)))			# k = 4
-               , F*(1 - t*(1/3 - t*(1/6 - t*(1/10 - t/15))))		# k = 5
-               , F*(1 - t*(1/3 - t*(1/6 - t*(1/10 - t*(1/15 - t/21)))))	# k = 6
-               , F*(1 - t*(1/3 - t*(1/6 - t*(1/10 - t*(1/15 - t*(1/21 - t/28)))))) # k = 7
-               , F*(1 - t*(1/3 - t*(1/6 - t*(1/10 - t*(1/15 - t*(1/21 - t*(1/28 - t/36))))))) # k = 8
-               , F*(1 - t*(1/3 - t*(1/6 - t*(1/10 - t*(1/15 - t*(1/21 - t*(1/28 - t*(1/36 - t/45)))))))) # k = 9
-               , F*(1 - t*(1/3 - t*(1/6 - t*(1/10 - t*(1/15 - t*(1/21 - t*(1/28 - t*(1/36 - t*(1/45 - t/55))))))))) # k = 10
-               , F*(1 - t*(1/3 - t*(1/6 - t*(1/10 - t*(1/15 - t*(1/21 - t*(1/28 - t*(1/36 - t*(1/45 - t*(1/55 - t/66)))))))))) # k = 11
-               , F*(1 - t*(1/3 - t*(1/6 - t*(1/10 - t*(1/15 - t*(1/21 - t*(1/28 - t*(1/36 - t*(1/45 - t*(1/55 - t*(1/66 - t/78))))))))))) # k = 12
+               , F*(1 - t*(i(3) - t/6))	# k = 3
+               , F*(1 - t*(i(3) - t*(i(6) - t/10)))			# k = 4
+               , F*(1 - t*(i(3) - t*(i(6) - t*(i(10) - t/15))))		# k = 5
+               , F*(1 - t*(i(3) - t*(i(6) - t*(i(10) - t*(i(15) - t/21)))))	# k = 6
+               , F*(1 - t*(i(3) - t*(i(6) - t*(i(10) - t*(i(15) - t*(i(21) - t/28)))))) # k = 7
+               , F*(1 - t*(i(3) - t*(i(6) - t*(i(10) - t*(i(15) - t*(i(21) - t*(i(28) - t/36))))))) # k = 8
+               , F*(1 - t*(i(3) - t*(i(6) - t*(i(10) - t*(i(15) - t*(i(21) - t*(i(28) - t*(i(36) - t/45)))))))) # k = 9
+               , F*(1 - t*(i(3) - t*(i(6) - t*(i(10) - t*(i(15) - t*(i(21) - t*(i(28) - t*(i(36) - t*(i(45) - t/55))))))))) # k = 10
+               , F*(1 - t*(i(3) - t*(i(6) - t*(i(10) - t*(i(15) - t*(i(21) - t*(i(28) - t*(i(36) - t*(i(45) - t*(i(55) - t/66)))))))))) # k = 11
+               , F*(1 - t*(i(3) - t*(i(6) - t*(i(10) - t*(i(15) - t*(i(21) - t*(i(28) - t*(i(36) - t*(i(45) - t*(i(55) - t*(i(66) - t/78))))))))))) # k = 12
                )
-    else {
-        a <- 2/((k+1)*k)
-        for(n in k:2)
-            a <- 2/(n*(n-1)) - t*a
-        F * a
+    } else {
+        .p1l1ser(t, k, F)
     }
 }
 
 p1l1 <- function(t, F = t^2/2)  {
     r <- t
+    if(!is.numeric(t)) warning("non-numeric 't' -- interval is determined for double precision")
     for(i in seq_along(r)) { # (manual vectorization)
         t_ <- t[i] # with t_ := t[i], compute r[i] := F[i] * p1l1(t_) / (t_^2/2)  = p1l1(t_) {for default F[i]}
         r[i] <-

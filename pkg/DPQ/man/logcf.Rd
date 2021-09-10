@@ -34,11 +34,10 @@ logcf  (x, i, d, eps, trace = FALSE)
     \item{\code{logcfR.()}:}{a pure \R version where the iterations happen
       vectorized in \code{x}, only for those components \code{x[i]} they
       have not yet converged.  This is particularly beneficial for
-   not-very-short \code{"mpfr"} vectors \code{x}, and still conceptually
-   equivalent to the \code{logcfR()} version.}
+      not-very-short \code{"mpfr"} vectors \code{x}, and still conceptually
+      equivalent to the \code{logcfR()} version.}
     \item{\code{logcfR()}:}{a pure \R version where each \code{x[i]} is
-      treated separately, hence \dQuote{properly} vectorized, but slowly
-      so.  Now recommended when \code{x} is an "mpfr"-number vector.}
+      treated separately, hence \dQuote{properly} vectorized, but slowly so.}
     \item{\code{logcf()}:}{only for \code{\link{numeric}} \code{x}, calls
       into (a clone of) \R's own (non-API currently) \code{logcf()} C
       Rmathlib function.}
@@ -77,4 +76,4 @@ l32 <- curve(logcf(x, 3,2, eps=1e-7), -3, 1)
 abline(h=0,v=1, lty=3, col="gray50")
 plot(y~x, l32, log="y", type = "o", main = "logcf(*, 3,2)  in log-scale")
 }
-\keyword{math}% one of  RShowDoc("KEYWORDS")
+\keyword{math}
