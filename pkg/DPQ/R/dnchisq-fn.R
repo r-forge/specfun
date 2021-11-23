@@ -135,6 +135,7 @@ p.dnchiB <- function(df, ncp, log=FALSE, from=0, to = 2*ncp, p.log="", ...)
 ###-- The R version of R's C implementation ~/R/D/r-devel/R/src/nmath/dnchisq.c
 
 ## TODO: add 'verbose' or 'info = FALSE'; if true, return info about i_upper, i_max, i_lower, etc
+## TODO(2): use dpois_raw() instead of dpois(), at least optionally, as R's C code does so too
 dnchisqR <- function(x, df, ncp, log = FALSE,
                      eps = 5e-15, termSml = 1e-10, ncpLarge = 1000)
 {
