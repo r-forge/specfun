@@ -34,7 +34,8 @@ dtWV(x, df, ncp = 0, log = FALSE)
   \emph{Tables of the non-central t-distribution};
   Technical report no. 32 (\code{LIE ONR 32}), April 1, 1957;
   Applied Math. and Stat. Lab., Stanford University.
-  \url{https://statistics.stanford.edu/research/tables-non-central-t-distribution-density-function-cumulative-distribution-function-and}
+  \url{https://statistics.stanford.edu/technical-reports/tables-non-central-t-distribution-density-function-cumulative-distribution}
+  %was \url{https://statistics.stanford.edu/research/tables-non-central-t-distribution-density-function-cumulative-distribution-function-and}
 }
 \author{Wolfgang Viechtbauer (2002) post to R-help
   (\url{https://stat.ethz.ch/pipermail/r-help/2002-October/026044.html}),
