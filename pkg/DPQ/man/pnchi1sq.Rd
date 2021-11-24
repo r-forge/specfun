@@ -26,7 +26,7 @@ pnchi3sq(q, ncp = 0, lower.tail = TRUE, log.p = FALSE, epsS = .04)
   %% FIXME: give formulas for both df=1 and df=3 !!
   %% -----  and page / equation numbers from Johnson et al
   In the \dQuote{small case} (\code{epsS} above), the direct formulas
-  suffer from cancellation, and we use Taylor series expansions in 
+  suffer from cancellation, and we use Taylor series expansions in
   \eqn{s := \sqrt{q}}, which in turn use
   \dQuote{probabilists'} Hermite polynomials \eqn{He_n(x)}.
 
@@ -40,7 +40,7 @@ pnchi3sq(q, ncp = 0, lower.tail = TRUE, log.p = FALSE, epsS = .04)
   Johnson et al.(1995), see \sQuote{References} in
   \code{\link{pnchisqPearson}}.
 
-  \url{https://en.wikipedia.org/wiki/Hermite_polynomials}
+  \url{https://en.wikipedia.org/wiki/Hermite_polynomials} for the notation.
 }
 \author{Martin Maechler, notably the Taylor approximations in the
   \dQuote{small} cases.}
@@ -68,7 +68,7 @@ stopifnot(exprs = {
 
 ### Very small 'x' i.e., 'q' would lead to cancellation: -----------
 
-##  df = 1 --------------
+##  df = 1 ---------------------------------------------------------
 
 qS <- c(0, 2^seq(-40,4, by=1/16))
 m1s <- cbind(pch = pchisq  (qS, df=1, ncp = 1)
@@ -95,14 +95,28 @@ matplot(qS, m1s, type = "l", log="xy", col=cols, lwd=lws) ; abl.leg("right")
 matplot(qS,     m1s[,1] - m1s[,-1] , type = "l", log="x" , col=cols, lwd=lws)
 matplot(qS, abs(m1s[,1] - m1s[,-1]), type = "l", log="xy", col=cols, lwd=lws)
 abl.leg("bottomright")
+rbind(all     = range(aE1e2 <- abs(m1s[,"pch"] - m1s[,"p1.2"])),
+      less.75 = range(aE1e2[qS <= 3/4]))
+stopifnot(aE1e2[qS <= 3/4] <= 2e-16, aE1e2 <= 1e-15) # check
 ## Relative: -------------------------
 matplot(qS,     1 - m1s[,-1]/m1s[,1] , type = "l", log="x",  col=cols, lwd=lws)
 abl.leg()
 matplot(qS, abs(1 - m1s[,-1]/m1s[,1]), type = "l", log="xy", col=cols, lwd=lws)
 abl.leg()
-%% all.equal(m1s[,"p1"], m1s[,"pch"], tol=0) # for now,  2.37e-12
+## number of correct digits ('Inf' |--> 17) :
+corrDigs <- pmin(round(-log10(abs(1 - m1s[,-1]/m1s[,1])[-1,]), 1), 17)
+table(corrDigs > 9.8)
+range(corrDigs[qS[-1] > 1e-8,  1 ], corrDigs[, 2:4]) # [11.8 , 17]
+(min (corrDigs[qS[-1] > 1e-6, 1:2], corrDigs[, 3:4]) -> mi6) # 13
+(min (corrDigs[qS[-1] > 1e-4, 1:3], corrDigs[,   4]) -> mi4) # 13.9
+stopifnot(exprs = {
+   corrDigs >= 9.8
+   c(corrDigs[qS[-1] > 1e-8,  1 ], corrDigs[, 2]) >= 11.5
+   mi6 >= 12.7
+   mi4 >= 13.9
+})
 
-##  df = 3 --------------  %% FIXME:  the 'small' case is clearly wrong <<<
+##  df = 3 -------------- NOTE:  epsS=0 for small qS is "non-sense" --------
 
 qS <- c(0, 2^seq(-40,4, by=1/16))
 ee <- c(1e-3, 1e-2, .04)

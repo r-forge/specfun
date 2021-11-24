@@ -1,7 +1,7 @@
 Package: DPQ
 Title: Density, Probability, Quantile ('DPQ') Computations
-Version: 0.5-0
-Date: 2021-11-23
+Version: 0.5-1
+Date: 2021-12-..
 Authors@R: c(person("Martin","Maechler", role=c("aut","cre"),
                     email="maechler@stat.math.ethz.ch", comment = c(ORCID = "0000-0002-8685-9910"))
   , person("Morten",   "Welinder",    role = "ctb", comment = "pgamma C code, see PR#7307, Jan. 2005; further pdhyper()")
@@ -26,3 +26,5 @@ Suggests: Rmpfr, DPQmpfr (>= 0.3-1), gmp, Matrix, MASS, mgcv, scatterplot3d, aki
 SuggestsNote: Matrix only for its "test-tools-1.R"; mgcv,scatt..,akima: some tests/
 License: GPL (>= 2)
 Encoding: UTF-8
+URL: https://specfun.r-forge.r-project.org/, https://r-forge.r-project.org/R/?group_id=611
+BugReports: https://r-forge.r-project.org/tracker/?atid=2462&group_id=611
