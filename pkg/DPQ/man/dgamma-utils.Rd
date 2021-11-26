@@ -59,13 +59,13 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
     otherwise the density at \code{x}.}
   \item{verbose}{logical indicating if some information about the
     computations are to be printed.}
-  \item{delta, bd0.delta}{a positive number \eqn{< 1} (practically required
+  \item{delta, bd0.delta}{a non-negative number \eqn{< 1} (practically required
     to be \eqn{\le .99}), a cutoff for \code{bd0()}
-    where the \code{\link{logcf}()} series expansion is used when
-    \eqn{|x - M| < delta*(x+M)}.}
+    where a continued fraction series expansion is used when \eqn{|x - M| < delta*(x+M)}.}
   \item{tol_logcf, eps2, minL1, trace.lcf, logCF, ...}{
-    optional tuning arguments passed to \code{\link{log1pmx}()}.}
-  \item{maxit}{the number of \code{logcf()} terms to be used in
+    optional tuning arguments passed to \code{\link{log1pmx}()}, and to its
+    options passed to \code{\link{logcf}()}.}
+  \item{maxit}{the number of series expansion terms to be used in
     \code{bd0()} when \eqn{|x-M|} is small.  The default is \eqn{k} such
     that \eqn{\delta^{2k} \le 2^{-1022-52}}, i.e., will underflow to zero.}
   \item{s0}{the very small \eqn{s_0} determining that \code{bd0() = s}

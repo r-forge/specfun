@@ -189,7 +189,7 @@ bd0 <- function(x, np,
                 verbose = getOption("verbose"))
 {
     ## stopifnot(length(x) == 1) -- rather vectorize now:
-    stopifnot(0 < delta, delta <= .99, maxit >= 1)
+    stopifnot(0 <= delta, delta <= .99, maxit >= 1)
     if((n <- length(x)) > (n2 <- length(np)))
         np <- rep_len(np, n)
     else if(n < n2)
@@ -207,7 +207,9 @@ bd0 <- function(x, np,
                 warning("invalid argument values in  (x, np)")
                 return(NaN)
             }
-            if(abs(x-np) < delta * (x+np)) {
+            ##          ____           
+            if(abs(x-np) <= delta * (x+np)) { #  '<='  was  '<' ;  '<=' allows to use delta=0
+            ##          ~~~~ 
                 v <- (x-np)/(x+np)
                 if(v == 0 && x != np) { # had underflow
                     F <- sqrt(x) * sqrt(np) # scaling factor --

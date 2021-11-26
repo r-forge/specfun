@@ -393,7 +393,7 @@ log1pmx <- function(x, tol_logcf = 1e-14, eps2 = 0.01,
                     minL1 = -0.79149064, trace.lcf = FALSE,
                     logCF = if(is.numeric(x)) logcf else logcfR.)
 {
-    stopifnot(is.numeric(eps2), eps2 > 0, is.numeric(minL1), -1 <= minL1, minL1 < 0)# < -1/4 ?
+    stopifnot(is.numeric(eps2), eps2 >= 0, is.numeric(minL1), -1 <= minL1, minL1 < 0)# < -1/4 ?
     r <- x
     if(any(c1 <- (x > 1 | x < minL1)))
         r[c1] <- log1p(x[c1]) - x[c1]
@@ -407,7 +407,7 @@ log1pmx <- function(x, tol_logcf = 1e-14, eps2 = 0.01,
             ##        (((2 / 9 * y + 2 / 7) * y + 2 / 5) * y + 2 / 3) * y - x,
             ##        2 * y * logcf(y, 3, 2, tol_logcf) - x)
             A <- x
-            if(any(isSml <- abs(x) < eps2)) {
+            if(any(isSml <- abs(x) <= eps2)) {
                 i <- which(isSml)
                 y. <- y[i]
                 z <- if(is.numeric(x)) 2 else 2 + 0*y. # becomes y-like (e.g. mpfr)

@@ -20,7 +20,7 @@ log1pmxC(x)  # TODO in future: arguments (minL1, eps2, tol_logcf),
   \item{x}{numeric (or \code{"\link[Rmpfr]{mpfr}"} number) vector with values \eqn{x > -1}.}
   \item{tol_logcf}{a non-negative number indicating the tolerance
     (maximal relative error) for the auxiliary \code{\link{logcf}()} function.}
-  \item{eps2}{positive cutoff where the algorithm switches from a few
+  \item{eps2}{non-negative cutoff where the algorithm switches from a few
     terms, to using \code{\link{logcf}()} explicitly.  Note that for
     more accurate mpfr-numbers the default \code{eps = .01} is too large,
     even more though when the tolerance is lowered (from \code{1e-14}).}

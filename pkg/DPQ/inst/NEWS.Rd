@@ -4,7 +4,18 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-1 (2021-11-26, svn r189)}{
+\section{Version 0.5-1 (2021-11-26, svn r191)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item \code{bd0(x, np, delta, ..)} now uses
+      \code{if (|x-np| <= delta * (x+np))}  (less-equal instead of strictly
+      less), and hence setting \code{delta = 0} is now allowed, using the
+      series expansion only for \code{x == np}, useful e.g., for the case
+      of highly accurate mpfr-numbers.
+
+      Similarly, in \code{log1pmx(x, .., eps2, ..)},  \code{eps2 = 0} is now allowed.
+    }
+  }
   \subsection{BUG FIXES}{
     \itemize{
       \item consistency between \code{ebd0()} and \code{ebd0C()}:
