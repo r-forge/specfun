@@ -9,6 +9,48 @@ for(pkg in c("Rmpfr", "DPQmpfr"))
     }
 require("Rmpfr")
 
+source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
+## -> showProc.time(), assertError(), relErrV(), ...
+
+##' From ..../sfsmisc/R/relErr.R --- version that *keeps* matrix
+## Componentwise aka "Vectorized" relative error:
+## Must not be NA/NaN unless one of the components is  ==> deal with {0, Inf, NA}
+relErrV <- function(target, current, eps0 = .Machine$double.xmin) {
+    n <- length(target <- as.vector(target))
+    ## assert( <length current> is multiple of <length target>) :
+    lc <- length(current)
+    if(!n) {
+	if(!lc) return(numeric()) # everything length 0
+	else stop("length(target) == 0 differing from length(current)")
+    } else if(!lc)
+	stop("length(current) == 0 differing from length(target)")
+    ## else n, lc  > 0
+    if(lc %% n)
+	stop("length(current) must be a multiple of length(target)")
+    recycle <- (lc != n) # explicitly recycle
+    R <- if(recycle)
+	     target[rep(seq_len(n), length.out=lc)]
+	 else
+	     target # (possibly "mpfr")
+    R[] <- 0
+    ## use *absolute* error when target is zero {and deal with NAs}:
+    t0 <- abs(target) < eps0 & !(na.t <- is.na(target))
+    R[t0] <- current[t0]
+    ## absolute error also when it is infinite, as (-Inf, Inf) would give NaN:
+    dInf <- is.infinite(E <- current - target)
+    R[dInf] <- E[dInf]
+    useRE <- !dInf & !t0 & (na.t | is.na(current) | (current != target))
+    R[useRE] <- (current/target)[useRE] - 1
+    if(recycle) { # should also work when target is mpfrArray
+        if(!is.null(d <- dim(current)))
+            array(R, dim=d, dimnames=dimnames(current))
+        else if(!is.null(nm <- names(current)) && is.null(names(R))) # not needed for mpfr
+            `names<-`(R, nm)
+        else R
+    } else R
+}
+showProc.time()
+
 cutoffs <- c(15,35,80,500) # cut points, n=*, in the above "algorithm"
 ##
 n <- c(seq(1,15, by=1/4),seq(16, 25, by=1/2), 26:30, seq(32,50, by=2), seq(55,1000, by=5),
@@ -20,6 +62,7 @@ st.nM <- stirlerr(nM, use.halves=FALSE) ## << on purpose
 all.equal(asNumeric(st.nM), st.n)# TRUE
 all.equal(st.nM, as(st.n,"mpfr"))# .. difference: 1.05884..............................e-15
 all.equal(roundMpfr(st.nM, 64), as(st.n,"mpfr"), tol=1e-16)# diff.: 1.05884...e-15
+
 
 ## Very revealing plot showing the *relative* approximation error of stirlerr(<dblprec>)
 
@@ -71,6 +114,8 @@ do.pdf
 if(do.pdf)
     pdf("stirlerr-relErr_0.pdf", width=8, height=6)
 
+showProc.time()
+
 p.stirlerrDev(n=n, stnM=st.nM) # default cutoffs= c(15, 40, 85, 600)
 ## show the zoom-in region in next plot
 yl2 <- 3e-14*c(-1,1)
@@ -92,6 +137,8 @@ abline(h = yl2, col=adjustcolor("tomato", 1/4), lwd=3, lty=2)
 if(do.pdf) {
     dev.off(); pdf("stirlerr-relErr_6-fin.pdf")
 }
+
+showProc.time()
 
 ### ~19.April 2021: "This is close to *the* solution" (but ...)
 cuts <- c(7, 12, 20, 26, 60, 200, 3300)
@@ -145,6 +192,7 @@ print(cbind(n       = format(n, drop0trailing = TRUE),
             relErr  = signif(asNumeric(sfsmisc::relErrV(st.nM, st.)), 4))
       , quote=FALSE)
 
+showProc.time()
 
 ## below, 7 "it's okay, but not perfect:" ===>  need more terms in stirlerr()  __or__ ??
 ## April 20: MM added more terms up to S10
@@ -159,6 +207,9 @@ lines(x, abs(lgammacor(x, 5) / stM - 1), col=2)
 ## maybe look at it for x >= 9 or so ?
 ##
 ## ==> Need another chebyshev() or rational-approx. for x in [.1, 7] or so !!
+
+showProc.time()
+
 
 
 
@@ -197,6 +248,7 @@ par(new=TRUE)
 plot(diff(bd0.n, differences = 2), type="b", col=c2, axes=FALSE, ann=FALSE)
 axis(4, at=-1:2, col=c2, col.axis=c2)
 
+showProc.time()
 
 ## close to over-/underflow -------
 
@@ -230,56 +282,240 @@ stopifnot(abs(bd.1 / bd.1M - 1) < 3e-16)
 
 ebd0(x1, LL, verbose=TRUE)# fixed since  June 6, 2021
 
+showProc.time()
 
 ### Large x  -- small  np == M ------------------------------------
 
+
+mpfrPrec <- 1024
+mpfrPrec <- 256
+
 yy <-   bd0 (1e307, 10^(-5:1), verbose=TRUE)
 yhl <- ebd0 (1e307, 10^(-5:1), verbose=TRUE)
-stopifnot(yy == Inf, colSums(yhl) == Inf)
-yM <- bd0(mpfr(1e307, 128), 10^(-5:1))
+yhlC<- ebd0C(1e307, 10^(-5:1))
+stopifnot(yy == Inf, colSums(yhl) == Inf, yhlC == yhl)
+yM <- bd0(mpfr(1e307, mpfrPrec), 10^(-5:1))
 roundMpfr(range(yM), 12) ##  7.0363e+309 7.1739e+309 -- *are* larger than  DBL_MAX
 
-## -- Now  *BOTH*  x and lambda are large : ------------------------
+
+### Now  *BOTH*  x and lambda are large : ---------------------------------------
+## (FIXME?? Small loss for ebd0, see below) <<< ???
+##  is bd0(<mpfr>, *) really accurate ???
+##  it uses it's own convergent series approxmation for |x-np| < .. ????
 
 x. <- 1e307
 ebd0(x., 10^(300:308))
+
 stopifnot(is.finite(Llam <- 2^(990:1024 - 1e-12)))
 
-yy   <-  bd0(x., Llam)
-yhl. <- ebd0(x., Llam)
-yhl  <- ebd0(x., Llam, verbose=TRUE)
-yhlC.<- ebd0(x., Llam)
-yhlC <- ebd0(x., Llam, verbose=TRUE)
-all.equal(yhl, yhlC, tol=0)# TRUE for MM on lynne (F 34; R 4.1.x)
-yM  <-  bd0(mpfr(x.,256), Llam)
-relE <- asNumeric(cbind(ebd0 = yhl["yh",], bd0 = yy)/yM - 1)
-iOk <- is.finite(yy) & yy != 0
-## */1e10 : otherwise triggering axis() error
-## log - axis(), 'at' creation, _LARGE_ range: invalid {xy}axp or par; nint=5
-## 	 axp[0:1]=(1e+299,1e+308), usr[0:1]=(7.28752e+298,inf); i=9, ni=1
-matplot(Llam[iOk]/1e10, relE[iOk,], type="b", log="x", pch=1:2, col=2:3,
-        xaxt="n"); sfsmisc::eaxis(1, sub10=3)
-legend("top", colnames(relE), pch=1:2, lty=1:2, col=2:3, bty="n")
+bd0ver <- function(x, np, mpfrPrec, chkVerb=TRUE, keepMpfr=FALSE) {
+    stopifnot(length(mpfrPrec <- as.integer(mpfrPrec)) == 1,
+              !is.na(mpfrPrec), mpfrPrec >= 64,
+              x >= 0, np >= 0)
+    yy   <-  bd0 (x, np)
+    yhl  <- ebd0 (x, np)
+    yhlC <- ebd0C(x, np)
+    if(chkVerb) {
+        yhl.  <- ebd0 (x, np, verbose=TRUE)
+        yhlC. <- ebd0C(x, np, verbose=TRUE)
+        stopifnot(identical(yhl., yhl),
+                  identical(yhlC., yhlC))
+    }
+    epsC <- .Machine$double.eps
+    aeq0 <- all.equal(yhl, yhlC, tol = 0)
+    aeq4 <- all.equal(yhl, yhlC, tol = 4*epsC)
+    if(!isTRUE(aeq4)) warning("the C and R versions of ebd0() differ:", aeq4)
+    stopifnot(is.whole(yhl ["yh",]),
+              is.whole(yhlC["yh",]))
+    yM  <-  bd0(mpfr(x, mpfrPrec),
+                mpfr(np,mpfrPrec), verbose=chkVerb)# more accurate ! (?? always ??)
+    relE <- relErrV(target = yM, # the mpfr one
+                    cbind(ebd0 = yhl ["yh",] + yhl ["yl",],
+                          ebd0C= yhlC["yh",] + yhlC["yl",],
+                          bd0 = yy))
+    relE <- structure(asNumeric(relE), dim=dim(relE), dimnames=dimnames(relE))
+    ## return:
+    list(x=x, np=np, bd0=yy, ebd0=yhl, ebd0C=yhlC,
+         bd0M=if(keepMpfr) yM, # <- expensive
+         aeq0=aeq0, aeq4=aeq4, relE = relE)
+}
 
-stopifnot(exprs = {
-    identical(yhl., yhl)
-    identical(yhlC., yhlC)
-    all.equal(yhl, yhlC, tol = 4 * .Machine$double.eps)# TRUE (sometimes) even for tol=0 (see above)
+bd0v.8  <- bd0ver(x., Llam, mpfrPrec = 256)
+bd0v.10 <- bd0ver(x., Llam, mpfrPrec = 1024)
+stopifnot( all.equal(bd0v.8, bd0v.10, tol=0),
+          bd0v.8$aeq0, # even tol=0 equality !
+          bd0v.8$aeq4 )
+## ==> 256 bit gives the *same* (asNumeric() - double-prec accuracy) as 1024 bits !
+rm(bd0v.10)
+showProc.time()
 
+p.relE <- function(bd0v, dFac = if(max(np) >= 8e307) 1e10 else 1,
+                   log = "x", type="b") {
+    stopifnot(length(x <- bd0v$x) == 1 # for now
+            , is.numeric(x), is.numeric(np <- bd0v$np), length(np) > 1
+            , is.numeric(dFac), dFac > 0, length(dFac) == 1
+            , is.matrix(relE <- bd0v$relE)
+            , (k <- ncol(relE)) >= 1
+            , sum(iOk <- local({ y <- bd0v$bd0; is.finite(y) & y != 0 })) > 1
+              )
+    ## */dFac : otherwise triggering axis() error
+    ## log - axis(), 'at' creation, _LARGE_ range: invalid {xy}axp or par; nint=5
+    ## 	 axp[0:1]=(1e+299,1e+308), usr[0:1]=(7.28752e+298,inf); i=9, ni=1
+    pc <- 1:k
+    matplot(np[iOk]/dFac, relE[iOk,], type=type, log=log, pch=pc, col=1+pc,
+            main = "relative Errors  WRT  bd0(<mpfr-accurate>)",
+            xlim = range(np)/dFac, # show full range
+            xlab = paste0("np[iOk]", if(dFac != 1) sprintf("/ dFac,  dFac=%g",dFac)),
+            ## could use  sfsmisc::pretty10exp(1e10, drop.1=TRUE)
+            xaxt="n"); sfsmisc::eaxis(1, sub10=3)
+    mtext(sprintf("bd0(x, np),  x = %g", x))
+    if(k >= 2) legend("top", colnames(relE), pch=pc, lty=1:2, col=1+pc, bty="n")
+    rug(np[!iOk]/dFac, col=2)
+    axis(1, at=x/dFac, quote(x), col=2, col.axis=2, lwd=2, line=-1)
+}
+
+p.relE(bd0v.8)
+
+## ==> FIXME:  a whole small (extreme) range where  bd0() is *better* than ebd0() !!!
+cbind(log2.lam = log2(Llam), Llam, relE) ## around 2^[1018, 1021]
+
+
+with(bd0v.8, stopifnot(exprs = {
     yhl["yl",] == 0 # which is not really good and should maybe change !
+    ## Fixed now : both have 4 x Inf and then are equal {but do Note relE difference above!}
+    all.equal(edb0["yh",], bd0, tol = 4 * .Machine$double.eps)
+}))
+showProc.time()
 
-    TRUE || ## FIXME ??  ebd0() gives many Inf here!
 
-        all.equal(yhl["yh",], yy)
+## bd0()  and  ebd0()  are _Inf_  for smaller lambda's .. but they *must* be as true > DBL_MAX
+## (almost: at the 4th value, Llam = 2^993, ideally the would *not* overflow: yM = 1.7598e+308)
+bd0M <- bd0ver(x., Llam, mpfrPrec = 256, keepMpfr=TRUE)
+with(bd0M, data.frame(log2.L = log2(np), bd0 = bd0, t(ebd0), bd0M. = format(bd0M, digits=8)))
 
-})
-
-## actually *both*  bd0()  and  ebd0()  seem partly wrong here
-data.frame(log2.L = log2(Llam), bd0 = yy, t(yhl), yM. = format(yM, digits=8))
-
-matplot(log2(Llam), cbind(bd0 = yy/x., yh=yhl["yh",]/x., asNumeric(yM/x.)),
+matplot(log2(Llam), with(bd0M, cbind(bd0 = bd0/x., yh=ebd0["yh",]/x., asNumeric(bd0M/x.))),
         type="o", ylab = "*bd0*(x., L) / x.", pch=1:3,
         main= paste("ebd0(x., Lam) and bd0(*) for x=",format(x.)," *and* larg Lam"))
 abline(h=0, lty=3, col=adjustcolor("gray20", 1/2))
 axis(1, at=log2(x.), label="log2(x.)", line=-1, tck=-1/16, col=2, col.axis=2)
 legend("top", c("bd0()", "ebd0()", "MPFR bd0()"), bty="n", lty=1:3, pch=1:3, col=1:3)
+dMax <- .Machine$double.xmax
+abline(h = dMax / x., col=4, lty=3) ; ux <- par("usr")[1:2]
+text(c(ux %*% c(3,1))/4, dMax/x., pos=3,
+     sprintf("bd0(.) > DBL_MAX = %.5g", dMax), col=4)
+showProc.time()
+
+
+L.2 <- 2^c(seq(993, 1016, by=1/4), seq(1016+1/8, 1022, by=1/16))
+bd0.2 <- bd0ver(x., L.2, mpfrPrec = 512, keepMpfr=TRUE)
+p.relE(bd0.2)#, dFac=1)
+
+if(!interactive()) # gets too expensive
+    quit("no")
+
+## zoom in more:
+L.3 <- 2^c(seq(1019, 1021, by=1/128))
+bd0.3 <- bd0ver(x., L.3, mpfrPrec = 1024, chkVerb=FALSE)
+p.relE(bd0.3) # up to 1e-11  rel.error !!
+
+## different x :
+bd0.2.2e307 <- bd0ver(2e307, L.2[L.2 > 1e306], mpfrPrec = 1024, chkVerb=FALSE)
+p.relE(bd0.2.2e307)
+
+## less large x .. still same problem:  ebd0() is worse than bd0()
+L.4 <- 2^c(seq(1009, 1015, by=1/64))
+bd0.2.2e305 <- bd0ver(2e305, L.4, mpfrPrec = 256, chkVerb=FALSE)
+p.relE(bd0.2.2e305)
+
+## less large x .. still same problem:  ebd0() is worse than bd0()
+x <- 1e250
+l2x <- round(64*log2(x))/64
+str(L.x <- 2^(l2x + seq(-2,2, by=1/64)))
+bd0.2.1e250 <- bd0ver(x, L.x, mpfrPrec = 256, chkVerb=FALSE)
+p.relE(bd0.2.1e250)
+
+x <- 1e120
+l2x <- round(256*log2(x))/256
+str(L.x <- 2^(l2x + seq(-1,1, by=1/128)))
+bd0.2.1e120 <- bd0ver(x, L.x, mpfrPrec = 256, chkVerb=FALSE)
+p.relE(bd0.2.1e120) # still rel.E -8e-13
+
+x <- 1e20
+l2x <- round(256*log2(x))/256
+str(L.x <- 2^(l2x + seq(-1/2, 1/2, by=1/128)))
+bd0.2.1e20 <- bd0ver(x, L.x, mpfrPrec = 256, chkVerb=FALSE)
+p.relE(bd0.2.1e20) #  rel.E -8e-12
+apply(bd0.2.1e20$relE, 2, quantile)
+##               ebd0         ebd0C           bd0
+## 0%   -8.576108e-12 -8.576108e-12 -5.209563e-15
+## 25%  -1.806152e-15 -1.806152e-15 -1.889226e-16
+## 50%   3.757592e-16  3.757592e-16 -7.379701e-18
+## 75%   4.833241e-15  4.833241e-15  1.476687e-16
+## 100%  8.792719e-13  8.792719e-13  5.979845e-15
+
+x <- 1e14
+l2x <- round(256*log2(x))/256
+str(L.x <- 2^(l2x + seq(-1/2, 1/2, by=1/128)))
+bd0.2.1e14 <- bd0ver(x, L.x, mpfrPrec = 256, chkVerb=FALSE)
+p.relE(bd0.2.1e14) #  rel.E -2.7e-12
+apply(bd0.2.1e14$relE, 2, quantile)
+##               ebd0         ebd0C           bd0
+## 0%   -2.675822e-12 -2.675822e-12 -4.087122e-15
+## 25%  -2.227385e-15 -2.227385e-15 -2.372982e-16
+## 50%   1.479060e-16  1.479060e-16  1.823222e-17
+## 75%   2.234723e-15  2.234723e-15  2.340140e-16
+## 100%  1.051075e-12  1.051075e-12  3.783036e-15
+
+
+
+x <- 1e9
+l2x <- round(256*log2(x))/256
+str(L.x <- 2^(l2x + seq(-1/2, 1/2, by=1/128)))
+bd0.2.1e9 <- bd0ver(x, L.x, mpfrPrec = 256, chkVerb=FALSE)
+p.relE(bd0.2.1e9) #  rel.E -2.7e-12
+apply(bd0.2.1e9$relE, 2, quantile)
+##               ebd0         ebd0C           bd0
+## 0%   -5.279663e-12 -5.279663e-12 -5.611493e-15
+## 25%  -1.377207e-15 -1.377207e-15 -1.696762e-16
+## 50%  -2.192488e-16 -2.192488e-16  3.745953e-18
+## 75%   1.578410e-15  1.578410e-15  1.491036e-16
+## 100%  1.615619e-12  1.615619e-12  5.044319e-15
+
+x <- 1e6
+l2x <- round(256*log2(x))/256
+str(L.x <- 2^(l2x + seq(-1, 1, by=1/128)))
+bd0.2.1e6 <- bd0ver(x, L.x, mpfrPrec = 256, chkVerb=FALSE)
+p.relE(bd0.2.1e6) #  rel.E +- 4e-12
+apply(bd0.2.1e6$relE, 2, quantile)
+##               ebd0         ebd0C           bd0
+## 0%   -4.034364e-13 -4.034364e-13 -4.774078e-15
+## 25%  -2.305490e-15 -2.305490e-15 -1.934393e-16
+## 50%  -3.393828e-17 -3.393828e-17 -1.192525e-17
+## 75%   1.556812e-15  1.556812e-15  1.849302e-16
+## 100%  4.098968e-12  4.098968e-12  4.140645e-15
+
+## - {number of correct digits}:
+matplot(L.x, log10(abs(bd0.2.1e6$relE[,-1])), type="l")
+
+
+apply(bd0.2.1e6$relE, 2, quantile)
+
+
+x <- 1e3
+l2x <- round(256*log2(x))/256
+str(L.x <- 2^(l2x + seq(-1/2, 1/2, by=1/128)))
+bd0.2.1e3 <- bd0ver(x, L.x, mpfrPrec = 256, chkVerb=FALSE)
+p.relE(bd0.2.1e3) #  rel.E +- 4e-12
+apply(bd0.2.1e3$relE, 2, quantile)
+## - {number of correct digits}:
+matplot(L.x, log10(abs(bd0.2.1e3$relE[,-1])), type="l")
+
+
+##  now extend the "lambda" / np range:
+str(np.x <- seq(.5, 2*x, length.out=1001))
+bd0..1e3 <- bd0ver(x, np.x, mpfrPrec = 256, chkVerb=FALSE)
+p.relE(bd0..1e3, log="") #  rel.E +- 4e-12
+apply(bd0..1e3$relE, 2, quantile)
+## even here, bd0(x, np)  is more accurate around  np ~= x
+## but in the flanks,  ebd0 is better :
+matplot(np.x, log10(abs(bd0..1e3$relE[,-1])), type="l")
