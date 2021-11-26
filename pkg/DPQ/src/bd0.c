@@ -258,15 +258,15 @@ void ebd0(double x, double M, double *yh, double *yl, int trace)
 	// prevent later overflow
 	if (M_LN2 * ((double) -e)  > 1. + DBL_MAX / x) { *yh = ML_POSINF; return; }
 
-	int i = floor ((r - 0.5) * (2 * N) + 0.5);
+	int i = (int) floor ((r - 0.5) * (2 * N) + 0.5);
 	// now,  0 <= i <= N
 	double f = floor (S / (0.5 + i / (2.0 * N)) + 0.5);
 	double fg = ldexp (f, -(e + Sb)); // ldexp(f, E) := f * 2^E
 
 // #ifdef DEBUG_bd0
     if(trace) {
-	REprintf("ebd0(%g, %g): M/x = (r=%.15g) * 2^(e=%d); i=%d, f=%g, fg=f*2^-(e+10)=%g\n",
-		 x, M, r,e, i, f, fg);
+	REprintf("ebd0(x=%g, M=%g): M/x = (r=%.15g) * 2^(e=%d); i=%d,\n  f=%g, fg=f*2^-(e+%d)=%g\n",
+		 x, M, r,e, i, f, Sb, fg);
 	if (fg == ML_POSINF) {
 	    REprintf(" --> fg = +Inf --> return( +Inf )\n");
 	    *yh = fg; return;
@@ -276,34 +276,35 @@ void ebd0(double x, double M, double *yh, double *yl, int trace)
 	REprintf( "  small(?)  (M*fg-x)/x = (M*fg)/x - 1 = %.16g\n", (M*fg-x)/x);
     }
     else
-// #endif
+// #else
 	if (fg == ML_POSINF) { *yh = fg; return; }
 
-	/* We now have (M * fg / x) close to 1.  */
 
-	/*
-	 * We need to compute this:
-	 * (x/M)^x * exp(M-x) =
-	 * (M/x)^-x * exp(M-x) =
-	 * (M*fg/x)^-x * (fg)^x * exp(M-x) =
-	 * (M*fg/x)^-x * (fg)^x * exp(M*fg-x) * exp(M-M*fg)
-	 *
-	 * In log terms:
-	 * log((x/M)^x * exp(M-x)) =
-	 * log((M*fg/x)^-x * (fg)^x * exp(M*fg-x) * exp(M-M*fg)) =
-	 * log((M*fg/x)^-x * exp(M*fg-x)) + x*log(fg) + (M-M*fg) =
-	 * -x*log1pmx((M*fg-x)/x) + x*log(fg) + M - M*fg =
-	 *
-	 * Note, that fg has at most 10 bits.  If M and x are suitably
-	 * "nice" -- such as being integers or half-integers -- then
-	 * we can compute M*fg as well as x * bd0_scale[.][.] without
-	 * rounding errors.
-	 */
+    /* We now have (M * fg / x) close to 1.  */
+
+    /*
+     * We need to compute this:
+     * (x/M)^x * exp(M-x) =
+     * (M/x)^-x * exp(M-x) =
+     * (M*fg/x)^-x * (fg)^x * exp(M-x) =
+     * (M*fg/x)^-x * (fg)^x * exp(M*fg-x) * exp(M-M*fg)
+     *
+     * In log terms:
+     * log((x/M)^x * exp(M-x)) =
+     * log((M*fg/x)^-x * (fg)^x * exp(M*fg-x) * exp(M-M*fg)) =
+     * log((M*fg/x)^-x * exp(M*fg-x)) + x*log(fg) + (M-M*fg) =
+     * -x*log1pmx((M*fg-x)/x) + x*log(fg) + M - M*fg =
+     *
+     * Note, that fg has at most 10 bits.  If M and x are suitably
+     * "nice" -- such as being integers or half-integers -- then
+     * we can compute M*fg as well as x * bd0_scale[.][.] without
+     * rounding errors.
+     */
 
 #define ADD1(d_) do {				\
 	    double d = (d_);			\
 	    double d1 = floor (d + 0.5);	\
-	    double d2 = d - d1;			\
+	    double d2 = d - d1;/* in [-.5,.5) */ \
 	    *yh += d1;				\
 	    *yl += d2;				\
 	} while(0)
@@ -325,9 +326,9 @@ void ebd0(double x, double M, double *yh, double *yl, int trace)
 	// else  [ fg != 1 ]
 	REprintf(" 2:  A(x*b[i,j]) and A(-x*b[0,j]), j=1:4:\n");
 	for (int j = 0; j < 4; j++) {
-	    ADD1( x     * bd0_scale[i][j]);  /* handles  x*log(fg*2^e) */
+ 	    ADD1( x * bd0_scale[i][j]);     // handles  x*log(fg*2^e)
 	    REprintf(" j=%d: (%13g, %13g);", j, *yl, *yh);
-	    ADD1(-x * e * bd0_scale[0][j]);  /* handles  x*log(1/ 2^e) */
+	    ADD1(-x * bd0_scale[0][j] * e); // handles  x*log(1/ 2^e)
 	    REprintf(" (%13g, %13g); yl+yh= %g\n", *yl, *yh, (*yl)+(*yh));
             if(!R_FINITE(*yh)) {
                 REprintf(" non-finite yh --> return((yh=Inf, yl=0))\n");
@@ -340,8 +341,9 @@ void ebd0(double x, double M, double *yh, double *yl, int trace)
         if(fg == 1) return;
 	// else (fg != 1) :
 	for (int j = 0; j < 4; j++) {
-	    ADD1( x     * bd0_scale[i][j]);  /* handles  x*log(fg*2^e) */
-	    ADD1(-x * e * bd0_scale[0][j]);  /* handles  x*log(1/ 2^e) */
+	    ADD1( x * bd0_scale[i][j]);     // handles  x*log(fg*2^e)
+	    ADD1(-x * bd0_scale[0][j] * e); // handles  x*log(1/ 2^e)
+	    //                        ^^^ at end prevents overflow in  ebd0(1e307, 1e300)
             if(!R_FINITE(*yh)) { *yh = ML_POSINF; *yl = 0; return; }
 	}
     }
@@ -357,6 +359,10 @@ void ebd0(double x, double M, double *yh, double *yl, int trace)
     if(trace)
 	REprintf(" 4. after ADD1(- M*fg):       yl,yh = (%13g, %13g); yl+yh= %g\n\n", *yl, *yh, (*yl)+(*yh));
 // #endif
+    // after 11 calls to ADD1(), each adding a fractional part in  [-0.5, 0.5) :
+    if(fabs(*yl) > 11 * 0.5)
+	error("ending ebd0(x=%g, M=%g): yl=%g: |yl|  >  %d * 0.5 -- should never happen! compiler error?",
+	      x, M, *yl, 11);
 }
 
 #undef ADD1
@@ -387,7 +393,7 @@ SEXP dpq_bd0(SEXP x_, SEXP np_, SEXP delta_,
 	trace   = asInteger(trace_);
 
     if(trace) {
-	REprintf("dpq_bd0(x[1:%d], np[1:%d], delta=%g, ... ):", delta, n_x, n_np);
+	REprintf("dpq_bd0(x[1:%d], np[1:%d], delta=%g, ... ):\n", delta, n_x, n_np);
     }
     version++; // currently unused
 
@@ -407,7 +413,8 @@ SEXP dpq_ebd0(SEXP x_, SEXP np_, SEXP trace_)
 	n_np  = XLENGTH(np_),
 	n = (n_x >= n_np ? n_x : n_np);
     if(!n_x || !n_np) return allocVector(REALSXP, 0); // length 0
-    if(length(trace_) != 1)   error("'length(%s)' must be 1, but is %d", "trace",  length(trace_));
+    if(length(trace_) != 1)
+	error("'length(%s)' must be 1, but is %d", "trace",  length(trace_));
     // otherwise, recycle (x, np) to common length n :
     PROTECT(x_  = isReal(x_)  ? x_  : coerceVector(x_,  REALSXP));
     PROTECT(np_ = isReal(np_) ? np_ : coerceVector(np_, REALSXP));
@@ -421,7 +428,7 @@ SEXP dpq_ebd0(SEXP x_, SEXP np_, SEXP trace_)
 	trace   = asInteger(trace_);
 
     if(trace) {
-	REprintf("dpq_ebd0(x[1:%d], np[1:%d], ... ):", n_x, n_np);
+	REprintf("dpq_ebd0(x[1:%d], np[1:%d], ... ):\n", n_x, n_np);
     }
     // version++; // currently unused
 

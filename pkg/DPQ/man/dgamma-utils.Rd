@@ -133,6 +133,9 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
      and \deqn{p_1l_1(t) := (t+1)\log(1+t) - t = \frac{t^2}{2} - \frac{t^3}{6} ...}{
                 p1l1 (t) := (t+1)*log(1+t) - t = t^2/2 - t^3/6 ...} where
       the Taylor series expansion is useful for small \eqn{|t|}.
+
+      Note that \code{bd0(x, M)} now also works when \code{x} and/or
+      \code{M} are arbitrary-accurate mpfr-numbers (package \CRANpkg{Rmpfr}).
     }% item
   }% describe
 }

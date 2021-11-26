@@ -93,15 +93,18 @@ lapply(Ms, function(nm) { cat(nm,": "); print(get(nm)) }) -> .tmp
 
 logr(1:3, a=1e-10)
 
-okLongDouble() # typically TRUE, but not e.g. in a valgrinded R-devel of Oct.2019
+okLongDouble(verbose=TRUE) # verbose: show (C-level) computations
+## typically TRUE, but not e.g. in a valgrinded R-devel of Oct.2019
 ## Here is typically the "boundary":
-rr <- uniroot(function(x) okLongDouble(x) - 1/2, c(11350, 11400), tol=1e-7)
+%%%% FIXME: Fails on  Mac M1 --- the interval (11350, 11400) is not large enough!
+rr <- try(uniroot(function(x) okLongDouble(x) - 1/2,
+              c(11350, 11400), tol=1e-7, extendInt = "yes"))
 str(rr, digits=9) ## seems somewhat platform dependent: now see
 ## $ root      : num 11376.563
 ## $ estim.prec: num 9.313e-08
 ## $ iter      : int 29
 
-set.seed(2021); x <- runif(100, -7,7) 
+set.seed(2021); x <- runif(100, -7,7)
 mx <- modf(x)
 with(mx, head( cbind(x, i=mx$i, fr=mx$fr) )) # showing the first cases
 with(mx, stopifnot(   x == fr + i,

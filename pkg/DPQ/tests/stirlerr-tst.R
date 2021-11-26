@@ -245,9 +245,12 @@ x. <- 1e307
 ebd0(x., 10^(300:308))
 stopifnot(is.finite(Llam <- 2^(990:1024 - 1e-12)))
 
-yy  <-  bd0(x., Llam)
-yhl.<- ebd0(x., Llam)
-yhl <- ebd0(x., Llam, verbose=TRUE)
+yy   <-  bd0(x., Llam)
+yhl. <- ebd0(x., Llam)
+yhl  <- ebd0(x., Llam, verbose=TRUE)
+yhlC.<- ebd0(x., Llam)
+yhlC <- ebd0(x., Llam, verbose=TRUE)
+all.equal(yhl, yhlC, tol=0)# TRUE for MM on lynne (F 34; R 4.1.x)
 yM  <-  bd0(mpfr(x.,256), Llam)
 relE <- asNumeric(cbind(ebd0 = yhl["yh",], bd0 = yy)/yM - 1)
 iOk <- is.finite(yy) & yy != 0
@@ -260,6 +263,9 @@ legend("top", colnames(relE), pch=1:2, lty=1:2, col=2:3, bty="n")
 
 stopifnot(exprs = {
     identical(yhl., yhl)
+    identical(yhlC., yhlC)
+    all.equal(yhl, yhlC, tol = 4 * .Machine$double.eps)# TRUE (sometimes) even for tol=0 (see above)
+
     yhl["yl",] == 0 # which is not really good and should maybe change !
 
     TRUE || ## FIXME ??  ebd0() gives many Inf here!

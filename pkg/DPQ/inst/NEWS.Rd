@@ -4,6 +4,21 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
+\section{Version 0.5-1 (2021-11-26, svn r189)}{
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item consistency between \code{ebd0()} and \code{ebd0C()}:
+      multiplication \code{ * e } coming last ("bug" did not show ..).
+
+      \item \code{okLongDouble()} should no longer fail on M1 mac.
+
+      \item \code{ebd0C()} now checking \eqn{|yl| < 5.5} before returning; was
+      horrendously wrong on Windows compiled with \command{-mnative} as long
+      as it included (the default) \command{-mfma} (FMA: Fused-Multiply-Add).
+    }
+  }
+}
+
 \section{Version 0.5-0 (2021-09-10, svn r183)}{
   \subsection{NEW FEATURES}{
     \itemize{
