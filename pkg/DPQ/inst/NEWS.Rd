@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-1 (2021-12-07, svn r192)}{
+\section{Version 0.5-1 (2021-12-07, svn r193)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{bd0(x, np, delta, ..)} now uses
@@ -25,7 +25,9 @@
 
       \item \code{ebd0C()} now checking \eqn{|yl| < 5.5} before returning; was
       horrendously wrong on Windows compiled with \command{-mnative} as long
-      as it included (the default) \command{-mfma} (FMA: Fused-Multiply-Add).
+      as it included (the default) \command{-mfma} (FMA:= Fused-Multiply-Add).
+
+      \item fix \command{rchk} issue: "need" \code{PROTECT(.)} while calling allocating \code{lgamma1p()}.
     }
   }
 }

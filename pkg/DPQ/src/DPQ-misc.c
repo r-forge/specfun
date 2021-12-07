@@ -71,11 +71,11 @@ SEXP R_lgamma1p(SEXP x_)
 {
     R_xlen_t n = XLENGTH(PROTECT(x_ = isReal(x_) ?
 				Rf_duplicate(x_) : coerceVector(x_, REALSXP)));
-    SEXP r_ = allocVector(REALSXP, n);
+    SEXP r_ = PROTECT(allocVector(REALSXP, n));
     double *x = REAL(x_), *r = REAL(r_);
     for(R_xlen_t i=0; i < n; i++)
 	r[i] = lgamma1p(x[i]);
-    UNPROTECT(1);
+    UNPROTECT(2);
     return r_;
 }
 
