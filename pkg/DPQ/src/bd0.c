@@ -227,7 +227,7 @@ static const float bd0_scale[128 + 1][4] = {
 	{ +0x1.7dc474p-7, +0x1.f810a8p-31, -0x1.245b5cp-56, -0x1.a1f4f8p-80 }, /* 253: log(1036/1024.) */
 	{ +0x1.fe02a8p-8, -0x1.4ef988p-32, +0x1.1f86ecp-57, +0x1.20723cp-81 }, /* 254: log(1032/1024.) */
 	{ +0x1.ff00acp-9, -0x1.d4ef44p-33, +0x1.2821acp-63, +0x1.5a6d32p-87 }, /* 255: log(1028/1024.) */
-	{ 0, 0, 0, 0 }
+	{ 0, 0, 0, 0 } /* log(1024/1024) = log(1) = 0 */
 };
 
 
@@ -278,7 +278,7 @@ void ebd0(double x, double M, double *yh, double *yl, int trace)
     else
 // #else
 	if (fg == ML_POSINF) { *yh = fg; return; }
-
+// #endif
 
     /* We now have (M * fg / x) close to 1.  */
 
@@ -324,7 +324,7 @@ void ebd0(double x, double M, double *yh, double *yl, int trace)
             return;
         }
 	// else  [ fg != 1 ]
-	REprintf(" 2:  A(x*b[i,j]) and A(-x*b[0,j]), j=1:4:\n");
+	REprintf(" 2:  A(x*b[i,j]) and A(-x*e*b[0,j]), j=1:4:\n");
 	for (int j = 0; j < 4; j++) {
  	    ADD1( x * bd0_scale[i][j]);     // handles  x*log(fg*2^e)
 	    REprintf(" j=%d: (%13g, %13g);", j, *yl, *yh);
