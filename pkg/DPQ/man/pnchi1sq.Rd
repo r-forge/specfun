@@ -97,7 +97,7 @@ matplot(qS, abs(m1s[,1] - m1s[,-1]), type = "l", log="xy", col=cols, lwd=lws)
 abl.leg("bottomright")
 rbind(all     = range(aE1e2 <- abs(m1s[,"pch"] - m1s[,"p1.2"])),
       less.75 = range(aE1e2[qS <= 3/4]))
-stopifnot(aE1e2[qS <= 3/4] <= 2e-16, aE1e2 <= 1e-15) # check
+stopifnot(aE1e2[qS <= 3/4] <= 3e-16, aE1e2 <= 1e-15) # check
 ## Relative: -------------------------
 matplot(qS,     1 - m1s[,-1]/m1s[,1] , type = "l", log="x",  col=cols, lwd=lws)
 abl.leg()
