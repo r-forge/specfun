@@ -261,11 +261,16 @@ if(do.pdf) { dev.off(); pdf("stirlerr-bd0-ebd0.pdf") }
 LL <- 1e20
 dput(x1 <- 1e20 - 2e11) # 9.99999998e+19
 
-(P1 <-         dpois     (x1,       LL)) # R-devel: 3.989455e-11; want 5.520993e-98
+(P1 <-         dpois     (x1,       LL)) # was 3.989455e-11; now 5.520993e-98
 (P1m <- Rmpfr::dpois(mpfr(x1, 128), LL)) # 5.52099285934214335003128935..e-98
 ## However -- the ebd0() version
 (P1e <- dpois_raw(x1, LL, version="ebd0_v1"))
 ## was 3.989455e-11, but now good!
+stopifnot(exprs = {
+    all.equal(P1 , 5.520992859342e-98, tol=1e-12)
+    all.equal(P1e, P1, tol=1e-12)
+    all.equal(P1m, P1, tol=1e-12)
+})
 
 options(digits=9)
 
@@ -276,9 +281,9 @@ options(digits=9)
 (bd.1M <- bd0(x1, mpfr(LL, 128), verbose=2))
 ## bd0(1e+20, 1e+20): T.series w/ 3 terms -> bd0=200
 ## ---> 199.9999919413334091607468236761591740489
-
-asNumeric(bd.1 / bd.1M - 1)# -1.82e-17 -- suggests bd0() is really accurate here
-stopifnot(abs(bd.1 / bd.1M - 1) < 3e-16)
+    asNumeric(bd.1 / bd.1M - 1)# -1.82e-17 -- suggests bd0() is really accurate here
+stopifnot(abs(bd.1 / bd.1M - 1) < 3e-16,
+          all.equal(199.999991941333, bd.1, tol=1e-14))
 
 ebd0(x1, LL, verbose=TRUE)# fixed since  June 6, 2021
 
@@ -377,13 +382,13 @@ p.relE <- function(bd0v, dFac = if(max(np) >= 8e307) 1e10 else 1,
 p.relE(bd0v.8)
 
 ## ==> FIXME:  a whole small (extreme) range where  bd0() is *better* than ebd0() !!!
-cbind(log2.lam = log2(Llam), Llam, relE) ## around 2^[1018, 1021]
+with(bd0v.8, cbind(log2.lam = log2(np), np, relE)) ## around 2^[1018, 1021]
 
 
 with(bd0v.8, stopifnot(exprs = {
     yhl["yl",] == 0 # which is not really good and should maybe change !
     ## Fixed now : both have 4 x Inf and then are equal {but do Note relE difference above!}
-    all.equal(edb0["yh",], bd0, tol = 4 * .Machine$double.eps)
+    all.equal(ebd0["yh",], bd0, tol = 4 * .Machine$double.eps)
 }))
 showProc.time()
 
@@ -467,7 +472,7 @@ apply(bd0.2.1e14$relE, 2, quantile)
 ## 100%  1.051075e-12  1.051075e-12  3.783036e-15
 
 
-
+#      =
 x <- 1e9
 l2x <- round(256*log2(x))/256
 str(L.x <- 2^(l2x + seq(-1/2, 1/2, by=1/128)))
@@ -481,6 +486,7 @@ apply(bd0.2.1e9$relE, 2, quantile)
 ## 75%   1.578410e-15  1.578410e-15  1.491036e-16
 ## 100%  1.615619e-12  1.615619e-12  5.044319e-15
 
+#      =
 x <- 1e6
 l2x <- round(256*log2(x))/256
 str(L.x <- 2^(l2x + seq(-1, 1, by=1/128)))
