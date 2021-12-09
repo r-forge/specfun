@@ -8,7 +8,7 @@
 \description{
   The binomial deviance function \code{\link{bd0}(x,M)} can mathematically
   be re-written as \eqn{bd0(x,M) = M * p1l1((x-M)/M)} where we look into providing
-  numerically stable formula for \eqn{p1l1(t)} as it's mathematical formula
+  numerically stable formula for \eqn{p1l1(t)} as its mathematical formula
   \eqn{p1l1(t) = (t+1)\log(1+t) - t}{p1l1(t) = (t+1)*log(1+t) - t}
   suffers from cancellation for small \eqn{|t|}, even when
   \code{\link{log1p}(t)} is used instead of \code{log(1+t)}.
@@ -46,7 +46,7 @@
 }
 \author{Martin Maechler}
 \seealso{
-  \code{\link{bd0}};
+  \code{\link{bd0}}; our package vignette \emph{log1pmx, bd0, stirlerr - Probability Computations in R}.
   \code{\link{dbinom}} the latter for the C.Loader(2000) reference.
 }
 \examples{

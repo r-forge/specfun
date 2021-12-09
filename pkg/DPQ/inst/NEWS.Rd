@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-1 (2021-12-07, svn r194)}{
+\section{Version 0.5-1 (2021-12-09, svn r196)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{bd0(x, np, delta, ..)} now uses

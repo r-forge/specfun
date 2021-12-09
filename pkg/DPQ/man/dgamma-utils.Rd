@@ -108,8 +108,8 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
   \eqn{u := 2t^2 -1 \in [-1 + \epsilon_B, 1]}.
 }
 \details{
-  \describe{% >> TODO: Move this mostly into this vignette ((or ../tests/
-	    % ===>  ../vignettes/log1pmx-etc.Rnw
+  \describe{% >> Now, most of this and more is in vignette
+	    % ../vignettes/log1pmx-etc.Rnw   <<<<<<<<<
     \item{\code{bd0()}:}{Loader's \dQuote{Binomial Deviance} function; for
       \eqn{x, M > 0} (where the limit \eqn{x \to 0}{x -> 0} is allowed).
       In the case of \code{\link{dbinom}}, \eqn{x} are integers (and
@@ -142,6 +142,8 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
 \references{
   C. Loader (2000), see \code{\link{dbinom}}'s documentation.
   % ~/R/D/r-devel/R/src/library/stats/man/Binomial.Rd
+
+  Our package vignette \emph{log1pmx, bd0, stirlerr - Probability Computations in R}.
 }
 \author{Martin Maechler}
 \seealso{
