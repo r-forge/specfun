@@ -97,7 +97,10 @@ matplot(qS, abs(m1s[,1] - m1s[,-1]), type = "l", log="xy", col=cols, lwd=lws)
 abl.leg("bottomright")
 rbind(all     = range(aE1e2 <- abs(m1s[,"pch"] - m1s[,"p1.2"])),
       less.75 = range(aE1e2[qS <= 3/4]))
-stopifnot(aE1e2[qS <= 3/4] <= 3e-16, aE1e2 <= 1e-15) # check
+##            Lnx(F34;i7)  M1mac(BDR)
+## all        0 7.772e-16  1.110e-15
+## less.75    0 1.665e-16  2.220e-16
+stopifnot(aE1e2[qS <= 3/4] <= 4e-16, aE1e2 <= 2e-15) # check
 ## Relative: -------------------------
 matplot(qS,     1 - m1s[,-1]/m1s[,1] , type = "l", log="x",  col=cols, lwd=lws)
 abl.leg()
@@ -105,7 +108,7 @@ matplot(qS, abs(1 - m1s[,-1]/m1s[,1]), type = "l", log="xy", col=cols, lwd=lws)
 abl.leg()
 ## number of correct digits ('Inf' |--> 17) :
 corrDigs <- pmin(round(-log10(abs(1 - m1s[,-1]/m1s[,1])[-1,]), 1), 17)
-table(corrDigs > 9.8)
+table(corrDigs > 9.8) # all
 range(corrDigs[qS[-1] > 1e-8,  1 ], corrDigs[, 2:4]) # [11.8 , 17]
 (min (corrDigs[qS[-1] > 1e-6, 1:2], corrDigs[, 3:4]) -> mi6) # 13
 (min (corrDigs[qS[-1] > 1e-4, 1:3], corrDigs[,   4]) -> mi4) # 13.9
@@ -113,7 +116,7 @@ stopifnot(exprs = {
    corrDigs >= 9.8
    c(corrDigs[qS[-1] > 1e-8,  1 ], corrDigs[, 2]) >= 11.5
    mi6 >= 12.7
-   mi4 >= 13.9
+   mi4 >= 13.6
 })
 
 ##  df = 3 -------------- NOTE:  epsS=0 for small qS is "non-sense" --------
