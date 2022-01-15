@@ -80,7 +80,7 @@ plot(qbeta(1/8, 2^-8,  10^(0:64)), log="y")# look good (down to 10^-298)
 
 stopifnot(qbeta(.1, 1e-3, 10^(0:32)) == 0) # and we cannot do better:
 
-curve(pbeta(x, 1e-3,  1  ), 1e-310, log="x", col=2, xaxt="n")
+curve(pbeta(x, 1e-3,  1  ), 1e-310, log="x", col=2, xaxt="n")# to give nicer axis:
 sfsmisc::eaxis(1); axis(1, at=1); abline(h=1,v=1, lty=2)
 curve(pbeta(x, 1e-3, 1000), add=TRUE, col=3)
 curve(pbeta(x, 1e-3, 1e10), add=TRUE, col=4)
@@ -90,7 +90,7 @@ curve(pbeta(x, 1e-3,1e100), add=TRUE, col=5)
 curve(pbeta(x, 1e-3,1e200), add=TRUE, col=4)## ==> Warnings already
 curve(pbeta(x, 1e-3,1e300), add=TRUE, col=2)## ==> WARNINGS:
 ## ... bgrat(a=1e+300, b=0.001, x=..) *no* convergence: NOTIFY R-core!
-summary(warnings())
+summary(warnings()) #                 ----------------  ^^^^^^^^^^^^^^
 
 ## = ./beta-qbeta-mintst.R, July 31, 1997 (!)
 1 - qbeta(.05, 5e10, 1/2) #-- infinite loop in  0.49; 0.50-a1

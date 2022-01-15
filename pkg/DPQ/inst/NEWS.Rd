@@ -4,6 +4,19 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
+\section{Version 0.5-2 (2022-01-15, svn r198)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item \code{qbetaAppr()} (and the \code{qbetaAppr.{1,3}()}
+      auxiliaries) now get a \code{log.p} argument.
+    }
+  }
+  %% \subsection{BUG FIXES}{
+  %%   \itemize{
+  %%     \item
+  %%   }
+  %% }
+}
 \section{Version 0.5-1 (2021-12-10, svn r197)}{
   \subsection{NEW FEATURES}{
     \itemize{

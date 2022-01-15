@@ -613,7 +613,7 @@ qnormUappr <- function(p,
     C3 <- 0.99229
     C4 <- 0.04481
 
-    if(missing(p)) { ## have lp = log(1-p)  <==>  e^lp = 1-p  <==>  p = 1 - e^lp
+    if(missing(p)) { ## log.p unused;  lp = log(1-p)  <==>  e^lp = 1-p  <==>  p = 1 - e^lp
         p. <- -expm1(lp)
         ## swap p <--> 1-p -- so we are where approximation is better
         swap <- if(lower.tail) p. < 1/2 else p. > 1/2 # logical vector
@@ -634,12 +634,13 @@ qnormUappr <- function(p,
     R
 }
 
-qbetaAppr.1 <- function(a, p, q, y = qnormUappr(a))
+qbetaAppr.1 <- function(a, p, q, log.p=FALSE, y = qnormUappr(a, log.p=log.p))
 {
   ## Purpose: Approximate  qbeta(a, p,q) -- Abramowitz & Stegun (26.5.22)
-  ##          qbeta(.) takes this only when  p>1 & q>1
+  ##          qbeta(.) takes this only when  p>1 & q>1 : "Carter(1947), see AS 109, remark '5.'"
   ## -------------------------------------------------------------------------
-  ## Arguments: a: percentage point;  (p,q): beta parameters
+  ## Arguments: a: percentage point, only used via qnorm*(a,..);  (p,q): beta parameters
+
   r <- (y * y - 3) / 6 ## lambda
   s <- 1 / (p + p - 1)
   t <- 1 / (q + q - 1)
@@ -651,7 +652,7 @@ qbetaAppr.1 <- function(a, p, q, y = qnormUappr(a))
 qbetaAppr.3 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(p,q))
 {
    ##  a=alpha
-    ## Purpose: Approximate  qbeta(a, p,q) -- for small a --
+    ## Purpose: Approximate  qbeta(a, p,q) -- for small a [log.p=TRUE: a far negative]
     ##  Inversion of   I_x(a,b) ~= x^a / (a B(a,b))
 
     ## CARE:  log(p) + logbeta == log(p * beta(p,q)) suffers from cancellation
@@ -660,7 +661,7 @@ qbetaAppr.3 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(p
     ## in  ../tests/qbeta-dist.R
     ##              ============
 
-    ## log
+    ## log.a = log("a") = log(pr_{lower_tail})
     log.a <- if(lower.tail) .D_log(a, log.p=log.p) else .D_LExp(a, log.p=log.p)
 
     pmin(1, exp(log.a +  log(p) + logbeta) / p)
@@ -669,14 +670,15 @@ qbetaAppr.3 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(p
 qbetaAppr.2 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(p,q))
 {
     ## Purpose: Approximate  qbeta(a, p,q)
-
+    ## log(1-"a") = log(pr_{upper_tail}):
     l1ma <- if(lower.tail) .D_LExp(a, log.p=log.p) else .D_log(a, log.p=log.p)
     ## pmax(0, ....) -- needed when  (l1ma + log(q) + logbeta) / q > 0, e.g., for
     ## e.g. qbetaAppr.2(1/4, 1/2, 1/2)
     -expm1((l1ma + log(q) + logbeta) / q)
 }
 
-qbetaAppr.4 <- function(a, p, q, y = qnormUappr(a), verbose=getOption("verbose"))
+qbetaAppr.4 <- function(a, p, q, log.p=FALSE, y = qnormUappr(a, log.p=log.p),
+                        verbose=getOption("verbose"))
 {
     ## Purpose: Approximate  qbeta(a, p,q); 'a' is only used via qnorm(a,..)
     r <- q + q
@@ -688,7 +690,8 @@ qbetaAppr.4 <- function(a, p, q, y = qnormUappr(a), verbose=getOption("verbose")
     1 - 2 / (t + 1)
 }
 
-qbetaAppr <- function(a, p, q, y = qnormUappr(a), logbeta = lbeta(p,q),
+qbetaAppr <- function(a, p, q, log.p=FALSE, y = qnormUappr(a, log.p=log.p),
+                      logbeta = lbeta(p,q),
                       verbose = getOption("verbose") && length(a) == 1)
 {
     ## Purpose: Approximate  qbeta(a, p,q) --- for  a <= 1/2
@@ -703,13 +706,11 @@ qbetaAppr <- function(a, p, q, y = qnormUappr(a), logbeta = lbeta(p,q),
     if (p > 1 && q > 1) { ## Abramowitz & Stegun(26.5.22)
         if(verbose) cat("p,q > 1: Using qbetaAppr.1(): Abramowitz-Stegun (26.5.22)\n")
         ## 'a' is not needed here, just 'y' is
-        qbetaAppr.1(,p,q,y)
+        qbetaAppr.1(,p,q, log.p=log.p, y=y)
     } else {
         if(verbose) cat("p or q <= 1 : ")
         r <- q + q
-        ## more "robustly"
-        ## t <- 1 / (9 * q)
-        ## t <- r * (1 - t + y * sqrt(t))^3
+        ## more "robust" version of   t <- 1 / (9 * q) ; t <- r * (1 - t + y * sqrt(t))^3
         st <- 1/(3 * sqrt(q))
         t <- r * (1 - st*(st + y))^3
 
@@ -717,21 +718,21 @@ qbetaAppr <- function(a, p, q, y = qnormUappr(a), logbeta = lbeta(p,q),
 
         ## vectorized in t { ==> logical vectors instead of simple if(..) .. else if(..) .. else ..
         ans <- t
-        if(any(neg <- t <= 0)) { ##- forget t(q, y)  and  y(a)
-            if(verbose)   cat("t <= 0:         appr. 2 (beta, q)\n")
-            ans[neg] <- - expm1((log1p(-a[neg]) + log(q) + logbeta) / q)
+        if(any(neg <- t <= 0)) { ## forget y(a) and t(q, y) from above; qbetaAppr.2():
+            if(verbose)   cat("t <= 0:  using qbetaAppr.2()\n")
+            ans[neg] <- - expm1((.D_LExp(-a[neg], log.p) + log(q) + logbeta) / q)
         }
         if(any(!neg)) { ##else
             t <- (4 * p + r - 2) / t
             if (any(L1 <- !neg & t <= 1)) {
-                if(verbose) cat("t > 0; t' <= 1: appr. 3 (beta, p)\n")
+                if(verbose) cat("t > 0; t' <= 1: qbetaAppr.3()\n")
                 ## ans[L1] <- exp((log(a[L1] * p) + logbeta) / p)
-                ans[L1] <- qbetaAppr.3(a[L1], p, q, logbeta = logbeta)
+                ans[L1] <- qbetaAppr.3(a[L1], p, q, log.p=log.p, logbeta=logbeta)
                 ## ==> linear relationship on log-log scale:
                 ##   log(ans) = 1/p * log(a) + (log p + log beta(p,q))/p
             }
             if (any(L2 <- !neg & t > 1)) { # the other case
-                if(verbose) cat("t > 0; t' > 1 : appr. 4 = 1-2/(t'+1)\n")
+                if(verbose) cat("t > 0; t' > 1 : qbetaAppr.4() = 1-2/(t'+1)\n")
                 ans[L2] <- 1 - 2 / (t[L2] + 1)
             }
         }
@@ -740,7 +741,7 @@ qbetaAppr <- function(a, p, q, y = qnormUappr(a), logbeta = lbeta(p,q),
 }
 
 ## Hmm, this is (sometimes!) not quite equivalent to C's :
-## ex.  qbeta.R(0.5078, .01, 5) -> 2.77558e-15    but qbeta() gives 1.776357e-15
+## ex.  qbeta.R(0.5078, .01, 5) -> 2.77558e-15 but qbeta() now correctly gives 4.651e-31
 qbeta.R	 <-  function(alpha, p, q,
                       lower.tail = TRUE, log.p = FALSE,
 		      logbeta = lbeta(p,q),

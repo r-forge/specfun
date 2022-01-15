@@ -11,13 +11,14 @@
   using diverse approximations.
 }
 \usage{% R code : ../R/beta-fns.R
-qbetaAppr.1(a, p, q, y = qnormUappr(a))
+qbetaAppr.1(a, p, q, log.p=FALSE, y = qnormUappr(a, log.p=log.p))
 qbetaAppr.2(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(p,q))
 qbetaAppr.3(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(p,q))
-qbetaAppr.4(a, p, q, y = qnormUappr(a),
+qbetaAppr.4(a, p, q, log.p=FALSE, y = qnormUappr(a, log.p=log.p),
             verbose = getOption("verbose"))
 
-qbetaAppr  (a, p, q, y = qnormUappr(a), logbeta= lbeta(p,q),
+qbetaAppr  (a, p, q, log.p=FALSE, y = qnormUappr(a, log.p=log.p),
+            logbeta = lbeta(p,q),
             verbose = getOption("verbose") && length(a) == 1)
 
 qbeta.R    (alpha, p, q,
@@ -89,7 +90,10 @@ qbeta.R    (alpha, p, q,
 
  ## an example of disagreement (and doubt, as borderline, close to underflow):
  qbeta.R(0.5078, .01, 5) # ->  2.77558e-15    # but
- qbeta  (0.5078, .01, 5) # -> 1.776357e-15  now gives 4.651188e-31 !!!
- qbeta  (0.5078, .01, 5, ncp=0) #      also     gives 4.651188e-31
+ qbeta  (0.5078, .01, 5) # now gives 4.651188e-31  -- correctly!
+ qbeta  (0.5078, .01, 5, ncp=0)# ditto
+ ## which is because qbeta() now works in log-x scale here:
+ curve(pbeta(x, .01, 5), 1e-40, 1, n=10001, log="x", xaxt="n")
+ sfsmisc::eaxis(1); abline(h=.5078, lty=3); abline(v=4.651188e-31,col=2)
 }
 \keyword{distribution}
