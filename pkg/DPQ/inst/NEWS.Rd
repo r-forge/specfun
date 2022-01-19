@@ -4,11 +4,14 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-2 (2022-01-15, svn r198)}{
+\section{Version 0.5-2 (2022-01-19, svn r199)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{qbetaAppr()} (and the \code{qbetaAppr.{1,3}()}
       auxiliaries) now get a \code{log.p} argument.
+
+      \item New \R function \code{dpsifn()}, as interface to \R's C API
+      \code{dpsifn()}, the workhorse of all \R's \code{psigamma()} functions.
     }
   }
   %% \subsection{BUG FIXES}{

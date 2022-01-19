@@ -110,7 +110,7 @@ SEXP R_chebyshev_init(SEXP coef_, SEXP eta_)
 {
     PROTECT(coef_ = isReal(coef_) ? coef_ : coerceVector(coef_, REALSXP));
     if(XLENGTH(coef_) > INT_MAX)
-	error("length(coef) = %ld > max.int = %d", (long)XLENGTH(coef_), INT_MAX);
+	error("length(%s) = %ld > max.int = %d", "coef", (long)XLENGTH(coef_), INT_MAX);
     int ntrms = chebyshev_init(REAL(coef_), LENGTH(coef_), asReal(eta_));
     UNPROTECT(1);
     return ScalarInteger(ntrms);

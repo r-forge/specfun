@@ -97,6 +97,7 @@ export(
   , algdiv # name as in TOMS 708 .. but really?
   , okLongDouble # as with valgrind, it does not work contrary to what .Machine says
 
+  , dpsifn # R/psigamma-deriv.R
   , lgamma1p., lgamma1p, lgamma1p_series
   , lgammacor
   , log1pmx

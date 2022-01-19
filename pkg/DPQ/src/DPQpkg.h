@@ -313,3 +313,8 @@ SEXP R_modf(SEXP x_);
  *					                    sign(i) = sign(fr) = sign(x)
  */
 
+SEXP R_dpsifn(SEXP x_, SEXP m_, SEXP deriv_1, SEXP kode2_);
+/* result: a list(dpsi = <m x n> matrix of dpsi() values,
+ *                nz   =  n-vector,
+ *                ierr =  n-vector)
+ */
