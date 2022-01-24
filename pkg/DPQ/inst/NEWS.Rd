@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-2 (2022-01-19, svn r199)}{
+\section{Version 0.5-2 (2022-01-24, svn r200)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{qbetaAppr()} (and the \code{qbetaAppr.{1,3}()}
