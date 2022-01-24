@@ -89,8 +89,8 @@ curve(pbeta(x, 1e-3, 1e50), add=TRUE, col=6)
 curve(pbeta(x, 1e-3,1e100), add=TRUE, col=5)
 curve(pbeta(x, 1e-3,1e200), add=TRUE, col=4)## ==> Warnings already
 curve(pbeta(x, 1e-3,1e300), add=TRUE, col=2)## ==> WARNINGS:
-## ... bgrat(a=1e+300, b=0.001, x=..) *no* convergence: NOTIFY R-core!
-summary(warnings()) #                 ----------------  ^^^^^^^^^^^^^^
+## 1: In pbeta(x, ...) : bgrat(a=1e+300, b=0.001, x=1) *no* convergence: NOTIFY R-core!
+summary(warnings()) #                                  ----------------  ^^^^^^^^^^^^^^
 
 ## = ./beta-qbeta-mintst.R, July 31, 1997 (!)
 1 - qbeta(.05, 5e10, 1/2) #-- infinite loop in  0.49; 0.50-a1
@@ -221,8 +221,8 @@ abline(h = 0, col = 'gray')
 ## ----  AS 241 (37)1988  which is more accurate {and a bit slower}
 ##
 ## Much more sensical in modern R {but looks identical, for 1-x > 1/2 }:
-lines(1-x, rErr(qnormUappr(x, lower=FALSE), qnorm(x, lower=FALSE)), col = "orange")
-
+lines(1-x, rErr(qnormUappr(x, lower=FALSE), qnorm(x, lower=FALSE)),
+      lwd=3, col = adjustcolor("skyblue", 1/2))
 
 curve(qnorm(x) - qnormUappr(x), col=2, lwd=2, n=1001, .44, 1)
 abline(h=0, col=adjustcolor(1,.5)); axis(1, at=.44)
@@ -297,15 +297,13 @@ for(qq in q.set2) {
 
 noquote(format01prec(aperm(ra)))
 
-DEBUG <- 2 ## FIXME
-qbeta.R(.05 ,  10/2, 1/2)
-qbeta.R(.05 , 100/2, 1/2)
-qbeta.R(.05 ,1000/2, 1/2)
+qbeta.R(.05 ,  10/2, 1/2, verbose=2)
+qbeta.R(.05 , 100/2, 1/2, verbose=2)
+qbeta.R(.05 ,1000/2, 1/2, verbose=2)
 
 showProc.time()#-----------------------------------------------------------------------------
 
 DEBUG <- TRUE ## FIXME
-nln <- "\n----------------\n"
 
 ## This is a "version" of qnormUappr() --
 ## but that has "regular"
@@ -320,6 +318,7 @@ qnormU <- function(u, lu) {
         qnorm(u,  lower.tail=FALSE)
 }
 
+nln <- "\n----------------\n"
 for(a in (10^(2:8))/2)
     cat("p=", a, qbeta.R(.05, a, 1/2, low.bnd = 1e-9, qnormU = qnormU),
         nln)
@@ -348,8 +347,12 @@ showProc.time()
 
 ## When using a new  qbeta(.) C-function  with  low.bnd=0.0, up.bnd = 1.0
 ##--- STILL FAILS at 10^10 ... why ? ...
-for(a in (10^(2:16))/2) cat("p=",a, qb <- qbeta(.05, a, 1/2), 1-qb,nln)
-summary(warnings())
+op <- options(warn=1) # immediate {there are  only 2, now}
+for(a in (10^(2:16))/2)
+    cat("p=",a, qb <- qbeta(.05, a, 1/2), 1-qb, " relE{pb, .05): ", formatC(pbeta(qb, a, 1/2)/.05 - 1),
+        nln)
+options(op)
+
 showProc.time()
 
 
@@ -473,14 +476,14 @@ curve(pbeta(exp(x), 2e-15, 10, log=TRUE), -21, 0, n=1000)
 
 
 u <- seq(-16, 1.25, length=501)
-mult.fig(mfrow=c(3,5), main = expression(pbeta(e^u, alpha, beta, ~~ log=='TRUE')),
-         marP=c(0,-1.5,-1,-.8))
+op <- mult.fig(mfrow=c(3,5), marP = c(0,-1.5,-1,-.8),
+               main = expression(pbeta(e^u, alpha, beta, ~~ log=='TRUE')))$old.par
 for(b in c(.5, 2, 5))
     for(a in c(.1, .2, .5, 1, 2)/100) {
         plot(u, (qp <- pbeta(exp(u), a,b, log=TRUE)), ylab = NA,
              type="l", main = substitute(list(alpha == a, beta == b), list(a=a,b=b)))
     }
-par(mfrow=c(1,1))
+par(op)
 
 
 summary(warnings())
@@ -538,22 +541,49 @@ plot(p, (qp <- qbeta(p, a,b)), ylab = expression(qbeta(p, alpha, beta)),
      type="l", log = "xy", main = substitute(list(alpha == a, beta == b), list(a=a,b=b)))
 
 ## Seems almost independent of  beta =: b
-mult.fig(mfrow=c(3,5), main = 'p = qbeta(x, .) for p --> 0',
-         marP=c(0,-.8,-1,-.8))
+op <- mult.fig(mfrow = c(3,5), marP = c(0,-.8,-1,-.8),
+               main = subsitute'qbeta(p, <small>, .) vs p  for p --> 0')$old.par
 for(b in c(.5, 2, 5))
     for(a in c(.1, .2, .5, 1, 2)/100) { # last one, a = 0.02 does not underflow
         plot(p, (qp <- qbeta(p, a,b)), ylab = expression(qbeta(p, alpha, beta)),
              type="l", log = "xy", main = substitute(list(alpha == a, beta == b), list(a=a,b=b)))
     }
-par(mfrow=c(1,1))
+par(op)
 
 summary(warnings())
 showProc.time()
 
+## x <- qbeta((0:100)/100,0.01,5)
+## x
+## ....
+## order(x)
+## 1 2 3 .... 50 51 55 68 72 56 59 ...
+## pbeta(x,0.01,5)
+## ...
+## >> version
+## JL> _
+## JL> platform       x86_64-unknown-linux-gnu
+## JL> arch           x86_64
+## JL> os             linux-gnu
+## JL> system         x86_64, linux-gnu
+## JL> status         Under development (unstable)
+## JL> major          2
+## JL> minor          11.0
+## JL> year           2009
+## JL> month          10
+## JL> day            07
+## JL> svn rev        49963
+## JL> language       R
+## JL> version.string R version 2.11.0 Under development (unstable) (2009-10-07
+## JL> r49963)
+
+## JL> p.s. there are similar results for R-2.9.2 in Windows (with
+## JL> different round-off errors).
+
 
 ## --> only vary a == alpha == shape1:
 
-p.qbeta.p0 <- function(p1 = .005, p2 = 1, beta = 1,
+p.qbeta.p0 <- function(p1 = .005, p2 = 1, beta = 1, mark.p = 0.5,
                        alphas = c(.1, .15, .2, .3, .4, .5, .8, 1, 2)/100,
                        n = 500, verbose = getOption("verbose"))
 {
@@ -567,8 +597,7 @@ p.qbeta.p0 <- function(p1 = .005, p2 = 1, beta = 1,
     stopifnot(p1 < p2, beta > 0, alphas > 0, n == round(n), n > 2,
 	      diff(alphas) > 0)
     p <- lseq(p1, p2, len = n)
-    yl  <- expression(qbeta (p, alpha, beta))
-    tit <- expression(x == qbeta(p, .) * "  for  " * {p %down% 0})
+    tit <- expression(qb == qbeta(p, alpha, beta) * "  for   small"~alpha~" and " * {p %down% 0})
     op <- mult.fig(length(alphas), main = tit, marP = c(-1,-1,-1,-.6))$old.par
     on.exit(par(op))
     for(a in alphas) {
@@ -576,11 +605,11 @@ p.qbeta.p0 <- function(p1 = .005, p2 = 1, beta = 1,
                          qbeta      (p, a,beta),
                          qbetaAppr.3(p, a,beta)),
                 col = 1:3, lty = 1, lwd = c(1:2,1),
-                ylab = yl, type= "l", log = "xy",
+                ylab = "qbeta", type= "l", log = "xy",
                 main = substitute(list(alpha == a, beta == b),
                 list(a=a, b=beta)))
-        abline(v = 0.5, lty = 3, lwd = 2, col = "light blue")
-        axis(1, at = 0.5, line=-1,lwd = 2, col = "light blue")
+        abline(  v = mark.p, lty = 3, lwd = 2, col = "light blue")
+        axis(1, at = mark.p, line=-1, lwd = 2, col = "light blue")
     }
     legend("topleft", c("qbetaAppr", "qbeta", "qbeta.a..3"),
            col=1:3, lwd = c(1:2,1), inset = .02)
@@ -604,17 +633,22 @@ p.qbeta.p0(.001, 0.5, n=2000, alpha= c(.2, .5, 1, 2))
 
 showProc.time()
 
+p <- lseq(.0001, 1, len = 2000)
 b <- 1
-yl  <- expression(qbeta (p, alpha, beta))
-tit <- expression(x == qbeta(p, .) * "  for  " * {p %down% 0})
+tit <- expression(qb == qbeta(p, alpha, beta) * "  for   small"~alpha~" and " * {p %down% 0})
 aset <- c(.1, .15, .2, .3, .4, .5, .8, 1, 2)/100
-mult.fig(length(aset), main = tit, marP = c(-1,-1,-1,-.6))
+op <- mult.fig(length(aset), main = tit, marP = c(-1,-1,-1,-.6))$old.par
+c2 <- adjustcolor(2, 1/2)
 for(a in aset) {
-    plot (p, (qp <- qbetaAppr(p, a,b)), ylab = yl, type="l", log = "xy",
-         main = substitute(list(alpha == a, beta == b), list(a=a,b=b)))
-    lines(p, (qp <- qbeta(p, a,b)), col = 2)
+    qpA <- qbetaAppr(p, a,b)
+     qp <- qbeta    (p, a,b)
+    plot (p, qpA, ylab = "qb", type="l", log = "xy", ylim=pmax(1e-20, range(qp, qpA)),
+          main = substitute(list(alpha == a, beta == b), list(a=a,b=b)))
+    lines(p, qp, col = c2, lwd=3)
+    legend("bottom", c("qbetaAppr()", "qbeta()"),
+           lty=1, lwd=c(1,3), col=c(palette()[1], c2), bty="n")
 }
-par(mfrow=c(1,1))
+par(op)
 
 
 ## Ok, let's look at pbeta() "here"
@@ -678,12 +712,19 @@ curve(c12.pBeta, 1, 1000, log="xy") ## dominated by  -digamma(q)^2 / 2
 ## Cancellation problem when q -> 0 as well ... probably not really relevant
 ## *but* fixed in c12pBeta() below:
 curve(c12.pBeta, 5e-9, 100, log="x")
+
+tit.pBeta <- function() {
+    title("c12.pBeta(x) and its (log-)linear approximation")
+    mtext(substitute(c[1] + c[2]*x == C1 + C2*x,
+                     setNames(as.list(cq12), c("C1", "C2"))), col=2)
+}
 cq12 <- -psigamma(1, 1:2) ## == c( -digamma(1), -trigamma(1) )
-curve(cq12[1] + cq12[2]*x, add=TRUE, col="red", n=1000)
+curve(cq12[1] + cq12[2]*x, add=TRUE, col=2, n=1000)
+tit.pBeta()
 
 ## a bit zoomed:
 curve(c12.pBeta, 1e-8, .2, log="x")
-curve(cq12[1] + cq12[2]*x, add=TRUE, col="red", n=1000)
+curve(cq12[1] + cq12[2]*x, add=TRUE, col="red", n=1000); tit.pBeta()
 ## difference only:
 curve(c12.pBeta(x) - (cq12[1] + cq12[2]*x),
       1e-8, .2, log="x", ylim = .01*c(-1,1)); abline(h=0, lty=3, col="gray60")
@@ -775,7 +816,7 @@ showProc.time()
 ##                                                   =====================
 ## --> draw the cutoff line below ( --> 'p.cut')
 
-p.pBeta <- function(q, p.min=1e-20, p.max=1e-6, n=1000, log = "xy", ylim=NULL)
+p.pBeta <- function(q, p.min=1e-20, p.max=1e-6, n=1000, do.ord2=TRUE, log = "xy", ylim=NULL)
 {
     ## Purpose: Plot   log(p * beta(p,q))   for small p  -- to visualize cancellation
     ## ----------------------------------------------------------------------
@@ -796,23 +837,38 @@ p.pBeta <- function(q, p.min=1e-20, p.max=1e-6, n=1000, log = "xy", ylim=NULL)
     ## Here comes the 1st order cancellation solution
     c1 <- sgn*( digamma(1) -  digamma(q))
     c2 <- sgn*(trigamma(1) - trigamma(q))/2
-    curve(c1 * x, add = TRUE, col="blue", n=n)
+    colc1 <- adjustcolor("skyblue", 1/2)
+    c1y <- curve(c1 * x, add = TRUE, col=colc1, lwd=2, n=n)$y
     ## the 2nd order approx.
-    col2 <- "#60C07064" # opaque (!)
-    if(FALSE)# this is not so good,
-        curve(x*(c1 + c2* x), add = TRUE, col=col2, lwd=3,n=n)
+    if(do.ord2) {
+        colc2 <- "#60C07064" # opaque (!)
+        c12y <- curve(x*(c1 + c2* x), add = TRUE, col=colc2, lwd=3, n=n)$y
+    }
     ## rather:
-    curve(sgn*log1p(sgn*c1*x), add = TRUE, col=col2, lwd=3,n=n)
+    collog1 <- adjustcolor("forestgreen", 1/2)
+    lc1y <- curve(sgn*log1p(sgn*c1*x), add = TRUE, col=collog1, lty=5, lwd=3, n=n)$y
     ## the cutoff, from where 1st order should be perfect:
     p.cut <- sqrt(.Machine$double.eps / abs(c2))
-    cat("cutoff :", formatC(p.cut),"\n")
-    abline(v = p.cut, col = "blue", lwd=2, lty=2)
+    txt.cut <- "cutoff(1st order approx.)"
+    cat(txt.cut,": ", formatC(p.cut),"\n", sep="")
+    ## FIXME: These *badly* fail, if we do NOT have  log = "xy" :
+    ux <- par("xaxp")[1:2] # e.g. [1e-20, 1e-6]
+    uy <- par("yaxp")[1:2]
+    in.x <- function(f) { stopifnot(0 <= f, f <= 1); 10^c(c(1-f, f) %*% log10(ux)) }
+    in.y <- function(f) { stopifnot(0 <= f, f <= 1); 10^c(c(1-f, f) %*% log10(uy)) }
+    if(ux[1] <= p.cut & p.cut <= ux[2]) {
+        abline(v = p.cut, col = "blue", lwd=2, lty=2)
+        text(p.cut, in.y(.96), txt.cut, col="blue")
+    }
+    else if(p.cut > ux[2]) text(in.x(.98), in.y(0.5), paste("-->", txt.cut), col = "blue", lwd=2, lty=2)
+    else if(p.cut < ux[1]) text(in.x(.02), in.y(0.5), paste(txt.cut, "<--"), col = "blue", lwd=2, lty=2)
     leg <-
         if(sgn == -1) expression(-log(p*B(p,q)), -(log(p) + log(B(p,q))), -(psi(1)-psi(q))*p, -log1p(c[1]*p))
-        else          expression(log(p*B(p,q)), log(p) + log(B(p,q)), (psi(1)-psi(q))*p, log1p(c[1]*p))
-
+        else          expression(log(p*B(p,q)), log(p) + log(B(p,q)), (psi(1)-psi(q))*p, log1p(c[1](q)*p))
+    if(do.ord2) { leg <- leg[c(1:4,4)]; leg[[4]] <- quote(p*(c[1](q) + c[2](q)* p)) }
     legend("topleft", legend= leg, inset=.01,
-           lwd=c(3,1,1,3), col=c("gray","red3", "blue", col2))
+           lwd= c(3,1,2,if(do.ord2)3, 3),
+           col= c("gray","red3", colc1, if(do.ord2)colc2, collog1))
     mtext(R.version.string, side=4, cex = 3/5, adj=0)
 }
 
@@ -887,7 +943,6 @@ p.err.pBeta <- function(q, p.min=1e-12, p.max=1e-6, n=1000,
                       T - log1p(c[1]*p+c[2]*p^2))# T4
     stopifnot(length(leg) == ncol(err.mat))
     main <- paste("log(p*beta(p,q))  approx. errors,   q = ", formatC(q))
-
     ## `col` below is from
     ##     dput(RColorBrewer::brewer.pal(length(leg), "Dark2"))
     col <- c("#1B9E77", "#D95F02", "#E7298A", "#7570B3", "#66A61E")
@@ -904,8 +959,8 @@ p.err.pBeta <- function(q, p.min=1e-12, p.max=1e-6, n=1000,
         matplot(x,y, log=log, ..., xlab = quote(p), type = "l", col=col, main=main,
                 xaxt = if(log.x) "n" else "s",
                 yaxt = if(log.y) "n" else "s")
-        if(log.x) eaxis(1)
-        if(log.y) eaxis(2)
+        if(log.x) eaxis(1, nintLog = 15)
+        if(log.y) eaxis(2, nintLog = 20) # "FIXME" eaxis(): default nintLog=10 does not cover well
         legend(xy.leg, LEG, lty=1:5, col=col, inset=.01)
     }
     kind <- match.arg(kind)
@@ -940,6 +995,7 @@ p.err.pBeta <- function(q, p.min=1e-12, p.max=1e-6, n=1000,
     mtext(R.version.string, side=4, cex = 3/5, adj=0)
 }
 
+## with q >> 1,  the  log1p() approx. are *worse* (see more below) !
 p.err.pBeta(21, 1e-18) # cutoff : 5.527e-09
 p.err.pBeta(21, , 1e-3)
 summary(warnings())
@@ -950,10 +1006,11 @@ if(doExtras) { # each plot is somewhat large & expensive  ..-------------------
 p.err.pBeta(q = 2.1, kind="absErr")
 p.err.pBeta(q = 2.1, 1e-13, kind="absErr")
 p.err.pBeta(1.1, 1e-13, 0.1)##  log1p() still very slightly *worse*
+## here, q < 1 and log1p() are already (slightly) better
 p.err.pBeta(0.8)
 p.err.pBeta(0.8, 1e-10, 1e-2)
-p.err.pBeta(0.1)  #  log1p(<2 trms>) is best
-p.err.pBeta(0.1, 1e-10, 1e-2)
+p.err.pBeta(0.1)  #  log1p(<2 trms>) is best;  zoom out (to guess "cutoff_2")
+p.err.pBeta(0.1, 1e-15, 1e-3)
 p.err.pBeta(0.001,, 1e-2)## Here, log1p(<2 terms>) is clearly best
 ## reminding of the test  qbeta(1e-300, 2^-12, 2^-10):
 p.err.pBeta(2^-10, p.max = 2^-10); abline(v=2^-12, lty=3, col="gray20")
@@ -999,30 +1056,48 @@ pBeta <- function(p, q)
     r
 }
 
-showProc.time()
-    ## x <- qbeta((0:100)/100,0.01,5)
-    ## x
-    ## ....
-    ## order(x)
-    ## 1 2 3 .... 50 51 55 68 72 56 59 ...
-    ## pbeta(x,0.01,5)
-    ## ...
-    ## >> version
-    ## JL> _
-    ## JL> platform       x86_64-unknown-linux-gnu
-    ## JL> arch           x86_64
-    ## JL> os             linux-gnu
-    ## JL> system         x86_64, linux-gnu
-    ## JL> status         Under development (unstable)
-    ## JL> major          2
-    ## JL> minor          11.0
-    ## JL> year           2009
-    ## JL> month          10
-    ## JL> day            07
-    ## JL> svn rev        49963
-    ## JL> language       R
-    ## JL> version.string R version 2.11.0 Under development (unstable) (2009-10-07
-    ## JL> r49963)
+###  More on  log(p * Beta(p,q))  for  p << 1
+###           ==================
 
-    ## JL> p.s. there are similar results for R-2.9.2 in Windows (with
-    ## JL> different round-off errors).
+
+## 1. Slightly nicer   Gamma(.)  plot than in  example(Gamma) : ----------
+op <- options(warn = -1)
+x <- sort(c(seq(-3, 4, length.out = 201), outer(0:-3, (-1:1)*1e-6, "+")))
+plot(x, gamma(x), ylim = c(-20,20), col = "red", type = "l", lwd = 2,
+     main = expression(Gamma(x)))
+abline(h = 0, v = -3:0, lty = 3, col = "midnightblue")
+## Warning .. in gamma(x) : NaNs produced
+axis(4, at=factorial(1:3), las=2, cex.axis=3/4)
+abline(h=1, lty=4, col="thistle")
+for(t in c("p","h")) points(1:4, gamma(1:4), pch=4, type=t, lty=2)
+
+## Now try, comparing with Rmpfr exact values:
+if(!require("Rmpfr")) { message("Cannot attach 'Rmpfr' package"); q("no") }
+
+a. <- 1/256 # is exact!
+b. <- 1/2   # "   "
+a <- mpfr(a., 512)
+b <- mpfr(b., 512)
+(aBa1 <- log(a*beta(a,b)))
+## 0.0053902550661545715269612410527830537772316302960547912531493485401255362864762019....
+(aBa2 <- log(a)+lbeta(a,b))#
+## 0.0053902550661545715269612410527830537772316302960547912531493485401255362864762019....
+## how close?
+asNumeric((aBa1-aBa2)*2/(aBa1+aBa2)) # -3.426748e-152; (NB 512 bits ~= 154.1 digits)
+
+## Double precison accuracy
+dput(log(a. * beta(a.,b.)))
+## 0.00539025506615481
+dput(log(a.)+lbeta(a.,b.))# (to my surprise!) slightly worse
+## 0.00539025506615509
+asNumeric( log(a. * beta(a.,b.))/(log(a)+lbeta(a,b)) - 1) # 4.504144e-14
+asNumeric((log(a.)+lbeta(a.,b.))/(log(a)+lbeta(a,b)) - 1) # 9.653358e-14
+
+psigamma(1) # -0.5772157 = Euler's gamma
+
+## Use my approx:
+a.* (psigamma(1) - psigamma(b.)) ## 0.005415212
+a.* (psigamma(1) - psigamma(b.) + a./2*(psigamma(1, d=1) - psigamma(b., d=1)))
+##  0.005390113 {clearly better, still only ~ 4 correct digits
+
+showProc.time()
