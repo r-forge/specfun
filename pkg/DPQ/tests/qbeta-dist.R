@@ -244,6 +244,11 @@ qbeta  (.05 ,  10/2, 1/2) #-==  0.6682436
 qbeta  (.05 , 100/2, 1/2) #-==  0.9621292
 qbeta  (.05 ,1000/2, 1/2) #-==  0.996164
 
+###=========== FIXME: More qbetaAppr*() versions
+###=============================================
+##  and use  lower.tail=TRUE/FALSE   *and*  log.p=FALSE/TRUE
+##  and  determine regions where  qbetaAppr*() are very accurate ((so, say 1 Newton step then is perfect!))
+
 qb.names <- paste0("qbeta", c('', '.R', 'Appr', 'Appr.1'))
 qf <- lapply(setNames(,qb.names), get)
 str(qf) ## for (qn in qb.names) cat(qn,":", deparse(args(get(qn))),"\n\n")
@@ -444,12 +449,14 @@ showProc.time()
 ###  Letting  a --> 0   --- Distribution only defined for  a > 0 ---
 ##
 curve(qbeta(.95, x, 20), 1e-300, 0.1,           n=1001)# a -> 0 : qbeta() -> 0
+
 ## now, "zoom in logarithmically":
 curve(qbeta(.95, x, 20), 1e-7, 0.1, log="xy", n=1001, yaxt="n")
-if(require("sfsmisc")) { eaxis(2, nintLog=20)
+if(require("sfsmisc")) { eaxis(2, at= c(10^-c(314,309), axTicks(2, nintLog=15)))
 } else { axis(2)
     warning("could not use the cool eaxis() function from CRAN package 'sfsmisc' as that is not yet installed.")
 }
+
 ## -> clearly should go to 0;
 ##  now does ... not continually, as with pbeta() warning about bgrat() underflow
 ##  now without any warnings and continually: not 0 but staying at
@@ -466,13 +473,13 @@ x. <- seq(0,1,len=1001); plot(x., pbeta(x., 1e-20,20), type="l")
 ## but if you log-zoom in ,
 ## the precision problem is already in pbeta():  ----- fixed on 2009-10-16  (in Skafidia, Greece)
 ##-- TOMS 708: 'a0 small .. -> apser()
-curve(pbeta(exp(x), 1e-16, 10, log=TRUE), -10, 0, n=1000)
-curve(pbeta(exp(x), 1e-16, 10, log=TRUE), -900, 0, n=1000)
+curve(pbeta(exp(x), 1e-16, 10, log.p=TRUE), -10, 0, n=1000)
+curve(pbeta(exp(x), 1e-16, 10, log.p=TRUE), -900, 0, n=1000)
                              ## _jumps_ to 0 - because exp() *must* [no bug in pbeta !]
 ## but this is somewhat similar, *not* using  apser(), but L20, then
 ## a) (x < 0.29): bup() + L131 bgrat() & w = 1-w1 ~= 1 -- now fixed
 ## b)  x >=0.29:  bpser()
-curve(pbeta(exp(x), 2e-15, 10, log=TRUE), -21, 0, n=1000)
+curve(pbeta(exp(x), 2e-15, 10, log.p=TRUE), -21, 0, n=1000)
 
 
 u <- seq(-16, 1.25, length=501)
@@ -480,7 +487,7 @@ op <- mult.fig(mfrow=c(3,5), marP = c(0,-1.5,-1,-.8),
                main = expression(pbeta(e^u, alpha, beta, ~~ log=='TRUE')))$old.par
 for(b in c(.5, 2, 5))
     for(a in c(.1, .2, .5, 1, 2)/100) {
-        plot(u, (qp <- pbeta(exp(u), a,b, log=TRUE)), ylab = NA,
+        plot(u, (qp <- pbeta(exp(u), a,b, log.p=TRUE)), ylab = NA,
              type="l", main = substitute(list(alpha == a, beta == b), list(a=a,b=b)))
     }
 par(op)
@@ -542,10 +549,10 @@ plot(p, (qp <- qbeta(p, a,b)), ylab = expression(qbeta(p, alpha, beta)),
 
 ## Seems almost independent of  beta =: b
 op <- mult.fig(mfrow = c(3,5), marP = c(0,-.8,-1,-.8),
-               main = subsitute'qbeta(p, <small>, .) vs p  for p --> 0')$old.par
+               main = quote('qbeta(p, <small>, .) vs p  for  '~ {p %->% 0}))$old.par
 for(b in c(.5, 2, 5))
     for(a in c(.1, .2, .5, 1, 2)/100) { # last one, a = 0.02 does not underflow
-        plot(p, (qp <- qbeta(p, a,b)), ylab = expression(qbeta(p, alpha, beta)),
+        plot(p, (qp <- qbeta(p, a,b)), ylab = expression(qbeta(p, alpha, beta)), col=2,
              type="l", log = "xy", main = substitute(list(alpha == a, beta == b), list(a=a,b=b)))
     }
 par(op)
@@ -587,7 +594,7 @@ p.qbeta.p0 <- function(p1 = .005, p2 = 1, beta = 1, mark.p = 0.5,
                        alphas = c(.1, .15, .2, .3, .4, .5, .8, 1, 2)/100,
                        n = 500, verbose = getOption("verbose"))
 {
-    ## Purpose: Plot qbeta() investigations for  p --> 0
+    ## Purpose: Plot qbeta() investigations for  small alpha & p --> 0
     ## ----------------------------------------------------------------------
     ## Arguments:
     ## ----------------------------------------------------------------------
@@ -597,27 +604,30 @@ p.qbeta.p0 <- function(p1 = .005, p2 = 1, beta = 1, mark.p = 0.5,
     stopifnot(p1 < p2, beta > 0, alphas > 0, n == round(n), n > 2,
 	      diff(alphas) > 0)
     p <- lseq(p1, p2, len = n)
-    tit <- expression(qb == qbeta(p, alpha, beta) * "  for   small"~alpha~" and " * {p %down% 0})
+    tit <- expression(qbeta(p, alpha, beta) * "  for   small"~alpha~" and " * {p %down% 0})
+    cols <- adjustcolor(1:3, 1/2); lwds <- c(2,4,2); ltys <- c(2,1,4)
     op <- mult.fig(length(alphas), main = tit, marP = c(-1,-1,-1,-.6))$old.par
     on.exit(par(op))
     for(a in alphas) {
         matplot(p, cbind(qbetaAppr  (p, a,beta, verbose=verbose),
                          qbeta      (p, a,beta),
                          qbetaAppr.3(p, a,beta)),
-                col = 1:3, lty = 1, lwd = c(1:2,1),
+                col = cols, lty = ltys, lwd = lwds,
                 ylab = "qbeta", type= "l", log = "xy",
                 main = substitute(list(alpha == a, beta == b),
                 list(a=a, b=beta)))
-        abline(  v = mark.p, lty = 3, lwd = 2, col = "light blue")
-        axis(1, at = mark.p, line=-1, lwd = 2, col = "light blue")
+        if(match(a, alphas) == length(alphas) %/% 2)
+           legend("left", c("qbetaAppr", "qbeta", "qbeta.a..3"),
+                  col = cols, lty = ltys, lwd = lwds, inset = .02, bty="n")
+        if(is.numeric(mark.p) && length(mark.p)) {
+            abline(  v = mark.p, lty = 3, lwd = 2, col = "light blue")
+            axis(1, at = mark.p, line=-1, lwd = 2, col = "light blue")
+        }
     }
-    legend("topleft", c("qbetaAppr", "qbeta", "qbeta.a..3"),
-           col=1:3, lwd = c(1:2,1), inset = .02)
     invisible(p)
 }
 
-p.qbeta.p0(.05)
-p.qbeta.p0(.05, verbose = 2)
+p.qbeta.p0(.05, mark=NULL, verbose=2)
 p.qbeta.p0(.0005)
 p.qbeta.p0(.00002)
 ## but for beta <~ 0.5, the approximation seems problematic
@@ -627,7 +637,6 @@ p.qbeta.p0(beta = 0.4)# approx. does not go up to 1
 p.qbeta.p0(beta = 0.2)
 p.qbeta.p0(beta = 0.1)## -> first plot, alpha = .001 is "catastrophe" << still not ok
 p.qbeta.p0(.00001, beta = .0001)# here, the approx. is completely hopeless
-
 ## larger alphas : another problem: the *approximation* is bad!
 p.qbeta.p0(.001, 0.5, n=2000, alpha= c(.2, .5, 1, 2))
 
@@ -652,10 +661,10 @@ par(op)
 
 
 ## Ok, let's look at pbeta() "here"
-curve(pbeta(x, 0.01, 5, log=TRUE), 0, 1,  n=1000) # fine (but not close enough to x = 0)
+curve(pbeta(x, 0.01, 5, log.p=TRUE), 0, 1,  n=1000) # fine (but not close enough to x = 0)
 ## log-zoom:
-curve(pbeta(x, 0.01, 5, log=TRUE), 1e-100, 1, n=10000, log="x") # fine
-curve(pbeta(x, 0.01, 5, log=TRUE), 1e-250, 1, n=10000, log="x") # fine
+curve(pbeta(x, 0.01, 5, log.p=TRUE), 1e-100, 1, n=10000, log="x") # fine
+curve(pbeta(x, 0.01, 5, log.p=TRUE), 1e-250, 1, n=10000, log="x") # fine
 ## it does *not* seem to be the problem of pbeta
 ## Ok, the "best" qbeta() is the one matching  pbeta:
 p. <- lseq(1e-3, 1, length=200)
@@ -741,8 +750,7 @@ plot(qq, abs(1 - c12.pBeta(qq)/(cq12[1] + cq12[2]*qq)), type="o", log="xy")
 
 showProc.time()
 
-## Excursion:  In order to check if the extreme-left tail approximation is ok,
-##             we need to compute  log(p*beta(p,q)) accurately for small p
+##  Compute  log(p*beta(p,q)) accurately for small p
 c12pBeta <- function(q, c2.only=FALSE, cutOff.q = 4e-4) {
     ## Purpose: Compute 1st and 2nd coefficient  of   p*Beta(p,q) = 1 + c_1*p + c_2*p^2 + ..
     ##  NB: The Taylor expansion of   log(p*Beta(p,q))    =     c_1*p + d_2*p^2 + ..

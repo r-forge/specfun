@@ -70,7 +70,42 @@ lbeta_asy <- function(a,b, k.max = 5, give.all = FALSE)
   lgamma(a) - logQab_asy(a,b, give.all = give.all)
 }
 
-## MM: this is unused (why ??)
+
+### FIXME ==> ../tests/qbeta-dist.R
+##            -------- ~~~~~~~~~~~~ at the end has already *several* such approximations !!! <<< FIXME
+
+##' Taylor Approximation to  log(a*B(a,b))  for  a << 1 -- derived from a --> 0
+##'
+##' for small a,  B(a,b) ~ 1/a, hence  a*B(a,b) ~ a * 1/a = 1, hence log(a*B(a,b)) ~= 0
+##'
+##' log(a * beta(a,b)) == log(a) + log(beta(a,b)) == log(a) + lbeta(a,b), but the latter suffers cancellation !!
+##' We use the Taylor series
+##' log(a * B(a,b)) = a \sum_{n=0}^\infty (\psi^{(n)}(1) - \psi^{(n)}(b)) \frac{a^n}{(n+1)!}
+##'              where \psi^{(n)} is the n-th derivative of the "psi gamma" function
+##' derived from Abramowitz & Stegun, p.259, (6.3.14) series for \psi(1+z)
+##' it's integral is \log \Gamma(z+1) = - \gamma z + \sum_{k=2}^\infty \zeta(k)/k (-z)^k   (G)
+##' and as \Gamma(z+1) = z \Gamma(z), have \log \Gamma(y) = \log(\Gamma(y+1)/y) = - \log(y) + formula (G) above.
+##'
+##' Now, \log(a \times B(a,b)) = \log(a) + \log \frac{\Gamma(a) \Gamma(b)}{\Gamma(a+b)}
+##'                            = \log(a) + \log \Gamma(a)         + \log (\Gamma(b) / \Gamma(a+b))
+##'                            = \gamma a + \pi^2/12 a^2 +O(a^3)  + \log (\Gamma(b) / \Gamma(a+b))
+##'  ...
+##'                            = a \times \sum_{n=0}^\infty .. sum above
+
+##' @title Accurate Approximation of log(a * beta(a,b)) for small a
+##' @param a, b  numeric vectors: the non-negative arguments of Beta
+##' @return
+##' @author Martin Maechler
+laBeta <- function(a,b, nT) {
+    stopifnot(length(nT) == 1, nT == as.integer(nT), nT >= 1)
+
+### ===> ../tests/qbeta-dist.R
+##       =========~~~~~~~~~~~~ at the end has already *several* such approximations !!! <<< FIXME
+
+}
+
+
+## MM: this is unused (why ??) -- should be "uniformly better" than lbeta_asy() above
 lbetaMM <- function(a,b, cutAsy = 1e-2, verbose = FALSE)
 {
   ## Purpose:  log(beta( a, b))  which also works for HUGE  a / b or b/a
@@ -634,7 +669,8 @@ qnormUappr <- function(p,
     R
 }
 
-qbetaAppr.1 <- function(a, p, q, log.p=FALSE, y = qnormUappr(a, log.p=log.p))
+qbetaAppr.1 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE,
+                        y = qnormUappr(a, lower.tail=lower.tail, log.p=log.p))
 {
   ## Purpose: Approximate  qbeta(a, p,q) -- Abramowitz & Stegun (26.5.22)
   ##          qbeta(.) takes this only when  p>1 & q>1 : "Carter(1947), see AS 109, remark '5.'"
@@ -673,11 +709,12 @@ qbetaAppr.2 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(p
     ## log(1-"a") = log(pr_{upper_tail}):
     l1ma <- if(lower.tail) .D_LExp(a, log.p=log.p) else .D_log(a, log.p=log.p)
     ## pmax(0, ....) -- needed when  (l1ma + log(q) + logbeta) / q > 0, e.g., for
-    ## e.g. qbetaAppr.2(1/4, 1/2, 1/2)
+    ## e.g. qbetaAppr.2(1/4, 1/2, 1/2) gives -0.388
     -expm1((l1ma + log(q) + logbeta) / q)
 }
 
-qbetaAppr.4 <- function(a, p, q, log.p=FALSE, y = qnormUappr(a, log.p=log.p),
+qbetaAppr.4 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE,
+                        y = qnormUappr(a, lower.tail=lower.tail, log.p=log.p),
                         verbose=getOption("verbose"))
 {
     ## Purpose: Approximate  qbeta(a, p,q); 'a' is only used via qnorm(a,..)
@@ -690,7 +727,21 @@ qbetaAppr.4 <- function(a, p, q, log.p=FALSE, y = qnormUappr(a, log.p=log.p),
     1 - 2 / (t + 1)
 }
 
-qbetaAppr <- function(a, p, q, log.p=FALSE, y = qnormUappr(a, log.p=log.p),
+qbetaAppr.5 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE,
+                        y = qnormUappr(a, lower.tail=lower.tail, log.p=log.p),
+                        logbeta = lbeta(p,q),
+                        verbose=getOption("verbose"))
+{
+    ## Purpose: Approximate  qbeta(a, p,q) for p << q , really from  p --> 0 expansion
+    ##
+    ## based on future good  laBeta() ==robust== log(p * B(p,q))
+    ##
+    ## see MM's notes (on paper!)
+}
+
+
+qbetaAppr <- function(a, p, q, lower.tail=TRUE, log.p=FALSE,
+                      y = qnormUappr(a, lower.tail=lower.tail, log.p=log.p),
                       logbeta = lbeta(p,q),
                       verbose = getOption("verbose") && length(a) == 1)
 {
@@ -706,7 +757,7 @@ qbetaAppr <- function(a, p, q, log.p=FALSE, y = qnormUappr(a, log.p=log.p),
     if (p > 1 && q > 1) { ## Abramowitz & Stegun(26.5.22)
         if(verbose) cat("p,q > 1: Using qbetaAppr.1(): Abramowitz-Stegun (26.5.22)\n")
         ## 'a' is not needed here, just 'y' is
-        qbetaAppr.1(,p,q, log.p=log.p, y=y)
+        qbetaAppr.1(,p,q, lower.tail=lower.tail, log.p=log.p, y=y)
     } else {
         if(verbose) cat("p or q <= 1 : ")
         r <- q + q
@@ -720,14 +771,17 @@ qbetaAppr <- function(a, p, q, log.p=FALSE, y = qnormUappr(a, log.p=log.p),
         ans <- t
         if(any(neg <- t <= 0)) { ## forget y(a) and t(q, y) from above; qbetaAppr.2():
             if(verbose)   cat("t <= 0:  using qbetaAppr.2()\n")
-            ans[neg] <- - expm1((.D_LExp(-a[neg], log.p) + log(q) + logbeta) / q)
+            ## log(1-"a") = log(pr_{upper_tail}):
+            l1ma <- if(lower.tail) .D_LExp(a[neg], log.p=log.p) else .D_log(a[neg], log.p=log.p)
+            ## FIXME -- still ? -- : "catastrophic"  in -expm1(xx) when xx > 0 ==> -expm1(xx) = 1-e^xx < 0 "nonsense"
+            ans[neg] <- - expm1((l1ma + log(q) + logbeta) / q)
         }
         if(any(!neg)) { ##else
             t <- (4 * p + r - 2) / t
             if (any(L1 <- !neg & t <= 1)) {
                 if(verbose) cat("t > 0; t' <= 1: qbetaAppr.3()\n")
                 ## ans[L1] <- exp((log(a[L1] * p) + logbeta) / p)
-                ans[L1] <- qbetaAppr.3(a[L1], p, q, log.p=log.p, logbeta=logbeta)
+                ans[L1] <- qbetaAppr.3(a[L1], p, q, lower.tail=lower.tail, log.p=log.p, logbeta=logbeta)
                 ## ==> linear relationship on log-log scale:
                 ##   log(ans) = 1/p * log(a) + (log p + log beta(p,q))/p
             }

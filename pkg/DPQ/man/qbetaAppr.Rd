@@ -11,13 +11,17 @@
   using diverse approximations.
 }
 \usage{% R code : ../R/beta-fns.R
-qbetaAppr.1(a, p, q, log.p=FALSE, y = qnormUappr(a, log.p=log.p))
+qbetaAppr.1(a, p, q, lower.tail=TRUE, log.p=FALSE,
+            y = qnormUappr(a, lower.tail=lower.tail, log.p=log.p))
+
 qbetaAppr.2(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(p,q))
 qbetaAppr.3(a, p, q, lower.tail=TRUE, log.p=FALSE, logbeta = lbeta(p,q))
-qbetaAppr.4(a, p, q, log.p=FALSE, y = qnormUappr(a, log.p=log.p),
+qbetaAppr.4(a, p, q, lower.tail=TRUE, log.p=FALSE,
+            y = qnormUappr(a, lower.tail=lower.tail, log.p=log.p),
             verbose = getOption("verbose"))
 
-qbetaAppr  (a, p, q, log.p=FALSE, y = qnormUappr(a, log.p=log.p),
+qbetaAppr  (a, p, q, lower.tail=TRUE, log.p=FALSE,
+            y = qnormUappr(a, lower.tail=lower.tail, log.p=log.p),
             logbeta = lbeta(p,q),
             verbose = getOption("verbose") && length(a) == 1)
 

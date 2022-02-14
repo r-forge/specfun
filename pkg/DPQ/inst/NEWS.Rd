@@ -4,14 +4,19 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-2 (2022-01-24, svn r200)}{
+\section{Version 0.5-2 (2022-02-14, svn r2..)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{qbetaAppr()} (and the \code{qbetaAppr.{1,3}()}
       auxiliaries) now get a \code{log.p} argument.
 
       \item New \R function \code{dpsifn()}, as interface to \R's C API
-      \code{dpsifn()}, the workhorse of all \R's \code{psigamma()} functions.
+      \code{dpsifn()}, the workhorse of all \R's \code{psigamma()}
+      functions.
+
+      \item all(?) \code{qbeta.Appr*()} functions now accept a
+      \code{lower.tail} argument (with default \code{TRUE}). % __FIXME__ Needs TESTS!
+      %> ../tests/qbeta-dist.R -- C-s for 'FIXME: More qbetaAppr*' (and %%lower.tail ..)
     }
   }
   %% \subsection{BUG FIXES}{
