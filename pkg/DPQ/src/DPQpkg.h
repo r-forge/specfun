@@ -1,4 +1,3 @@
-
 # ifdef _WIN32
 #   define __USE_MINGW_ANSI_STDIO 1
 # endif
@@ -242,6 +241,19 @@ double algdiv(double a, double b);
 // .Call()ed :
 SEXP R_algdiv(SEXP a_, SEXP b_)
     ;
+
+// bpser.c: --------------------------------------------------------------------
+
+double gam1(double a); //  1/gamma(a+1) - 1    for -0.5 <= a <= 1.5
+double gamln1(double a);// log(gamma(1 + a))   for -0.2 <= a <= 1.25
+
+double bpser(double a, double b, double x, double eps, int *err_bp, int log_p, Rboolean verbose);
+// .Call()ed :
+SEXP R_bpser(SEXP a_, SEXP b_, SEXP x_, SEXP eps_, SEXP log_p_, SEXP verbose_, SEXP warn_)
+    ;
+
+
+
 
 // bd0.c: --------------------------------------------------------------------
 double bd0(double x, double np, double delta, int maxit, int trace);

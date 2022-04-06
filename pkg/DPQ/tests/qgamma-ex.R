@@ -355,8 +355,7 @@ showProc.time()
 ## Consider the two different implementations of
 ##  lgamma1p(a) := lgamma(1+a) == log(gamma(1+a) == log(a*gamma(a))  "stable":
 
-if(!exists("lseq", mode="function"))
-    lseq <- if(requireNamespace("sfsmisc"))  sfsmisc::lseq  else
+lseq <- if(requireNamespace("sfsmisc"))  sfsmisc::lseq  else
 	function(from, to, length) exp(seq(log(from), log(to), length.out = length))
 
 if(require("Rmpfr")) { ##---------------- MPFR numbers -------------------------

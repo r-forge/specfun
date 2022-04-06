@@ -1,7 +1,7 @@
 Package: DPQ
 Title: Density, Probability, Quantile ('DPQ') Computations
 Version: 0.5-2
-Date: 2022-02-14
+Date: 2022-04-06
 Authors@R: c(person("Martin","Maechler", role=c("aut","cre"),
                     email="maechler@stat.math.ethz.ch", comment = c(ORCID = "0000-0002-8685-9910"))
   , person("Morten",   "Welinder",    role = "ctb", comment = "pgamma C code, see PR#7307, Jan. 2005; further pdhyper()")
@@ -21,7 +21,7 @@ Description: Computations for approximations and alternatives for the 'DPQ'
   implementations, notably for my own use in order to improve standard
   R pbeta(), qgamma(), ..., etc: {'"dpq"'-functions}.
 Depends: R (>= 3.6.0)
-Imports: stats, graphics, methods, utils, sfsmisc (>= 1.1-10)
+Imports: stats, graphics, methods, utils, sfsmisc (>= 1.1-13)
 Suggests: Rmpfr, DPQmpfr (>= 0.3-1), gmp, Matrix, MASS, mgcv, scatterplot3d, akima
 SuggestsNote: Matrix only for its "test-tools-1.R"; mgcv,scatt..,akima: some tests/
 License: GPL (>= 2)

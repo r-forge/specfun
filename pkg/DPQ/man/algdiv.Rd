@@ -2,8 +2,10 @@
 \alias{algdiv}
 \title{Compute log(gamma(b)/gamma(a+b)) when b >= 8}
 \description{
-  Computes \deqn{algdiv(a,b) := \log \frac{\Gamma(b)}{\Gamma(a+b)} = \log
-    \Gamma(b) - \log\Gamma(a+b) = \code{lgamma(b) - lgamma(a+b)}}
+  Computes \deqn{\code{algdiv(a,b)} := \log \frac{\Gamma(b)}{\Gamma(a+b)} = \log
+    \Gamma(b) - \log\Gamma(a+b) = \code{lgamma(b) - lgamma(a+b)}}{%
+    \code{algdiv(a,b)} := log (\Gamma(b)/\Gamma(a+b)) =
+    log \Gamma(b) - log\Gamma(a+b) = \code{lgamma(b) - lgamma(a+b)}}
   in a numerically stable way.
 
   This is an auxiliary function in \R's (TOMS 708) implementation of
@@ -18,15 +20,23 @@ algdiv(a, b)
 \details{
   Note that this is also useful to compute the Beta function
   \deqn{B(a,b) = \frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)}.}{B(a,b) = \Gamma(a)\Gamma(b)/\Gamma(a+b).}
-  Clearly,  \deqn{\log B(a,b) = \log\Gamma(a) + algdiv(a,b) = \log\Gamma(a) - logQab(a,b)}
+  Clearly,  \deqn{\log B(a,b) = \log\Gamma(a) + \mathrm{algdiv(a,b)} = \log\Gamma(a) - \mathrm{logQab}(a,b)}{log B(a,b) = log\Gamma(a) + algdiv(a,b) = log\Gamma(a) - logQab(a,b)}
 
-\preformatted{
- In our ../tests/qbeta-dist.R  we look into computing  log(p*Beta(p,q)) accurately for p << q
-        ---------------------
- We are proposing a nice solution there.
+  In our \file{../tests/qbeta-dist.R}  we look into computing
+  \eqn{\log(p B(p,q))}{log(p * Beta(p,q))} accurately for
+  \eqn{p \ll q}{p << q} .
 
- How is this related to algdiv() ?
- }
+  We are proposing a nice solution there.
+  \cr How is this related to \code{algdiv()} ?
+
+  Additionally, we have defined
+  \deqn{Qab = Q_{a,b} := \frac{\Gamma(a+b),\Gamma(b)},}{%
+        Qab           :=       \Gamma(a+b)/\Gamma(b),}
+  such that \eqn{\code{logQab(a,b)} := \log Qab(a,b)}{%
+                 \code{logQab(a,b)} :=  log(Qab(a,b))}
+  fulfills simply
+  \deqn{\code{logQab(a,b)} = - \code{algdiv(a,b)}}
+  see \code{\link{logQab_asy}}.
 }
 \value{
   a numeric vector of length \code{max(length(a), length(b))} (if neither
@@ -44,7 +54,7 @@ algdiv(a, b)
 }
 \seealso{
   \code{\link{gamma}}, \code{\link{beta}};
-  my own \code{\link{logQab_asy}()}.
+  my own \code{\link{logQab_asy}()}.% <--> ./lbeta.Rd
 }
 \examples{
 Qab <- algdiv(2:3, 8:14)
@@ -56,5 +66,26 @@ all.equal( -   algdiv(3, 100),
 (lQab <- logQab_asy(3, 1e10))
 ## relative error
 1 + lQab/ algdiv(3, 1e10) # 0 (64b F 30 Linux; 2019-08-15)
+
+## in-and outside of "certified" argument range {b >= 8}:
+a. <- c(1:3, 4*(1:8))/32
+b. <- seq(1/4, 20, by=1/4)
+ad <- t(outer(a., b., algdiv))
+## direct computation:
+f.algdiv <- function(a,b) lgamma(b) - lgamma(a+b)
+ad.d <- t(outer(a., b., f.algdiv))
+
+matplot (b., ad.d, type = "o", cex=3/4,
+         main = quote(log(Gamma(b)/Gamma(a+b)) ~"  vs.  algdiv(a,b)"))
+mtext(paste0("a[1:",length(a.),"] = ",
+        paste0(paste(head(paste0(formatC(a.*32), "/32")), collapse=", "), ", .., 1")))
+matlines(b., ad,   type = "l", lwd=4, lty=1, col=adjustcolor(1:6, 1/2))
+abline(v=1, lty=3, col="midnightblue")
+all.equal(ad[b. >= 1,], ad.d[b. >= 1,]       )# 1.5e-5
+all.equal(ad[b. >= 2,], ad.d[b. >= 2,], tol=0)# 3.9e-9
+all.equal(ad[b. >= 4,], ad.d[b. >= 4,], tol=0)# 4.6e-13
+all.equal(ad[b. >= 6,], ad.d[b. >= 6,], tol=0)# 3.0e-15
+all.equal(ad[b. >= 8,], ad.d[b. >= 8,], tol=0)# 2.5e-15 (not much better)
+%% eventually use sfsmisc::relErr[V]() for visualization *and* checking
 }
 \keyword{math}

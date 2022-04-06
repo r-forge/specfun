@@ -35,11 +35,17 @@ dgamma.R <- function(x, shape, scale = 1, log)
     }
 }
 
+dpois_Simpl <- function(x, lambda, log=FALSE)
+    .D_val(exp(-lambda)* (x*log(lambda) - lgamma(x+1)), log)
+dpois_simpl <- function(x, lambda, log=FALSE)
+    .D_exp(-lambda + (x*log(lambda) - lgamma(x+1)), log)
+
 ## ~/R/D/r-devel/R/src/nmath/dpois.c   --> dpois_raw()
 ## // called also from dgamma.c, pgamma.c, dnbeta.c, dnbinom.c, dnchisq.c :
 dpois_raw <- function(x, lambda, log=FALSE,
                       ## for now:                            NB: ebd0_v1    R version *broken* \\\\\\\
                       version = c("bd0_v1", "bd0_p1l1d", "bd0_p1l1d1", "bd0_l1pm", "ebd0_C1", "ebd0_v1"),
+                      small.x__lambda = .Machine$double.eps,
                       ## future ?! version = c("ebd0_v1", "bd0_v1"),
                       bd0.delta = 0.1,
                       ## optional arguments of log1pmx() :
@@ -82,11 +88,20 @@ dpois_raw <- function(x, lambda, log=FALSE,
         BB <- BB & !B
     }
     DBL_MIN <- .Machine$double.xmin # 2.225e-308
-    if(any(B <- BB & x <= lambda * DBL_MIN)) {
-        if(verbose & any(i <- B & x > 0))
-           cat(sprintf(" very small x/lambda in [%g,%g]\n for x[%s]\n",
-                       min(x[B & x > 0]), max(x[B & x > 0]), inds(which(i))))
-        r[B] <- .D_exp(-lambda[B], log)
+    if(any(B <- BB & x <= lambda * small.x__lambda)) {
+        if(any(B <- BB & x <= lambda * DBL_MIN)) {
+            if(verbose & any(i <- B & x > 0))
+                cat(sprintf(" extremely small x/lambda in [%g,%g]\n for x[%s]\n",
+                            min(x[i]), max(x[i]), inds(which(i))))
+            r[B] <- .D_exp(-lambda[B], log)
+        } else { ## x << lambda (less extreme)  x/lambda  in (DBL_MIN, small.x__lambda)
+            ## ebd0(x, lambda) not good, and there's no bad cancellation here
+            B <- !B
+            if(verbose)
+                cat(sprintf(" very small x/lambda in [%g,%g]\n for x[%s]\n",
+                            min(x[B]), max(x[B]), inds(which(B))))
+	    r[B] <- .D_exp(-lambda[B] + (x[B]*log(lambda[B]) -lgamma(x[B]+1)), log)
+        }
         BB <- BB & !B
     }
     if(any(B <- BB & lambda < x * DBL_MIN)) {
@@ -207,9 +222,9 @@ bd0 <- function(x, np,
                 warning("invalid argument values in  (x, np)")
                 return(NaN)
             }
-            ##          ____           
+            ##          ____
             if(abs(x-np) <= delta * (x+np)) { #  '<='  was  '<' ;  '<=' allows to use delta=0
-            ##          ~~~~ 
+            ##          ~~~~
                 v <- (x-np)/(x+np)
                 if(v == 0 && x != np) { # had underflow
                     F <- sqrt(x) * sqrt(np) # scaling factor --

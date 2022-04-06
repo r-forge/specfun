@@ -120,7 +120,10 @@ if(doExtras) { ## the error of the log1pmx() "algorithm" even for "perfect" mpfr
 re <- asNumeric(relErrV(lg1pM., log1pmx(xd)))
 showProc.time()
 
-plot(xd, re, type="b", cex=1/4)
+## MM: From around here, "move" to vignette  <<<<<<<<<<<<<<<<<<<<<<<<< ../vignettes/log1pmx-etc.Rnw <<<<<<
+
+plot(xd, re, type="b", cex=1/4,
+     xlab=quote(x), main="relErrV(log1p(xM) - xM, log1pmx(x)),  xM <- mpfr(x, 2048)")
 abline(h = (-2:2)*2^-52, lty=2, col=adjustcolor("gray20", 1/2))
 xl <- -0.84; xr <- -0.4 ##  the "relevant x-range":
 colR <- adjustcolor("tomato", 1/2)
@@ -131,13 +134,14 @@ showProc.time()
 
 # only "relevant"  x-range: values inside (xl, xr)
 iN <- xl < xd & xd < xr
-plot(xd[iN], re[iN], type="b", cex=1/4, main="rel.Error of log1pmx()",
-     sub = "in relevant x-range")
+plot(xd[iN], re[iN], type="b", cex=1/4, main="rel.Error of log1pmx(x)",
+     xlab=quote(x), ylab=quote(rE(x)), sub = "(in relevant x-range)")
 abline(h = (-2:2)*2^-52, lty=2, col=adjustcolor("gray30", 1/2))
 abline(v = c(xl,xr), col=colR, lty=2, lwd=2)
 
 plot(xd[iN], abs(re[iN]), type="b", cex=1/2, log="y",
      main = "| relErr( log1pmx(x) ) |  {via 'Rmpfr'}",
+     ylab=quote(abs(rE(x))), xlab=quote(x),
      ylim = c(4e-17, max(abs(asNumeric(re)[iN]))))
 abline(h = c(1:2,4)*2^-52, lty=2, col=adjustcolor("gray20", 1/2))
 mL1 <- eval(formals(log1pmx)$minL1)
@@ -150,7 +154,11 @@ abline(v = mL1, lwd=3,  col=adjustcolor(4, 2/3), lty=3)
 axis(3, line=-1, at=mL1, sprintf("mL1 = %g",mL1), col.axis=4, col=4)
 R <- xd[iN] >= mL1; stopifnot(re2[R] == re[iN][R])
 
-mL1 <- -0.66; re3 <- asNumeric(relErrV(lg1pM.[iN], log1pmx(xd[iN], minL1 = mL1)))
+mL1 <- -0.66; re3   <- asNumeric(relErrV(lg1pM.[iN], log1pmx(xd[iN], minL1 = mL1)))
+              re3.2 <- asNumeric(relErrV(lg1pM.[iN], log1pmx(xd[iN], minL1 = mL1, eps2 = .02)))
+       print(max(abs(re3))) == # 4.818203e-16
+             max(abs(re3.2)) #  TRUE !  of course, eps2 does not matter as long as it is far from our x-range !!
+xd[iN][which.max(abs(re3))] #  -0.5710449
 lines(xd[iN], abs(re3), col=adjustcolor(6, 1/3), lwd=2)
 abline(v = mL1, lwd=3,  col=adjustcolor(6, 2/3), lty=3)
 axis(3, line=-2, at=mL1, sprintf("mL1 = %g",mL1), col.axis=6, col=6)
@@ -158,8 +166,11 @@ lines(lowess(xd[iN], abs(re[iN]), f=1/50), col=adjustcolor("gray", 1/2), lwd=6)
 lines(lowess(xd[iN], abs(re2),    f=1/50), col=adjustcolor(4, 1/2), lwd=6)
 lines(lowess(xd[iN], abs(re3),    f=1/50), col=adjustcolor(6, 1/2), lwd=6)
 R <- xd[iN] > mL1;  stopifnot(re3[R] == re2[R])
+## MM: for vignette, stop here?
+## ---> since  max(|re4|) {below} == max(|re3|)
 
 mL1 <- -0.64; re4 <- asNumeric(relErrV(lg1pM.[iN], log1pmx(xd[iN], minL1 = mL1)))
+max(abs(re4)) == max(abs(re3)) # TRUE !
 lines(xd[iN], abs(re4), col=adjustcolor(7, 1/3), lwd=2)
 abline(v = mL1, lwd=3,  col=adjustcolor(7, 2/3), lty=3)
 axis(3, line=-2, at=mL1, sprintf("mL1 = %g",mL1), col.axis=7, col=7)
@@ -170,6 +181,7 @@ lines(lowess(xd[iN], abs(re4),    f=1/50), col=adjustcolor(7, 1/2), lwd=6)
 R <- xd[iN] > mL1;  stopifnot(re4[R] == re3[R])
 
 re5 <- asNumeric(relErrV(lg1pM.[iN], log1pmx(xd[iN], minL1 = -0.6)))
+max(abs(re5)) == max(abs(re3)) # TRUE !.. still not better
 lines(xd[iN], abs(re5), col=adjustcolor(8, 1/3), lwd=2)
 abline(v = -0.6, lwd=3, col=adjustcolor(8, 2/3), lty=3)
 axis(3, line=-1, at=-0.6, sprintf("mL1 = %g",mL1), col.axis=8, col=8)
@@ -179,7 +191,7 @@ lines(lowess(xd[iN], abs(re3),    f=1/50), col=adjustcolor(6, 1/2), lwd=6)
 lines(lowess(xd[iN], abs(re4),    f=1/50), col=adjustcolor(7, 1/2), lwd=6)
 lines(lowess(xd[iN], abs(re5),    f=1/50), col=adjustcolor(8, 1/2), lwd=6)
 R <- xd[iN] > -0.6;  stopifnot(re5[R] == re4[R])
-## -0.6  now is clearly too large, -0.7 was better
+## -0.6  now is clearly too large, -0.7 was better  {MM: why the
 showProc.time()
 
 

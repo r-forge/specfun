@@ -5,7 +5,7 @@
  * to provide compatibility to *previous* R (and DPQ) implementations.
  * These are
  *
- *	Copyright (C) 2021 Martin Maechler,  maechler@stat.math.ethz.ch
+ *	Copyright (C) 2021-2022 Martin Maechler,  maechler@stat.math.ethz.ch
  *
  *
  *  AUTHORS
@@ -302,7 +302,7 @@ void ebd0(double x, double M, double *yh, double *yl, int trace)
      */
 
 #define ADD1(d_) do {				\
-	    double d = (d_);			\
+   volatile double d = (d_);			\
 	    double d1 = floor (d + 0.5);	\
 	    double d2 = d - d1;/* in [-.5,.5) */ \
 	    *yh += d1;				\

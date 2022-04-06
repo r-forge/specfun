@@ -24,6 +24,7 @@
 \usage{% >>> ../R/dgamma.R <<<
 dpois_raw(x, lambda, log=FALSE,
           version, % =  c("bd0_v1", "bd0_p1l1d", "bd0_p1l1d1", "bd0_l1pm", "ebd0_v1")
+          small.x__lambda = .Machine$double.eps,
           ## the defaults for version will probably change in the future
           bd0.delta = 0.1,
           ## optional arguments of log1pmx() :
@@ -59,6 +60,10 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
     otherwise the density at \code{x}.}
   \item{verbose}{logical indicating if some information about the
     computations are to be printed.}
+  \item{small.x__lambda}{positive number; for \code{dpois_raw(x, lambda)},
+    when \code{x/lambda} is not larger than \code{small.x__lambda}, the
+    direct log poisson formula is used instead of \code{ebd0()},
+    \code{bd0()} or \code{stirlerr()}.}
   \item{delta, bd0.delta}{a non-negative number \eqn{< 1} (practically required
     to be \eqn{\le .99}), a cutoff for \code{bd0()}
     where a continued fraction series expansion is used when \eqn{|x - M| < delta*(x+M)}.}
@@ -73,7 +78,7 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
   \item{version}{a \code{\link{character}} string specifying the version of
     \eqn{bd0()} used.}
   \item{scheme}{a \code{\link{character}} string specifying the
-    \code{cutoffs} scheme.}
+    \code{cutoffs} scheme for \code{stirlerr()}.}
   \item{cutoffs}{an increasing numeric vector, required to start with
     with \code{cutoffs[1] <= 15} specifying the cutoffs to switch from 2 to 3 to ...,
     up to 10 term approximations for non-small \code{n}, where the direct

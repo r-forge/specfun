@@ -479,7 +479,10 @@ curve(pbeta(exp(x), 1e-16, 10, log.p=TRUE), -900, 0, n=1000)
 ## but this is somewhat similar, *not* using  apser(), but L20, then
 ## a) (x < 0.29): bup() + L131 bgrat() & w = 1-w1 ~= 1 -- now fixed
 ## b)  x >=0.29:  bpser()
-curve(pbeta(exp(x), 2e-15, 10, log.p=TRUE), -21, 0, n=1000)
+xpb <- curve(pbeta(exp(x), 2e-15, 10, log.p=TRUE), -21, 0, n=1000)
+xpb <- within(as.data.frame(xpb), {exp.x <- exp(x); bp <- exp(x) >= 0.29})
+## unfinished
+bps <- bpser(2e-15, 10, x = with(xpb, exp.x[bp]), log.p=TRUE, verbose=TRUE)
 
 
 u <- seq(-16, 1.25, length=501)
@@ -599,12 +602,17 @@ p.qbeta.p0 <- function(p1 = .005, p2 = 1, beta = 1, mark.p = 0.5,
     ## Arguments:
     ## ----------------------------------------------------------------------
     ## Author: Martin Maechler, Date:  7 Oct 2009, 22:46
-
-    stopifnot(require("sfsmisc"))       # lseq(), mult.fig()
-    stopifnot(p1 < p2, beta > 0, alphas > 0, n == round(n), n > 2,
-	      diff(alphas) > 0)
+    stopifnot(exprs = {
+        require("sfsmisc") # lseq(), mult.fig()
+        require("DPQ")     # qbetaAppr() ..
+        p1 < p2
+        beta > 0
+        alphas > 0 ; diff(alphas) > 0
+        n == round(n) ; n > 2
+    })
     p <- lseq(p1, p2, len = n)
-    tit <- expression(qbeta(p, alpha, beta) * "  for   small"~alpha~" and " * {p %down% 0})
+    tit <- expression(qbeta(p, alpha, beta) * "  for   small"~alpha~
+                          " and " * {p %down% 0})
     cols <- adjustcolor(1:3, 1/2); lwds <- c(2,4,2); ltys <- c(2,1,4)
     op <- mult.fig(length(alphas), main = tit, marP = c(-1,-1,-1,-.6))$old.par
     on.exit(par(op))

@@ -4,26 +4,35 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-2 (2022-02-14, svn r2..)}{
+\section{Version 0.5-2 (2022-04-06, svn r204)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{qbetaAppr()} (and the \code{qbetaAppr.{1,3}()}
       auxiliaries) now get a \code{log.p} argument.
 
+      \item all(?) \code{qbeta.Appr*()} functions now accept a
+      \code{lower.tail} argument (with default \code{TRUE}). % __FIXME__ Needs TESTS!
+      %> ../tests/qbeta-dist.R -- C-s for 'FIXME: More qbetaAppr*' (and
+      %%%lower.tail ..)
+
       \item New \R function \code{dpsifn()}, as interface to \R's C API
       \code{dpsifn()}, the workhorse of all \R's \code{psigamma()}
       functions.
 
-      \item all(?) \code{qbeta.Appr*()} functions now accept a
-      \code{lower.tail} argument (with default \code{TRUE}). % __FIXME__ Needs TESTS!
-      %> ../tests/qbeta-dist.R -- C-s for 'FIXME: More qbetaAppr*' (and %%lower.tail ..)
+      \item \code{dpois_raw(x, lambda, *)} gets new cutoff \code{small.x__lambda}
+      to \emph{not} use \code{bd0()} or \code{ebd0()} when \code{x} is much
+      smaller than \code{lambda}.
+
+      \item New \R function \code{bpser()} interfacing to the C function of
+      the same in \R's Mathlib \code{pbeta()} or \code{bratio()} in file
+      \file{nmath/toms708.c}.
     }
   }
-  %% \subsection{BUG FIXES}{
-  %%   \itemize{
-  %%     \item
-  %%   }
-  %% }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Updated URL of Abramowitz & Stegun.
+    }
+  }
 }
 \section{Version 0.5-1 (2021-12-10, svn r197)}{
   \subsection{NEW FEATURES}{

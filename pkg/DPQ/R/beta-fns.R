@@ -193,6 +193,11 @@ lbetaIhalf <- function(a, n)
 ### -------  ~/R/D/r-devel/R/src/nmath/toms708.c
 ###                                    ~~~~~~~~~
 
+
+
+
+
+
 ## From ~/R/D/r-devel/R/src/nmath/pgamma.c :
 ##                                --------
 ##/* Compute  log(gamma(a+1))  accurately also for small a (0 < a < 0.5). */
@@ -619,6 +624,11 @@ lgamma1p_series <- function(x, k) {
 }
 
 algdiv <- function(a,b) .Call(C_R_algdiv, as.double(a), as.double(b))
+
+bpser <- function(a,b, x, log.p=FALSE, eps = 1e-15, verbose=FALSE, warn=TRUE) { # ../src/bpser.c
+    .Call(C_R_bpser, a, b, x, eps, log.p, verbose, warn)
+    ## return( list(r = r_, err = ier_) )
+}
 
 
 

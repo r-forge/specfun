@@ -95,6 +95,7 @@ export(
   , lbeta_asy, lbetaI, lbetaM, lbetaMM
   ## , lbetaIhalf
   , algdiv # name as in TOMS 708 .. but really?
+  , bpser  # name as in TOMS 708
   , okLongDouble # as with valgrind, it does not work contrary to what .Machine says
 
   , dpsifn # R/psigamma-deriv.R

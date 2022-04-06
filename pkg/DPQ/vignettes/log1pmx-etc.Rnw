@@ -202,20 +202,19 @@ used:
   \label{eq:Stirling}
   \log n!   &= \frac 1 2 \log(2\pi n) + n \log(n) - n + \delta(n),
               \quad\textrm{where the ``Stirling error'' } \delta(n) \ \mathrm{ is} \\
-  \delta(n) &:= \log n! - \frac 1 2 \log(2\pi n) - n \log(n) + n = \\
+  \delta(n) &:= \log n! - \frac 1 2 \log(2\pi n) - n \log(n) + n = \label{eq:deltaStirling}\\
             & = \frac 1{12 n} - \frac 1{360 n^3} + \frac 1{1260 n^5}
               - \frac 1{1680 n^7} + \frac 1{1188 n^9} + O(n^{-11}).
 \end{align}
-Note that $\delta(n) \equiv$\code{stirlerr(n)} in the C code provided by
-Loader and now in R's Mathlib at
-\url{https://svn.r-project.org/R/trunk/src/nmath/stirlerr.c}.
-%mirrored, e.g., at \url{https://github.com/wch/r-source/blob/trunk/src/nmath/stirlerr.c}
+See appendix~\ref{C:stirlerr} how $\delta(n) \equiv$\code{stirlerr(n)} is
+computed and implemented in the C code of R, and can be improved.
+
 
 Note that for the binomial, $x$ is an integer in $\{0, 1, \dots, n\}$ and $M=n p \ge 0$,
 but the formulas (\ref{eq:D0-def}), (\ref{eq:D0-is}) for $D_0(x,M)$ apply and are needed, e.g., for \code{pgamma()} computations for general non-negative ($x, M >
 0$) where even $x = 0$ is well defined, see (\ref{eq:D0-x0}) above.
 
-Further (see Loader), such a saddle point approach is needed for Poisson
+Further, \citeauthor{LoaC2000} showed, such a saddle point approach is needed for Poisson
 probabilities, as well, where
 \begin{align}
   \label{eq:Pois}
@@ -296,7 +295,7 @@ Setting \(t := (x-M)/M\), i.e., \(\abs{t} \ll 1\) for that situation, or equival
   t &:= \frac{x-M}{M} \\
   \label{eq:bd0-log1}
   D_0(x,M) % = M \cdot [(t+1)(\log(1+t) - 1) + 1]
-           &= \overbrace{M\cdot(1+t)}_{x} \log(1+t) - \overbrace{t \cdot M}_{x-M} =
+           &= \overbrace{M\cdot(1+t)}^{x} \log(1+t) - \overbrace{t \cdot M}^{x-M} =
                M \cdot \big((t+1) \log(1+t) - t \big) =  \nonumber\\
            &=  M \cdot p_1l_1(t),
 \end{align}
@@ -397,18 +396,16 @@ $x^2/2$ \emph{and} numerically computing $x^2 - x^2/2$ should only lose 1
 or 2 bits of precision.
 
 
-
-
 %% Also the  ebd0() proposal to improve bd0().
 
 
 %% ----> ../man/dgamma-utils.Rd : bd0(), stirlerr()
 %%       ======================
 
-%% ----> ../tests/stirlerr-tst.R  to show the small accuracy loss with Loader's defaults
-%%       =======================
+\appendix
 
-\section{Appendix A: Accuracy of log1pmx(x) Computations}
+%% Appendix A:
+\section{Accuracy of log1pmx(x) Computations}\label{A:log1pmx}
 
 As we've seen, the ``binomial deviance'' function
 $D_0(x,M) = $ \code{bd0(x, M)} is crucial for accurate (saddlepoint)
@@ -463,9 +460,38 @@ using package \CRANpkg{Rmpfr} and high precision arithmetic.
 %%
 %% <--> ../man/log1pmx.Rd >> example mostly moved to ../tests/dnbinom-tst.R
 %%      ~~~~~~~~~~~~~~~~~                            ======================
+see \file{../tests/dnbinom-tst.R}, \texttt{2b:\ \ log1pmx()}.
+From there, it seems that the (hardcoded currently in R's \file{pgamma.c} as
+\code{ double minLog1Value = -0.79149064 }
+could or should (?) be changed to around -0.7 or e.g., -0.66.
+
+In \pkg{DPQ}'s  \code{log1pmx()} it is the argument \code{minL1 = -0.79149064},
+there' a switch constant eps2, (hardwired in current \R to \code{1e-2}, i.e., \code{eps2 = 0.02})
+to switch from an explicit 5-term formula to the full \code{logcf()} based procedure.
+In \pkg{DPQ}, we already use \code{eps2 = 0.01} as default. %
+Note that this does \emph{not} influence the choice of \code{minL1} as
+long as \code{eps2} (order of 0.01) is far from the range in which we
+choose \code{minL1} ($[-0.85, -0.4]$).
+\\
+((MM: Still:  can we prove that 0.01 is ``uniformly'' better than  0.02  ?? ))
+
+\subsection{Testing \code{dpois\_raw()} / \code{dpois()} Poisson probabilities}
+Testing the Poisson probabilities (\sQuote{density})
+with several versions of bd0(), ebd0() and
+the direct formula where more appropriate (non-log case,
+%%  now (R-devel, March 2022) it does *NOT* use ebd0() nor bd0() anymore
+%% _iff_   x/lambda <= DBL_EPSILON = 2^-52
+%%
+%% MM: Mention these already above !!
+Look at examples in \file{"../man/dgamma-utils.Rd"}  and then also
+\\ % from ../dpois.grep    ^^^^^^^^^^^^^^^^^^^^^^
+%%        ~~~~~~~~~~~~~
+\verb|/u/maechler/R/MM/NUMERICS/dpq-functions/15628-dpois_raw_accuracy.R| .
+%     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^##########################
 
 
-\section{Appendix B: Accuracy of $ p_1l_1(t)$ Computations}
+% Appendix B:
+\section{Accuracy of $ p_1l_1(t)$ Computations}\label{B:p1l1}
 
 Loader's ``Binomial Deviance'' $D_0(x,M) = $ \code{bd0(x, M)} function can also be re-expressed (mathematically)
 %% copy/paste from ../man/p1l1.Rd
@@ -498,6 +524,27 @@ For now, look at the examples in \texttt{?p1l1}, or even run \code{example(p1l1)
 % p1l1ser(t, k, F = t^2/2)
 % -----------------------------
 
+% Appendix C:
+\section{Accuracy of \code{stirlerr(x)}$=\delta(x)$ Computations}\label{C:stirlerr}
+
+Note that the ``Stirling error'', $\delta(x) \equiv$\code{stirlerr(x)},
+$\delta(x) := \log x! - \frac 1 2 \log(2\pi x) - x \log(x) + x$ by
+Stirling's formula is
+$\delta(x) =  \frac 1{12 x} - \frac 1{360 x^3} + \frac 1{1260 x^5}
+            - \frac 1{1680 x^7} + \frac 1{1188 x^9} + O(x^{-11})$,
+see (\ref{eq:deltaStirling}).
+
+A C code implementation had been provided by
+\citeauthor{LoaC2000} and for years now in R's Mathlib at
+\url{https://svn.r-project.org/R/trunk/src/nmath/stirlerr.c}.
+mirrored, e.g., at \url{https://github.com/wch/r-source/blob/trunk/src/nmath/stirlerr.c}
+
+TODO:
+
+Look at examples in \file{../tests/stirlerr-tst.R}  to show the small
+%%                        ~~~~~~~~~~~~~~~~~~~~~~~
+accuracy loss with Loader's defaults (for the cut offs of the number of
+terms used) and also how we explore improving these defaults to improve accuracy.
 
 
 \bibliography{R-numerics}% ~/bib/R-numerics.bib  now link --> "here"

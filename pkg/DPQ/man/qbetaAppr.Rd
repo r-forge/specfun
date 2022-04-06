@@ -7,7 +7,7 @@
 \alias{qbetaAppr}
 \alias{qbeta.R}
 \description{
-  Compute quantiles (inverse distribution values) for the beta distribution,
+  Compute quantiles (inverse distribution values) of the beta distribution,
   using diverse approximations.
 }
 \usage{% R code : ../R/beta-fns.R
@@ -79,8 +79,8 @@ qbeta.R    (alpha, p, q,
 %% \references{
 %%
 %% }
-\author{The R Core Team for the C version in \R's sources;
-  Martin Maechler for the \R port.}
+\author{The R Core Team for the C version of \code{\link{qbeta}} in \R's sources;
+  Martin Maechler for the \R port, and the approximations.}
 \seealso{
   \code{\link{qbeta}}.
 }

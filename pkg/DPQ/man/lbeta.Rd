@@ -30,7 +30,7 @@ Qab_terms(a, k)
   \item{verbose}{logical (or integer) indicating if and how much monitoring
     information should be printed to the console.}
   \item{k}{the number of terms in the series expansion of
-    \code{Qab_terms()}, currently must be in \eqn{\{0, 1, .., 5\}}.}
+    \code{Qab_terms()}, currently must be in \eqn{{0, 1, .., 5}}.}
 }
 \details{
   All \code{lbeta*()} functions compute \code{log(\link{beta}(a,b))}.
@@ -52,7 +52,7 @@ Qab_terms(a, k)
   and \eqn{\Gamma(a+b)} would overflow numerically for large \eqn{b}.
   Consequently, we use \code{logQab*()}, and for the large \eqn{b} case
   \code{logQab_asy()} specifically,
-  \deqn{\code{logQab(a,b)} := \log( Qab(a,b) ).}
+  \deqn{\code{logQab(a,b)} := \log( Qab(a,b) ).}{\code{logQab(a,b)} := log(Qab(a,b)).}
 
   Note this is related to trying to get asymptotic formula for
   \eqn{\Gamma} ratios, notably formula (6.1.47) in Abramowitz and Stegun.
@@ -76,8 +76,8 @@ Qab_terms(a, k)
   Abramowitz, M. and Stegun, I. A. (1972)
   \emph{Handbook of Mathematical Functions}. New York: Dover.
   \url{https://en.wikipedia.org/wiki/Abramowitz_and_Stegun} provides
-  links to the full text which is in public domain.\cr
-
+  links to the full text which is in public domain.
+  \cr
   Formula (6.1.47), p.257
 }
 \author{Martin Maechler}

@@ -149,7 +149,8 @@ dnchisqR <- function(x, df, ncp, log = FALSE,
 	return(x + NaN)
     ncp2 <- 0.5 * ncp
 
-    vapply(x, FUN.VALUE = x[[1L]], function(x) {
+    ## For better debugging etc, we *name* the function here:
+    dnchisqR1 <- function(x) {
 	if(is.na(x)) return(x)
 	if(x < 0) return(.D_0(log))
 	if(x == 0 && df < 2.)
@@ -203,5 +204,8 @@ dnchisqR <- function(x, df, ncp, log = FALSE,
 	}
 	## return
 	.D_val(sum, log)
-    }) # vapply(*, function(x) { ... })
+    }## end{dnchisqR1}
+
+    ## apply on all x[] :
+    vapply(x, FUN.VALUE = x[[1L]], dnchisqR1)
 }
