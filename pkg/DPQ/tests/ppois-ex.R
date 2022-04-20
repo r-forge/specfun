@@ -127,11 +127,14 @@ for(Lam in c(11400 + c(0, sort(round(rlnorm(10, 4, 2), 1))))) {
     lines(kM[ip], pp0[ip] - pp[ip], col = adjustcolor("red", 1/2), lwd = 2)
     if(doExtras) lines(kM[ip], ppSL[ip] - pp[ip], col = adjustcolor(3, 1/2), lwd=3)
     abline(v = Lam, lty=2, col="gray")
-    stopifnot(exprs = {
+    stopifnot(exprs =
+      if(doExtras) {
         !okLD    || all.equal(pp,  pp. , tol = 1e-12)
         notXorLD || all.equal(pp,  ppSL, tol = 1e-12)
         notXorLD || all.equal(pp., ppSL, tol = 1e-14)# both ppoisD()  "fast" or "slow" should be very close
-    })
+      } else {
+        !okLD    || all.equal(pp,  pp. , tol = 1e-12)
+      })
 }
 
 

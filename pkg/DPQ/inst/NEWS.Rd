@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-2 (2022-04-06, svn r204)}{
+\section{Version 0.5-2 (2022-04-20, svn r206)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{qbetaAppr()} (and the \code{qbetaAppr.{1,3}()}
@@ -22,6 +22,11 @@
       \item \code{dpois_raw(x, lambda, *)} gets new cutoff \code{small.x__lambda}
       to \emph{not} use \code{bd0()} or \code{ebd0()} when \code{x} is much
       smaller than \code{lambda}.
+
+      \item Simple functions, mostly for didactical and comparison purposes,
+      \code{dpois_simpl()}, \code{dpois_Simpl()} and
+      \code{stirlerr_simpl()}, all of which use the \dQuote{simple} direct
+      formula which leads to numerical cancellation typically.
 
       \item New \R function \code{bpser()} interfacing to the C function of
       the same in \R's Mathlib \code{pbeta()} or \code{bratio()} in file

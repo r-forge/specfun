@@ -8,7 +8,10 @@
 \alias{ebd0}
 \alias{ebd0C}
 \alias{dpois_raw}
+\alias{dpois_simpl}
+\alias{dpois_Simpl}
 \alias{stirlerr}
+\alias{stirlerr_simpl}
 \alias{lgammacor}
 \description{
   Mostly, pure \R transcriptions of the C code utility functions for
@@ -31,6 +34,10 @@ dpois_raw(x, lambda, log=FALSE,
           tol_logcf = 1e-14, eps2 = 0.01, minL1 = -0.79149064, trace.lcf = verbose,
           logCF = if (is.numeric(x)) logcf else logcfR,
           verbose = FALSE)
+
+dpois_simpl(x, lambda, log=FALSE)
+dpois_Simpl(x, lambda, log=FALSE)
+
 bd0(x, np,
     delta = 0.1, maxit = as.integer(-1100 / log2(delta)),
     s0 = .Machine$double.xmin,
@@ -44,13 +51,16 @@ bd0_l1pm  (x, M, tol_logcf = 1e-14, ...)
 ebd0 (x, M, verbose = getOption("verbose"), ...) # experimental, may disappear !!
 ebd0C(x, M, verbose = getOption("verbose"))
 
-stirlerr(n, scheme = c("R3", "R4.1"),
+stirlerr(n, scheme = c("R3", "R4.x"),
          cutoffs = switch(scheme
                         , R3   = c(15, 35, 80, 500)
-                        , R4.1 = c(7.5, 8.5, 10.625, 12.125, 20, 26, 55, 200, 3300)
+                        , R4.x = c(7.5, 8.5, 10.625, 12.125, 20, 26, 55, 200, 3300)
                           ),
          use.halves = missing(cutoffs),
          verbose = FALSE)
+
+stirlerr_simpl(n, minPrec = 128L)
+
 lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
 }
 \arguments{
@@ -93,7 +103,10 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
     Turn this off to judge the underlying approximation accuracy by
     comparison with MPFR.   However, keep the default \code{TRUE} for
     back-compatibility.}
-  \item{nalgm}{number of terms to use for Chebyshev polynomial approxmation
+  \item{minPrec}{a positive integer; for \code{stirlerr_simpl}, the minimal
+    accuracy or precision in bits when \code{\link[Rmpfr]{mpfr}} numbers
+    are used.}
+  \item{nalgm}{number of terms to use for Chebyshev polynomial approximation
     in \code{lgammacor()}.  The default, 5, is the value hard wired in \R's
     C Mathlib.}
   \item{xbig}{a large positive number; if \code{x >= xbig}, the simple

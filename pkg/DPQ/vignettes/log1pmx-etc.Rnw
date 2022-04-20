@@ -398,6 +398,8 @@ or 2 bits of precision.
 
 %% Also the  ebd0() proposal to improve bd0().
 
+%% NB: "page 2" of ../tests/stirlerr-tst.R  is *only* about bd0(), ebd0() .. !!
+%%                 =======================
 
 %% ----> ../man/dgamma-utils.Rd : bd0(), stirlerr()
 %%       ======================

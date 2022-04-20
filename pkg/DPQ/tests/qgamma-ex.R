@@ -427,7 +427,7 @@ showProc.time()
 } ## if( MPFR ) ----------------------------------------------------------------
 
 
-## ../R/qchisqAppr.R -- talks about the "small shape" qgamma() approxmation
+## ../R/qchisqAppr.R -- talks about the "small shape" qgamma() approximation
 ## -----------------  --> .qgammaApprBnd() :
 curve(.qgammaApprBnd, 1e-18, 1e-15, col=2)
 abline(h=0, col="gray70", lty=2)

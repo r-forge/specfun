@@ -1058,7 +1058,7 @@ pBeta <- function(p, q)
     c1 <- c12[1] ## == digamma(1) - digamma(q)
     c2 <- c12[2]
 
-    ## the cutoff  from where the approxmation is "perfect"
+    ## the cutoff  from where the approximation is "perfect"
     p.cut <- sqrt(.Machine$double.eps / abs(d2))
     r <- p
     if(any(sml <- p <= p.cut)) {

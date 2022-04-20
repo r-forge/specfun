@@ -41,13 +41,13 @@
   \itemize{
     \item Patnaik(1949)'s approximation to the non-central via central
     chi-squared.  Is also the formula \eqn{26.4.27} in Abramowitz & Stegun, p.942.
-    Johnson et al mention that the approxmation error is \emph{
+    Johnson et al mention that the approximation error is \emph{
       \eqn{O(1/\sqrt(\lambda))}{O(1/sqrt(ncp))} for \eqn{\lambda \to \infty}{ncp -> Inf}}.
 
     \item Pearson(1959) is using 3 moments instead of 2 as Patnaik (to
     approximate via a central chi-squared), and therefore better than
     Patnaik for the right tail; further (in Johnson et al.), the
-    approxmation error is \emph{\eqn{O(1/\lambda)}{O(1/ncp)} for \eqn{\lambda \to \infty}{ncp -> Inf}}.
+    approximation error is \emph{\eqn{O(1/\lambda)}{O(1/ncp)} for \eqn{\lambda \to \infty}{ncp -> Inf}}.
 
     \item Abdel-Aty(1954)'s \dQuote{first approximation} based on
     Wilson-Hilferty via Gaussian (\code{\link{pnorm}}) probabilities, is
