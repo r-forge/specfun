@@ -23,7 +23,7 @@ log1pmxC(x)  # TODO in future: arguments (minL1, eps2, tol_logcf),
   \item{eps2}{non-negative cutoff where the algorithm switches from a few
     terms, to using \code{\link{logcf}()} explicitly.  Note that for
     more accurate mpfr-numbers the default \code{eps = .01} is too large,
-    even more though when the tolerance is lowered (from \code{1e-14}).}
+    even more so when the tolerance is lowered (from \code{1e-14}).}
   \item{minL1}{negative cutoff, called \code{minLog1Value} in Morten
     Welinder's C code for \code{log1pmx()} in \file{R/src/nmath/pgamma.c},
     hard coded there to -0.79149064 which seems not optimal for

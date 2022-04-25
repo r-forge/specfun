@@ -1,7 +1,3 @@
-# ifdef _WIN32
-#   define __USE_MINGW_ANSI_STDIO 1
-# endif
-
 #include <Rmath.h>
 // for F77_NAME() :
 #include <R_ext/RS.h>
@@ -144,6 +140,14 @@
 # define LDOUBLE double
 #endif
 
+#if defined(_WIN32)  &&  defined(HAVE_LONG_DOUBLE)
+#  ifdef __USE_MINGW_ANSI_STDIO
+#  undef __USE_MINGW_ANSI_STDIO
+#  endif
+// (such that "%Lg" works) :
+#  define __USE_MINGW_ANSI_STDIO 1
+#endif
+
 #ifdef HAVE_LONG_DOUBLE
 # define EXP expl
 # define EXPm1 expm1l
@@ -153,9 +157,6 @@
 // Rmpfr: log(mpfr(2, 130)) {130 bits is "more than enough": most long_double are just 80 bits!}
 # define M_LN2_ 0.6931471805599453094172321214581765680755L
 # define PR_g_ "Lg"
-# ifdef _WIN32 // all of Windows (such that "%Lg" works)
-#   define __USE_MINGW_ANSI_STDIO 1
-# endif
 
 #else //--------------------
 
