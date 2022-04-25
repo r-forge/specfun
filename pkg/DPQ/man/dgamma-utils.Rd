@@ -9,7 +9,7 @@
 \alias{ebd0C}
 \alias{dpois_raw}
 \alias{dpois_simpl}
-\alias{dpois_Simpl}
+\alias{dpois_simpl0}
 \alias{stirlerr}
 \alias{stirlerr_simpl}
 \alias{lgammacor}
@@ -35,8 +35,8 @@ dpois_raw(x, lambda, log=FALSE,
           logCF = if (is.numeric(x)) logcf else logcfR,
           verbose = FALSE)
 
-dpois_simpl(x, lambda, log=FALSE)
-dpois_Simpl(x, lambda, log=FALSE)
+dpois_simpl (x, lambda, log=FALSE)
+dpois_simpl0(x, lambda, log=FALSE)
 
 bd0(x, np,
     delta = 0.1, maxit = as.integer(-1100 / log2(delta)),

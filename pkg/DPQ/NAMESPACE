@@ -138,7 +138,7 @@ export(
   , dgamma.R
   , dpois_raw
   , dpois_simpl
-  , dpois_Simpl # << "experimental" respectively purely didactical
+  , dpois_simpl0 # << "experimental" respectively purely didactical
   , bd0, bd0C
   , stirlerr, stirlerr_simpl
   , bd0_p1l1d1, bd0_p1l1d, bd0_l1pm

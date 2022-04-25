@@ -24,7 +24,7 @@
       smaller than \code{lambda}.
 
       \item Simple functions, mostly for didactical and comparison purposes,
-      \code{dpois_simpl()}, \code{dpois_Simpl()} and
+      \code{dpois_simpl()}, \code{dpois_simpl0()} and
       \code{stirlerr_simpl()}, all of which use the \dQuote{simple} direct
       formula which leads to numerical cancellation typically.
 

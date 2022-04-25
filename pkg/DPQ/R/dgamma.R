@@ -37,7 +37,7 @@ dgamma.R <- function(x, shape, scale = 1, log)
 
 ## not clear if we should *ever* use this {OTOH, factorial(x) can be 100% accurate, e.g., for MPFR
 ##          ( <==>  Rmpfr's  factorialMpfr() and gmp factorialZ() )
-dpois_Simpl <- function(x, lambda, log=FALSE)
+dpois_simpl0 <- function(x, lambda, log=FALSE)
     .D_val(exp(-lambda) * lambda^x / factorial(x), log)
 
 ## when  x & lambda  are different orders of magnitude, this may be more accurate than anything:
