@@ -220,128 +220,52 @@ axis(4, at=-1:2, col=c2, col.axis=c2)
 
 showProc.time()
 
+
 ## use functionality originally in ~/R/MM/NUMERICS/dpq-functions/15628-dpois_raw_accuracy.R
 ## now
 require(Rmpfr)
-##      vvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-source("~/R/Pkgs/DPQmpfr/R/dpoisEr.R")# --> dpoisEr()  p.dpoisEr() ...
-##      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+## transition till DPQmpfr exports this *and* is on CRAN, to ease maintainer("DPQ")
+##                     vvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+if(file.exists(ff <- "~/R/Pkgs/DPQmpfr/R/dpoisEr.R")) withAutoprint({ #-------------
+
+source(ff)
 ##-- ----- *or* move to vignette ../vignettes/log1pmx-etc.Rnw  <<<<<<<<<<<<<<<
 
-
-##-------- small lambda --- is  dpois_Simpl() good ?
+##-------- small lambda --- is  dpois_simpl0() good ?
 
 range(dpE40 <- dpoisEr(40.25, x=0:200))
 ## -4.401959e-16  3.645529e-16
 
-## dpois_Simpl() uses "old" direct formula on original scale: factorial(x)
+## dpois_simpl0() uses "old" direct formula on original scale: factorial(x)
 stopifnot(factorial(170) < Inf,
           factorial(171) == Inf)
-xS <- 0:170 # the full range of "sensible" x values for dpois_Simpl
-range(dpE40Sim <- dpoisEr(40.25, x=xS, dpoisFUN = dpois_Simpl))
+xS <- 0:170 # the full range of "sensible" x values for dpois_simpl0
+range(dpE40Sim <- dpoisEr(40.25, x=xS, dpoisFUN = dpois_simpl0))
 ## -1.299950e-13  1.118291e-13
 p.dpoisEr(dpE40Sim)
 ## --> very suprising: errors are *very* small  up to  x <= 49, then in in the order of 1e-13
 p.dpoisEr(dpE40Sim, ylim = c(-1,1)*4e-16)
 
 ## zoom in --- integer x only:
-range(dpE40Sim2 <- dpoisEr(40.25, x=0:49, dpoisFUN = dpois_Simpl))
+range(dpE40Sim2 <- dpoisEr(40.25, x=0:49, dpoisFUN = dpois_simpl0))
 ## -2.889661e-16  2.076597e-16
 p.dpoisEr(dpE40Sim2) #   --- almost all in [-eps, +eps]
 
 ## zoom in and use non-integer x:
-range(dpE40Sim2d <- dpoisEr(40.25, x=seq(0, 49, by=1/8), dpoisFUN = dpois_Simpl))
+range(dpE40Sim2d <- dpoisEr(40.25, x=seq(0, 49, by=1/8), dpoisFUN = dpois_simpl0))
 ## [1] -3.861877e-14  3.080750e-14  == Oops !  blown up to
 p.dpoisEr(dpE40Sim2d)
+
+})
 
 ### MM: FIXME -- moved all this to an  Rmpfr  vignette:
 ###
 " ~/R/D/R-forge/Rmpfr/pkg/vignettes/gamma-inaccuracy.Rnw "
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-##  *AND* also in the R script for "old R":
-" ~/R/D/R-forge/Rmpfr/pkg/vignettes/gamma-inaccuracy.R "
-##  i.e. have this function in 3 different places !! -- FIXME
-##
-p.factEr <- function(x, precBits = 128, do2 = TRUE, type = "b", ylim1=NULL, ylim2=NULL) {
-    fx <- factorial(x)
-    facM <- factorial(mpfr(x, precBits))
-    rE <- asNumeric(sfsmisc::relErrV(facM, fx))
-    ##                       ^^^^^^^ (fx / facM - 1) but dealing with Inf, NA, etc
-
-    plotExtr <- function() {
-        mtext(R.version.string, adj=1)
-        abline(v= -1 + c(10, 50), col=3, lty=2) # cutoffs in gamma() : (10, 50)
-        f <- c(1/2, 1, 2, 10, 100)
-        if(!par("ylog")) { abline(h=0, lty=2);  f <- c(-f,f) }
-        abline(h = f*.Machine$double.eps, col="orange", lty=3)
-        legend("bottomleft", "x integer", col=2, text.col=2, pch=7, bty="n")
-    }
-    if(do2) {
-        op <- par(mfrow=2:1, mar=.1+c(2.5,3,3,1), mgp=c(1.6, .6, 0)); on.exit(par(op))
-        plot(x, rE, type=type, ylim = ylim1, cex=1/2,
-             main="relative error of   x! := factorial(x) := gamma(x+1)")
-        points(rE ~ x, subset = x %% 1 == 0, col=2, pch=7)
-        plotExtr()
-    }
-
-    plot(x, abs(rE), log = "y", type=type, ylim = ylim2, cex=1/2, yaxt="n",
-         main="|relative error| [log scale] of   x! := factorial(x) := gamma(x+1)")
-    points(abs(rE) ~ x, subset = x %% 1 == 0, col=2, pch=7)
-    sfsmisc::eaxis(2)
-    plotExtr()
-
-    invisible(cbind(x, fac=fx, facM=asNumeric(facM), relErr = rE))
-}
-
-pfE1 <- p.factEr(seq(0, 49, by=1/8))
-pfE1 <- p.factEr(seq(0, 49, by=1/8), type="l")
-
-pfE2 <- p.factEr(seq(0, 170, by=1/4))
-
-## To compare algorithms visually use identical ylim :
-
-pfE2 <- p.factEr(seq(0, 170, by=1/4), type="o",
-                 ylim1 = c(-1,1)*1e-14, ylim2 = c(.5e-17, 1e-13))
-
-## positive *and* negative
-pfEpm <- p.factEr(seq(-180, 180, by=1/8), type="l", ylim2= c(1e-17, 2e-13))
-
-
-## Find smallest and largest possible x such that gamma(x) is finite,
-## *more* accurately (and allowing denormalized numbers) than R's gammalims():
-
-##  upper bound  'xmax' :
-str(ur <- uniroot(function(x) asNumeric(gamma(mpfr(x, 256))/.Machine$double.xmax - 1),
-                  c(170,180), tol=1e-14), digits=12)
-## $ root      : num 171.624376956
-## $ f.root    : num -4.77490039789e-14
-## $ iter      : int 15
-## $ init.it   : int NA
-## $ estim.prec: num 8.52651282912e-14
-xmax <- ur$root
-dput(xmax, , "digits") # 171.62437695630271
-asNumeric(gamma(mpfr(171.62437695630271, 256))/.Machine$double.xmax - 1)
-## -4.7749e-14  < 0  <==>  gamma(.) < Machine..xmax
-##
-str(uL <- uniroot(function(x) asNumeric(abs(gamma(mpfr(x, 256))/2^-1073.9999) - 1),
-                  c(-180.1, -170.1), tol=1e-14), digits=12)
- ## $ root      : num -177.563412587
- ## $ f.root    : num 1.71550990876e-14
- ## $ iter      : int 15
- ## $ init.it   : int NA
- ## $ estim.prec: num 8.52651282912e-14
-dput(uL$root, , "digits") # -177.56341258681965
-
-asNumeric(gamma(mpfr(-177.56341258681965, 256))/2^-1073.9999 - 1)
-## 1.71551e-14 > 0  <==> gamma(.) > Machine..denormalized_xmin  .. good
-
-" ==> in <R>/src/nmath/gamma.c :
-
-// now allowing denormalized result
-# define xmin -177.56341258681965 // was -170.5674972726612
-# define xmax  171.62437695630271 // was  171.61447887182298
-"
-
+## and the R code actually to the R script:
+" ~/R/D/R-forge/Rmpfr/pkg/vignettes/gamma-inaccuracy_src/plot-factErr-def.R "
 
 ##=======>  gamma(x) itself suffers from the fact that  exp(y) has a *large* relative error,
 ##          -------- when  |y| ~ 100 or so, more specifically, the
