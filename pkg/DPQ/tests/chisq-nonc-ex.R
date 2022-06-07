@@ -14,10 +14,10 @@ stopifnot(exprs = {
     require(sfsmisc) # eaxis(), lseq(), p.m(), mult.fig(), sessionInfoX()
 })
 
-source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
-## -> showProc.time(), assertError(), relErrV(), ...
-source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
-## list_(), save2RDS(), ..
+source(system.file(package="DPQ", "test-tools.R",
+                   mustWork=TRUE))# ../inst/test-tools.R
+## => showProc.time(), ...  list_() , loadList() ,  readRDS_() , save2RDS()
+
 ## For package-testing "diagnostics":
 sessionInfoX(c("DPQ","Rmpfr"))
 
@@ -1228,7 +1228,7 @@ filled.contour(log10(lam3), log10(dfs3), log10(iMaxR3/ (lam3/2)),
 
 showProc.time()
 
-if(doExtras && require("akima")) {
+if(doExtras && require("interp")) {
     ## same with both data --> need interp ! : s/dsR3/dsR./ :
 ds1 <- subset(dsR., lam >= 1)
 sr.I  <- with(ds1, interp(log(lam), log(df), iMax))
@@ -1280,7 +1280,7 @@ if(doExtras)## GAM -- needs tons of cpu + memory:
 showProc.time()
 
 
-if(doExtras && require("akima")) { ## visualize more: ----------
+if(doExtras && require("interp")) { ## visualize more: ----------
 sr2I <- with(dsR., interp(log(lam), log(df), iMax))
 filled.contour(sr2I, xlab="ln(lam)", ylab="ln(df)", main="iMax")
 sr2I <- with(dsR., interp(log(lam), log(df), log(iMax)))

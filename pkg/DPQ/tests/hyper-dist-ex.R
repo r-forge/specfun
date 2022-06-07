@@ -24,7 +24,7 @@ options(digits=4)
 ph.k2k <- phyper(k,2*k,2*k,2*k) # rel.err ~ 10^-7
 cbind(k=k, phyper= ph.k2k,
       rERR.Ibeta= rErr(phyperIbeta     (k,2*k,2*k,2*k) , ph.k2k),
-      rERR.as151= rErr(phyperApprAS152(k,2*k,2*k,2*k) , ph.k2k),
+      rERR.as151= rErr(phyperApprAS152 (k,2*k,2*k,2*k) , ph.k2k),
       rERR.1mol = rErr(phyper1molenaar (k,2*k,2*k,2*k) , ph.k2k),
       rERR.2mol = rErr(phyper2molenaar (k,2*k,2*k,2*k) , ph.k2k),
       rERR.Peizer=rErr(phyperPeizer    (k,2*k,2*k,2*k) , ph.k2k))
@@ -33,7 +33,7 @@ cbind(k=k, phyper= ph.k2k,
 ph.k2k <- phyper(k, 1.2*k, 2*k,1.5*k)
 cbind(k=k, phyper= ph.k2k,
       rERR.Ibeta= rErr(phyperIbeta     (k,1.2*k,2*k,1.5*k) , ph.k2k),
-      rERR.as151= rErr(phyperApprAS152(k,1.2*k,2*k,1.5*k) , ph.k2k),
+      rERR.as151= rErr(phyperApprAS152 (k,1.2*k,2*k,1.5*k) , ph.k2k),
       rERR.1mol = rErr(phyper1molenaar (k,1.2*k,2*k,1.5*k) , ph.k2k),
       rERR.2mol = rErr(phyper2molenaar (k,1.2*k,2*k,1.5*k) , ph.k2k),
       rERR.Peizer=rErr(phyperPeizer    (k,1.2*k,2*k,1.5*k) , ph.k2k))
@@ -42,7 +42,7 @@ x <- round(.8*k); ph.k2k <- phyper(x,1.6*k, 2*k,1.8*k)
 (ph.mat <-
 cbind(k=k, phyper= ph.k2k,
       rERR.Ibeta= rErr(phyperIbeta     (x,1.6*k,2*k,1.8*k) , ph.k2k),
-      rERR.as151= rErr(phyperApprAS152(x,1.6*k,2*k,1.8*k) , ph.k2k),
+      rERR.as151= rErr(phyperApprAS152 (x,1.6*k,2*k,1.8*k) , ph.k2k),
       rERR.1mol = rErr(phyper1molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
       rERR.2mol = rErr(phyper2molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
       rERR.Peiz = rErr(phyperPeizer    (x,1.6*k,2*k,1.8*k) , ph.k2k))
@@ -56,7 +56,7 @@ for(Reps in c(0,1)) {
     print(ph.mat <-
           cbind(k=k, phyper= ph.k2k,
            rERR.Ibeta= rErr(phyperIbeta     (x,1.6*k,2*k,1.8*k) , ph.k2k),
-           rERR.as151= rErr(phyperApprAS152(x,1.6*k,2*k,1.8*k) , ph.k2k),
+           rERR.as151= rErr(phyperApprAS152 (x,1.6*k,2*k,1.8*k) , ph.k2k),
            rERR.1mol = rErr(phyper1molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
            rERR.2mol = rErr(phyper2molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
            rERR.Peiz = rErr(phyperPeizer    (x,1.6*k,2*k,1.8*k) , ph.k2k))
@@ -151,12 +151,12 @@ TVerr <- function(approx, true) {
 supErr <- function(approx, true) max(abs(true - approx))
 
 TVerr.bin <- function(m,n,k, q = .suppHyper(m,n,k), lower.tail=TRUE, log.p=FALSE) {
-    ph  <- phyper     (q, m=m, n=n, k=k,      lower.tail=lower.tail, log.p=log.p)
+    ph  <- phyper     (q, m=m, n=n, k=k,    lower.tail=lower.tail, log.p=log.p)
     phM <- phyperAllBin(m=m, n=n, k=k, q=q, lower.tail=lower.tail, log.p=log.p)
     apply(phM, 2, TVerr, true = ph)
 }
 supErr.binM <- function(m,n,k, q = .suppHyper(m,n,k), lower.tail=TRUE, log.p=FALSE) {
-    ph  <- phyper      (q, m=m, n=n, k=k,      lower.tail=lower.tail, log.p=log.p)
+    ph  <- phyper      (q, m=m, n=n, k=k,    lower.tail=lower.tail, log.p=log.p)
     phM <- phyperAllBinM(m=m, n=n, k=k, q=q, lower.tail=lower.tail, log.p=log.p)
     apply(phM, 2, supErr, true = ph)
 }

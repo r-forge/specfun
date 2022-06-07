@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-2 (2022-04-25, svn r207)}{
+\section{Version 0.5-2 (2022-06-07, svn r211)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{qbetaAppr()} (and the \code{qbetaAppr.{1,3}()}
@@ -36,9 +36,20 @@
   \subsection{BUG FIXES}{
     \itemize{
       \item Updated URL of Abramowitz & Stegun.
+      \item Fixed \code{\\} escape in one \file{man/*.Rd}
+    }
+  }
+  \subsection{Misc}{
+    \itemize{
+      \item Our \file{tests/*.R} no longer rely on the \CRANpkg{Matrix}
+      \file{test-tools.R} collection but rather use our own. % ./test-tools.R
+
+      \item In \file{tests/chisq-nonc-ex.R} (and \file{DESCRIPTION}), we've
+      replaced \pkg{akima} by \CRANpkg{interp} as the latter has a FOSS licence.
     }
   }
 }
+
 \section{Version 0.5-1 (2021-12-10, svn r197)}{
   \subsection{NEW FEATURES}{
     \itemize{

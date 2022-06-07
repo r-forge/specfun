@@ -5,8 +5,8 @@ library(DPQ)
 ##  see /u/maechler/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/qgamma-ex.R ..
 
 ## FIXME: Timing ! --- partly these matplot() partly get quite slow ~?
-source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
-##--> showProc.time(), assertError(), relErrV(), ...
+source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
+## => showProc.time(), ...  list_() , loadList() ,  readRDS_() , save2RDS()
 showProc.time()
 
 (doExtras <- DPQ:::doExtras())

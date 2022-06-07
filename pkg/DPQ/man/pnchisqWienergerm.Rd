@@ -73,7 +73,7 @@ z.s(x, df, ncp, verbose = getOption("verbose"))
   \item{variant}{a \code{\link{character}} string, currently either
     \code{"f"} for the \bold{f}irst or
     \code{"s"} for the \bold{s}econd Wienergerm approximation in
-    Penev \& Raykov (2000).}
+    Penev and Raykov (2000).}
   \item{Fortran}{logical specifying if the Fortran or the C version should
     be used.}
   \item{verbose}{logical (or integer) indicating if or how much diagnostic

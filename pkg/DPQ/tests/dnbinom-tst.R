@@ -1,8 +1,10 @@
 #### Testing  1) dbinom_raw(), dnbinomR() and dnbinom.mu()
 ####          2) log1pmx(), logcf() etc
 require(DPQ)
-source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
-## -> showProc.time(), assertError()
+
+source(system.file(package="DPQ", "test-tools.R",
+                   mustWork=TRUE))# ../inst/test-tools.R
+## => showProc.time(), ...  list_() , loadList() ,  readRDS_() , save2RDS()
 
 (doExtras <- DPQ:::doExtras() && !grepl("valgrind", R.home()))
 

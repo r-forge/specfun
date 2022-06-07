@@ -9,14 +9,11 @@ for(pkg in c("Rmpfr", "DPQmpfr"))
     }
 require("Rmpfr")
 
-relErrV <- sfsmisc::relErrV # notably as we require sfsmisc 1.1-13 in `Imports`
+source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
+## => showProc.time(), ...  list_() , loadList() ,  readRDS_() , save2RDS()
+relErrV <- sfsmisc::relErrV
 
-source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
-## -> showProc.time(), assertError(), relErrV(), ...
-if(packageVersion("Matrix") < "1.4.2")## for now ..
-    relErrV <- sfsmisc::relErrV
-
-pks <- c("Matrix", "sfsmisc", "DPQ", "Rmpfr", "DPQmpfr")
+pks <- c("sfsmisc", "DPQ", "Rmpfr", "DPQmpfr")
 sapply(lapply(setNames(,pks), packageVersion), format)
 
 showProc.time()

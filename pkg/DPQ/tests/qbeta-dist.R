@@ -3,10 +3,10 @@
 #### Testing  qbeta(.),   pbeta(.),   qt(.), .....
 #### ----------------
 
-source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
-## -> showProc.time(), assertError(), relErrV(), ...
-source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
-## => list_() , loadList() ,  readRDS_() , save2RDS()
+source(system.file(package="DPQ", "test-tools.R",
+                   mustWork=TRUE))# ../inst/test-tools.R
+## => showProc.time(), .. {from Matrix},
+##    list_() , loadList() ,  readRDS_() , save2RDS()
 
 (doExtras <- DPQ:::doExtras())
 ## save directory (to read from):
