@@ -21,7 +21,7 @@ stopifnot(exprs = {
 
 source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
 ## => showProc.time(), ...  list_() , loadList() ,  readRDS_() , save2RDS()
-relerrV <- sfsmisc::relerrV
+relErrV <- sfsmisc::relErrV
 
 if(!dev.interactive(orNone=TRUE)) pdf("t-nonc_P-1.pdf")
 
