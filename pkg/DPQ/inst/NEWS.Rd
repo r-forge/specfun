@@ -4,6 +4,16 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
+\section{Version 0.5-3 (2022-06-14, svn r213)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item New \R functions \code{qntR()} and \code{qtU()},
+      \code{Vectorize()}d versions of \code{qntR1()} and \code{qtU1()},
+      respectively.
+    }
+  }
+}
+
 \section{Version 0.5-2 (2022-06-08, svn r212)}{
   \subsection{NEW FEATURES}{
     \itemize{

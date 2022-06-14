@@ -2,7 +2,6 @@
 
 * TODO Provide R functions interfacing to the "applied math utilities" in  ./src/DPQ-misc.c
 * TODO pbeta() approximations notably for log scale where bpser underflows to -Inf <<<<<<<<<<<
-* TODO tests/pnt-precision-problem.R : *label* the 391 plots: tests/pnt-precision-2.pdf
 * TODO Compare pnchi1sq() with t1() function in tests/chisq-nonc-ex.R
 * DONE in R >= 4.0.0, now .Machine has 10 "longdouble.*" components (when the configuration found long double)
   Note that from `#include <float.h>` we should just return the `LDBL_*` values.
@@ -17,6 +16,7 @@
   using lb_chiAsymp(nu, order) vs lb_chi0() switch()ing depending on
   desired precision (dblpr *and* "mpfr") and nu itself
 * TODO t-distributions (notably *noncentral*, "pnt" etc):
+* TODO tests/pnt-prec.R : *label* the 391 plots: tests/pnt-precision-2.pdf
 * TODO tests/pnt-prec.R : some parts only if(doExtras)
 ** TODO extract some useful functions from our tests/pnt-prec.R
 ** TODO extract functions (and "tests") from ~/R/MM/NUMERICS/dpq-functions/dt-ex.R

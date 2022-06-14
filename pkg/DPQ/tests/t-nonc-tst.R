@@ -318,10 +318,10 @@ pntR(1e-15, df=10, ncp=1, errmax = 1e-14)
 
 plot(function(t)pntJW39(t,30,30))
 plot(function(t)pntJW39(t,100,30),-9,5, col="red", log="y")
-plot(function(t)pt     (t,100,30),-9,5, col="blue", log="y",add=T)
+plot(function(t)pt     (t,100,30),-9,5, col="blue", log="y",add=TRUE)
 plot(function(t)pntJW39(t,100,30),0,5, col="red", log="y")#~ lin
 plot(function(t)pntJW39(t,100,30),0,15, col="red", log="y")
-plot(function(t)pt(t,100,ncp=30),0,15, col="blue", log="y", add=T)
+plot(function(t)pt(t,100,ncp=30),0,15, col="blue", log="y", add=TRUE)
 
 plot(function(t)pntJW39(t,100,30),0,25, col="red", log="y")
 plot(function(t)pntJW39(t,100,30),0,25, col="red")
@@ -329,7 +329,7 @@ plot(function(t)pntJW39(t,100,30),0,25, col="red")
 plot(function(t)pntJW39(t,100,30),0,45, col="red")
 
 plot(function(t)pntJW39(t,100,30),20,50, col="red", log="y")
-plot(function(t)pt     (t,100,30),20,50, col="blue", log="y",add=T)
+plot(function(t)pt     (t,100,30),20,50, col="blue", log="y",add=TRUE)
 
 o <- par(las=1, mar=.1+c(4,4,4,4))
 plot(function(t)abs(pt(t,100,30)-pntJW39(t,100,30)),20,50,
@@ -347,15 +347,15 @@ par(o)
 
 ## df=1  is pretty bad...
 plot(function(t)qt(t,df=1))
-plot(function(t)qtAppr(t,df=1,ncp=0),col="blue",add=T)
+plot(function(t)qtAppr(t,df=1,ncp=0),col="blue",add=TRUE)
 
 ## df=2  quite a bit better..
 plot(function(t)qtAppr(t,df=2,ncp=0),col="blue")
-plot(function(t)qt(t,df=2),add=T)
+plot(function(t)qt(t,df=2),add=TRUE)
 
 ## df=4 a bit better.. still only for alpha ~ in  (.1, .9)
 plot(function(t)qtAppr(t,df=4,ncp=0),col="blue")
-plot(function(t)qt(t,df=4),add=T)
+plot(function(t)qt(t,df=4),add=TRUE)
 
 plot(function(t)abs(1-qt(t,df=4)/qtAppr(t,df=4,ncp=0)), main="rel.Error")
 plot(function(t)abs(1-qt(t,df=10)/qtAppr(t,df=10,ncp=0)), main="rel.Error")
@@ -372,7 +372,7 @@ plot(function(t) t - pt     (qtAppr(t,df=4,ncp=100),df=4,ncp=100))
 
 ## --> pntJW39() uses MUCH better asymptotic than Abramowitz&Stegun (in pnt).
 plot(function(t) t - pntJW39(qtAppr(t,df=4,ncp=100),df=4,ncp=100),
-     col='red',add=T)
+     col='red',add=TRUE)
 ## Absolute Error: very small -- just proves that the two ".appr"  CORRESPOND!
 plot(function(t) t - pntJW39(qtAppr(t,df=4,ncp=100),df=4,ncp=100))
 
@@ -384,7 +384,7 @@ plot(function(t) t - pt     (qtAppr(t,df=10,ncp=1e5),df=10,ncp=1e5))
 ## --> pntJW39()  MUCH better ========== fitting to qtAppr !!
 ## ------ not necessarily better asymptotic than Abramowitz&Stegun (in pnt).
 plot(function(t) t - pntJW39(qtAppr(t,df=10,ncp=1e5),df=10,ncp=1e5),
-     col='red',add=T)
+     col='red',add=TRUE)
 
 
 ###--- Diverse tests, some lifted from ../R/t-nonc-fn.R ------------------------
@@ -417,3 +417,102 @@ print(ft <- .dntJKBch(1:6, df=3, ncp=5), digits = 4)
 ## correct !! *with* the factorial !
           all.equal(ft, dt(1:6, df=3, ncp=5), tol = 0) # 1.4959e-12
 stopifnot(all.equal(ft, dt(1:6, df=3, ncp=5), tol = 1e-11))
+
+
+## From: Stephen Berman ..
+## To: <r-help@r-project.org>
+## Subject: [R] Why does qt() return Inf with certain negative ncp values?
+## Date: Mon, 13 Jun 2022 23:47:29 +0200
+
+## Can anyone explain why Inf appears in the following results?
+
+## MM:
+options(nwarnings = 5e5)
+
+sapply(-1:-10, \(ncp) qt(1-1*(10^(-4+ncp)), 35, ncp))
+ ## [1]  3.6527153  3.0627759  2.4158355  1.7380812  1.0506904  0.3700821
+ ## [7]        Inf -0.9279783 -1.5341759 -2.1085213
+## There were 1060 warnings (use warnings() to see them)
+summary(warnings())
+## 1060 identical warnings:
+## In qt(1 - 1 * (10^(-4 + ncp)), 35, ncp) :
+##   full precision may not have been achieved in 'pnt{final}'
+
+nc1 <- seq(-12, -1, by=1/32)
+r1 <- vapply(nc1, \(ncp) qt(1 - 10^(-4+ncp), df=35, ncp=ncp), 1.23)
+## There were 8264 warnings (use warnings() to see them)
+summary(warnings())
+## 8264 identical warnings:
+## In qt(1 - 10^(-4 + ncp), df = 35, ncp = ncp) :
+##   full precision may not have been achieved in 'pnt{final}'
+
+## MM: better than "1 - <small" is to use 'lower.tail=FALSE':
+r1. <- vapply(nc1, \(ncp) qt(10^(-4+ncp), df=35, ncp=ncp, lower.tail=FALSE), 1.23)
+summary(warnings())
+matplot(nc1, cbind(r1,r1.), type="l")
+## Zoom in "left tail":  ==>  {lower.tail=FALSE} did not help much
+i <- nc1 <= -10
+matplot(nc1[i], cbind(r1,r1.)[i,], type="l")
+
+## Zoom in around -7
+r2 <- sapply(seq(-6.9, -7.9, -0.1), \(ncp) qt(1-1*(10^(-4+ncp)), 35, ncp))
+ ## [1] -0.2268386        Inf        Inf        Inf -0.4857400 -0.5497784
+ ## [7] -0.6135402 -0.6770143 -0.7401974 -0.8030853 -0.8656810
+summary(warnings())
+## 3086 identical warnings:
+## In qt(1 - 1 * (10^(-4 + ncp)), 35, ncp) :
+##   full precision may not have been achieved in 'pnt{final}'
+
+nc2 <- seq(-60, -55, by=1/32)/8 # {1/8, 1/32: exact decimals}
+r2 <- vapply(nc2, \(ncp) qt(1 - 10^(-4+ncp), df=35, ncp=ncp), 1.23)
+## There were 52444 warnings (use warnings() to see them)
+summary(warnings())
+## 52444 identical warnings: ....
+## lower.tail=FALSE
+r2. <- vapply(nc2, \(ncp)
+              qt(10^(-4+ncp), df=35, ncp=ncp, lower.tail=FALSE), 1.23)
+all.equal(r2., r2) ## "Mean relative difference: 6.740991e-06"
+matplot(nc2, cbind(r2,r2.), type="l")
+## not why such a locally linear function should not work...
+
+## In case it matters:
+
+## > sessionInfo()
+## R Under development (unstable) (2022-06-05 r82452)
+## Platform: x86_64-pc-linux-gnu (64-bit)
+## Running under: Linux From Scratch r11.0-165
+
+##--> MM: exploring
+q2 <- seq(-3/4, -1/4, by=1/128)
+pq2 <- pt(q2, 35, ncp=-7, lower.tail=FALSE)
+                                        # no warnings here!
+### ==> Providing qtU() a simple uniroot() - based inversion of pt()
+qpqU  <- qtU(pq2, 35, ncp=-7, lower.tail=FALSE, tol=1e-10)
+stopifnot(all.equal(q2, qpqU, tol=1e-9)) # perfect!
+
+## and qtAppr() is really poor in comparison
+plot(pq2 ~ q2, type="l", col=2, lwd=2)
+qpq2  <- qt    (pq2, 35, ncp=-7, lower.tail=FALSE) # 6262 warnings
+qAp2a <- qtAppr(pq2, 35, ncp=-7, lower.tail=FALSE, method="a")
+qAp2b <- qtAppr(pq2, 35, ncp=-7, lower.tail=FALSE, method="b")
+qAp2c <- qtAppr(pq2, 35, ncp=-7, lower.tail=FALSE, method="c")
+summary(warnings())
+## 6262 identical warnings: ...
+## plot error -- interestingly *all* positive: .. then JUMP to Inf
+plot (qpq2-q2 ~ q2, type="l", col=2, lwd=2); abline(h=0,lty=2)
+
+## but the approximations are *very* bad, compared:
+matplot(q2, cbind(qpq2, qAp2a,qAp2b,qAp2c)-q2,
+        type="l", col=2:5, lwd=2)
+## leave away the "b" which is particularly bad (here):
+matplot(q2, cbind(qpq2, qAp2a,qAp2c)-q2,
+        type="l", col=2:5, lwd=2)
+## absolute values & log-scale:
+matplot(q2, abs( cbind(qpq2, qAp2a,qAp2c) - q2), log="y",
+        type="l", col=2:5, lwd=2)
+## Idea: what about *starting* with qtAppr() and then do  1 or a few *Newton* steps?
+
+## unfinished ...
+mat2 <- cbind(q2, pq2, qpq2, Dq=qpq2-q2, relE=relErrV(q2, qpq2))
+tail(mat2, 10)
+

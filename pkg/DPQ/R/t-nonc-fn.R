@@ -830,7 +830,7 @@ dtWV <- function(x, df, ncp=0, log=FALSE) {
 }
 
 
-###-- qnt() did not exist yet at the time I wrote this ...
+###-- qnt() {C} i.e. qt(.., ncp=*) did not exist yet at the time I wrote this ...
 ##    ---
 qtAppr <- function(p, df, ncp, lower.tail = TRUE, log.p = FALSE,
                     method = c("a","b","c"))
@@ -865,3 +865,94 @@ qtAppr <- function(p, df, ncp, lower.tail = TRUE, log.p = FALSE,
              (ncp*b + z*sqrt(den + ncp^2/(2*df)))/den
          })
 }
+
+##
+##' Pure R version of R's C function in  ..../src/nmath/qnt.c
+##' additionally providing "tuning" consts (accu, eps)
+##'
+##' qntR1: for length-1 arguments
+qntR1 <- function(p, df, ncp, lower.tail = TRUE, log.p = FALSE,
+                  pnt = stats::pt, accu = 1e-13, eps = 1e-11)
+{
+    stopifnot(length(p) == 1L, length(df) == 1L, length(ncp) == 1L
+            , accu >= 0, eps >= 0
+            , is.function(pnt), names(formals(pnt)) >= 5
+              )
+    if(is.na(p) || is.na(df) || is.na(ncp))
+        return(p + df + ncp)
+    if (df <= 0.0) { ## ML_WARN_return_NAN;
+        warning("Non-positive 'df': NaNs produced")
+        return(NaN)
+    }
+    if(ncp == 0. && df >= 1.)
+        return(qt(p, df, lower.tail, log.p))
+    ## for  ncp=0 and df < 1  continue :
+
+    ## R_Q_P01_boundaries(p, ML_NEGINF, ML_POSINF) :
+    if(p == .D_0(log.p)) return(if(lower.tail) -Inf else  Inf)
+    if(p == .D_1(log.p)) return(if(lower.tail)  Inf else -Inf)
+    if(p < .D_0(log.p) ||
+       p > .D_1(log.p)) { warning("p out of range"); return(NaN) }
+
+    if (!is.finite(df)) # df = Inf ==> is limit = N(ncp,1) :
+	return(qnorm(p, ncp, 1., lower.tail, log.p))
+
+    ## MM: this *does* lose accuracy in case of very small p
+    ## --- TODO: do *not* do this, but s/ (TRUE, FALSE) by (lower.tail, log.p) below
+    ##           *and* "transform" (lx, ux) accordingly, for lower.tail swap "<" with ">"
+    p <- .DT_qIv(p, lower.tail, log.p)
+
+    ##* Invert pnt(.) :
+    ##  -------------
+    ##* 1. finding an upper and lower bound
+    Mdeps <- .Machine$double.eps
+    if(p > 1 - Mdeps) return(Inf)
+    pp <- min(1 - Mdeps, p * (1 + eps))
+    ux <- max(1., ncp)
+    DBL_MAX <- .Machine$double.xmax
+    while(ux < DBL_MAX && pnt(ux, df, ncp, TRUE, FALSE) < pp)
+	ux <- ldexp(ux, 1L)
+    pp <- p * (1 - eps)
+    lx <- min(-1., -ncp)
+    while(lx > -DBL_MAX && pnt(lx, df, ncp, TRUE, FALSE) > pp)
+	lx <- ldexp(lx, 1L) ## * 2
+
+    ##* 2. interval (lx,ux)  halving :
+    repeat {
+	nx <- 0.5 * (lx + ux) ## could be zero
+	if(pnt(nx, df, ncp, TRUE, FALSE) > p) ux <- nx else lx <- nx
+        ## while(...) :
+        if(!((ux - lx) > accu * max(abs(lx), abs(ux)))) break
+    }
+
+    ## return
+    ldexp(lx + ux, -1L) # = 0.5 * (lx + ux)
+}
+
+qntR <- Vectorize(qntR1, c("p", "df", "ncp"))
+
+## Invert pnt() via uniroot() -- is currently more reliable
+qtU1 <- function(p, df, ncp, lower.tail=TRUE, log.p=FALSE,
+                 interval = c(-10,10), ## FIXME! use qtAppr(), possibly simple 'method = "b"' ?
+                 tol = 1e-5, verbose = FALSE, ...)
+{
+    stopifnot(length(p) == 1, length(df) == 1, length(ncp) == 1)
+    ptFUN <- if(verbose) { # verbose: print(.)
+                 function(q) {
+                     p. <- pt(q, df, ncp, lower.tail, log.p)
+                     d <- p. - p
+                     cat(sprintf("q=%11g --> pt(q,*) = %11g, d = pt() - p = %g\n",
+                                 q, p., d))
+                     d
+                 }
+             } else
+                 function(q) pt(q, df, ncp, lower.tail, log.p) - p
+    r <- uniroot(ptFUN,
+                 interval = interval,
+                 extendInt = if(lower.tail) "upX" else "downX",
+                 tol = tol, ...)
+    if(verbose) { cat("uniroot(.):  "); str(r) }
+    r$root
+}
+
+qtU <- Vectorize(qtU1, c("p","df","ncp"))

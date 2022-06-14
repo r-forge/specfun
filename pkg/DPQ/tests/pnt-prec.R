@@ -165,7 +165,7 @@ ptRTailAsymp <- function(df,ncp, f.x1 = 1e5, f.x0 = 1, nx = 1000,
     ## is nearly linear
     alp <- .999
     x0. <- qt(alp, df=df, ncp=ncp)##<< it's absurd to use this here,
-    ##     --  but unfortunately, qt.appr() is too unreliable here
+     ##     --  but unfortunately, qtAppr() is too unreliable here
     it <- 1
     while(!is.finite(x0.) && it < 20) {
         it <- it+1
@@ -449,10 +449,10 @@ showProc.time()
 
 ## I've been hunting for a pbm in my code, but have now found I get it
 ## with 'power.t.test(*, sd = NULL)
-
-## eg.
-power.t.test(20, 1, power=0.8, sd=NULL)
-
+# eg.
+(ptt <- power.t.test(20, 1, power=0.8, sd=NULL, tol = 1e-8))
+stopifnot(inherits(ptt, "power.htest"), is.list(ptt),
+          all.equal(1.0999525, ptt$sd, tol = 1e-7))
 ## MM: This has been fixed for  R 2.4.0,  with NEWS entry
 ##
 ## o	pt() with a very small (or zero) non-centrality parameter could

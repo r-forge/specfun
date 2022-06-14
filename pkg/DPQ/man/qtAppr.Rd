@@ -23,14 +23,18 @@ qtAppr(p, df, ncp, lower.tail = TRUE, log.p = FALSE, method = c("a", "b", "c"))
 \value{
   ...
 }
-%% \references{
-%%
-%% }
+\references{
+  Johnson, N.L., Kotz, S. and Balakrishnan, N. (1995)
+  Continuous Univariate Distributions Vol~2, 2nd ed.; Wiley.
+  \cr Chapter 31, Section \emph{6  Approximation}, p.519 ff
+}
 \author{Martin Maechler,  6 Feb 1999}
 \seealso{
- \code{\link{qt}}.
+  Our \code{\link{qtU}()}; several non-central density and probability
+  approximations in \code{\link{dntJKBf}}, and e.g., \code{\link{pntR}}.
+  Further, \R's \code{\link{qt}}.
 }
 \examples{
-  ## TODO
+  ## TODO -- currently see ../tests/t-nonc-tst.R
 }
 \keyword{distribution}

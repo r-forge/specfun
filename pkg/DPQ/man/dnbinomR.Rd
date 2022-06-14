@@ -19,7 +19,7 @@ dnbinom.mu(x, size, mu,   log = FALSE, eps = 1e-10)
      \code{\link{dbinom}()} based evaluation.}
 }
 \value{
-  numeric vector of the same length as \code{x} (which may have to be
+  numeric vector of the same length as \code{x} which may have to be
   thought of recycled along \code{size} and \code{prob} or \code{mu}.
 }
 \references{

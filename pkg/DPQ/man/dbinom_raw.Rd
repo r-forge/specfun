@@ -25,7 +25,7 @@ dbinom_raw (x, n, p, q = 1-p, log = FALSE, verbose = getOption("verbose"))
     diagnostic output, \code{0} means no output, \code{1} more, etc.}
 }
 \value{
-  numeric vector of the same length as \code{x} (which may have to be
+  numeric vector of the same length as \code{x} which may have to be
   thought of recycled along \code{n}, \code{p} and/or \code{q}.
 }
 \author{R Core and Martin Maechler}

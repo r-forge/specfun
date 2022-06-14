@@ -148,7 +148,7 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
               !is.na(lower.tail), !is.na(log.p))
     version <- match.arg(version)
     if(is.na(p) || is.na(mu) || is.na(sd)) return(p+mu+sd)
-    ## R_Q_P01_boundaries(p, ML_NEGINF, ML_POSINF);
+    ## R_Q_P01_boundaries(p, ML_NEGINF, ML_POSINF) :
     if(p == .D_0(log.p)) return(if(lower.tail) -Inf else  Inf)
     if(p == .D_1(log.p)) return(if(lower.tail)  Inf else -Inf)
     if(p < .D_0(log.p) ||

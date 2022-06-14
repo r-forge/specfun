@@ -38,7 +38,7 @@ pntLrg    (t, df, ncp, lower.tail = TRUE, log.p = FALSE)
 
 pntJW39   (t, df, ncp, lower.tail = TRUE, log.p = FALSE)
 pntJW39.0 (t, df, ncp, lower.tail = TRUE, log.p = FALSE)
-% TODO: *IMPLEMENT* (and then document (in \details{}) !
+% TODO: *IMPLEMENT* (and then document in \details{}) !
 %% pntChShP94  (t, df, ncp, lower.tail = TRUE, log.p = FALSE,
 %%                                             itrmax = 1000, errmax = 1e-12, verbose = TRUE)
 %% pntChShP94.1(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
