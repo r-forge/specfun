@@ -190,6 +190,7 @@ export(
   , qntR, qntR1
   , qtAppr
   , qtU, qtU1
+  , qtR, qtR1
   , r_pois, r_pois_expr
     ## no! titleR.exp (FIXME eventually: should not need such a global)
 )

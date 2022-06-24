@@ -4,12 +4,15 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-3 (2022-06-14, svn r213)}{
+\section{Version 0.5-3 (2022-06-24, svn r214)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item New \R functions \code{qntR()} and \code{qtU()},
       \code{Vectorize()}d versions of \code{qntR1()} and \code{qtU1()},
       respectively.
+      \item New \code{qtR() <- Vectorize(qntR1, *)}; pure \R
+      implementation of \R's Mathlib C-level \code{qt()}, but additionally
+      allowing tweaks, used for fixing \R's bug \PR{18630}.
     }
   }
 }
