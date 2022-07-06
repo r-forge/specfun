@@ -43,12 +43,13 @@
  ##       Hill, G.W (1981) "Remark on Algo.396", ACM TOMS 7, 250-1
  ##     - Improve the formula decision for 1 < df < 2
 
-
 qtR1 <- function(p, df, lower.tail=TRUE, log.p=FALSE, eps = 1e-12,
-                 d1_accu = 1e-13, d1_eps = 1e-11, epsNewt = 1e-14,
+                 d1_accu = 1e-13, d1_eps = 1e-11,
+                 itNewt = 10L, epsNewt = 1e-14, logNewton = log.p,
                  verbose = FALSE)
 {
-    stopifnot(length(p) == 1, length(df) == 1, df > 0)
+    stopifnot(length(p) == 1, length(df) == 1, df > 0,
+              (itNewt <- as.integer(itNewt)) >= 1L)
 
     if (is.na(p) || is.na(df))
 	return(p + df)
@@ -59,7 +60,10 @@ qtR1 <- function(p, df, lower.tail=TRUE, log.p=FALSE, eps = 1e-12,
     if(p < .D_0(log.p) ||
        p > .D_1(log.p)) { warning("p out of range"); return(NaN) }
 
-    if (df <= 0) ML_WARN_return_NAN;
+    if (df < 0.0) { ## ML_WARN_return_NAN;
+        warning("Negative-positive 'df': NaNs produced")
+        return(NaN)
+    }
 
     DBL_MAX     <- .Machine$double.xmax
     DBL_MIN     <- .Machine$double.xmin
@@ -71,7 +75,7 @@ qtR1 <- function(p, df, lower.tail=TRUE, log.p=FALSE, eps = 1e-12,
     M_LN2  <- 0.693147180559945309417232121458  # ln(2)
 
     ML_POSINF <-  Inf
-    ML_NEGINF <- -Inf
+    ## ML_NEGINF <- -Inf
     R_FINITE <- is.finite
 
     if (df < 1) { ## based on qnt() --> see ./t-nonc-fn.R <<<<<<<<<<<<<
@@ -91,16 +95,16 @@ qtR1 <- function(p, df, lower.tail=TRUE, log.p=FALSE, eps = 1e-12,
 	if(p > 1 - DBL_EPSILON) return (ML_POSINF);
 	pp = min(1 - DBL_EPSILON, p * (1 + d1_eps))
         ux <- 1
-	while(ux < DBL_MAX && pt(ux, df, TRUE, FALSE) < pp) ux <- ux * 2
+	while(ux < DBL_MAX && pt(ux, df, , TRUE, FALSE) < pp) ux <- ux * 2
 	pp = p * (1 - d1_eps)
 	lx <- -1
-        while(lx > -DBL_MAX && pt(lx, df, TRUE, FALSE) > pp) lx <- lx * 2
+        while(lx > -DBL_MAX && pt(lx, df, , TRUE, FALSE) > pp) lx <- lx * 2
 
         ## 2. interval (lx,ux)  halving
         ##   regula falsi failed on qt(0.1, 0.1)
         repeat {
 	    nx = 0.5 * (lx + ux);
-	    if (pt(nx, df, TRUE, FALSE) > p) ux <- nx else lx <- nx
+	    if (pt(nx, df, , TRUE, FALSE) > p) ux <- nx else lx <- nx
             if(! ((ux - lx) / abs(nx) > d1_accu && (iter <- iter+1L) < 1000))
                 break
 	}
@@ -123,17 +127,18 @@ qtR1 <- function(p, df, lower.tail=TRUE, log.p=FALSE, eps = 1e-12,
     if (df > 1e20) return(qnorm(p, 0., 1., lower.tail, log.p))
 
     if(verbose) cat(sprintf("qt(p=%11g, df=%11g, *) -- general case\n", p, df))
-    P <- .DT_qIv(p, lower.tail, log.p) # R_DT_qIv(p)  -- if exp(p) underflows, we fix below */
+
+    P <- .D_qIv(p, log.p) # R_D_qIv(p) -- if exp(p) underflows, we fix below */
 
     ## Rboolean
     neg = (!lower.tail || P < 0.5) && (lower.tail || P > 0.5)
-    is_neg_lower = (lower.tail == neg); ## both TRUE or FALSE == !xor */
+    is_neg_lower = (lower.tail == neg) # both TRUE or FALSE == !xor */
     if(verbose) cat(sprintf(" -> P=%11g, neg=%s, is_neg_lower=%s;", P,
                             format(neg), format(is_neg_lower)))
     if(neg)
-	P = 2 * if(log.p) (if(lower.tail) P else -expm1(p)) else R_D_Lval(p)
+	P = 2 * if(log.p) (if(lower.tail) P else -expm1(p)) else .D_Lval(p, lower.tail)
     else
-	P = 2 * if(log.p) (if(lower.tail) -expm1(p) else P) else R_D_Cval(p)
+	P = 2 * if(log.p) (if(lower.tail) -expm1(p) else P) else .D_Cval(p, lower.tail)
     ## 0 <= P <= 1 ; P = 2*min(P', 1 - P')  in all cases */
     if(verbose) cat(sprintf(" -> final P=%11g\n", P))
     if (abs(df - 2) < eps) {	## df ~= 2 */
@@ -229,32 +234,75 @@ qtR1 <- function(p, df, lower.tail=TRUE, log.p=FALSE, eps = 1e-12,
         ##    	  Probably also improvable when  lower.tail = FALSE */
 	if(P_ok1) {
 	    it <- 0
-            if(verbose) cat("P_ok1: 2-step Taylor (iterated):\n")
-	    while((it <- it+1L) <= 10 && (y <- dt(q, df, FALSE)) > 0 &&
-		  R_FINITE(x <- (pt(q, df, FALSE, FALSE) - P/2) / y) &&
+            M <- abs(sqrt(DBL_MAX/2.) - df)
+            if(logNewton && log.p) {
+              if(verbose) cat("P_ok1: log-scale Taylor (iterated):\n")
+	      while((it <- it+1L) <= itNewt && ## (y <- dt(q, df, log=FALSE)) > 0 &&
+                    { lF <- pt(q, df, lower.tail=FALSE, log.p=TRUE)
+                      R_FINITE(x <- exp(lF - dt(q, df, log=TRUE))*(lF - log(P/2))) } &&
+                             ## FIXME:  directly from orig. p (lower.?) ^^^^^^^^ via log1mexp(.) !
+                    abs(x) > epsNewt*abs(q)) {
+                      ## Newton (=Taylor 1 term): q += x;
+                      ## ___TODO___ (?) Taylor 2-term :....
+                      if(verbose) cat(sprintf(
+			"it=%3d, ... d{q}1=exp(lF - dt(q, df, log=TRUE))*(lF - log(P/2)) = %13g; ",
+                                      it, x))
+                      if(R_FINITE(qn <- q + x))
+                          q <- qn
+                      else ##/ FIXME??  if  q+x = +/-Inf is *better* than q should still use it
+                          break ##; // cannot improve  q  with a Newton/Taylor step
+                      if(verbose) cat(sprintf("new q=%12g\n", q))
+                  }
+            }
+            else { ## log.p or logNewton is false
+              if(verbose) cat("P_ok1: 2-step Taylor (iterated):\n")
+	      while((it <- it+1L) <= itNewt && (y <- dt(q, df, log=FALSE)) > 0 &&
+		  R_FINITE(x <- (pt(q, df, , FALSE, FALSE) - P/2) / y) &&
 		  abs(x) > epsNewt*abs(q)) {
                       ## Newton (=Taylor 1 term):
                       ##  q += x;
                       ## Taylor 2-term : */
                       F <- if(abs(q) < M)
-                               q * (ndf + 1) / (2 * (q * q + ndf))
-                           else    (ndf + 1) / (2 * (q     + ndf/q))
+                               q * (df + 1) / (2 * (q * q + df))
+                           else    (df + 1) / (2 * (q     + df/q))
                       del_q <- x * (1. + x * F)
                       if(verbose) cat(sprintf(
-				"it=%3d, y=dt(*)=%13g, d{q}=(pt(q,*) - P/2)/y = %13g; ",
-                                it, y, x))
-                      if(R_FINITE(del_q) && R_FINITE(q + del_q))
-                          q <- q+ del_q
-                      else if(R_FINITE(x) && R_FINITE(q + x))
-                          q <- q+ x
+				"it=%3d, y=dt(*)=%13g, d{q}1=(pt(q,*) - P/2)/y = %13g; d{q}2 = %13g; ",
+                                it, y, x, del_q))
+                      if(R_FINITE(del_q) && R_FINITE(qn <- q + del_q))
+                          q <- qn
+                      else if(R_FINITE(qn <- q + x)) # have checked R_FINITE(x) already
+                          q <- qn
                       else ##/ FIXME??  if  q+x = +/-Inf is *better* than q should still use it
                           break ##; // cannot improve  q  with a Newton/Taylor step
                       if(verbose) cat(sprintf("new q=%12g\n", q))
                   }
+            }
+            if(verbose && it <= 1L) cat(">> *no* Newton refinements <<\n")
 	}
     }
     return (if(neg) -q else q)
 }
 
 qtR <- Vectorize(qtR1, c("p", "df"))
-##=
+## when interactively:  assignInNamespace("qtR", qtR, ns=asNamespace("DPQ"))
+
+
+## large df Approx. from comment above:
+qtNappr <- function(p, df, lower.tail=TRUE, log.p=FALSE, k = 2) {
+    stopifnot(k == (k. <- as.integer(k)), 0 <= (k <- k.), k <= 2)
+    ## something like Abramowitz & Stegun 26.7.5 (p.949)"
+    ##
+    ## That would say that if the qnorm value is x then
+    ## the result is about x + (x^3+x)/4df + (5x^5+16x^3+3x)/96df^2
+    ## The differences are tiny even if x ~ 1e5, and qnorm is not
+    ## that accurate in the extreme tails.
+    x <- qnorm(p, lower.tail=lower.tail, log.p=log.p)
+    switch(k+1
+         , x # k=0
+         , x*(1+ (x^2+1)/(4*df)) # == x + (x^3+x)/4df  --- k=1
+           ## MM: could even more "simplify" : 1/(4*df)
+         , { x2 <- x^2; x*(1 +(x2+1)/(4*df) + ((5*x2+16)*x2+3)/(96*df^2)) } # --- k=2
+           ) ## = x + (x^3+x)/4df + (5x^5+16x^3+3x)/96df^2
+}
+

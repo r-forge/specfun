@@ -343,7 +343,7 @@ plot(function(t)abs(pt(t,100,30)-pntJW39(t,100,30)), 17, 120, n=1001,
 par(o)
 
 
-### --------------------- qt() and qtAppr() ---------------------
+### --------------------- qt(), qtAppr(), qtNappr(), etc ---------------------
 
 ## df=1  is pretty bad...
 plot(function(t)qt(t,df=1))
@@ -516,3 +516,44 @@ matplot(q2, abs( cbind(qpq2, qAp2a,qAp2c) - q2), log="y",
 mat2 <- cbind(q2, pq2, qpq2, Dq=qpq2-q2, relE=relErrV(q2, qpq2))
 tail(mat2, 10)
 
+###=== Large df ; R currently uses "primitive" (<==> qtNappr(*, k=0)) for df > 1e20
+##     ========
+##--- *CENTRAL* case  (ncp == 0) ----------
+
+## originally from ../man/qtAppr.Rd :
+qts <- function(p, df, lower.tail = TRUE, log.p = FALSE) {
+    cbind(qt   = qt     (p, df=df, lower.tail=lower.tail, log.p=log.p)
+        , qtU  = qtU    (p, df=df, lower.tail=lower.tail, log.p=log.p)
+        , qtN0 = qtNappr(p, df=df, lower.tail=lower.tail, log.p=log.p, k=0)
+        , qtN1 = qtNappr(p, df=df, lower.tail=lower.tail, log.p=log.p, k=1)
+        , qtN2 = qtNappr(p, df=df, lower.tail=lower.tail, log.p=log.p, k=2)
+          )
+}
+
+p <- (0:100)/100
+  ##  df = 100
+  qsp1c <- qts(p, df = 100)
+  matplot(p, qsp1c, type="l") # "all on top"
+  (dq <- (qsp1c[,-1] - qsp1c[,1])[2:100,])
+  matplot(p[2:100], dq, type="l", col=2:4,
+          main = "difference qtNappr(p,df) - qt(p,df), df=100", xlab=quote(p))
+  legend("top", paste0("k=",0:2), col=2:4, lty=1:3)
+  ##  df = 2000
+  qsp1c <- qts(p, df = 2000)
+  matplot(p, qsp1c, type="l") # "all on top"
+  (dq <- (qsp1c[,-1] - qsp1c[,1])[2:100,])
+  matplot(p[2:100], dq, type="l", col=2:4,
+          main = "difference qtNappr(p,df) - qt(p,df), df=2000", xlab=quote(p))
+  legend("top", paste0("k=",0:2), col=2:4, lty=1:3)
+  ## drop the k=0 one
+  matplot(p[2:100], dq[,-1], type="l", col=3:4,
+          main = "difference qtNappr(p,df) - qt(p,df), df=2000", xlab=quote(p))
+  legend("top", paste0("k=",1:2), col=3:4, lty=1:3)
+  ## k=2 for df=2000:
+  plot(p[2:100], dq[,3], type="l", main="absolute difference .. k=2, df=2000")
+  plot(p[2:100], dq[,3]/qsp1c[2:100,1], type="l", main="relative difference .. k=2, df=2000")
+  ## qtAppr is really worse (than k=2 (?) --- FIXME: look closer!
+  qtA <- qtAppr(p, df=2000, ncp=0)
+  lines(p, qtA/qsp1c[,1] - 1, col=2, lwd=2, lty=2)
+  cbind(p, cbind(qsp1c, qtA)) ## qtA  quite close to k=2 ???
+  cbind(p, cbind(qsp1c[,-1], qtA) - qsp1c[,1]) ## qtA  between k=1 and k=2 ...

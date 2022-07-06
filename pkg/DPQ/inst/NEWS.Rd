@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-3 (2022-07-06, svn r215)}{
+\section{Version 0.5-3 (2022-07-06, svn r216)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item New \R functions \code{qntR()} and \code{qtU()},
@@ -13,6 +13,10 @@
       \item New \code{qtR() <- Vectorize(qntR1, *)}; pure \R
       implementation of \R's Mathlib C-level \code{qt()}, but additionally
       allowing tweaks, used for fixing \R's bug \PR{18630}.
+      Added (optional) log-scale Newton steps via \code{logNewton = log.p},
+      needing more tests.
+      \item New \code{qtNappr()} -- from the remark in R's \file{nmath/qt.c}
+      about very large \code{df} approximation.
       \item New \code{gammaVer()} to exemplify \R's (partly historical)
       versions of \code{gamma()} implementations.
     }
