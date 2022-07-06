@@ -276,6 +276,15 @@ SEXP R_logcf(SEXP x_, SEXP i_, SEXP d_, SEXP eps_, SEXP trace_);
 double dpq_lgammacor(double x, int nalgm, double xbig);
 SEXP     R_lgammacor(SEXP x_, SEXP nalgm_, SEXP xbig_);
 
+
+// gamma-variants.c : --------------------------------------------------------
+double gammafn_ver(double x, int version, int trace_lev);
+SEXP   R_gamma_ver(SEXP x_, SEXP version_, SEXP trace_);
+
+// stirlerr.c : --------------------------------------------------------------
+double dpq_stirlerr(double n);
+
+
 // chebyshev.c : -------------------------------------------------------------
 
 /* Chebyshev Polynomial */

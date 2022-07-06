@@ -181,6 +181,7 @@ export(
   , qchisqN
   , qnchisqAbdelAty, qnchisqPatnaik, qnchisqPearson, qnchisqSankaran_d
 
+  , gammaVer # gamma() versions in C {of R itself; historical & experimental}
   , qgammaAppr, qgammaApprSmallP, qgammaApprKG
 
   , pnormL_LD10, pnormU_S53

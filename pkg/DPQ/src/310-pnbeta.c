@@ -61,15 +61,15 @@ double ncbeta1(double a, double b, double lambda, double x,
 
 	double q, r__, s, s0, s1, t0, t1, fx, gx;
 	double ebd, sum, lBeta, temp, psum;
-	int iter1, iter2;
 	double errbd, ftemp;
 
 	double c__ = lambda * 0.5;
 	int m = (int) (c__ + 0.5);
 	double t = 5. * sqrt((double) m);
 	int
-	    iterlo = m - t,
-	    iterhi = m + t;
+	    it = (int)ceil(t),
+	    iterlo = m - it,
+	    iterhi = m + it;
 
 	t = -c__ + m * log(c__) - lgamma(m + 1.);
 	q = exp(t);
@@ -87,7 +87,7 @@ double ncbeta1(double a, double b, double lambda, double x,
 	ftemp = temp;
 	(*xj)++;
 	sum = q * temp; // web version '310' had "SUM = Q - TEMP" which is incorrect.
-	iter1 = m;
+	int iter1 = m;
 
 /*      The first set of iterations starts from M and goes downwards */
 
@@ -118,10 +118,10 @@ double ncbeta1(double a, double b, double lambda, double x,
 	q = r__;
 	temp = ftemp;
 	gx = fx;
-	iter2 = m;
+	int iter2 = m;
 	while(iter2 < iterhi && (ebd = errbd + (1. - psum) * temp) >= errmax) {
 // L50:
-	    iter2 += 1.;
+	    iter2 ++;
 	    (*xj)++;
 	    q = q * c__ / iter2;
 	    psum += q;
