@@ -1002,7 +1002,8 @@ qtU1 <- function(p, df, ncp, lower.tail=TRUE, log.p=FALSE,
                  interval = c(-10,10), ## FIXME! use qtAppr(), possibly simple 'method = "b"' ?
                  tol = 1e-5, verbose = FALSE, ...)
 {
-    stopifnot(length(p) == 1, length(df) == 1, length(ncp) == 1)
+    ## Be smart when missing(ncp) :  "keep it" missing also in the pt() call
+    stopifnot(length(p) == 1, length(df) == 1, missing(ncp) || length(ncp) == 1)
     ptFUN <- if(verbose) { # verbose: print(.)
                  function(q) {
                      p. <- pt(q, df, ncp, lower.tail, log.p)
@@ -1011,8 +1012,13 @@ qtU1 <- function(p, df, ncp, lower.tail=TRUE, log.p=FALSE,
                                  q, p., d))
                      d
                  }
+             } else if(missing(ncp)) {
+                 function(q) pt(q, df,    , lower.tail, log.p) - p
              } else
                  function(q) pt(q, df, ncp, lower.tail, log.p) - p
+
+    if(verbose && missing(ncp)) ## replace 'ncp' by <empty> in the pt() call:
+        body(ptFUN)[[2:4]] <- alist(x=)$x
     r <- uniroot(ptFUN,
                  interval = interval,
                  extendInt = if(lower.tail) "upX" else "downX",

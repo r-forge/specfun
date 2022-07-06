@@ -26,7 +26,8 @@ qtU (p, df, ncp, lower.tail = TRUE, log.p = FALSE, interval = c(-10, 10),
 }
 \arguments{
   \item{p, df, ncp}{vectors of probabilities, degrees of freedom, and
-    non-centrality parameter; see \code{\link{qt}}.}
+    non-centrality parameter; see \code{\link{qt}}.  As there, \code{ncp}
+    may be \code{\link{missing}} which amounts to being zero.}
   \item{lower.tail, log.p}{logical; see \code{\link{qt}}.}
   \item{interval}{the interval in which quantiles should be searched;
     passed to \code{\link{uniroot}()};
