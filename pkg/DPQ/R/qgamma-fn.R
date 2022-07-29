@@ -318,5 +318,5 @@ gammaVer <- function(x, version, traceLev = 0L) {
     stopifnot(is.integer(iver <- as.integer(version)), 1 <= iver, iver <= 5,
               is.integer(traceLev <- as.integer(traceLev)), 0 <= traceLev)
     ## here version needs to be integer: currently in 1..5
-    .Call(C_R_gamma_ver, x, version, traceLev)
+    .Call(C_R_gamma_ver, x, iver, traceLev)
 }

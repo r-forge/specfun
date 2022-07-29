@@ -637,47 +637,88 @@ qnormAppr <- function(p) {
   ## qnorm: normal quantile approximation for qnorm(p),  for p > 1/2
   ## -- to be used in  qbeta(.)
   ## The relative error of this approximation is quite ASYMMETRIC: mainly < 0
-  C1 <- 2.30753
-  C2 <- 0.27061
-  C3 <- 0.99229
-  C4 <- 0.04481
-  r <- sqrt(-2*log(1-p))
-  r - (C1 + C2 * r) / (1 + (C3 + C4 * r) * r)
+  ## NB:  This is Abramowitz & Stegun 26.2.22
+  a0 <- 2.30753
+  a1 <- 0.27061
+  b1 <- 0.99229
+  b2 <- 0.04481
+  t <- sqrt(-2*log(1-p))
+  t - (a0 + a1 * t) / (1 + (b1 + b2 * t) * t)
 }
 
 qnormUappr <- function(p,
                        lp = .DT_Clog(p, lower.tail=lower.tail, log.p=log.p),
                                         # ~= log(1-p) -- independent of lower.tail, log.p
-                       lower.tail=FALSE, log.p=FALSE)
+                       lower.tail=FALSE, log.p=FALSE, tLarge = 1e10)
 {
     ## qnorm: normal quantile approximation;
     ## -- to be used in  qbeta(.)
     ## The relative error of this approximation is quite ASYMMETRIC: mainly < 0
-    C1 <- 2.30753
-    C2 <- 0.27061
-    C3 <- 0.99229
-    C4 <- 0.04481
+    ## NB:  This is Abramowitz & Stegun 26.2.22
+    a0 <- 2.30753
+    a1 <- 0.27061
+    b1 <- 0.99229
+    b2 <- 0.04481
 
     if(missing(p)) { ## log.p unused;  lp = log(1-p)  <==>  e^lp = 1-p  <==>  p = 1 - e^lp
         p. <- -expm1(lp)
         ## swap p <--> 1-p -- so we are where approximation is better
         swap <- if(lower.tail) p. < 1/2 else p. > 1/2 # logical vector
-
     } else {
         p. <- .D_qIv(p, log.p)
         ## swap p <--> 1-p -- so we are where approximation is better
         swap <- if(lower.tail) p. < 1/2 else p. > 1/2 # logical vector
         p[swap] <- if(log.p) log1mexp(-p[swap]) else 1 - p[swap]
     }
-    R <- r <- sqrt(-2 * lp)
-    r.ok <- r < 1e10 ## e.g., for p == 1, r = Inf would give R = NaN
-    ## for r >= 1e10:  R = r numerically in formula below
-    r <- r[r.ok]
-    R[r.ok] <- r - (C1 + C2 * r) / (1 + (C3 + C4 * r) * r)
+    R <- t <- sqrt(-2 * lp)
+    t.ok <- t < tLarge ## e.g., for p == 1, t = Inf would give R = NaN
+    ## for t >= tLarge:  R = t numerically in formula below
+    t <- t[t.ok]
+    R[t.ok] <- t - (a0 + a1 * t) / (1 + (b1 + b2 * t) * t)
     R[swap] <- -R[swap]
     R[p. == 1/2] <- 0
     R
 }
+
+qnormUappr6 <- function(p,
+                        lp = .DT_Clog(p, lower.tail=lower.tail, log.p=log.p),
+                                        # ~= log(1-p) -- independent of lower.tail, log.p
+                        lower.tail=FALSE, log.p=FALSE, tLarge = 1e10)
+{
+    ## qnorm: normal quantile approximation;
+    ## ....
+    ## NB:  This is Abramowitz & Stegun 26.2.23 (6 coefficients)
+    ##                                  ~~~~~~~  =
+    c0 <- 2.515517;  d1 <- 1.432788
+    c1 <-  .802853;  d2 <-  .189269
+    c2 <-  .010328;  d3 <-  .001308
+
+    if(missing(p)) { ## log.p unused;  lp = log(1-p)  <==>  e^lp = 1-p  <==>  p = 1 - e^lp
+        p. <- -expm1(lp)
+        ## swap p <--> 1-p -- so we are where approximation is better
+        swap <- if(lower.tail) p. < 1/2 else p. > 1/2 # logical vector
+    } else {
+        p. <- .D_qIv(p, log.p)
+        ## swap p <--> 1-p -- so we are where approximation is better
+        swap <- if(lower.tail) p. < 1/2 else p. > 1/2 # logical vector
+        p[swap] <- if(log.p) log1mexp(-p[swap]) else 1 - p[swap]
+    }
+    R <- t <- sqrt(-2 * lp)
+    ##          vvvvv <=== check which one is optimal !!  (use Rmpfr qnormR()}
+    t.ok <- t < tLarge ## e.g., for p == 1, t = Inf would give R = NaN
+    ## for t >= tLarge:  R = t numerically in formula below
+    t <- t[t.ok]
+    R[t.ok] <- t - (c0 + (c1 + c2*t) * t) / (1 + (d1 + (d2 + d3*t) * t) * t)
+    R[swap] <- -R[swap]
+    R[p. == 1/2] <- 0
+    R
+}
+
+
+##              --------
+##===> more:  ./norm_f.R <<<<
+##              --------
+
 
 qbetaAppr.1 <- function(a, p, q, lower.tail=TRUE, log.p=FALSE,
                         y = qnormUappr(a, lower.tail=lower.tail, log.p=log.p))

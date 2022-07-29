@@ -59,7 +59,7 @@ pnormAsymp <- function(x, k, lower.tail=FALSE, log.p=FALSE) {
     ##     x <- -x
     ##     lower.tail <- ! lower.tail
     ## }
-    r <- dnorm(x, log=TRUE) - log(x)
+    r <- dnorm(x, log=TRUE) - log(x) ## <==> exp(r) = phi(x)/x
     if(k > 0) {
         xsq <- x*x
         del <-
@@ -92,6 +92,10 @@ pnormAsymp <- function(x, k, lower.tail=FALSE, log.p=FALSE) {
 
 
 
+###----------- NB>  qnormAppr(), qnormUappr() and qnormUappr6() -->>>> ./beta-fns.R <<<<<<
+##                  =========    ==========       ===========            ~~~~~~~~~~
+
+
 ### R version of   ~/R/D/r-devel/R/src/nmath/qnorm.c
 
 ## Mathlib : A C Library of Special Functions

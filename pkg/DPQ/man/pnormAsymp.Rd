@@ -7,7 +7,7 @@
   26.2.13 (p.932).% \url{https://personal.math.ubc.ca/~cbm/aands/page_932.htm}
 }
 \usage{
-pnormAsymp(x, k, lower.tail = FALSE, log.p = FALSE)
+pnormAsymp(x, k, lower.tail = FALSE, log.p = FALSE)% ../R/norm_f.R 
 }
 \arguments{
   \item{x}{positive (at least non-negative) numeric vector.}
@@ -27,7 +27,7 @@ pnormAsymp(x, k, lower.tail = FALSE, log.p = FALSE)
 }
 \author{Martin Maechler}
 \seealso{
-  \code{\link{pnormU_S53}} for (also asymptotic) upper and lower bounds.
+  \code{\link{pnormU_S53}} for (also asymptotic) upper and lower bounds.% ./pnormLU.Rd
 }
 \examples{
 x <- c((2:10)*2, 25, (3:9)*10, (1:9)*100, (1:8)*1000, (2:4)*5000)
@@ -49,12 +49,12 @@ if(requireNamespace("Rmpfr")) {
                  pnormAsymp, x=x., lower.tail = FALSE, log.p=TRUE)
   PxA. <- new("mpfrMatrix", unlist(PxA.), Dim=dim(PxA.), Dimnames=dimnames(PxA.))
   PxA2 <- Rmpfr::cbind(pn_dbl = Px, PxA.,
-                       pnormU53 = pnormU_S53(x=x., lower.tail = FALSE, log.p=TRUE))
+                       pnormU_S53 = pnormU_S53(x=x., lower.tail = FALSE, log.p=TRUE))
   ## rel.errors :
   print( Rmpfr::roundMpfr(Rmpfr::cbind(x., 1 - PxA2/Px.), precBits = 13) )
   pch <- c("R", 0:5, "U")
   matplot(x, abs(1 -PxA2/Px.), type="o", log="xy", pch=pch,
-          main="pnorm(<tail>) approximations' relative errors")
+          main="pnorm(<tail>) approximations' relative errors - pnormAsymp(*, k=k)")
   legend("bottomleft", colnames(PxA2), col=1:6, pch=pch, lty=1:5, bty="n", inset=.01)
   at1 <- axTicks(1, axp=c(par("xaxp")[1:2], 3))
   axis(1, at=at1)

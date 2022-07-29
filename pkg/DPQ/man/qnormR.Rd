@@ -50,9 +50,11 @@ with(qR, all.equal(pnorm(y), x, tol=0)) # currently: mean rel. diff.: 2e-16
 stopifnot(with(qR, all.equal(pnorm(y), x, tol = 1e-14)))
 
 ## Showing why/where R's qnorm() was poor up to 2020: log.p=TRUE extreme tail
+##% MM: more TODO? --> ~/R/MM/NUMERICS/dpq-functions/qnorm-extreme-bad.R
 qs <- 2^seq(0, 155, by=1/8)
 lp <- pnorm(qs, lower.tail=FALSE, log.p=TRUE)
-## the inverse of pnorm() fails BADLY for extreme tails; this identical to qnorm(..) in R <= 4.0.x:
+## The inverse of pnorm() fails BADLY for extreme tails; this is
+## identical to qnorm(..) in R <= 4.0.x:
 qp <- qnormR(lp, lower.tail=FALSE, log.p=TRUE, version="4.0.x")
 ## asymptotically correct approximation :
 qpA <- sqrt(- 2* lp)
@@ -71,4 +73,3 @@ rM <- cbind(lp, qs, 1 - cbind(relE.qnorm=qp, relE.approx=qpA)/qs)
 rM[ which(1:nrow(rM) \%\% 20 == 1) ,]
 }
 \keyword{distribution}
-

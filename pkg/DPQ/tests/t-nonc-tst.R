@@ -120,7 +120,7 @@ eaxis(2, at = 10^pretty(log10(axTicks(2, log=TRUE)), 10),
 par(op)
 mtext(R.version.string, cex = .6, adj=1)
 ## NB: Mathematica (e.g) ./pnt-ex.nb  -- shows linear {in log-log} tail
-
+
 ## From: Jerry Lewis <jerry.lewis@biogenidec.com>
 ## To: Martin Maechler <maechler@stat.math.ethz.ch>
 ## Subject: R pnt.c function
@@ -516,44 +516,71 @@ matplot(q2, abs( cbind(qpq2, qAp2a,qAp2c) - q2), log="y",
 mat2 <- cbind(q2, pq2, qpq2, Dq=qpq2-q2, relE=relErrV(q2, qpq2))
 tail(mat2, 10)
 
+
 ###=== Large df ; R currently uses "primitive" (<==> qtNappr(*, k=0)) for df > 1e20
 ##     ========
 ##--- *CENTRAL* case  (ncp == 0) ----------
 
+if(!dev.interactive(orNone=TRUE)) { dev.off(); pdf("t-nonc_P-3.pdf") }
+
 ## originally from ../man/qtAppr.Rd :
-qts <- function(p, df, lower.tail = TRUE, log.p = FALSE) {
+qts <- function(p, df, lower.tail = TRUE, log.p = FALSE, tolUa = 1e-14) {
     cbind(qt   = qt     (p, df=df, lower.tail=lower.tail, log.p=log.p)
         , qtU  = qtU    (p, df=df, lower.tail=lower.tail, log.p=log.p)
+        , qtUa = qtU    (p, df=df, lower.tail=lower.tail, log.p=log.p, tol = tolUa)
         , qtN0 = qtNappr(p, df=df, lower.tail=lower.tail, log.p=log.p, k=0)
         , qtN1 = qtNappr(p, df=df, lower.tail=lower.tail, log.p=log.p, k=1)
         , qtN2 = qtNappr(p, df=df, lower.tail=lower.tail, log.p=log.p, k=2)
+        , qtN3 = qtNappr(p, df=df, lower.tail=lower.tail, log.p=log.p, k=3)
+        , qtN4 = qtNappr(p, df=df, lower.tail=lower.tail, log.p=log.p, k=4)
           )
 }
 
+p.qtNappr <- function(qtsR, p, ip, errMax = 1e-17, do.diff=FALSE) {
+    stopifnot(is.matrix(qtsR), (n <- length(p)) == nrow(qtsR), 1 <= ip, ip <= n)
+    (iN <- startsWith(prefix="qtN", colnames(qtsR))) # also "drop" qtU()'s result
+    (dqN <- (qtsR[,iN] - qtsR[,1])[ip,])
+    if(do.diff) ## difference
+      matplot(p[ip], dqN, type="l", col=2:6,
+              main = paste0("difference qtNappr(p,df) - qt(p,df), df=",df), xlab=quote(p))
+    ## |difference|
+    matplot(p[ip], pmax(abs(dqN), errMax), log="y", type="l", col=2:6,
+            main = paste0("abs. difference |qtNappr(p,df) - qt(p,df)|, df=",df), xlab=quote(p))
+    legend("bottomright", paste0("k=",0:4), col=2:6, lty=1:5, bty="n")
+    ## Rel.err.
+    matplot(p[ip], pmax(abs(dqN/qtsR[ip,"qt"]), errMax), log="y", type="l", col=2:6,
+            main = sprintf("rel.error qtNappr(p, df=%g, k=*)",df), xlab=quote(p))
+    legend("left", paste0("k=",0:4), col=2:6, lty=1:5, bty="n")
+    invisible(dqN)
+}
+
 p <- (0:100)/100
-  ##  df = 100
-  qsp1c <- qts(p, df = 100)
-  matplot(p, qsp1c, type="l") # "all on top"
-  (dq <- (qsp1c[,-1] - qsp1c[,1])[2:100,])
-  matplot(p[2:100], dq, type="l", col=2:4,
-          main = "difference qtNappr(p,df) - qt(p,df), df=100", xlab=quote(p))
-  legend("top", paste0("k=",0:2), col=2:4, lty=1:3)
-  ##  df = 2000
-  qsp1c <- qts(p, df = 2000)
-  matplot(p, qsp1c, type="l") # "all on top"
-  (dq <- (qsp1c[,-1] - qsp1c[,1])[2:100,])
-  matplot(p[2:100], dq, type="l", col=2:4,
-          main = "difference qtNappr(p,df) - qt(p,df), df=2000", xlab=quote(p))
-  legend("top", paste0("k=",0:2), col=2:4, lty=1:3)
-  ## drop the k=0 one
-  matplot(p[2:100], dq[,-1], type="l", col=3:4,
-          main = "difference qtNappr(p,df) - qt(p,df), df=2000", xlab=quote(p))
-  legend("top", paste0("k=",1:2), col=3:4, lty=1:3)
-  ## k=2 for df=2000:
-  plot(p[2:100], dq[,3], type="l", main="absolute difference .. k=2, df=2000")
-  plot(p[2:100], dq[,3]/qsp1c[2:100,1], type="l", main="relative difference .. k=2, df=2000")
-  ## qtAppr is really worse (than k=2 (?) --- FIXME: look closer!
-  qtA <- qtAppr(p, df=2000, ncp=0)
-  lines(p, qtA/qsp1c[,1] - 1, col=2, lwd=2, lty=2)
-  cbind(p, cbind(qsp1c, qtA)) ## qtA  quite close to k=2 ???
-  cbind(p, cbind(qsp1c[,-1], qtA) - qsp1c[,1]) ## qtA  between k=1 and k=2 ...
+ii <- 2:100 # drop p=0 & p=1  where q*(p, .) == +/- Inf
+
+df <- 100 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+qsp1c <- qts(p, df = df)
+matplot(p[ii], qsp1c[ii,], type="l") # "all on top"
+p.qtNappr(qsp1c, p, ip=ii, do.diff=TRUE)
+
+df <- 2000 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+qsp1c <- qts(p, df=df)
+p.qtNappr(qsp1c, p, ip=ii)
+## qtAppr is really worse even than k=2 here (df=2000):
+qtA <- qtAppr(p, df=df, ncp=0)
+lines(p, pmax(1e-17, abs(qtA/qsp1c[,1] - 1)),  col=2, lwd=2, lty=2)
+legend(0.6, 1e-9, "qtAppr()",  bty="n",cex=.8, col=2, lwd=2, lty=2)
+## qtA is between k=1 and k=2 ...
+print(digits=4, cbind(p, cbind(qsp1c[,-1], qtA) - qsp1c[,1])[ii,])
+
+df <- 1e8 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< large <<<<<<<<<<<<
+## more p-values close to {0, 1}
+p. <- 2^-(2*(15:5)); p. <- sort(c(p., p, 1 - rev(p.))); plot(diff(p.))
+qspL <- qts(p., df=df)
+ii <- which(is.finite(qspL[,"qt"]))
+p.qtNappr(qspL, p=p., ip=ii)
+lines(p., pmax(1e-17, abs(qspL[,"qtU"] /qspL[,"qt"] - 1)),  col=2, lwd=2, lty=2)
+legend(0.6, 1e-9, "qtU(tol=1e-5)",  bty="n",cex=.8, col=2, lwd=2, lty=2)
+lines(p., pmax(1e-17, abs(qspL[,"qtUa"]/qspL[,"qt"] - 1)),  col=4, lwd=2, lty=3)
+legend(0.6, 1e-14, "qtU(tol=1e-14)",  bty="n",cex=.8, col=4, lwd=2, lty=3)
+
+print(qspL, digits=6)

@@ -215,7 +215,7 @@ qtR1 <- function(p, df, lower.tail=TRUE, log.p=FALSE, eps = 1e-12,
 	} else if(!P_ok && x < - M_LN2 * DBL_MANT_DIG) {## log(DBL_EPSILON) */
 	    ## y above might have underflown */
 	    q = sqrt(df) * exp(-x);
-            if(verbose) cat(sprintf("!P_ok && x < -36.04: q=%12g\n", q))
+            if(verbose) cat(sprintf("!P_ok && x < log(epsC) = -36.04: q=%12g\n", q))
 	}
 	else { ## re-use 'y' from above */
 	    y = ((1 / (((df + 6) / (df * y) - 0.089 * d - 0.822)
@@ -232,7 +232,7 @@ qtR1 <- function(p, df, lower.tail=TRUE, log.p=FALSE, eps = 1e-12,
 	## FIXME: This can be far from optimal when log.p = TRUE
         ##        but is still needed, e.g. for qt(-2, df=1.01, log=TRUE).
         ##    	  Probably also improvable when  lower.tail = FALSE */
-	if(P_ok1) {
+	{ ## was if(P_ok1) {
 	    it <- 0
             M <- abs(sqrt(DBL_MAX/2.) - df)
             if(logNewton && log.p) {
@@ -290,7 +290,7 @@ qtR <- Vectorize(qtR1, c("p", "df"))
 
 ## large df Approx. from comment above:
 qtNappr <- function(p, df, lower.tail=TRUE, log.p=FALSE, k = 2) {
-    stopifnot(k == (k. <- as.integer(k)), 0 <= (k <- k.), k <= 2)
+    stopifnot(k == (k. <- as.integer(k)), 0 <= (k <- k.), k <= 4)
     ## something like Abramowitz & Stegun 26.7.5 (p.949)"
     ##
     ## That would say that if the qnorm value is x then
@@ -301,8 +301,26 @@ qtNappr <- function(p, df, lower.tail=TRUE, log.p=FALSE, k = 2) {
     switch(k+1
          , x # k=0
          , x*(1+ (x^2+1)/(4*df)) # == x + (x^3+x)/4df  --- k=1
-           ## MM: could even more "simplify" : 1/(4*df)
-         , { x2 <- x^2; x*(1 +(x2+1)/(4*df) + ((5*x2+16)*x2+3)/(96*df^2)) } # --- k=2
-           ) ## = x + (x^3+x)/4df + (5x^5+16x^3+3x)/96df^2
+
+         ##{ x2 <- x^2; x*(1 +(x2+1)/(4*df) + ((5*x2+16)*x2+3)/(96*df^2)) } # --- k=2
+         , { x2 <- x^2; x*(1 +(x2+1 + ((5*x2+16)*x2+3)/(24*df))/(4*df)) }   # --- k=2
+           ##         = x + (x^3+x)/4df + (5x^5+16x^3+3x)/96df^2
+
+         , { x2 <- x^2; n4 <- 4*df
+            ## x*(1 + (x2+1 + ((5*x2+16)*x2+3 + (((3*x2+19)*x2+17)*x2-15)/(4*df))/(24*df)))/(4*df) } # --- k=3
+             x * (1 + (x2+1 + ((5*x2+16)*x2+3 + (((3*x2+19)*x2+17)*x2-15)/n4) / (24*df)) / n4) } # --- k=3
+           ## = x + (x^3+x)/4df + (5x^5+16x^3+3x)/96df^2 + (3x^7+19x^5+17x^3-15x)/384df^3
+
+
+         , { x2 <- x^2; n4 <- 4*df
+         ## x * (1 + (x2+1 + ((5*x2+16)*x2+3 + (((3*x2+19)*x2+17)*x2-15)/n4)/(24*df))/n4) +
+         ## (79*x^9+776*x^7+1482*x^5-1920*x^3-945*x)/(92160*df^4) }
+         ## x * (1 + (x2+1 + ((5*x2+16)*x2+3 + (((3*x2+19)*x2+17)*x2-15)/n4)/(24*df))/n4 +
+         ##      ((((79*x2+776)*x2+1482)*x2-1920)*x2-945)/(92160*df^4)) }
+             x * (1 + (x2+1 + ((5*x2+16)*x2+3 + (((3*x2+19)*x2+17)*x2-15 +
+                                                 ((((79*x2+776)*x2+1482)*x2-1920)*x2-945)/(240*df)) /
+                               n4) / (24*df)) / n4) }
+           ## = x + (x^3+x)/4df + (*)/96df^2 + (*)/*df^3 + (79x^9+776x^7+1482x^5-1920x^3-945x)/92160df^4
+           )
 }
 

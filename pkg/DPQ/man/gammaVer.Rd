@@ -24,8 +24,8 @@ gammaVer(x, version, traceLev = 0)
     \item .
     \item .
     \item .
-    \item Used in \R from ... up to versions 4.2.x
-    \item .
+    \item Used in \R from ... up to versions 4.2.z
+    \item Possibly to be used in \R 4.3.z and newer.
   }
 }
 \value{

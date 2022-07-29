@@ -186,11 +186,20 @@ ptRTailAsymp <- function(df,ncp, f.x1 = 1e5, f.x0 = 1, nx = 1000,
         SSY <- sum((px[!Out] - mean(px[!Out]))^2)
         if(do.plot) {
             r <- lm.fit(cbind(1, lx[!Out]), px[!Out])
-            plot(px ~ lx, xlab = "log(x)")
-### FIXME: title() or mtext() or ... <<<<<<<<
-            lines(lx[!Out], r$fitted, col= "green2")
-            abline(a = px[n.x0] - rob.slope*lx[n.x0],
-                   b = rob.slope, col = "tomato", lwd=2)
+            if(it == 1) { ## first plot
+                plot(px ~ lx, xlab = quote(log(x)),
+                     xlim = extendrange(r=log(c(x0,x1)), f=0.2),
+                     ylim = extendrange(px, f = 0.25),
+                     main = sprintf("pt(exp(.), df=%g, ncp=%g, lower.tail=FALSE, log.p=TRUE)",
+                                    df, ncp))
+                mtext(sprintf("Search for [x0, x1] s.t. pt(*, log=TRUE) is *linear* in it; starting @ [%g, %g]",
+                              log(x0), log(x1)))
+            } else { # it >= 2 ... subsequent iterations
+                lines(px ~ lx)
+                lines(lx[!Out], r$fitted, col= "green2")
+                abline(a = px[n.x0] - rob.slope*lx[n.x0],
+                       b = rob.slope, col = "tomato", lwd=2)
+            }
         }
         rob.fitted <- px[n.x0] + rob.slope*(lx - lx[n.x0])
         rob.resid <- px - rob.fitted
@@ -236,8 +245,15 @@ ptRTailAsymp <- function(df,ncp, f.x1 = 1e5, f.x0 = 1, nx = 1000,
 
     r <- lm.fit(cbind(1, lx), px)
     R2 <- 1 - sum(r$resid^2) / SSY
+    cf <- r$coefficients
+    if(do.plot) {
+        legend("topright", c(sprintf("final int. [%g, %g]", log(x0), log(x1)),
+                             sprintf("coef. = (%g, %g)", cf[1], cf[2])),
+               pch=NA, bty="n")
+        abline(v = log(c(x0,x1)), col=adjustcolor(1, 1/2), lty=2)
+    }
 ##    browser()
-    c(r$coefficients, df=df, ncp=ncp, converged=converged,
+    c(cf, df=df, ncp=ncp, converged=converged,
       x0=x0, x1=x1, alp=alp, x0.999=x0., R2 = R2, R2.rob=R2.rob)
 }
 
@@ -271,8 +287,8 @@ p.tailAsymp <- function(r, add.central=FALSE, F.add = FALSE) {
     abline(v = x01, col ="gray")
 
     cL <- "tomato"
-    mtext(sprintf("slope = %10.6g", r[2]), line=-1  , adj=1, col=cL)
-    mtext(sprintf("intCpt= %10.6g", r[1]), line=-2.2, adj=1, col=cL)
+    mtext(sprintf("slope = %-10.6g", r[2]), line=-1  , adj=1, col=cL, cex=par("cex"))
+    mtext(sprintf("intCpt= %-10.6g", r[1]), line=-2.2, adj=1, col=cL, cex=par("cex"))
     abline(a=r[1], b = r[2] * log(10), col = cL)
 }
 
@@ -314,7 +330,7 @@ p.tailAsymp(r7.001, add.central=TRUE)# --- but the slope is not quite -7 ...
 ## hmm:
 tt <- lseq(10,100, length=1000)
 px <- pt(tt, df=7, log=TRUE,lower.tail=FALSE)
-plot(px ~ log(tt), pch=".")
+plot(px ~ log(tt), pch=".", main = "pt(tt, df=7, log=TRUE, lower.t=F)")
 ll <- lm(px ~ log(tt))
 summary(ll)
 ##              Estimate Std. Error t value Pr(>|t|)
@@ -325,14 +341,16 @@ summary(ll)
 
 tt <- lseq(100,1e7, length=1000) # much larger range:  t -> oo
 px <- pt(tt, df=7, log=TRUE,lower.tail=FALSE)
-plot(px ~ log(tt), pch=".")
+plot(px ~ log(tt), pch=".",
+         main = "pt(tt, df=7, log=TRUE, lower.t=F) -- larger range(tt)")
 ll <- lm(px ~ log(tt))
 summary(ll)##--> clearly: slope == -7  -- ok
 
 ## Left tail
 tt <- rev(- lseq(100,1e7, length=1000))
 px <- pt(tt, df=4.5, log=TRUE)
-plot(px ~ log(-tt), pch=".")
+plot(px ~ log(-tt), pch=".",
+         main = "pt(tt, df=7, log=TRUE, lower.tail=TRUE)")
 ll <- lm(px ~ log(-tt))
 summary(ll)##--> clearly: slope == -4.5  -- ok
 
@@ -345,7 +363,7 @@ rmat <- rmat0[ rmat0[,"R2.rob"] > 0.9999 ,]
 rmat[,2:3]
 
 p.tailAsymp(r2.30 <- ptRTailAsymp(df= 2, ncp=30)) # very nice
-## "Large" ncp  :
+## "Large" ncp  : (the search and resulting slope seem *wrong* ..)
 p.tailAsymp(r2.50 <- ptRTailAsymp(df= 2, ncp=50, do.plot=TRUE))
 
 showProc.time()
@@ -390,12 +408,14 @@ if(!doExtras && file.exists(sfil1)) {
 dR <- as.data.frame(t(Res))
 
 op <- mult.fig(mfrow=c(nd,nc),marP=-1)$old.par
+op2 <- par(cex = par("cex") * 3/4) # or even more
 for(i.df in seq_along(df.))
   for(i.nc in seq_along(nc.)) {
     r <- Res[, indR(i.df,i.nc) ]
     if(is.na(r["df"])) { frame() } else p.tailAsymp(r)
+                                        # ------------
   }
-par(op)
+par(op); par(op2)
 showProc.time()
 
 
