@@ -291,7 +291,7 @@ double dpq_stirlerr(double n);
 int	chebyshev_init(const double[], int, double);
 double	chebyshev_eval(double, const double[], const int);
 SEXP R_chebyshev_eval(SEXP x_, SEXP a_, SEXP n_);
-SEXP R_chebyshev_init(SEXP coef_, SEXP eta_);
+SEXP R_chebyshev_nt  (SEXP coef_, SEXP eta_);
 
 
 // DPQ-misc.c: --------------------------------------------------------------------

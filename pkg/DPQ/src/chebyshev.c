@@ -1,4 +1,6 @@
-/* Apart from these first lines: DIRECT COPY  from R sources  of
+/* Copyright (C) 2022  Martin Maechler
+
+   Apart from these first lines: DIRECT COPY  from R sources  of
    <R>/src/nmath/chebyshev.c
        --------------------- @MM = ~/R/D/r-devel/R/src/nmath/chebyshev.c  */
 /*
@@ -47,23 +49,21 @@
 
 /* NaNs propagated correctly */
 
-
+/* returns typically  nos-1  unless has trailing zero coefficients : */
 int chebyshev_init(const double dos[], int nos, double eta)
 {
-    if (nos < 1)
-	return 0;
-
-    double err = 0.0;
-    int i = 0;			/* just to avoid compiler warnings */
-    for (int ii=1; ii <= nos; ii++) {
-	i = nos - ii;
+    double err = 0.;
+    for (int i = nos-1; i >= 0; i--) {
 	err += fabs(dos[i]);
-	if (err > eta) {
+	if (err > eta)
 	    return i;
-	}
     }
-    return i;
+    return -1;
 }
+/* NOTE: The above returns index  'n' such that  dos[0..n] should be used,
+   ----  i.e., strictly, there are  n+1  terms !
+*/
+
 
 
 // Chebyshev Polynomial P(x; a[]), x in [-1,1], coefficients a[0..(n-1)]
@@ -75,14 +75,14 @@ double chebyshev_eval(double x, const double a[], const int n)
     if (x < -1.1 || x > 1.1) ML_WARN_return_NAN;
 */
     double
-	twox = x * 2,
+	twox = ldexp(x, 1), // = 2 * x
 	b2 = 0, b1 = 0, b0 = 0;
     for (int i = 1; i <= n; i++) { // i in 1:n  <==>  n-i  in  0:(n-1)
 	b2 = b1;
 	b1 = b0;
 	b0 = twox * b1 - b2 + a[n - i];
     }
-    return (b0 - b2) * 0.5;
+    return ldexp(b0 - b2, -1); // (b0-b2)/2;
 }
 
 // To be  .Call()ed  from R :
@@ -94,24 +94,28 @@ SEXP R_chebyshev_eval(SEXP x_, SEXP a_, SEXP n_)
     R_xlen_t i,	nx = XLENGTH(x_);
     SEXP r_ = PROTECT(allocVector(REALSXP, nx));
     double *x = REAL(x_), *a = REAL(a_), *r = REAL(r_);
-    int ntrm = asInteger(n_);
-    if(ntrm <= 0)
-	error("ntrm = %d <= 0", ntrm);
-    if(ntrm > LENGTH(a_))
-	error("ntrm = %d > length(a) = %d", ntrm, LENGTH(a_));
+    int n_a = asInteger(n_); /* <==> use a[0 .. n_a]  as coefficients */
+    // n_a < 0 is allowed: empty polynomial === 0 {constant 0}
+    if(n_a > LENGTH(a_))
+	error("n_a = %d > length(a) = %d", n_a, LENGTH(a_));
     for(i=0; i < nx; i++) {
-	r[i] = chebyshev_eval(x[i], a, ntrm);
+	r[i] = chebyshev_eval(x[i], a, n_a);
     }
     UNPROTECT(3);
     return r_;
 }
 
-SEXP R_chebyshev_init(SEXP coef_, SEXP eta_)
+
+/** Determine the number of terms needed for a given coef[] vector
+ ** @param eta  Above  "Ordinarily eta will be chosen to be one-tenth machine precision"
+ **             R Mathlib's  nmath/<foo>.c  uses  eta = DBL_EPSILON/20  in both cases
+ **/
+SEXP R_chebyshev_nt(SEXP coef_, SEXP eta_)
 {
     PROTECT(coef_ = isReal(coef_) ? coef_ : coerceVector(coef_, REALSXP));
     if(XLENGTH(coef_) > INT_MAX)
 	error("length(%s) = %ld > max.int = %d", "coef", (long)XLENGTH(coef_), INT_MAX);
-    int ntrms = chebyshev_init(REAL(coef_), LENGTH(coef_), asReal(eta_));
+    int n_a = chebyshev_init(REAL(coef_), LENGTH(coef_), asReal(eta_));
     UNPROTECT(1);
-    return ScalarInteger(ntrms);
+    return ScalarInteger(n_a);
 }

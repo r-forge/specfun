@@ -11,7 +11,7 @@
 #include "DPQpkg.h"
 
 
-// To be  .Call()ed  from R : ---------------
+// .Call()ed  from R --> ../R/utils.R <<<<<<<<
 
 // Computes 'log(1 + X) - X'  accurately even for  |x| << 1
 SEXP R_log1pmx(SEXP x_)

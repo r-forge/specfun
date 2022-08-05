@@ -1,6 +1,6 @@
 ##-*- org -*-->  Emacs .. [Tab] key + [Org] menu; C-c C-o to follow links
 
-* TODO Provide R functions interfacing to the "applied math utilities" in  ./src/DPQ-misc.c
+* DONE Provide R functions interfacing to the "applied math utilities" in ./src/DPQ-misc.c : ./R/utils.R
 * TODO pbeta() approximations notably for log scale where bpser underflows to -Inf <<<<<<<<<<<
 * TODO Compare pnchi1sq() with t1() function in tests/chisq-nonc-ex.R
 * DONE in R >= 4.0.0, now .Machine has 10 "longdouble.*" components (when the configuration found long double)

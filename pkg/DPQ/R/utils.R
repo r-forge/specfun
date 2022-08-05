@@ -25,6 +25,7 @@ logspace.add <- function(lx, ly) pmax(lx, ly) + log1p(exp(-abs(lx - ly)))
 
 logspace.sub <- function(lx, ly) lx + log1mexp(lx - ly)
 
+## Calling C in ../src/DPQ-misc.c :
 log1mexpC <- function(x) .Call(C_R_log1mexp, x)
 log1pexpC <- function(x) .Call(C_R_log1pexp, x)
 log1pmxC  <- function(x) .Call(C_R_log1pmx,  x)
@@ -72,6 +73,7 @@ format01prec <- function(x, digits = getOption("digits"), width = digits + 2,
   r
 }
 
+## More calling C in ../src/DPQ-misc.c :
 
 ## C:  r = frexp (x, &e); // => r in  [0.5, 1) and 'e' (int) such that  x = r * 2^e
 frexp <- function(x) .Call(C_R_frexp, x)
@@ -79,3 +81,33 @@ frexp <- function(x) .Call(C_R_frexp, x)
 ldexp <- function(f, E) .Call(C_R_ldexp, f, E) # // ldexp(f, E) := f * 2^E
 
 modf <- function(x) .Call(C_R_modf, x)
+
+### Chebyshev Polynomial Evaluation ------- ../src/chebyshev.c ---------
+### interface to R's Mathlib chebychev_init() and chebychev_eval()
+
+##' Returns n_a such that coef[1+(0:n_a)] should be used[] (for max.error eta)
+chebyshev_nc <- function(coef, eta = .Machine$double.eps/20) {
+    stopifnot(length(eta) == 1, eta >= 0, length(coef) >= 1)
+    .Call(C_R_chebyshev_nt, coef, eta)
+}
+
+##' Returns the \sum_{j=0}^n c_j T_j(x)  where  c_j := coef[j+1],  n := nterms
+##'    and  T_j() is the Chebyshev polynomial of degree j
+chebyshevEval <- function(x, coef,
+                          nc = chebyshev_nc(coef, eta),
+                          eta = .Machine$double.eps/20) {
+    stopifnot(nc == (n <- as.integer(nc)), length(n) == 1L, n >= -1L)
+    .Call(C_R_chebyshev_eval, x, coef, n)
+}
+
+.chebyshevEval <- function(x, coef, nc) .Call(C_R_chebyshev_eval, x, coef, nc)
+
+
+##' Returns an \R  function(x)  which
+chebyshevPoly <- function(coef,
+                          nc = chebyshev_nc(coef, eta),
+                          eta = .Machine$double.eps/20) {
+    stopifnot(nc == (n <- as.integer(nc)), length(n) == 1L, n >= -1L)
+    rm(nc, eta)
+    function(x) .chebyshevEval(x, coef, n)
+}

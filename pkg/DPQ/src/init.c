@@ -63,7 +63,7 @@ static R_CallMethodDef CallEntries[] = {
     CALLDEF(R_logcf, 5),     // <--> logcf.c
     CALLDEF(R_lgammacor, 3), // <--> lgammacor.c
     CALLDEF(R_chebyshev_eval, 3), // <--> chebyshev.c
-    CALLDEF(R_chebyshev_init, 2), // <-->    "
+    CALLDEF(R_chebyshev_nt,   2), // <-->    "
     CALLDEF(dpq_bd0, 6),     // <--> bd0.c
     CALLDEF(dpq_ebd0, 3),    //  "    "
     CALLDEF(R_dpsifn, 4),    // <--> dpsifn.c
