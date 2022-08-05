@@ -300,8 +300,8 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
 	    /* we need to renormalize here: the result could be very close to 1 */
 	    if(verbose >= 2) REprintf("  logspace iterations: showing ' i, sum2;' :\n  ");
 	    for(i = 0; i < it_simple;  pr += log_lam - log(++i)) {
-		*sum2 = (LDOUBLE) logspace_add(*sum2, pr);
-		*sum  = (LDOUBLE) logspace_add(*sum , pr + pchisq(x, f+2*i, lower_tail, TRUE));
+		*sum2 = (LDOUBLE) logspace_add((double)*sum2, pr);
+		*sum  = (LDOUBLE) logspace_add((double)*sum , pr + pchisq(x, f+2*i, lower_tail, TRUE));
 		if(verbose >= 2)
 		    REprintf(" %d: %" PR_g_ ";", i, *sum2);
 		if (*sum2 >= -epsS) /*<=> EXP(sum2) >= 1-epsS */ break;
@@ -315,7 +315,7 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
 	    if (i >= it_simple)
 		MATHLIB_WARNING2(_("pnchisq(x=%g, ..): I: not converged in %d simple iterations"),
 				 x, it_simple);
-	    return (double) lower_tail ? R_D_EXP(ans) : R_D_1EXP(ans);
+	    return (double)(lower_tail ? R_D_EXP(ans) : R_D_1EXP(ans));
 	}
 	else {
 	    LDOUBLE lambda = 0.5 * theta; // < cutoff_ncp/2  ( = 40 )

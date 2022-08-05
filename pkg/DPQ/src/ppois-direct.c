@@ -158,7 +158,7 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0, SEXP verbose_)
 	    if (xi < 0)		{ prob[i]= 0.; break; } // incl -Inf
 	    if (!R_FINITE(xi))	{ prob[i]= 1.; break; } //      +Inf
 	    Rboolean sml_x = (xi <= jI);
-	    int j_ = sml_x ? xi : jI; // the maximal f_j term is at j = j_ <= jI < INT_MAX
+	    int j_ = (int)(sml_x ? xi : jI); // the maximal f_j term is at j = j_ <= jI < INT_MAX
 	    f = f0; // == e^{-lambda}  [in long double]
 	    // = f_0;  will always be f = f_j := e^{-lam} lam^j / j!
 	    if (f0 == 0.L)
@@ -197,7 +197,7 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0, SEXP verbose_)
 			xi--;
 		}
 		long double S2 = f;
-		for(int j = xi; j > j_+1; j--) {// backwards; now, f = f_j
+		for(int j = (int)xi; j > j_+1; j--) {// backwards; now, f = f_j
 		    // f := f_{j-1} = f_j * (j / lam)
 		    if(f > LDBL_MIN)
 			f *= j/ldlam;
