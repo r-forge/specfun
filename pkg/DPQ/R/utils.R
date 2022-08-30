@@ -91,8 +91,8 @@ chebyshev_nc <- function(coef, eta = .Machine$double.eps/20) {
     .Call(C_R_chebyshev_nt, coef, eta)
 }
 
-##' Returns the \sum_{j=0}^n c_j T_j(x)  where  c_j := coef[j+1],  n := nterms
-##'    and  T_j() is the Chebyshev polynomial of degree j
+##' Returns the \sum_{j=0}^n c_j T_j(x)  where c_0 = 2*coef[1], c_j := coef[j+1], j >= 1,
+##'    n := nterms  and  T_j() is the Chebyshev polynomial of degree j
 chebyshevEval <- function(x, coef,
                           nc = chebyshev_nc(coef, eta),
                           eta = .Machine$double.eps/20) {

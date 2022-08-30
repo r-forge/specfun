@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-3 (2022-08-05, svn r220)}{
+\section{Version 0.5-3 (2022-08-30, svn r223)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item New \R functions \code{qntR()} and \code{qtU()},
