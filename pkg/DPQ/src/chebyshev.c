@@ -5,6 +5,7 @@
        --------------------- @MM = ~/R/D/r-devel/R/src/nmath/chebyshev.c  */
 /*
  *  Mathlib : A C Library of Special Functions
+ *  Copyright (C) 1998-2022 The R Core Team
  *  Copyright (C) 1998 Ross Ihaka
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -65,25 +66,32 @@ int chebyshev_init(const double dos[], int nos, double eta)
 */
 
 
-
-// Chebyshev Polynomial P(x; a[]), x in [-1,1], coefficients a[0..(n-1)]
-double chebyshev_eval(double x, const double a[], const int n)
-{
-/* In 'DPQ' pkg:  disable these to allow for more experimentation, incl. *extra*polation
-    if (n < 1 || n > 1000) ML_WARN_return_NAN;
-
-    if (x < -1.1 || x > 1.1) ML_WARN_return_NAN;
+/* NOTE:  R's Mathlib chebyshev_eval() "gives"  T_0(x) == 1/2  instead of == 1,
+   ----   or put differently,
+          it computes      a_0/2 + a_1*T_1(x) + a_2*T_2(x) + .... + a_n*T_n(x)
 */
+
+// Chebyshev Polynomial P(x; a[])
+double chebyshev_eval(double x,         // typically in [-1, 1]
+		      const double a[], // n coefficients a[0..(n-1)];  n <= length(a)
+		      const int n)      // n-1 = (maximal) degree
+{
+#ifndef _not_in_DPQ_ // disable these to allow for more experimentation, incl. *extra*polation:
+    if (n < 1    || n > 1000) ML_WARN_return_NAN;
+    if (x < -1.1 || x > 1.1)  ML_WARN_return_NAN;
+#endif
     double
-	twox = ldexp(x, 1), // = 2 * x
+	twox = ldexp(x, 1), //= x * 2
 	b2 = 0, b1 = 0, b0 = 0;
-    for (int i = 1; i <= n; i++) { // i in 1:n  <==>  n-i  in  0:(n-1)
+    /* This is Clenshaw's algorithm, e.g. see Wikipedia, apart from just using  a[0]/2 as constant term  */
+    for (int i = 1; i <= n; i++) {
 	b2 = b1;
 	b1 = b0;
 	b0 = twox * b1 - b2 + a[n - i];
     }
-    return ldexp(b0 - b2, -1); // (b0-b2)/2;
+    return (b0 - b2) * 0.5;
 }
+
 
 // To be  .Call()ed  from R :
 SEXP R_chebyshev_eval(SEXP x_, SEXP a_, SEXP n_)
@@ -95,7 +103,8 @@ SEXP R_chebyshev_eval(SEXP x_, SEXP a_, SEXP n_)
     SEXP r_ = PROTECT(allocVector(REALSXP, nx));
     double *x = REAL(x_), *a = REAL(a_), *r = REAL(r_);
     int n_a = asInteger(n_); /* <==> use a[0 .. n_a]  as coefficients */
-    // n_a < 0 is allowed: empty polynomial === 0 {constant 0}
+    // n_a = -1 is allowed <==> empty polynomial === 0 {constant 0}
+    n_a++; // chebyshev_eval(*, a, n_a)  will use  a[0..(n_a-1)]
     if(n_a > LENGTH(a_))
 	error("n_a = %d > length(a) = %d", n_a, LENGTH(a_));
     for(i=0; i < nx; i++) {
