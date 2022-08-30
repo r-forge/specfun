@@ -3,17 +3,26 @@
 \alias{qnormAppr}
 \alias{qnormUappr}
 \alias{qnormUappr6}
+%% TODO\alias{qnormAsym}
 \description{
-  Relatively simple approximations to the standard normal (aka
-  \dQuote{Gaussian}) quantiles, i.e., the inverse of the normal cumulative
-  probability function.
+  Approximations to the standard normal (aka \dQuote{Gaussian}) quantiles,
+  i.e., the inverse of the normal cumulative probability function.
 
+  The \code{qnormUappr*()} are relatively simple approximations from
+  Abramowitz and Stegun, computed by Hastings(1955):
   \code{qnormUappr()} is the 4-coefficient approximation to (the \bold{u}pper tail)
   standard normal quantiles, \code{\link{qnorm}()}, used in some
   \code{qbeta()} computations.
 
   \code{qnormUappr6()} is the \dQuote{traditional} 6-coefficient approximation to
   \code{\link{qnorm}()}, see in \sQuote{Details}.
+
+  %% TODO
+  %% The \code{qnormAsym(*, order=k)} are \emph{asymptotic} approximations derived by
+  %% Maechler (2022) via iterative plug-in to the asymptotic approximations of
+  %% \eqn{Q(x) = 1 - \Phi(x)}  from Abramowitz and Stegun (26.2.13), p.932.
+  %% They are used in R >= 4.3.0 's \code{qnorm()} to provide very accurate
+  %% quantiles in the extreme tails.
 }
 \usage{% ---->>>> ../R/beta-fns.R <<<<--------
 qnormAppr(p)
@@ -25,6 +34,10 @@ qnormUappr6(p,
                # ~= log(1-p) -- independent of lower.tail, log.p
             lower.tail=FALSE, log.p=FALSE,
             tLarge = 1e10)
+
+%% FIXME:  TODO:  __FIXME__  use  lower.tail=*,  log.p=* !!
+% ---->>>> ../R/norm_f.R <<<<--------
+%% qnormAsym(p, order = 1)
 }
 \arguments{
   \item{p}{numeric vector of probabilities, possibly transformed, depending
@@ -66,6 +79,10 @@ qnormUappr6(p,
   \emph{Handbook of Mathematical Functions}. New York: Dover.
   \url{https://en.wikipedia.org/wiki/Abramowitz_and_Stegun} provides
   links to the full text which is in public domain.
+
+  Hastings jr., Cecil (1955)
+  \emph{Approximations for Digital Computers}.
+  Princeton Univ. Press.
 }
 \author{Martin Maechler}
 \seealso{
