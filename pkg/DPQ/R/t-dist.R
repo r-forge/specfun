@@ -69,10 +69,6 @@ qtR1 <- function(p, df, lower.tail=TRUE, log.p=FALSE, eps = 1e-12,
     DBL_MIN     <- .Machine$double.xmin
     DBL_EPSILON <- .Machine$double.eps
     DBL_MANT_DIG<- .Machine$double.digits     # 53
-    M_PI   <- 3.141592653589793238462643383280	# pi
-    M_1_PI <- 0.318309886183790671537767526745	# 1/pi
-    M_PI_2 <- 1.570796326794896619231321691640	# pi/2
-    M_LN2  <- 0.693147180559945309417232121458  # ln(2)
 
     ML_POSINF <-  Inf
     ## ML_NEGINF <- -Inf

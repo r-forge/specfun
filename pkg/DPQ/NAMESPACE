@@ -186,6 +186,7 @@ export(
 
   , pnormL_LD10, pnormU_S53
   , pnormAsymp
+  , qnormAsymp
   , qnormAppr, qnormUappr
   , qnormUappr6
   , qnormR, qnormR1

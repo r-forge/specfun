@@ -25,8 +25,15 @@
 .D_log <- function(p, log.p)  if(log.p) p else log(p)	     # log(p)
 .D_Clog<- function(p, log.p)  if(log.p) log1p(-p) else ((0.5 - p) + 0.5)# [log](1-p)
 
-M_LN2 <- log(2)
+
+M_LN2 <- log(2) # 0.693147180559945309417232121458 # ln(2)
 M_SQRT2 <- sqrt(2)
+M_PI   <- pi   # 3.141592653589793238462643383280 # pi
+M_1_PI <- 1/pi # 0.318309886183790671537767526745 # 1/pi
+M_PI_2 <- pi/2 # 1.570796326794896619231321691640 # pi/2
+M_2PI  <- 2*pi # 6.283185307179586476925286766559 # 2*pi
+## (cannot use ldexp() , as dyn.load() has not happened at pkg build time)
+
 
 ##' log(1 - exp(-x))  in more stable form than log1p(- R_D_qIv(-x))
 ##' NB: copula::log1mexp() is slightly more sophisticated

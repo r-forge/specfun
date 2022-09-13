@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-3 (2022-08-30, svn r223)}{
+\section{Version 0.5-3 (2022-09-13, svn r224)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item New \R functions \code{qntR()} and \code{qtU()},
@@ -26,6 +26,12 @@
 
       \item New \code{qnormUappr6()}, % ../man/qnormUappr.Rd
       providing the {6 coefficients}-approximation of A. & S. to \code{qnorm()}.
+
+      \item \code{qnormR()} gets new \code{version = "2022-08-04"} which
+      uses MM's newly derived asymptotic approximations to \code{qnorm()}.
+
+      \item New \code{qnormAsymp()} providing new asymptotic approximations
+      to \code{qnorm()}.
 
       \item New \code{chebychevPoly()} (and auxiliaries) for evaluation
       of Chebyshev polynomials.

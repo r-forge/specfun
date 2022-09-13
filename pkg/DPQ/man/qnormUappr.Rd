@@ -16,13 +16,6 @@
 
   \code{qnormUappr6()} is the \dQuote{traditional} 6-coefficient approximation to
   \code{\link{qnorm}()}, see in \sQuote{Details}.
-
-  %% TODO
-  %% The \code{qnormAsym(*, order=k)} are \emph{asymptotic} approximations derived by
-  %% Maechler (2022) via iterative plug-in to the asymptotic approximations of
-  %% \eqn{Q(x) = 1 - \Phi(x)}  from Abramowitz and Stegun (26.2.13), p.932.
-  %% They are used in R >= 4.3.0 's \code{qnorm()} to provide very accurate
-  %% quantiles in the extreme tails.
 }
 \usage{% ---->>>> ../R/beta-fns.R <<<<--------
 qnormAppr(p)
@@ -34,10 +27,6 @@ qnormUappr6(p,
                # ~= log(1-p) -- independent of lower.tail, log.p
             lower.tail=FALSE, log.p=FALSE,
             tLarge = 1e10)
-
-%% FIXME:  TODO:  __FIXME__  use  lower.tail=*,  log.p=* !!
-% ---->>>> ../R/norm_f.R <<<<--------
-%% qnormAsym(p, order = 1)
 }
 \arguments{
   \item{p}{numeric vector of probabilities, possibly transformed, depending
@@ -87,7 +76,7 @@ qnormUappr6(p,
 \author{Martin Maechler}
 \seealso{
   \code{\link{qnorm}} (in base \R package \pkg{stats}), and importantly,
-  \code{\link{qnormR}} (in our \pkg{DPQ}).
+  \code{\link{qnormR}} and \code{\link{qnormAsymp}()} in our \pkg{DPQ}.
 }
 \examples{
 pp <- c(.001, .005, .01, .05, (1:9)/10, .95, .99, .995, .999)

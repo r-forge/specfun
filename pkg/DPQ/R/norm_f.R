@@ -145,8 +145,10 @@ pnormAsymp <- function(x, k, lower.tail=FALSE, log.p=FALSE) {
 ##     Applied Statistics, 37, 477-484.
 
 
+## <--> ../man/qnormR.Rd
+
 qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
-                    trace = 0, version = c("4.0.x", "2020-10-17")) {
+                    trace = 0, version = c("4.0.x", "2020-10-17", "2022-08-04")) {
     stopifnot(length(p) == 1, length(mu) == 1, length(sd) == 1,
               length(lower.tail) == 1, length(log.p) == 1,
               !is.na(lower.tail), !is.na(log.p))
@@ -180,6 +182,7 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
 
     if (abs(q) <= .425) { ## 0.075 <= p <= 0.925 */
         r  <- .180625 - q * q;
+        if(trace) cat(sprintf(" --> usual rational form 1, r=%12.7g\n", r))
 	val <-
             q * (((((((r * 2509.0809287301226727 +
                        33430.575583588128105) * r + 67265.770927008700853) * r +
@@ -193,8 +196,8 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
                  687.1870074920579083) * r + 42.313330701600911252) * r + 1.)
     }
     else { ## closer than 0.075 from {0,1} boundary */
-           ##   r := log(p~);  p~ = min(p, 1-p) < 0.075 :
-	r <-
+           ##   lp := log(p~);  p~ = min(p, 1-p) < 0.075 :
+	lp <-
             if(log.p && ((lower.tail && q <= 0) || (!lower.tail && q > 0))) {
                 p
             } else {
@@ -202,14 +205,14 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
                      else p. ) # p. = R_DT_Iv(p) ^=  p
             }
 	###  r = sqrt( - log(min(p,1-p)) )  <==>  min(p, 1-p) = exp( - r^2 ) :
-        r  <- sqrt(-r)
-        if(trace)
-            cat(sprintf("\t close to 0 or 1: r = %7g\n", r))
+        r  <- sqrt(-lp)
+        if(trace) cat(sprintf("\t somewhat close to 0 or 1: r := sqrt(-lp) = %11g\n", r))
         if(is.na(r))
             warning("r = sqrt( - log(min(p,1-p)) )  is NA -- \"we have lost\"")
 
         if (!is.na(r) && r <= 5.) { ## <==> min(p,1-p) >= exp(-25) ~= 1.3888e-11 */
             r <- r + -1.6;
+            if(trace) cat(sprintf("\t as r <= 5, using rational form 2, for (updated) r=%12.7g\n", r))
             val <- (((((((r * 7.7454501427834140764e-4 +
                        .0227238449892691845833) * r + .24178072517745061177) *
                      r + 1.27045825245236838258) * r +
@@ -228,8 +231,45 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
              ## Using the asymptotical formula -- is *not* optimal but uniformly better than branch below
              val = r * M_SQRT2;
           }
-          else {
+          else if(version == "2022-08-04" && r > 27) {
+              ## p is *really* close to 0 or 1 .. practically only when log_p =TRUE
+            if(trace) cat(sprintf("\t *really* close to 0 or 1; ==> using an asymptotic formula; "))
+	    if(r >= 3.1e8) { ## p is *very extremly* close to 0 or 1
+		## Using the asymptotical formula ("0-th order"): qn = sqrt(2*s)
+                if(trace) cat(sprintf("  r large \n"))
+		val = r * M_SQRT2;
+	    } else {
+		s2 <- -ldexp(lp, 1) ## = -2*lp = 2s
+                x2 <- s2 - log(M_2PI * s2); ## = xs_1
+                if(trace) cat(sprintf("  1st order x2=%11g \n", x2))
+		## if(r >= 14144.)  # use x2 = xs_1 above
+		if(r < 14144.) { ## <==> s < 14144^2 = 200'052'736
+		    x2 = s2 - log(M_2PI * x2) - 2./(2. + x2); ## == xs_2
+                    if(trace) cat(sprintf("  2nd order x2=%11g \n", x2))
+		    if(r < 390.) { ## 27 < r < 390
+			x2 = s2 - log(M_2PI * x2) + 2*log1p(- 1./(2. + x2)*(1 - 1/(4 + x2))); ## == xs_3
+                        if(trace) cat(sprintf("  3rd order x2=%11g \n", x2))
+			if(r < 61.) { ## 27 < r < 61
+			  x2 = s2 - log(M_2PI * x2) +
+			      2*log1p(- 1./(2. + x2)*(1 - 1/(4. + x2)*(1 - 5/(6 + x2)))); ## == xs_4
+                          if(trace) cat(sprintf("  4-th order x2=%11g \n", x2))
+			  if(r < 36.) { ## 27 < r < 36
+                            if(trace) cat("27 < r < 36: using 5-th order x2\n")
+			    x2 = s2 - log(M_2PI * x2) +
+                                2*log1p(- 1./(2. + x2)*(1 - 1/(4. + x2)*
+                                                        (1 - 1/(6. + x2)*
+                                                         (5 - 9/(8. + x2))))); ## == xs_5
+			  }
+			}
+		    }
+		}
+                val = sqrt(x2);
+	    }
+          }
+          else { ## r > 5 and depending on version  r < **
+	    ## Wichura, p.478: minimax rational approx R_3(t) is for 5 <= t <= 27  (t :== r)
             r <- r + -5.;
+            if(trace) cat(sprintf("\t r > 5, using rational form R_3(t), for t=%12.7g\n", r))
             val = (((((((r * 2.01033439929228813265e-7 +
                        2.71155556874348757815e-5) * r +
                       .0012426609473880784386) * r + .026532189526576123093) *
@@ -245,11 +285,57 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
           }
         }
 	if(q < 0)
-	    val  <- -val;
-        ## return (q >= 0.)? r : -r ;*/
+	    val <- -val;
     }
-    return(mu + sd * val)
+    ## return
+    mu + sd * val
 } # qnormR1()
 
-qnormR  <- Vectorize(qnormR1, c("p", "mu", "sd"))
+## FIXME:    Rmpfr / mpfrize  as bd0() in  --> ./dgamma.R
+## FIXME(2): In that case, need N(.) for sprintf(.. %g ..)  -- or even just format(<num>)
+qnormR <- Vectorize(qnormR1, c("p", "mu", "sd"))
 ##==
+
+### Partly modeled after qnormUappr()  from ./beta-fns.R
+
+qnormAsymp <- function(p, lp = .DT_Clog(p, lower.tail=lower.tail, log.p=log.p),
+                                        # ~= log(1-p) -- independent of lower.tail, log.p
+                       order,
+                       lower.tail = TRUE, log.p = FALSE)
+{
+    stopifnot(length(order) == 1L, order == (ord <- as.integer(order)), 0L <= ord, ord <= 5L)
+    if(missing(p)) { ## log.p unused;  lp = log(1-p)  <==>  e^lp = 1-p  <==>  p = 1 - e^lp
+        p. <- -expm1(lp)
+        ## swap p <--> 1-p -- so we are where approximation is better
+        swap <- if(lower.tail) p. < 1/2 else p. > 1/2 # logical vector
+    } else {
+        p. <- .D_qIv(p, log.p)
+        ## swap p <--> 1-p   (as above)
+        swap <- if(lower.tail) p. < 1/2 else p. > 1/2 # logical vector
+        p[swap] <- if(log.p) log1mexp(-p[swap]) else 1 - p[swap]
+    }
+    ##  r = sqrt( - log(min(p,1-p)) )  <==>  min(p, 1-p) = exp( - r^2 )
+    x2 <- s2 <- -ldexp(lp, 1) ## = -2*lp = 2s
+    if(ord >= 1L) {
+        x2 <- s2 - log(M_2PI * s2); ## = xs_1
+        if(ord >= 2L) { ## need for (r < 14144.)  <==> s < 14144^2 = 200'052'736
+            x2 = s2 - log(M_2PI * x2) - 2./(2. + x2); ## == xs_2
+            if(ord >= 3L) { ## need for (r < 390)
+                x2 = s2 - log(M_2PI * x2) + 2*log1p(- 1./(2. + x2)*(1 - 1/(4 + x2))); ## == xs_3
+                if(ord >= 4L) { ## need for (r < 61)
+                    x2 = s2 - log(M_2PI * x2) + 2*log1p(- 1./(2. + x2)*(1 - 1/(4. + x2)*(1 - 5/(6 + x2)))); ## == xs_4
+                    if(ord >= 5L) { ## need for (r < 36)
+                        x2 = s2 - log(M_2PI * x2) + 2*log1p(- 1./(2. + x2)*
+                                                            (1 - 1/(4. + x2)*
+                                                             (1 - 1/(6. + x2)*
+                                                              (5 - 9/(8. + x2))))); ## == xs_5
+                    }
+                }
+            }
+        }
+    }
+    R <- sqrt(x2)
+    R[swap] <- -R[swap]
+    ## R[p. == 1/2] <- 0
+    R
+}

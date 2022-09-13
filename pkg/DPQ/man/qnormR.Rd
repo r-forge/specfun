@@ -9,7 +9,7 @@
 \usage{
 qnormR1(p, mu = 0, sd = 1, lower.tail = TRUE, log.p = FALSE, trace = 0, version = )
 qnormR (p, mu = 0, sd = 1, lower.tail = TRUE, log.p = FALSE, trace = 0,
-        version = c("4.0.x", "2020-10-17"))
+        version = c("4.0.x", "2020-10-17", "2022-08-04"))
 }
 \arguments{
   \item{p}{probability \eqn{p}, \eqn{1-p}, or \eqn{\log(p)},
@@ -23,7 +23,10 @@ qnormR (p, mu = 0, sd = 1, lower.tail = TRUE, log.p = FALSE, trace = 0,
     or variant is used.  The \emph{current} default, \code{"4.0.x"} is the
     one used in \R versions up to 4.0.x;  \code{"2020-10-17"} is the one
     committed to the R development sources on 2020-10-17, which prevents
-    the worst for very large \eqn{|p|} when \code{log.p=TRUE}.}
+    the worst for very large \eqn{|p|} when \code{log.p=TRUE}.
+    \code{"2022-08-04"} uses very accurate asymptotic formulas found on
+    that date and provides full double precision accuracy also for extreme
+    tails.}
 }
 \details{
   For \code{qnormR1(p, ..)}, \code{p} must be of length one, whereas
