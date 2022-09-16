@@ -63,7 +63,7 @@ legend("center", c("qnormUappr6()",
 matplot(-lp, cbind(qnU6, qnAsy) - qnorm(lp, lower.tail=TRUE, log.p=TRUE), pch=1:7,
         xaxt = "n", # and use eaxis() instead
         main = "absolute Error of qnorm() approximations", type = "b", log = "x")
-eaxis(1, sub10=2)
+sfsmisc::eaxis(1, sub10=2)
 legend("bottom", c("qnormUappr6()",
                 paste0("qnormAsymp(*, order=",0:5,")")),
        bty="n", col=1:6, lty=1:6, pch=1:7)
@@ -76,7 +76,8 @@ matplot(-lp, absP(cbind(qnU6, qnAsy) / qnorm(lp, lower.tail=TRUE, log.p=TRUE) - 
         ylim = c(2e-17, .01), xaxt = "n", yaxt = "n", col=1:7, lty=1:7,
         main = "relative |Error| of qnorm() approximations", type = "l", log = "xy")
 abline(h= .Machine$double.eps * c(1/2, 1, 2), col=adjustcolor("bisque",3/4), lty=c(5,2,5), lwd=c(1,3,1))
-eaxis(1, sub10=2, nintLog=20); eaxis(2, sub10 = c(-3, 2), nintLog=16)
+sfsmisc::eaxis(1, sub10 = 2, nintLog=20)
+sfsmisc::eaxis(2, sub10 = c(-3, 2), nintLog=16)
 legend("right", c("qnormUappr6()",
                 paste0("qnormAsymp(*, order=",0:5,")")),
        bty="n", col=1:7, lty=1:7)
@@ -112,7 +113,7 @@ for(ir in seq_along(r0)) {
   for(j in seq_along(k.s))
     lines(smooth.spline(rr, relE[,j]), col=adjustcolor(j, 2/3), lwd=4, lty=2)
   abline(v = r., lty=2, col="gold")
-  abline(h = (-1:1)*.Machine$double.eps, lty=c(3,1,3), col=c("green3", "gray", "green3"))
+  abline(h = (-1:1)*.Machine$double.eps, lty=c(3,1,3), col=c("green3", "gray", "tan2"))
   if(interactive() && r. != r0[length(r0)]) {
        cat("[Enter] to continue: ");  cat(readLines(stdin(), n=1), "\n") }
 }
