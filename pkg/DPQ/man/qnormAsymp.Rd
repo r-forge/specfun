@@ -75,7 +75,8 @@ absP <- function(re) pmax(abs(re), 2e-17) # not zero, so log-scale "shows" it
 matplot(-lp, absP(cbind(qnU6, qnAsy) / qnorm(lp, lower.tail=TRUE, log.p=TRUE) - 1),
         ylim = c(2e-17, .01), xaxt = "n", yaxt = "n", col=1:7, lty=1:7,
         main = "relative |Error| of qnorm() approximations", type = "l", log = "xy")
-abline(h= .Machine$double.eps * c(1/2, 1, 2), col=adjustcolor("bisque",3/4), lty=c(5,2,5), lwd=c(1,3,1))
+abline(h = .Machine$double.eps * c(1/2, 1, 2), col=adjustcolor("bisque",3/4),
+       lty=c(5,2,5), lwd=c(1,3,1))
 sfsmisc::eaxis(1, sub10 = 2, nintLog=20)
 sfsmisc::eaxis(2, sub10 = c(-3, 2), nintLog=16)
 legend("right", c("qnormUappr6()",
@@ -87,8 +88,8 @@ str(r <- c(1:63, 2^c(seq(6, 20, by=1/8), 21:60)))
 ## original numbers %% from MM's NUMERICS/dpq-functions/qnorm-asymptotic.R
 r0 <- c(27, 36, 61, 390, 14144)
 
-## now used, after somewhat zooming into each cut-point region:
-r0 <- c(57, 99, 840, 30000, 6e8)
+## now used, after zooming into each cut-point region (below):
+r0 <- c(50, 109, 840, 36000, 6.4e8)
 for(ir in seq_along(r0)) {
   r. <- r0[ir]
   k <- 6 - ir # 5, 4, ..
@@ -107,9 +108,10 @@ for(ir in seq_along(r0)) {
   print(head(m, 9)); for(j in 1:2) cat(" ..........\n"); print(tail(m,4))
   ## matplot(rr, relE, type = "b", main = paste("around r0 = ", r.))
   matplot(rr, relE, type = "l",
-     main = paste("Relative error qnormAsymp(*, k) around r0 = ", r., ";  k =", deparse(k.s)),
+     main = paste("Relative error of qnormAsymp(*, k) around r0 = ", r.,
+                  ";  k =", deparse(k.s)),
      xlab = quote(r == sqrt(-log(p))), ylim = c(-1,1)*2.5e-16)
-  legend("topleft", nks, col=1:2, bty="n", lwd=2)
+  legend("topleft", nks, col=1:2, lty=1:2, bty="n", lwd=2)
   for(j in seq_along(k.s))
     lines(smooth.spline(rr, relE[,j]), col=adjustcolor(j, 2/3), lwd=4, lty=2)
   abline(v = r., lty=2, col="gold")
