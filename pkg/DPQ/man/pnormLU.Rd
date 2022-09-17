@@ -55,7 +55,7 @@ px <- cbind(
   , Lo = pnormL_LD10(x, lower.tail=FALSE, log.p=TRUE)
   , Up = pnormU_S53 (x, lower.tail=FALSE, log.p=TRUE))
 matplot(x, px, type="l") # all on top of each other
-matplot(x, (D <- px[,2:3] - px[,1]), type="l") # the differences
+matplot(x, (D <- px[,2:3] - px[,1]), type="l", log="x") # the differences
 abline(h=0, lty=3, col=adjustcolor(1, 1/2))
 
 ## check they are lower and upper bounds indeed :
@@ -101,7 +101,7 @@ abline(h=0, lty=3, col=adjustcolor(1, 1/2))
 ## abs(rel.Diff)  ---> can use log-log:
 matplot(x, abs(rD), type="l", log = "xy", xaxt="n", yaxt="n"); doLegTit()
 sfsmisc::eaxis(1, sub10=2)
-sfsmisc::eaxis(2)
+sfsmisc::eaxis(2, nintLog=12)
 abline(h=(1:4)*2^-53, col=adjustcolor(1, 1/4))
 
 ## lower.tail=TRUE (w/ log.p=TRUE) works "the same" for x < 0:

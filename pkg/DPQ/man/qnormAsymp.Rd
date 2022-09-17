@@ -83,41 +83,54 @@ legend("right", c("qnormUappr6()",
                 paste0("qnormAsymp(*, order=",0:5,")")),
        bty="n", col=1:7, lty=1:7)
 
-str(r <- c(1:63, 2^c(seq(6, 20, by=1/8), 21:60)))
-## rounded / approximate cutoffs in r-scale for good qnorm() approx:
-## original numbers %% from MM's NUMERICS/dpq-functions/qnorm-asymptotic.R
-r0 <- c(27, 36, 61, 390, 14144)
+### Optimal cut points  / regions for different approximation orders k
+%% for these, see also ~/R/MM/NUMERICS/dpq-functions/qnorm-asymptotic.R
+## r0 <- c(27, 55, 109, 840, 36000, 6.4e8) # <--> in ../R/norm_f.R {and R's qnorm.c eventually}
+## use k =   5   4    3    2      1       0    e.g.  k = 0  good for r >= 6.4e8
 
-## now used, after zooming into each cut-point region (below):
-r0 <- c(50, 109, 840, 36000, 6.4e8)
-for(ir in seq_along(r0)) {
-  r. <- r0[ir]
-  k <- 6 - ir # 5, 4, ..
-  rr <- seq(r.*.80, r.*1.25, length = 2048)
-  lp <- (-rr^2)
+## Zoom into each each cut-point region :
+p.qnormAsy2 <- function(r0, k, # use k-1 and k in region around r0
+                        n = 2048, verbose=TRUE, ylim = c(-1,1) * 2.5e-16,
+                        rr = seq(r0 * 0.5, r0 * 1.25, length = n))
+{
+  stopifnot(is.numeric(rr), !is.unsorted(rr))
+  lp <- (-rr^2) # = -r^2 = -s
   q. <- qnorm(lp, lower.tail=FALSE, log.p=TRUE)
   pq <- pnorm(q., lower.tail=FALSE, log.p=TRUE) # ~= lp
-  ##  <==>  true  qnorm(pq, ..) == q.  by construction
+  ## the arg of pnorm() is the true qnorm(pq, ..) == q.  by construction
   ## cbind(rr, lp, q., pq)
   k.s <- (k-1):k; nks <- paste0("k=", k.s)
-  cat("Around r0 =", r.,";  k =", deparse(k.s), "\n")
+  if(verbose) cat("Around r0 =", r0,";  k =", deparse(k.s), "\n")
   qnAsy <- sapply(setNames(k.s, nks), function(ord)
                   qnormAsymp(pq, lower.tail=FALSE, log.p=TRUE, order=ord))
   relE <- qnAsy / q. - 1
   m <- cbind(rr, pq, relE)
-  print(head(m, 9)); for(j in 1:2) cat(" ..........\n"); print(tail(m,4))
-  ## matplot(rr, relE, type = "b", main = paste("around r0 = ", r.))
-  matplot(rr, relE, type = "l",
-     main = paste("Relative error of qnormAsymp(*, k) around r0 = ", r.,
-                  ";  k =", deparse(k.s)),
-     xlab = quote(r == sqrt(-log(p))), ylim = c(-1,1)*2.5e-16)
+  if(verbose) {
+    print(head(m, 9)); for(j in 1:2) cat(" ..........\n")
+    print(tail(m, 4))
+  }
+  ## matplot(rr, relE, type = "b", main = paste("around r0 = ", r0))
+  matplot(rr, relE, type = "l", ylim = ylim,
+     main = paste("Relative error of qnormAsymp(*, k) around r0 = ", r0,
+                  "for  k =", deparse(k.s)),
+     xlab = quote(r == sqrt(-log(p))))
   legend("topleft", nks, col=1:2, lty=1:2, bty="n", lwd=2)
   for(j in seq_along(k.s))
     lines(smooth.spline(rr, relE[,j]), col=adjustcolor(j, 2/3), lwd=4, lty=2)
-  abline(v = r., lty=2, col="gold")
-  abline(h = (-1:1)*.Machine$double.eps, lty=c(3,1,3), col=c("green3", "gray", "tan2"))
-  if(interactive() && r. != r0[length(r0)]) {
-       cat("[Enter] to continue: ");  cat(readLines(stdin(), n=1), "\n") }
+  cc <- "gold2"; lab <- substitute(r[0] == R, list(R = r0))
+  abline(v  = r0, lty=2, lwd=2, col=cc)
+  axis(3, at= r0, labels=lab, col=cc, col.axis=cc, line=-1)
+  abline(h = (-1:1)*.Machine$double.eps, lty=c(3,1,3),
+         col=c("green3", "gray", "tan2"))
+  invisible(cbind(r = rr, qn = q., relE))
+}
+
+r0 <- c(27, 55, 109, 840, 36000, 6.4e8) # <--> in ../R/norm_f.R {and R's qnorm.c eventually}
+## use k =   5   4    3    2      1       0    e.g.  k = 0  good for r >= 6.4e8
+for(ir in 2:length(r0)) {
+  p.qnormAsy2(r0[ir], k = 5 +2-ir) # k = 5, 4, ..
+  if(interactive() && ir < length(r0)) {
+       cat("[Enter] to continue: "); cat(readLines(stdin(), n=1), "\n") }
 }
 
 }

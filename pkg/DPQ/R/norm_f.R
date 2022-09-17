@@ -234,7 +234,7 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
           else if(version == "2022-08-04" && r > 27) {
               ## p is *really* close to 0 or 1 .. practically only when log_p =TRUE
             if(trace) cat(sprintf("\t *really* close to 0 or 1; ==> using an asymptotic formula; "))
-	    if(r >= 3.1e8) { ## p is *very extremly* close to 0 or 1
+	    if(r >= 6.4e8) { ## p is *very extremly* close to 0 or 1
 		## Using the asymptotical formula ("0-th order"): qn = sqrt(2*s)
                 if(trace) cat(sprintf("  r large \n"))
 		val = r * M_SQRT2;
@@ -242,19 +242,19 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
 		s2 <- -ldexp(lp, 1) ## = -2*lp = 2s
                 x2 <- s2 - log(M_2PI * s2); ## = xs_1
                 if(trace) cat(sprintf("  1st order x2=%11g \n", x2))
-		## if(r >= 14144.)  # use x2 = xs_1 above
-		if(r < 14144.) { ## <==> s < 14144^2 = 200'052'736
+		## if(r >= 36000.)  # use x2 = xs_1 above
+		if(r < 36000.) { ## <==> s < 36000^2
 		    x2 = s2 - log(M_2PI * x2) - 2./(2. + x2); ## == xs_2
                     if(trace) cat(sprintf("  2nd order x2=%11g \n", x2))
-		    if(r < 390.) { ## 27 < r < 390
+		    if(r < 840.) { ## 27 < r < 840
 			x2 = s2 - log(M_2PI * x2) + 2*log1p(- 1./(2. + x2)*(1 - 1/(4 + x2))); ## == xs_3
                         if(trace) cat(sprintf("  3rd order x2=%11g \n", x2))
-			if(r < 61.) { ## 27 < r < 61
+			if(r < 109.) { ## 27 < r < 109
 			  x2 = s2 - log(M_2PI * x2) +
 			      2*log1p(- 1./(2. + x2)*(1 - 1/(4. + x2)*(1 - 5/(6 + x2)))); ## == xs_4
                           if(trace) cat(sprintf("  4-th order x2=%11g \n", x2))
-			  if(r < 36.) { ## 27 < r < 36
-                            if(trace) cat("27 < r < 36: using 5-th order x2\n")
+			  if(r < 55.) { ## 27 < r < 55
+                            if(trace) cat("27 < r < 55: using 5-th order x2\n")
 			    x2 = s2 - log(M_2PI * x2) +
                                 2*log1p(- 1./(2. + x2)*(1 - 1/(4. + x2)*
                                                         (1 - 1/(6. + x2)*
@@ -315,16 +315,16 @@ qnormAsymp <- function(p, lp = .DT_Clog(p, lower.tail=lower.tail, log.p=log.p),
         p[swap] <- if(log.p) log1mexp(-p[swap]) else 1 - p[swap]
     }
     ##  r = sqrt( - log(min(p,1-p)) )  <==>  min(p, 1-p) = exp( - r^2 )
-    x2 <- s2 <- -ldexp(lp, 1) ## = -2*lp = 2s
+    x2 <- s2 <- -ldexp(lp, 1) ## = -2*lp = 2s =: xs_0
     if(ord >= 1L) {
-        x2 <- s2 - log(M_2PI * s2); ## = xs_1
-        if(ord >= 2L) { ## need for (r < 14144.)  <==> s < 14144^2 = 200'052'736
+        x2 <- s2 - log(M_2PI * x2); ## = xs_1
+        if(ord >= 2L) { ## need for (r < 36000.)  <==> s < 36000^2
             x2 = s2 - log(M_2PI * x2) - 2./(2. + x2); ## == xs_2
-            if(ord >= 3L) { ## need for (r < 390)
+            if(ord >= 3L) { ## need for (r < 840)
                 x2 = s2 - log(M_2PI * x2) + 2*log1p(- 1./(2. + x2)*(1 - 1/(4 + x2))); ## == xs_3
-                if(ord >= 4L) { ## need for (r < 61)
+                if(ord >= 4L) { ## need for (r < 109)
                     x2 = s2 - log(M_2PI * x2) + 2*log1p(- 1./(2. + x2)*(1 - 1/(4. + x2)*(1 - 5/(6 + x2)))); ## == xs_4
-                    if(ord >= 5L) { ## need for (r < 36)
+                    if(ord >= 5L) { ## need for (r < 55)
                         x2 = s2 - log(M_2PI * x2) + 2*log1p(- 1./(2. + x2)*
                                                             (1 - 1/(4. + x2)*
                                                              (1 - 1/(6. + x2)*
