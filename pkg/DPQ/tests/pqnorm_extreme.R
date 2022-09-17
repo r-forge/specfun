@@ -9,7 +9,7 @@
 library(DPQ)
 library(sfsmisc)# {we import it in DPQ}
 
-if(!dev.interactive(orNone=TRUE)) { dev.off(); pdf("pqnorm-extreme.pdf") }
+if(!dev.interactive(orNone=TRUE)) pdf("pqnorm-extreme.pdf")
 
 r <- sort(c(seq(1,100, by=1/8),
             2 ^ c(seq(6.5, 10, by=1/16), seq(10.25, 14.5, by=1/4))))

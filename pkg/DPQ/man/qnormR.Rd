@@ -52,6 +52,19 @@ with(qR, all.equal(y, qnorm(x), tol=0)) # currently shows TRUE
 with(qR, all.equal(pnorm(y), x, tol=0)) # currently: mean rel. diff.: 2e-16
 stopifnot(with(qR, all.equal(pnorm(y), x, tol = 1e-14)))
 
+ver.qn <- eval(formals(qnormR)$version) # the possible versions
+lp <- - 4^(1:30) # effect of  'trace = *' :
+qp0 <- qnormR(lp, lower.tail=FALSE, log.p=TRUE, trace=1, version="4.0.x")
+qp1 <- qnormR(lp, lower.tail=FALSE, log.p=TRUE, trace=1, version="2020")
+qp2 <- qnormR(lp, lower.tail=FALSE, log.p=TRUE, trace=1, version="2022-08")
+
+matplot(-lp, cbind(qp0, qp1, qp2), log="xy", type="l", lwd=2, axes=FALSE,
+        main = "qnormR(lp, log.p=TRUE, lower=F, version = * )")
+sfsmisc::eaxis(1, nintLog=15, sub=2); sfsmisc::eaxis(2)
+lines(-lp, sqrt(-2*lp), col=4)
+leg <- as.expression(c(paste("version=", ver.qn), quote(sqrt(-2*lp))))
+legend("top", leg, bty='n', col=1:4, lty=1:3, lwd=2)
+
 ## Showing why/where R's qnorm() was poor up to 2020: log.p=TRUE extreme tail
 ##% MM: more TODO? --> ~/R/MM/NUMERICS/dpq-functions/qnorm-extreme-bad.R
 qs <- 2^seq(0, 155, by=1/8)
