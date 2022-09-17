@@ -9,6 +9,8 @@
 library(DPQ)
 library(sfsmisc)# {we import it in DPQ}
 
+if(!dev.interactive(orNone=TRUE)) { dev.off(); pdf("pqnorm-extreme.pdf") }
+
 r <- sort(c(seq(1,100, by=1/8),
             2 ^ c(seq(6.5, 10, by=1/16), seq(10.25, 14.5, by=1/4))))
 str(r)
@@ -22,6 +24,7 @@ lp <- -s
 ## Start with quantiles so we know the  "truth according to pnorm()" :
 qs <- 2^seq( 0, 35, by=1/256) # => s >= 1.84  --> no NaN in xs_5 etc
 ## == the "true" qnorm() according to pnorm()
+
 lp  <- pnorm(qs, lower.tail=FALSE, log.p=TRUE)
 qnp <- qnorm(lp, lower.tail=FALSE, log.p=TRUE)
 s <- -lp # =  -log(1 - Phi(qs))
@@ -39,14 +42,18 @@ readUser <- function(i, max.i) {
         cat(readLines(stdin(), n=1), "\n")
     }
 }
+p.epsC <- function(col = adjustcolor("bisque", 3/4), lwd1 = 3)
+    abline(h = .Machine$double.eps * c(1/2, 1, 2),
+           col=col, lty=c(5,2,5), lwd=c(1,lwd1,1))
 
 
 ## relative Error (log x)
 plot(relE_qn ~ s, dat, log="x", type="l", col = 2); p.ver()
 
 ## |rel.Error| ==> log-log scale
-plot(abs(relE_qn) ~ s, dat, log="xy", type="l", col = 2, axes=FALSE)
-eaxis(1); eaxis(2); p.ver()
+plot(abs(relE_qn) ~ s, dat, log="xy", type="l", col = 2,
+     axes=FALSE, main = "|relative Error| of  qnorm(-s, log.p=TRUE, lower=F)  wrt pnorm()")
+eaxis(1); eaxis(2); p.ver(); p.epsC()
 
 ## now look at the asymptotic approximations:
 k.s <- 0:5; nks <- paste0("k=", k.s)
@@ -78,12 +85,17 @@ for(j in seq_along(xL)) {
     if(!is.null(yli <- yL[[j]])) yli <- c(2e-17, 100*yli[2])
     if(!is.null(xli <- xL[[j]])) xli[2] <- 10*xli[2]
     cat("j=",j,"; rbind(xlim,ylim) = \n"); print(rbind(xlim=xli, ylim=yli))
-    matplot(sqrt(s), absP(relEAsy), type="l", log="xy", xaxt="n", yaxt="n", lwd=2,
+    cols <- adjustcolor(1:6, 3/4)
+    ## abs() does not show 0 {-> -Inf);  absP() will show them
+    matplot(sqrt(s), abs(relEAsy), type="l", log="xy", xaxt="n", yaxt="n", col=cols, lwd=2,
             xlab = quote(r == sqrt(s)),
             xlim = xli, ylim = yli,
             main = "relative Error of qnormAsymp(.., k=*)")
+    matlines(sqrt(s), absP(relEAsy), col=adjustcolor(cols, 1/2))
     eaxis(1, sub10=2) # not here: p.ver()
     eaxis(2, sub10=c(-3,2))
-    legend("top", nks, col=1:6, lty=1:5, lwd=2, bty="n")
+    legend("top", nks, col=cols, lwd=2, lty=1:5, bty="n")
     readUser(j, length(xL))
 }
+
+## FIXME:  do real tests !!

@@ -50,7 +50,7 @@ qnormAsymp(p,
   available as \code{qnormUappr()} and \code{\link{qnormUappr6}()},
   are less accurate than our \code{order >= 1} formulas in the tails.
 }
-\examples{%% MM: see also ./qnormUappr.Rd
+\examples{%% see also ./qnormUappr.Rd and notably ../tests/pqnorm_extreme.R <<<
 lp <- -c(head(c(outer(c(5,2,1), 10^(18:1))), -2), 20:10, seq(9.75, 2, by = -1/8))
 qnU6 <- qnormUappr6(lp=lp) # 'p' need not be specified if 'lp' is
 qnAsy <- sapply(0:5, function(ord) qnormAsymp(lp=lp, lower.tail=FALSE, order=ord))
@@ -60,10 +60,11 @@ legend("center", c("qnormUappr6()",
                 paste0("qnormAsymp(*, order=",0:5,")")),
        bty="n", col=1:6, lty=1:6, pch=1:7)
 
+p.ver <- function() mtext(R.version.string, cex=3/4, adj=1)
 matplot(-lp, cbind(qnU6, qnAsy) - qnorm(lp, lower.tail=TRUE, log.p=TRUE), pch=1:7,
         xaxt = "n", # and use eaxis() instead
         main = "absolute Error of qnorm() approximations", type = "b", log = "x")
-sfsmisc::eaxis(1, sub10=2)
+sfsmisc::eaxis(1, sub10=2); p.ver()
 legend("bottom", c("qnormUappr6()",
                 paste0("qnormAsymp(*, order=",0:5,")")),
        bty="n", col=1:6, lty=1:6, pch=1:7)
@@ -78,7 +79,7 @@ matplot(-lp, absP(cbind(qnU6, qnAsy) / qnorm(lp, lower.tail=TRUE, log.p=TRUE) - 
 abline(h = .Machine$double.eps * c(1/2, 1, 2), col=adjustcolor("bisque",3/4),
        lty=c(5,2,5), lwd=c(1,3,1))
 sfsmisc::eaxis(1, sub10 = 2, nintLog=20)
-sfsmisc::eaxis(2, sub10 = c(-3, 2), nintLog=16)
+sfsmisc::eaxis(2, sub10 = c(-3, 2), nintLog=16); p.ver()
 legend("right", c("qnormUappr6()",
                 paste0("qnormAsymp(*, order=",0:5,")")),
        bty="n", col=1:7, lty=1:7)
@@ -93,36 +94,40 @@ p.qnormAsy2 <- function(r0, k, # use k-1 and k in region around r0
                         n = 2048, verbose=TRUE, ylim = c(-1,1) * 2.5e-16,
                         rr = seq(r0 * 0.5, r0 * 1.25, length = n))
 {
-  stopifnot(is.numeric(rr), !is.unsorted(rr))
-  lp <- (-rr^2) # = -r^2 = -s
-  q. <- qnorm(lp, lower.tail=FALSE, log.p=TRUE)
+  stopifnot(is.numeric(rr), !is.unsorted(rr), # the initial 'r'
+            length(k) == 1L, is.numeric(k), k == as.integer(k), k >= 1)
+  k.s <- (k-1L):k; nks <- paste0("k=", k.s)
+  if(missing(r0)) r0 <- quantile(rr, 2/3)# allow specifying rr instead of r0
+  if(verbose) cat("Around r0 =", r0,";  k =", deparse(k.s), "\n")
+  lp <- (-rr^2) # = -r^2 = -s  <==> rr = sqrt(- lp)
+  q. <- qnormR(lp, lower.tail=FALSE, log.p=TRUE, version="2022-08")# *not* depending on R ver!
   pq <- pnorm(q., lower.tail=FALSE, log.p=TRUE) # ~= lp
   ## the arg of pnorm() is the true qnorm(pq, ..) == q.  by construction
   ## cbind(rr, lp, q., pq)
-  k.s <- (k-1):k; nks <- paste0("k=", k.s)
-  if(verbose) cat("Around r0 =", r0,";  k =", deparse(k.s), "\n")
+  r <- sqrt(- pq)
+  stopifnot(all.equal(rr, r, tol=1e-15))
   qnAsy <- sapply(setNames(k.s, nks), function(ord)
                   qnormAsymp(pq, lower.tail=FALSE, log.p=TRUE, order=ord))
   relE <- qnAsy / q. - 1
-  m <- cbind(rr, pq, relE)
+  m <- cbind(r, pq, relE)
   if(verbose) {
     print(head(m, 9)); for(j in 1:2) cat(" ..........\n")
     print(tail(m, 4))
   }
-  ## matplot(rr, relE, type = "b", main = paste("around r0 = ", r0))
-  matplot(rr, relE, type = "l", ylim = ylim,
+  ## matplot(r, relE, type = "b", main = paste("around r0 = ", r0))
+  matplot(r, relE, type = "l", ylim = ylim,
      main = paste("Relative error of qnormAsymp(*, k) around r0 = ", r0,
                   "for  k =", deparse(k.s)),
      xlab = quote(r == sqrt(-log(p))))
   legend("topleft", nks, col=1:2, lty=1:2, bty="n", lwd=2)
   for(j in seq_along(k.s))
-    lines(smooth.spline(rr, relE[,j]), col=adjustcolor(j, 2/3), lwd=4, lty=2)
-  cc <- "gold2"; lab <- substitute(r[0] == R, list(R = r0))
+    lines(smooth.spline(r, relE[,j]), col=adjustcolor(j, 2/3), lwd=4, lty=2)
+  cc <- "blue2"; lab <- substitute(r[0] == R, list(R = r0))
   abline(v  = r0, lty=2, lwd=2, col=cc)
   axis(3, at= r0, labels=lab, col=cc, col.axis=cc, line=-1)
   abline(h = (-1:1)*.Machine$double.eps, lty=c(3,1,3),
          col=c("green3", "gray", "tan2"))
-  invisible(cbind(r = rr, qn = q., relE))
+  invisible(cbind(r = r, qn = q., relE))
 }
 
 r0 <- c(27, 55, 109, 840, 36000, 6.4e8) # <--> in ../R/norm_f.R {and R's qnorm.c eventually}
