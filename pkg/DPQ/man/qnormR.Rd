@@ -37,8 +37,10 @@ qnormR (p, mu = 0, sd = 1, lower.tail = TRUE, log.p = FALSE, trace = 0,
 \value{
   a numeric vector like the input \code{q}.
 }
-%% \references{
-%% }
+\references{
+  For the asymptotic approximations in later \code{version}s, see the
+  reference(s) on \code{\link{qnormAsymp}}'s help page.
+}
 \author{Martin Maechler}
 %% \note{
 %% }
@@ -69,8 +71,8 @@ legend("top", leg, bty='n', col=1:4, lty=1:3, lwd=2)
 ##% MM: more TODO? --> ~/R/MM/NUMERICS/dpq-functions/qnorm-extreme-bad.R
 qs <- 2^seq(0, 155, by=1/8)
 lp <- pnorm(qs, lower.tail=FALSE, log.p=TRUE)
-## The inverse of pnorm() fails BADLY for extreme tails; this is
-## identical to qnorm(..) in R <= 4.0.x:
+## The inverse of pnorm() fails BADLY for extreme tails:
+## this is identical to qnorm(..) in R <= 4.0.x:
 qp <- qnormR(lp, lower.tail=FALSE, log.p=TRUE, version="4.0.x")
 ## asymptotically correct approximation :
 qpA <- sqrt(- 2* lp)
