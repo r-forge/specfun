@@ -1,5 +1,4 @@
 \name{Bessel}
-\Rdversion{1.1}
 \alias{BesselI}
 \alias{BesselJ}
 \alias{BesselK}
@@ -51,10 +50,10 @@ BesselY(z, nu, expon.scaled = FALSE, nSeq = 1, verbose = 0)
   \code{\link{mode}} as \code{z}.
 }
 \references{
-  Abramowitz, M., and Stegun, I. A. (1955, etc).
+  Abramowitz, M., and Stegun, I. A. (1964, etc).
   \emph{Handbook of mathematical functions}
   (NBS AMS series 55, U.S. Dept. of Commerce),
-  \url{http://people.math.sfu.ca/~cbm/aands/}
+  \url{https://personal.math.ubc.ca/~cbm/aands/}% up to ~2021: {http://people.math.sfu.ca/~cbm/aands/}
 
   Wikipedia (20nn). \emph{Bessel Function},
   \url{https://en.wikipedia.org/wiki/Bessel_function}

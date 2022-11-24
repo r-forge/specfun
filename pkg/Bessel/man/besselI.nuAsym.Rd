@@ -43,9 +43,8 @@ besselK.nuAsym(x, nu, k.max, expon.scaled = FALSE, log = FALSE)
   \code{nu}. (usual argument recycling is applied implicitly.)
 }
 \references{
-  Abramowitz, M., and Stegun, I. A. (1955, etc).
-  \emph{Handbook of mathematical functions}
-  (NBS AMS series 55, U.S. Dept. of Commerce), pp. 366, 378.
+  Abramowitz, M., and Stegun, I. A. (1964, etc).
+  \emph{Handbook of mathematical functions}, pp. 366, 378.
 }
 \author{Martin Maechler}
 \seealso{

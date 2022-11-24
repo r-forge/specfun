@@ -51,7 +51,7 @@ besselI.ftrms(x, nu, K = 20)
  a numeric (or complex) vector of the same length as \code{x}.%% FIXME, x = matrix ?
 }
 \references{
-  Abramowitz, M., and Stegun, I. A. (1955, etc).
+  Abramowitz, M., and Stegun, I. A. (1964, etc).
   \emph{Handbook of mathematical functions}
   (NBS AMS series 55, U.S. Dept. of Commerce).
 }

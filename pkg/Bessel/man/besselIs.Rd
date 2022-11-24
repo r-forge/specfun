@@ -39,7 +39,7 @@ besselIs(x, nu, nterm = 800, expon.scaled = FALSE, log = FALSE,
   vector of the same class and length as \code{x}.
 }
 \references{
-  Abramowitz, M., and Stegun, I. A. (1955, etc).
+  Abramowitz, M., and Stegun, I. A. (1964,.., 1972).
   \emph{Handbook of mathematical functions}
   (NBS AMS series 55, U.S. Dept. of Commerce).
 }

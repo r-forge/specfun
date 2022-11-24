@@ -79,7 +79,7 @@ which I found elegantly to resolve (by re-scaling), for \RR{}2.9.0.
 However, the algorithm complexity is proportional to $\lfloor x \rfloor$,
 and for large $x$, a better algorithm has been desired for years.
 Hence, I had started experimenting with the two asymptotic expansions from
-\cite{AbrMS70}.
+\cite{AbrMS72}.
 %% ............
 
 The following \RR{} packages on CRAN (as of Jan.29, 2009) also provide

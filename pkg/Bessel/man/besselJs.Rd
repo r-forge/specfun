@@ -38,7 +38,7 @@ besselJs(x, nu, nterm = 800, log = FALSE,
   Abramowitz, M., and Stegun, I. A. (1955, etc).
   \emph{Handbook of mathematical functions}
   (NBS AMS series 55, U.S. Dept. of Commerce).
-  \url{http://people.math.sfu.ca/~cbm/aands/page_360.htm}
+  \url{https://personal.math.ubc.ca/~cbm/aands/page_360.htm}
 }
 \author{Martin Maechler}
 \seealso{
@@ -51,6 +51,17 @@ stopifnot(all.equal(besselJs(1:10, 1), # our R code
 ## Large 'nu' ...
 x <- (0:20)/4
 (bx <- besselJ(x, nu=200))# base R's -- gives (mostly wrong) warnings
+## Visualize:
+bj <- curve(besselJ(1, x), 1, 2^10, log="xy", n=1001,
+            main=quote(J[nu](1)), xlab = quote(nu), xaxt="n", yaxt="n")
+if(!requireNamespace("sfsmisc")) # use sfsmisc::eaxis() if available
+    eaxis <- axis
+eaxis(1); eaxis(2)
+bj6 <- curve(besselJ(6, x), add=TRUE, n=1001, col=adjustcolor(2, 1/2), lwd=2)
+plot(y~x, as.data.frame(bj6), log="x", type="l", col=2, lwd=2,
+     main = quote(J[nu](6)), xlab = quote(nu), xaxt="n")
+eaxis(1); abline(h=0, lty=3)
+
 if(require("Rmpfr")) { ## Use high precision, notably large exponent range, numbers:
   Bx <- besselJs(mpfr(x, 64), nu=200)
   all.equal(Bx, bx, tol = 1e-15)# TRUE -- warnings were mostly wrong; specifically:
