@@ -181,7 +181,7 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
 ##        and provided hash codes for checking them...)
 
     if (abs(q) <= .425) { ## 0.075 <= p <= 0.925 */
-        r  <- .180625 - q * q;
+        r  <- .180625 - q * q; ## History: AS241 has SPLIT1 = 0.425, CONST1 = 0.180625
         if(trace) cat(sprintf(" --> usual rational form 1, r=%12.7g\n", r))
 	val <-
             q * (((((((r * 2509.0809287301226727 +
@@ -196,7 +196,7 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
                  687.1870074920579083) * r + 42.313330701600911252) * r + 1.)
     }
     else { ## closer than 0.075 from {0,1} boundary */
-           ##   lp := log(p~);  p~ = min(p, 1-p) < 0.075 :
+           ## "r" := lp := log(p~);  p~ = min(p, 1-p) < 0.075 :
 	lp <-
             if(log.p && ((lower.tail && q <= 0) || (!lower.tail && q > 0))) {
                 p
@@ -211,7 +211,7 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
             warning("r = sqrt( - log(min(p,1-p)) )  is NA -- \"we have lost\"")
 
         if (!is.na(r) && r <= 5.) { ## <==> min(p,1-p) >= exp(-25) ~= 1.3888e-11 */
-            r <- r + -1.6;
+            r <- r + -1.6; ## History: AS241 has SPLIT2 = 5.0, CONST2 = 1.6
             if(trace) cat(sprintf("\t as r <= 5, using rational form 2, for (updated) r=%12.7g\n", r))
             val <- (((((((r * 7.7454501427834140764e-4 +
                        .0227238449892691845833) * r + .24178072517745061177) *
@@ -247,18 +247,16 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
 		    x2 = s2 - log(M_2PI * x2) - 2./(2. + x2); ## == xs_2
                     if(trace) cat(sprintf("  2nd order x2=%11g \n", x2))
 		    if(r < 840.) { ## 27 < r < 840
-			x2 = s2 - log(M_2PI * x2) + 2*log1p(- 1./(2. + x2)*(1 - 1/(4 + x2))); ## == xs_3
+			x2 = s2 - log(M_2PI * x2) + 2*log1p(- (1 - 1/(4 + x2))/(2. + x2)); ## == xs_3
                         if(trace) cat(sprintf("  3rd order x2=%11g \n", x2))
 			if(r < 109.) { ## 27 < r < 109
 			  x2 = s2 - log(M_2PI * x2) +
-			      2*log1p(- 1./(2. + x2)*(1 - 1/(4. + x2)*(1 - 5/(6 + x2)))); ## == xs_4
+			      2*log1p(- (1 - (1 - 5/(6 + x2))/(4. + x2))/(2. + x2)); ## == xs_4
                           if(trace) cat(sprintf("  4-th order x2=%11g \n", x2))
 			  if(r < 55.) { ## 27 < r < 55
                             if(trace) cat("27 < r < 55: using 5-th order x2\n")
 			    x2 = s2 - log(M_2PI * x2) +
-                                2*log1p(- 1./(2. + x2)*(1 - 1/(4. + x2)*
-                                                        (1 - 1/(6. + x2)*
-                                                         (5 - 9/(8. + x2))))); ## == xs_5
+			      2*log1p(- (1 - (1 - (5 - 9/(8. + x2))/(6. + x2))/(4. + x2))/(2. + x2)); ## == xs_5
 			  }
 			}
 		    }
@@ -299,9 +297,9 @@ qnormR <- Vectorize(qnormR1, c("p", "mu", "sd"))
 ### Partly modeled after qnormUappr()  from ./beta-fns.R
 
 qnormAsymp <- function(p, lp = .DT_Clog(p, lower.tail=lower.tail, log.p=log.p),
-                                        # ~= log(1-p) -- independent of lower.tail, log.p
+                           # ~= log(1-p) -- independent of lower.tail, log.p
                        order,
-                       lower.tail = TRUE, log.p = FALSE)
+                       lower.tail = TRUE, log.p = missing(p))
 {
     stopifnot(length(order) == 1L, order == (ord <- as.integer(order)), 0L <= ord, ord <= 5L)
     if(missing(p)) { ## log.p unused;  lp = log(1-p)  <==>  e^lp = 1-p  <==>  p = 1 - e^lp
@@ -314,8 +312,9 @@ qnormAsymp <- function(p, lp = .DT_Clog(p, lower.tail=lower.tail, log.p=log.p),
         swap <- if(lower.tail) p. < 1/2 else p. > 1/2 # logical vector
         p[swap] <- if(log.p) log1mexp(-p[swap]) else 1 - p[swap]
     }
+    iFin <- is.finite(lp)
     ##  r = sqrt( - log(min(p,1-p)) )  <==>  min(p, 1-p) = exp( - r^2 )
-    x2 <- s2 <- -ldexp(lp, 1) ## = -2*lp = 2s =: xs_0
+    x2 <- s2 <- -ldexp(lp[iFin], 1) ## = -2*lp = 2s =: xs_0
     if(ord >= 1L) {
         x2 <- s2 - log(M_2PI * x2); ## = xs_1
         if(ord >= 2L) { ## need for (r < 36000.)  <==> s < 36000^2
@@ -325,7 +324,7 @@ qnormAsymp <- function(p, lp = .DT_Clog(p, lower.tail=lower.tail, log.p=log.p),
                 if(ord >= 4L) { ## need for (r < 109)
                     x2 = s2 - log(M_2PI * x2) + 2*log1p(- 1./(2. + x2)*(1 - 1/(4. + x2)*(1 - 5/(6 + x2)))); ## == xs_4
                     if(ord >= 5L) { ## need for (r < 55)
-                        x2 = s2 - log(M_2PI * x2) + 2*log1p(- 1./(2. + x2)*
+                        x2 = s2 - log(M_2PI * x2) + 2*log1p( - 1./(2. + x2)*
                                                             (1 - 1/(4. + x2)*
                                                              (1 - 1/(6. + x2)*
                                                               (5 - 9/(8. + x2))))); ## == xs_5
@@ -334,7 +333,8 @@ qnormAsymp <- function(p, lp = .DT_Clog(p, lower.tail=lower.tail, log.p=log.p),
             }
         }
     }
-    R <- sqrt(x2)
+    R <- -lp # incl. Inf
+    R[iFin] <- sqrt(x2)
     R[swap] <- -R[swap]
     ## R[p. == 1/2] <- 0
     R

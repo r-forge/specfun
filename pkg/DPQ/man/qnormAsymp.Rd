@@ -10,7 +10,7 @@
 \usage{% ---->>>> ../R/norm_f.R <<<<--------
 qnormAsymp(p,
            lp = .DT_Clog(p, lower.tail = lower.tail, log.p = log.p),
-           order, lower.tail = TRUE, log.p = FALSE)
+           order, lower.tail = TRUE, log.p = missing(p))
 }
 \arguments{
   \item{p}{numeric vector of probabilities, possibly transformed, depending
@@ -41,8 +41,8 @@ qnormAsymp(p,
   \eqn{s} is \code{-lp}.
 }
 \references{
-  Martin Maechler (2022). Asymptotic Tail Formulas For Gaussian Quantiles;
-  not yet finished.
+  Martin Maechler (2022). Asymptotic Tail Formulas For Gaussian Quantiles for R;
+  \CRANpkg{DPQ} vignette, see \url{https://CRAN.R-project.org/package=DPQ}.
 }
 \author{Martin Maechler}
 \seealso{
@@ -54,45 +54,44 @@ qnormAsymp(p,
 lp <- -c(head(c(outer(c(5,2,1), 10^(18:1))), -2), 20:10, seq(9.75, 2, by = -1/8))
 qnU6 <- qnormUappr6(lp=lp) # 'p' need not be specified if 'lp' is
 qnAsy <- sapply(0:5, function(ord) qnormAsymp(lp=lp, lower.tail=FALSE, order=ord))
-summary(warnings()) # 12 warnings ... NaNs produced
-matplot(-lp, cbind(qnU6, qnAsy), type = "b", log = "x", pch=1:7)
+matplot(-lp, cbind(qnU6, qnAsy), type = "b", log = "x", pch=1:7)# all "the same"
 legend("center", c("qnormUappr6()",
                 paste0("qnormAsymp(*, order=",0:5,")")),
-       bty="n", col=1:6, lty=1:6, pch=1:7)
+       bty="n", col=1:6, lty=1:5, pch=1:7) # as in matplot()
 
 p.ver <- function() mtext(R.version.string, cex=3/4, adj=1)
-matplot(-lp, cbind(qnU6, qnAsy) - qnorm(lp, lower.tail=TRUE, log.p=TRUE), pch=1:7,
-        xaxt = "n", # and use eaxis() instead
+matplot(-lp, cbind(qnU6, qnAsy) - qnorm(lp, lower.tail=TRUE, log.p=TRUE),
+        pch=1:7, cex = .5, xaxt = "n", # and use eaxis() instead
         main = "absolute Error of qnorm() approximations", type = "b", log = "x")
 sfsmisc::eaxis(1, sub10=2); p.ver()
 legend("bottom", c("qnormUappr6()",
                 paste0("qnormAsymp(*, order=",0:5,")")),
-       bty="n", col=1:6, lty=1:6, pch=1:7)
+       bty="n", col=1:6, lty=1:5, pch=1:7, pt.cex=.5)
 
 ## If you look at the numbers, in versions of R <= 4.2.x,
 ## qnorm() is *worse* for large -lp than the higher order approximations
-
+## ---> using qnormR() here:
 absP <- function(re) pmax(abs(re), 2e-17) # not zero, so log-scale "shows" it
-matplot(-lp, absP(cbind(qnU6, qnAsy) / qnorm(lp, lower.tail=TRUE, log.p=TRUE) - 1),
+qnT <- qnormR(lp, lower.tail=TRUE, log.p=TRUE, version="2022") # ~= TRUE qnorm()
+matplot(-lp, absP(cbind(qnU6, qnAsy) / qnT - 1),
         ylim = c(2e-17, .01), xaxt = "n", yaxt = "n", col=1:7, lty=1:7,
         main = "relative |Error| of qnorm() approximations", type = "l", log = "xy")
 abline(h = .Machine$double.eps * c(1/2, 1, 2), col=adjustcolor("bisque",3/4),
        lty=c(5,2,5), lwd=c(1,3,1))
 sfsmisc::eaxis(1, sub10 = 2, nintLog=20)
-sfsmisc::eaxis(2, sub10 = c(-3, 2), nintLog=16); p.ver()
-legend("right", c("qnormUappr6()",
+sfsmisc::eaxis(2, sub10 = c(-3, 2), nintLog=16)
+mtext("qnT <- qnormR(*, version=\"2022\")", cex=0.9, adj=1)# ; p.ver()
+legend("topright", c("qnormUappr6()",
                 paste0("qnormAsymp(*, order=",0:5,")")),
-       bty="n", col=1:7, lty=1:7)
+       bty="n", col=1:7, lty=1:7, cex = 0.8)
 
-### Optimal cut points  / regions for different approximation orders k
-%% for these, see also ~/R/MM/NUMERICS/dpq-functions/qnorm-asymptotic.R
-## r0 <- c(27, 55, 109, 840, 36000, 6.4e8) # <--> in ../R/norm_f.R {and R's qnorm.c eventually}
-## use k =   5   4    3    2      1       0    e.g.  k = 0  good for r >= 6.4e8
+
+###=== Optimal cut points / regions for different approximation orders k =================
 
 ## Zoom into each each cut-point region :
 p.qnormAsy2 <- function(r0, k, # use k-1 and k in region around r0
                         n = 2048, verbose=TRUE, ylim = c(-1,1) * 2.5e-16,
-                        rr = seq(r0 * 0.5, r0 * 1.25, length = n))
+                        rr = seq(r0 * 0.5, r0 * 1.25, length = n), ...)
 {
   stopifnot(is.numeric(rr), !is.unsorted(rr), # the initial 'r'
             length(k) == 1L, is.numeric(k), k == as.integer(k), k >= 1)
@@ -118,7 +117,7 @@ p.qnormAsy2 <- function(r0, k, # use k-1 and k in region around r0
   matplot(r, relE, type = "l", ylim = ylim,
      main = paste("Relative error of qnormAsymp(*, k) around r0 = ", r0,
                   "for  k =", deparse(k.s)),
-     xlab = quote(r == sqrt(-log(p))))
+     xlab = quote(r == sqrt(-log(p))), ...)
   legend("topleft", nks, col=1:2, lty=1:2, bty="n", lwd=2)
   for(j in seq_along(k.s))
     lines(smooth.spline(r, relE[,j]), col=adjustcolor(j, 2/3), lwd=4, lty=2)

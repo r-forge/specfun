@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-3 (2022-11-09, svn r231)}{
+\section{Version 0.5-3 (2022-11-28, svn r232)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item New \R functions \code{qntR()} and \code{qtU()},
@@ -32,6 +32,8 @@
 
       \item New \code{qnormAsymp()} providing new asymptotic approximations
       to \code{qnorm()}.
+
+      \item Added vignette \dQuote{Asymptotic Tail Formulas for Gaussian Quantiles}.
 
       \item New \code{chebychevPoly()} (and auxiliaries) for evaluation
       of Chebyshev polynomials.

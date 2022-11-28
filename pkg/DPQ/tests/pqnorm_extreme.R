@@ -22,7 +22,7 @@ s <- r^2
 lp <- -s
 
 ## Start with quantiles so we know the  "truth according to pnorm()" :
-qs <- 2^seq( 0, 35, by=1/256) # => s >= 1.84  --> no NaN in xs_5 etc
+qs <- c(2^seq(0, 35, by=1/256), Inf) # => s >= 1.84  --> no NaN in xs_5 etc
 ## == the "true" qnorm() according to pnorm()
 
 lp  <- pnorm(qs, lower.tail=FALSE, log.p=TRUE)
@@ -34,6 +34,7 @@ head(dat <- data.frame(l2q=log2(qs), qs, # lp,
                        s,  # r = sqrt(s), t = log(s),
                        relE_qn = relErrV(qs, qnp)))
 				##^^^^^^  will depend much on R version
+stopifnot(dat[nrow(dat), "relE_qn"] == 0)
 
 p.ver <- function() mtext(R.version.string, cex=3/4, adj=1)
 readUser <- function(i, max.i) {
@@ -56,10 +57,14 @@ plot(abs(relE_qn) ~ s, dat, log="xy", type="l", col = 2,
 eaxis(1); eaxis(2); p.ver(); p.epsC()
 
 ## now look at the asymptotic approximations:
-k.s <- 0:5; nks <- paste0("k=", k.s)
-qnAsy <- sapply(setNames(k.s, nks), function(ord)
-    qnormAsymp(lp, lower.tail=FALSE, log.p=TRUE, order=ord))
-relEAsy <- qnAsy / qs - 1
+k.s <- 0:5; nks <- paste0("k=", k.s); k. <- setNames(k.s, nks)
+qnAsy <- sapply(k., function(ord) qnormAsymp(lp=lp, order=ord))
+stopifnot(identical(qnAsy,
+         sapply(k., function(ord) qnormAsymp(p=lp, lower.tail=FALSE, log.p=TRUE, order=ord))
+))
+
+relEAsy <- apply(qnAsy, 2, relErrV, target = qs)
+
 
 matplot(sqrt(s), relEAsy, type="l", log="x", xlab = quote(r == sqrt(s)),
         main = "relative Error of qnormAsymp(.., k=*)"); p.ver()
@@ -98,4 +103,63 @@ for(j in seq_along(xL)) {
     readUser(j, length(xL))
 }
 
-## FIXME:  do real tests !!
+## Real tests :
+table(relEAsy[s > 1e17,] * 2^52)
+## -0.5    0    1
+##   71 9434  125
+
+table(relEAsy[s > 1e16,] * 2^52)
+## -0.5     0     1     2     3     4     5
+##   71 11550   311   135    78    18    17
+
+
+## drop k = 0 from now on -------------  The following *is* platform dependent .. let's see
+
+re1 <- abs(relEAsy[s > 95e6, "k=1"])
+table(re1 * 2^52)
+##    0  0.5    1
+## 5264   84   93
+
+plot(abs(relEAsy[,"k=2"]) ~ s, subset = s > 1e5 & s < 1e8, log="xy", type="l", xaxt="n")
+eaxis(1); p.epsC()
+
+re2 <- abs(relEAsy[s > 2e5, "k=2"])
+table(re2 * 2^52)
+##    0  0.5    1
+## 6353   85  141
+
+plot(abs(relEAsy[,"k=3"]) ~ s, subset = s > 500 & s < 1e5, log="xy", type="l", xaxt="n")
+eaxis(1); p.epsC()
+
+re3 <- abs(relEAsy[s > 4000, "k=3"])
+table(re3 * 2^52)
+##    0  0.5    1
+## 6953  124  225
+
+plot(abs(relEAsy[,"k=4"]) ~ s, subset = s > 300 & s < 2000, log="xy", type="l", axes=FALSE)
+eaxis(1);eaxis(2); p.epsC()
+
+re4 <- abs(relEAsy[s > 1500, "k=4"])
+table(re4 * 2^52)
+##    0  0.5    1
+## 7154  145  185
+
+plot(abs(relEAsy[,"k=5"]) ~ s, subset = s > 200 & s < 1000, log="xy", type="l", axes=FALSE)
+eaxis(1);eaxis(2); p.epsC()
+r. <- pretty(sqrt( par("xaxp")[1:2] ), 10)
+(rlab <- as.expression(lapply(r., function(rr) substitute(R^2, list(R = rr+0)))))
+axis(3, at=r.^2, labels = rlab, col = 4, col.axis = 4, mgp = c(1.25,.5,0))
+
+re5 <- abs(relEAsy[s > 700, "k=5"])
+table(re5 * 2^52)
+##    0  0.5    1
+## 7285  141  199
+
+stopifnot(exprs = {
+    abs(relEAsy[s > 1e17,]) <= 2^-52 # even for k=0
+    re1 <= 2^-52
+    re2 <= 2^-52
+    re3 <= 2^-52
+    re4 <= 2^-52
+    re5 <= 2^-52
+})
