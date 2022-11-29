@@ -2,28 +2,44 @@
 %% NOTA BENE: More definitions --> further down
 %%%%%%%%%%%%
 %
-\author{Martin M\"achler \\ ETH Zurich}
-\title{Asymptotic Tail Formulas For Gaussian Quantiles for R}
-\def\mythanks{a version of this paper ... has been published in JSS, \url{http://www.jstatsoft.org/....}.}
+\author{Martin M\"achler \\ Seminar f\"ur Statistik, \ ETH Zurich}
+\title{Asymptotic Tail Formulas For Gaussian Quantiles in R}
+%%
+%%%\def\mythanks{a version of this paper ... has been published in JSS, \url{http://www.jstatsoft.org/....}.}
+%%
 %% for pretty printing and a nice hypersummary also set:
 \Plainauthor{Martin M\"achler}
-\Plaintitle{Asymptotic Tail Formulas For Gaussian Quantiles for R} % without formatting
+% \Plaintitle{Asymptotic Tail Formulas For Gaussian Quantiles in R} % without formatting
 % \Shorttitle{}
 %
-%\VignetteIndexEntry{Asymptotic Tail Formulas For Gaussian Quantiles for R}% << shown on CRAN page!
+%\VignetteIndexEntry{Asymptotic Tail Formulas For Gaussian Quantiles in R}% << shown on CRAN page!
 %\VignetteDepends{DPQ}
 %\VignetteDepends{sfsmics}
 %\VignetteDepends{stats}
 %--not-yet--\VignetteDepends{Rmpfr}
 \SweaveOpts{engine=R,pdf=FALSE,grdevice=pdfDB, width=7,height=4, strip.white=true,keep.source=TRUE}
 
-%% an abstract and keywords
 \Abstract{
-  Abstract,   abstract, \dots \dots
+  \R's Gaussian quantile function \code{qnorm(p, ..)} has been based on the
+  published algorithm AS~241 of \cite{AS241:Wichura1988} which is fully
+  accurate only on the regular scale for p down to the smallest double
+  precision numbers $> 0$.
+  When probabilities are used on the log scale, i.e., \code{qnorm(lp,
+    log.p=TRUE)}, the argument is a log probability, and \code{lp}$=\log p
+  \to -\infty$ when $p\to 0$, \code{qnorm()} using AS~241 has been very
+  inaccurate in the very extreme tails.
 
-  Abstract,   abstract, \dots \dots
+  We have derived asymptotic formulas for that case, using recursive
+  plug-in to the asymptotic formula for $\Phi(x)$ (which \code{qnorm()}
+  should invert).
 
-  Abstract,   abstract, \dots \dots
+  Using these formulas for order $k=0, 1, \dots, 5$, for six different regions (adjacent intervals)
+  allows to provide fully accurate \code{qnorm()} computations also on the
+  log-scale.
+  Pure \R{} implementations of these are provided in our \R{} package \CRANpkg{DPQ},
+  functions \code{qnormAsymp()} and \code{qnormR()} and have also been
+  prepared to be added to (the C code in \file{Rmathlib} in) the next
+  version of \R's \code{qnorm()}.
 }
 
 \Keywords{asymptotic, approximation, extreme tail, Gaussian, Normal Quantile}
@@ -63,6 +79,7 @@
 \usepackage{bm}%for bold math symbols: \bm (= bold math)
 %NON-STANDARD:\RequirePackage{bbm}%only for indicator functions
 % \usepackage{enumitem}%for automatic numbering of new enumerate environments
+\usepackage{relsize}%-> \larger and \smaller
 \usepackage[
   format=hang,
   % NOT for JSS: labelsep=space,
@@ -155,7 +172,7 @@
 %% journal specific aliases
 \newcommand*{\setcapwidth}[1]{}
 
-\newtheorem*{AS}{A.\ \& S.}% for formulas cited from Abramowitz & Stegn
+\newtheorem*{AS}{A.\ \& S.}% for formulas cited from Abramowitz & Stegun
 \defcitealias{AbrMS72}{A.\&S.}% for citing them shortly
 
 %% end of declarations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -187,9 +204,10 @@ if(.Platform$OS.type != "windows")#$
 ## take CRAN's version, not development one:
 ##    require("DPQ", lib="~/R/Pkgs/CRAN_lib")
 @
-\section[Introduction]{Introduction \small~\footnote{\mythanks}}
 
-\dots\dots
+% \section[Introduction]{Introduction}
+
+% \dots\dots
 
 \section[Gaussian Quantiles in R]{%
   Gaussian Quantiles in R -- okay on regular probability range}
@@ -198,59 +216,59 @@ if(.Platform$OS.type != "windows")#$
 %% ~/R/D/r-devel/R/src/nmath/qnorm.c*  for versions of the C source
 Gaussian or normal quantiles have been made available in \R\ from the very
 beginning.
-
-Ross Ihaka (one of the two fathers of "R") wrote the first
-version, in R's svn repos , rev 574, dated Jan.\ 14, 1998 % ~/R/D/r-devel/R/src/nmath/qnorm.c.~r574~
+Ross Ihaka (one of the two ``fathers'' of \R) wrote the first
+version; visible in R's subversion (svn) repository, rev 574, dated Jan.\ 14, 1998 % ~/R/D/r-devel/R/src/nmath/qnorm.c.~r574~
 %% TODO? maybe  have even earlier version?
 basically interfacing R with a C version of the published AS~111
 algorithm (which was in Fortran 66 with \code{GOTO} etc), \cite{AS111:BeaSpr1977},
 but improving AS~111 already by using a more accurate formula from Wichura for
 the ``outer'' tail (defined to have $p' := min(p, 1-p)$ close to zero,
 specifically, when
-$p' \in (10^{-300}, \epsilon_c ]$, where the computer epsilon,
-$\epsilon_c$ (= \code{DBL\_EPSILON} in C' \code{math} library $=$ \R's \code{.Machine$double.eps} %$
-is nowadays always equal to $2^{-52} = 2.220446..\cdot 10^{-16}$.
+$p' \in (10^{-300}, \epsilon_c ]$, where $\epsilon_c$, the computer epsilon,
+(= \code{DBL\_EPSILON} in C's \code{math} library $=$ \R's \code{.Machine\$double.eps}
+is nowadays always $\epsilon_c = 2^{-52} = 2.220446..\cdot 10^{-16}$.
 
-This first algorithm, e.g. in  \R~1.0.0, Feb.29, 2000, as AS~111
-e.g., Jan.18 2000, % ~/R/D/r-devel/R/src/nmath/qnorm.c.~r7639~
-the svn rev~7639 version of  R/src/nmath/qnorm.c had
+This first algorithm AS~111, e.g. in \R~1.0.0, Feb.29, 2000,
+(svn rev~7639, 2000-01-18), % ~/R/D/r-devel/R/src/nmath/qnorm.c.~r7639~
+the version of \file{\emph{<R>}/src/nmath/qnorm.c} had
 contained the description
-\begin{quotation}
-   Compute the quantile function for the normal distribution.
-
+\begin{quotation}\it
+  \noindent Compute the quantile function for the normal distribution.
+  \\[1ex]
    For small to moderate probabilities, algorithm referenced
    below is used to obtain an initial approximation which is
    polished with a final Newton step.
-
+  \\[1ex]
    For very large arguments, an algorithm of Wichura is used.
 \end{quotation}
 and the reference to \cite{AS111:BeaSpr1977}.
 
 Also, already before releasing R 1.0.0 on Feb.~29, 2000,
 we had introduced the \code{log.p} and \code{lower.tail}  logical switches,
-\begin{quotation}
+\begin{quotation}\smaller
  r7615 | maechler | 2000-01-17 12:18:30 +0100 (Mo, 17 Jan 2000)
 
  add new argument  lower.tail and log[p]; at first only to [dpq]pois()
 \end{quotation}
 
-Already a few months after releasing R 1.0.0, namely on June 6, svn r9464,
-%% the change is from rev 9363 to 9464
-I had switched \code{qnorm()} to use the more recent and accurate  AS~241
+Already a few months after releasing R 1.0.0 (June 6, svn r9464),
+I had switched \code{qnorm()} to use the more recent and accurate AS~241
 % r9464 | maechler | 2000-06-06 16:03:37 +0200 (Di, 06 Jun 2000) | 2 lines
 % new qnorm() AS241
 with NEWS entry
 \begin{verbatim}
-     o  qnorm() is now based on AS 241 instead of AS 111, and should
-        give precise results up to 16 digits precision.
+   o  qnorm() is now based on AS 241 instead of AS 111, and should
+      give precise results up to 16 digits precision.
 \end{verbatim}
-which, also by Wichura, from 1988, see \cite{AS241:Wichura1988}.
+Algorithm AS~241 is by \cite{AS241:Wichura1988}
 %--> ./qnorm-litt.bib    Wichura, M. J. (1988) Algorithm AS 241: ....
-
-Note the promise of up to 16 digits precision, i.e., about
-the usual IEEE 52-bit double precision ($2^{-52} \approx 2.22 \cdot 10^{-16}$).
-In section \textbf{Accuracy}, Wichura specifies that for the ``Monte Carlo'' relative error, $p$ was constrained
-to the interval $[10^{-70}, 1 - 10^{-15})$ (for \code{PPND16}, the more accurate of the two algorithms).
+which contains the promise of 16 digits precision\footnote{16 digits precision, i.e., about
+the usual IEEE 52-bit double precision ($\epsilon_c = 2^{-52} \approx 2.22 \cdot 10^{-16}$)},
+the last sentence on p.477: \ \
+\emph{\dots\ \ for $10^{-316} < \min(p, 1-p)$. The second routine, PPND16, is accurate to
+ about 16 figures over the same range.}
+% In section \textbf{Accuracy}, Wichura specifies that for the ``Monte Carlo'' relative error, $p$ was constrained
+% to the interval $[10^{-70}, 1 - 10^{-15})$ (for \code{PPND16}, the more accurate of the two algorithms).
 
 Also in \cite{AS241:Wichura1988},
 \begin{equation}\label{r.def}
@@ -258,26 +276,29 @@ Also in \cite{AS241:Wichura1988},
 \end{equation}
 For ease of notation, we assume $p < \frac 1 2$, for now, and hence the quantile
 \code{qnorm(p)}$ = \Phi^{-1}(p) = \Phi^{-1}\bigl(\exp(-r^2)\bigr)$ is negative.
-The ``outermost'' minimax rational approximation to $-\Phi^{-1}(p)$ they use is in the interval
+The ``outermost'' minimax rational approximation to $-\Phi^{-1}(p)$ used in AS~241 is in the interval
 $r \in (5, 27] \Longleftrightarrow r^2 \in (25, 729]$, or equivalently,
 \begin{align}
-  p \in \left[e^{-729}, e^{-25}\right) \approx \left[2.51 10^{-317}, 1.389 10^{-11} \right).
+  p \in \bigl[e^{-729}, e^{-25}\bigr) \approx \bigl[2.51 \cdot 10^{-317}, 1.389 \cdot 10^{-11} \bigr).
 \end{align}
 
-At first, the above seems sufficient, since indeed, $10^{-317}$ is already
-a ``de-normalized'' number in double precision arithmetic.
+At first, the above seems sufficient, since indeed, the lower bound is
+already ``de-normalized'' in double precision,
+$e^{-27^2} = e^{-729}  \approx 2.51 \cdot 10^{-317}$ is smaller than \code{DBL\_XMIN} in C's \code{math} library $=$ \R's
+\code{.Machine\$double.xmin}$=2^{-1022} \approx 2.225 \cdot 10^{-308}$.
 
-\emph{However}, as mentioned above, in the R core team, we had already seen
+
+\emph{However}, as mentioned above, in the R core team we had already seen
 that it is often advisable to work on the \emph{$\log$}--scale with probabilities.  For
-that reason we had introduced the option \code{log.p = TRUE} for all our distribution
-and quantile functions.
+that reason we had introduced the option \code{log.p = TRUE} for all our
+(cumulative) distribution and quantile functions.
 %%
 Now this changes the picture of ``sufficient'' approximation dramatically, as, indeed, on
 the log scale, the AS~241 algorithm only goes up to $\log p = r^2 = 729$,
 and then quickly loses precision (see below).
 
-This fact and my subsequent research finding accurate approximations in these
-outermost tails is the goal of this paper.
+The goal of the remaining part of this paper is to describe our research
+for finding accurate approximations in these outermost tails.
 
 \subsection[DPQ's qnormR()]{\pkg{DPQ}'s \code{qnormR()} documenting history}
 
@@ -339,18 +360,30 @@ Consequently, instead of computing and inverting $\Phi(x)$, i.e., our
 <<qnormLog-compute>>=
 qs <- 2^seq( 0, 29, by=1/256) # => s >= 1.84
 lp <- pnorm(qs, lower.tail=FALSE, log.p=TRUE)
-s <- -lp # =  -log(1 - Phi(qs))  > 0
-## store in 'dat' including current "inaccuracy" of qnorm():
-##            -s = lp = pnorm(..)
+s <- -lp # = -pnorm(..) = -log(1 - Phi(qs)) > 0
 require("DPQ") # -->  qnormR():
 qnrm    <- qnorm (-s, lower.tail=FALSE, log.p=TRUE)
 qnrm405 <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version= "4.0.x") # R <= 4.0.5
 qnrm410 <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version= "2020-10-17")
+Rver <- sfsmisc::shortRversion()
 if(getRversion() <= "4.0.5") { # our qnormR(.., version="4.0.x")
-    ## gives identical values as qnorm(..) then :
+    cat(sprintf("%s, \"4.0.5\", all.equal(*, tol=0): %s\n", Rver,
+                all.equal(qnrm, qnrm405, tolerance=0)))
+    stopifnot(all.equal(qnrm, qnrm405, tolerance = 1e-12))
+    if(FALSE)# or if(<Linux>) -- identical values as qnorm(..)  :
     stopifnot(identical(qnrm, qnrm405))
-} else if(getRversion() < "4.3") # our qnormR(*, version="2020-10-17") matches:
+} else if(getRversion() < "4.3") { # our qnormR(*, version="2020-10-17") matches:
+    cat(sprintf("%s, \"4.1.0\", all.equal(*, tol=0): %s\n", Rver,
+                all.equal(qnrm, qnrm410, tolerance=0)))
+    stopifnot(all.equal(qnrm, qnrm410, tolerance = 1e-12))
+    if(FALSE)# or if(<Linux>)
     stopifnot(identical(qnrm, qnrm410))
+} else { # R version >= 4.3.x
+    qnrm43 <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version = "2022")
+    cat(sprintf("%s, >= 4.3.x case, all.equal(*, tol=0): %s\n", Rver,
+                all.equal(qnrm, qnrm43, tolerance=0)))
+    stopifnot(all.equal(qnrm, qnrm43, tolerance = 1e-12))
+}
 @
 
 Computing a version of the above (with larger range for $s$, starting from
@@ -382,10 +415,11 @@ local({ # larger range for s -- qnorm-extreme-bad.R.~1~ (Sep 25, 2020):
 \label{fig:qnorm405}
 \end{figure}
 looks good up to about $10^{12}$, i.e., \code{qnorm()} coinciding with the
-true $x$ \code{qs}, but beyond $10^{12}$ diverging for larger $s$,
+true $x$ \code{qs}, but beyond $10^{14}$ diverging for larger $s$,
 and for even larger $s$ showing
 complete loss of accuracy as \code{qnorm(-s, *)} converges (to
-98340296.60657 after about $s=10^{40}$), even though the true function
+98340296.6), % 98340296.60657 after $s=10^{43}$),
+even though the true function
 should go to $+\infty$.  We will see that indeed,
 asymptotically, $\mathtt{qnorm}(|s|, ..) \sim \sqrt{2|s|}$ which in log-log scale
 is a line (with intercept $\log\sqrt{2}$ and slope $1/2$).
@@ -538,12 +572,12 @@ said to have derived some of the two asymptotic series, in
 \begin{AS}[\textbf{26.2.12}]
 \begin{align}
   \label{eq:AS_26.2.12}
-  1 - \Phi(x) = \frac{\phi(x)}{x} \cdot\left(1 - \frac 1{x^2} +
+  1 - \Phi(x) = \Phi(-x) &= \frac{\phi(x)}{x} \cdot\left(1 - \frac 1{x^2} +
     \frac{1\cdot 3}{x^4} + \cdots + \frac{(-1)^n\; 1\cdot
       3\cdots(2n-1)}{x^{2n}}\right) \ + \ R_n,
 \end{align}
 \end{AS}
-where the remainder term $R_n$ (it has an exact representation via an
+where the remainder term $R_n$ (which can be represented exactly as an
 integral) is smaller than the first neglected term.
 Note that \citetalias{AbrMS72} % \textbf{A.\&S.}%\citet{AbrMS72}
 use notation
@@ -600,15 +634,15 @@ asymptotic approximation $x_0^2 = 2s$ gives
               x^2       \approx&\:  x_1^2 := 2s - \log(2\pi\; x_0^2) = 2s - \log(4\pi s),\label{x1sq}
 \end{align}
 and we do have a substantially better approximation, verified empirically in
-Fig.~\ref{fig:qnormAsym} below, where we show further steps,
+Fig.~\ref{fig:qnormAsym} below ($k=0$ vs $k=1$), where we show further steps,
 continuing our selective recursive plug-in of $x^2$ itself, now no longer
 neglecting $q(x^2)$ but still only using a first term, from (\ref{eq:log-ser}),
 \begin{align}
- -2 \log(1-\Phi(x)) =: 2s \approx&\:  x^2 + \log(2\pi\; x^2) - 2\log\bigl(1 - q(x^2)\bigr) \approx \nonumber\\
+ -2 \log(1-\Phi(x)) =  2s \approx&\:  x^2 + \log(2\pi\; x^2) - 2\log\bigl(1 - q(x^2)\bigr) \approx \nonumber\\
                                  &\:  x^2 + \log(2\pi\; x^2) + 2 q(x^2),
  \label{eq:log-s}
 \end{align}
-where the 2nd $\approx$ is from $\log(1 - q) \approx -q$ for $|q| \ll 1$ and $q(x^2) \approx
+where the 2nd ``$\approx$'' is from $\log(1 - q) \approx -q$ for $|q| \ll 1$ and $q(x^2) \approx
 1/(x^2+2)$ is assumed to be very small here.  Again solving for the first
 $x^2$ and replacing the other $x^2$ by our current best approximation
 $x_1^2$ leads to
@@ -686,16 +720,17 @@ legend(4e7, 1e-9, nks, col=1:6, lty=1:5, lwd=2, bty="n")#, cex=.75, bg=adjustcol
 
 \subsection*{Fully accurate qnorm()}
 Our (package \CRANpkg{DPQ}) \code{qnormR(... version = "2022-08")} now implements
-a (pure \R{} implementation) also to be used in the next (yearly) version of R,
+a (pure \R{} implementation) also to be used in
+the next version of R,
 which uses ``the optimal'' asymptotic approximation $x_k(s)$ for $s = r^2 > 27^2$ and $k \in \{0,1,\dots,5\}$
 as defined above in (\ref{x0sq})--(\ref{x5sq}).
 ``Optimal'' is defined as the smallest $k$ which still provides full accuracy, e.g.,
 when $s > 10^{18}$ clearly, $x_0(s) = \sqrt{2s}$ is sufficient and hence optimal in that sense.
 
 %% for these, see also ~/R/MM/NUMERICS/dpq-functions/qnorm-asymptotic.R
-Consequently, we have determined
-\paragraph{Optimal cut points / regions for different approximation orders $k$}
-and found the following values,
+Consequently, we have determined (``round number'', approximate)
+\textbf{optimal cut points / regions for different approximation orders $k$}
+and found the following ``round number'' values,
 \begin{table}[H]
 \centering
 \begin{tabular}{l|rrrrrr}
@@ -713,22 +748,30 @@ for $r \in [55, 109) \Longleftrightarrow s\in [3025, 11880)$ one needs (and uses
 %% see also R code ../R/norm_f.R {and R's qnorm.c eventually}
 These were determined using function \code{p.qnormAsy2()} in appendix \ref{sec:p.qnormAsy},
 for visualizing the
-optimal region for switching from $k-1$ to $k$, for $k = 1,2,3,4,5$, with this code
-<<do-p.qnormAsy2, eval=FALSE>>=
-r0 <- c(27, 55, 109, 840, 36000, 6.4e8) # <-- cutoffs  <--> in ../R/norm_f.R
-# use k =  5   4    3    2      1       0    e.g.  k = 0  good for r >= 6.4e8
-for(ir in 2:length(r0)) {
-  p.qnormAsy2(r0[ir], k = 5 +2-ir) # k = 5, 4, ..
-  if(interactive() && ir < length(r0)) {
-       cat("[Enter] to continue: "); cat(readLines(stdin(), n=1), "\n") }
-}
-@
+optimal region for switching from $k-1$ to $k$, for $k = 1,2,3,4,5$.
+
 To see how the final \code{qnormR()} is implemented, you can look at the \code{length-1} version
-\code{qnormR1}\footnote{indeed, in the package source file \verb|DPQ/R/norm_f.R|,
+\code{qnormR1()}\footnote{indeed, in the package source file \verb|DPQ/R/norm_f.R|,
   \code{qnormR()} is defined to correctly vectorize in its main arguments \code{p}, \code{mu},
   and \code{sd}, by \ \code{qnormR <- Vectorize(qnormR1, c("p", "mu", "sd"))}}.
 
 \afterpage{\clearpage}
+
+\section{Concluding Summary}
+
+We have derived asymptotic formulas for \code{qnorm(lp, lower.tail=FALSE, log.p=TRUE)},
+i.e. $\Phi^{-1}(e^s) = \Phi^{-1}(e^{r^2})$ for large $s = r^2$, notably for $r > 27$
+which is beyond the range where the published algorithm AS~241,
+\cite{AS241:Wichura1988}, is accurate.
+
+For these formulas of order $k=0, 1, \dots, 5$, implemented in \pkg{DPQ}'s \R\ function
+\code{qnormAsymp(*, order=k)} we have derived optimal
+regions, i.e., intervals for $r$, partitioning $(27, \infty)$ and
+implemented in \R{} function \code{qnormR(*, version = "2022-08")} for
+reproducibility
+and to be used in (the C code in \file{Rmathlib} in) the next version of
+\R's \code{qnorm()}.
+
 
 \section{Session Information}
 %%       ------------------------
@@ -794,12 +837,21 @@ relErrV <- function(target, current, eps0 = .Machine$double.xmin) {
 \section[p.qnormAsy2() for cutpoints]{%
   Function \code{p.qnormAsy2()} for showing optimal cutpoints}\label{sec:p.qnormAsy}
 
-This function, currently also used in \pkg{DPQ}'s \code{example(qnormAsymp)}, was used by the author and
-may be used for reproducibility to visualize the five ``cutpoint - regions'' to switch from approximation $x_{k-1}(r)$ to $x_k(r)$, for $k=1,\dots,5$ and  $r = \sqrt{s} = \sqrt{- \log p}$, using something like
-<<call-p.qnormAsy2, eval=FALSE>>=
-r0 <- c(27, 55, 109, 840, 36000, 6.4e8)
-for(ir in 2:length(r0))
-    p.qnormAsy2(r0[ir], k = 5 +2-ir)
+This function, currently also used in \pkg{DPQ}'s \code{example(qnormAsymp)},
+was used by the author and may be used for reproducibility to visualize the
+five ``cutpoint - regions'' to switch from approximation $x_{k-1}(r)$ to
+$x_k(r)$, for $k=1,\dots,5$ and $r = \sqrt{s} = \sqrt{- \log p}$, using
+<<def-r-cutoffs, echo=FALSE>>=
+r0 <- c(27, 55, 109, 840, 36000, 6.4e8) # <-- cutoffs  <--> in ../R/norm_f.R
+# use k =  5   4    3    2      1       0    e.g.  k = 0  good for r >= 6.4e8
+@
+<<do-p.qnormAsy2, eval=FALSE>>=
+<<def-r-cutoffs>>
+for(ir in 2:length(r0)) {
+  p.qnormAsy2(r0[ir], k = 5 +2-ir) # k = 5, 4, ..
+  if(interactive() && ir < length(r0)) {
+       cat("[Enter] to continue: "); cat(readLines(stdin(), n=1), "\n") }
+}
 @
 
 <<p.qnormAsy2-def>>=
@@ -833,7 +885,7 @@ p.qnormAsy2 <- function(r0, k, # use k-1 and k in region around r0
      main = paste("Relative error of qnormAsymp(*, k) around r0 = ", r0,
                   "for  k =", deparse(k.s)),
      xlab = quote(r == sqrt(-log(p))), ...)
-  legend("topleft", nks, col=1:2, lty=1:2, bty="n", lwd=2)
+  legend("topleft", nks, horiz = TRUE, col=1:2, lty=1:2, bty="n", lwd=2)
   for(j in seq_along(k.s))
     lines(smooth.spline(r, relE[,j]), col=adjustcolor(j, 2/3), lwd=4, lty=2)
   cc <- "blue2"; lab <- substitute(r[0] == R, list(R = r0))
@@ -845,15 +897,22 @@ p.qnormAsy2 <- function(r0, k, # use k-1 and k in region around r0
 }
 @
 
-\clearpage
+\begin{figure}
+  \centering
+\setkeys{Gin}{width=1.05\textwidth}% default 0.8
 %%  using  A4 portrait => ratio = sqrt(2)
-\setkeys{Gin}{width=0.95\textwidth}% default 0.8
 <<plot-qnormAsy2, fig=TRUE, width=7.5, height=10.6, echo=FALSE, results=hide>>=
 sfsmisc::mult.fig(5, main = "qnormAsymp(*, k) approximations in the 5 cutpoint regions")
-r0 <- c(27, 55, 109, 840, 36000, 6.4e8)
+<<def-r-cutoffs>>
 for(ir in 2:length(r0))
-    p.qnormAsy2(r0[ir], k = 5 +2-ir, verbose=FALSE, cex.main = 1)
+    p.qnormAsy2(r0[ir], k = 5 +2-ir, verbose=FALSE, cex.main = .90)
 @
+  \caption{qnormAsymp(*, k) approximation in the 5 cutpoint regions:\\
+    \code{r0 <- c(27, 55, 109, 840, 36000, 6.4e8)}\\ % sync w/ % <<def-r-cutoffs>>=  above!
+    \code{for(ir in 2:length(r0))   p.qnormAsy2(r0[ir], k = 5 + 2-ir, ..)}
+  }
+  \label{fig:cutp-Asym}
+\end{figure}
 
 <<finalizing, echo=FALSE>>=
 options(op.orig)
