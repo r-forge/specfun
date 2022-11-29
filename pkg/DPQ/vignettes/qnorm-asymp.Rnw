@@ -199,8 +199,8 @@ options(width = 70, useFancyQuotes = FALSE
 Sys.setenv(LANGUAGE = "en")
 if(.Platform$OS.type != "windows")#$
   Sys.setlocale("LC_MESSAGES","C")
-  if(Sys.getenv("USER") == "maechler") # my latest checked development version
-     require("DPQ", lib="~/R/Pkgs/DPQ.Rcheck-64b")
+if(Sys.getenv("USER") == "maechler") # my latest checked development version
+    require("DPQ", lib="~/R/Pkgs/DPQ.Rcheck-64b")
 ## take CRAN's version, not development one:
 ##    require("DPQ", lib="~/R/Pkgs/CRAN_lib")
 @
@@ -367,21 +367,17 @@ qnrm405 <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version= "4.0.x") # R <= 4.0
 qnrm410 <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version= "2020-10-17")
 Rver <- sfsmisc::shortRversion()
 if(getRversion() <= "4.0.5") { # our qnormR(.., version="4.0.x")
-    cat(sprintf("%s, \"4.0.5\", all.equal(*, tol=0): %s\n", Rver,
-                all.equal(qnrm, qnrm405, tolerance=0)))
+    cat(sprintf("%s, \"4.0.5\",\n   all.equal(*, tol=0): %s;  identical(): %s\n", Rver,
+                all.equal(qnrm, qnrm405, tolerance=0), identical(qnrm, qnrm405)))
     stopifnot(all.equal(qnrm, qnrm405, tolerance = 1e-12))
-    if(FALSE)# or if(<Linux>) -- identical values as qnorm(..)  :
-    stopifnot(identical(qnrm, qnrm405))
 } else if(getRversion() < "4.3") { # our qnormR(*, version="2020-10-17") matches:
-    cat(sprintf("%s, \"4.1.0\", all.equal(*, tol=0): %s\n", Rver,
-                all.equal(qnrm, qnrm410, tolerance=0)))
+    cat(sprintf("%s, \"4.1.0\",\n   all.equal(*, tol=0): %s;  identical(): %s\n", Rver,
+                all.equal(qnrm, qnrm410, tolerance=0), identical(qnrm, qnrm410)))
     stopifnot(all.equal(qnrm, qnrm410, tolerance = 1e-12))
-    if(FALSE)# or if(<Linux>)
-    stopifnot(identical(qnrm, qnrm410))
 } else { # R version >= 4.3.x
     qnrm43 <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version = "2022")
-    cat(sprintf("%s, >= 4.3.x case, all.equal(*, tol=0): %s\n", Rver,
-                all.equal(qnrm, qnrm43, tolerance=0)))
+    cat(sprintf("%s, >= 4.3.x,\n   all.equal(*, tol=0): %s;  identical(): %s\n", Rver,
+                all.equal(qnrm, qnrm43, tolerance=0), identical(qnrm, qnrm43)))
     stopifnot(all.equal(qnrm, qnrm43, tolerance = 1e-12))
 }
 @
@@ -867,9 +863,8 @@ p.qnormAsy2 <- function(r0, k, # use k-1 and k in region around r0
   if(verbose) cat("Around r0 =", r0,";  k =", deparse(k.s), "\n")
   lp <- (-rr^2) # = -r^2 = -s  <==> rr = sqrt(- lp)
   q. <- qnormR(lp, lower.tail=FALSE, log.p=TRUE, version="2022-08")# *not* depending on R ver!
-  pq <- pnorm(q., lower.tail=FALSE, log.p=TRUE) # ~= lp
+  pq <- pnorm (q., lower.tail=FALSE, log.p=TRUE) # ~= lp
   ## the arg of pnorm() is the true qnorm(pq, ..) == q.  by construction
-  ## cbind(rr, lp, q., pq)
   r <- sqrt(- pq)
   stopifnot(all.equal(rr, r, tol=1e-15))
   qnAsy <- sapply(setNames(k.s, nks), function(ord)
@@ -887,7 +882,7 @@ p.qnormAsy2 <- function(r0, k, # use k-1 and k in region around r0
      xlab = quote(r == sqrt(-log(p))), ...)
   legend("topleft", nks, horiz = TRUE, col=1:2, lty=1:2, bty="n", lwd=2)
   for(j in seq_along(k.s))
-    lines(smooth.spline(r, relE[,j]), col=adjustcolor(j, 2/3), lwd=4, lty=2)
+    lines(smooth.spline(r, relE[,j]), col=adjustcolor(j, 2/3), lwd=4, lty="6132")
   cc <- "blue2"; lab <- substitute(r[0] == R, list(R = r0))
   abline(v  = r0, lty=2, lwd=2, col=cc)
   axis(3, at= r0, labels=lab, col=cc, col.axis=cc, line=-1)
@@ -905,7 +900,7 @@ p.qnormAsy2 <- function(r0, k, # use k-1 and k in region around r0
 sfsmisc::mult.fig(5, main = "qnormAsymp(*, k) approximations in the 5 cutpoint regions")
 <<def-r-cutoffs>>
 for(ir in 2:length(r0))
-    p.qnormAsy2(r0[ir], k = 5 +2-ir, verbose=FALSE, cex.main = .90)
+    p.qnormAsy2(r0[ir], k = 5 +2-ir, n = 1024, verbose=FALSE, cex.main = .90)
 @
   \caption{qnormAsymp(*, k) approximation in the 5 cutpoint regions:\\
     \code{r0 <- c(27, 55, 109, 840, 36000, 6.4e8)}\\ % sync w/ % <<def-r-cutoffs>>=  above!

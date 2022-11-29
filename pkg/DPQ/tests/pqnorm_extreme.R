@@ -163,3 +163,49 @@ stopifnot(exprs = {
     re4 <= 2^-52
     re5 <= 2^-52
 })
+
+
+### R code from vignette source '../vignettes/qnorm-asymp.Rnw' ====================
+###
+### code chunk number 2: qnormLog-compute
+#########################################
+qs <- 2^seq( 0, 29, by=1/256) # => s >= 1.84
+lp <- pnorm(qs, lower.tail=FALSE, log.p=TRUE)
+s <- -lp # = -pnorm(..) = -log(1 - Phi(qs)) > 0
+##
+qnrm    <- qnorm (-s, lower.tail=FALSE, log.p=TRUE)
+qnrm405 <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version= "4.0.x") # R <= 4.0.5
+qnrm410 <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version= "2020-10-17")
+Rver <- shortRversion()
+if(getRversion() <= "4.0.5") { # our qnormR(.., version="4.0.x")
+    cat(sprintf("%s, \"4.0.5\",\n   all.equal(*, tol=0): %s;  identical(): %s\n", Rver,
+                all.equal(qnrm, qnrm405, tolerance=0), identical(qnrm, qnrm405)))
+    stopifnot(all.equal(qnrm, qnrm405, tolerance = 1e-12))
+} else if(getRversion() < "4.3") { # our qnormR(*, version="2020-10-17") matches:
+    cat(sprintf("%s, \"4.1.0\",\n   all.equal(*, tol=0): %s;  identical(): %s\n", Rver,
+                all.equal(qnrm, qnrm410, tolerance=0), identical(qnrm, qnrm410)))
+    stopifnot(all.equal(qnrm, qnrm410, tolerance = 1e-12))
+} else { # R version >= 4.3.x
+    qnrm43 <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version = "2022")
+    cat(sprintf("%s, >= 4.3.x,\n   all.equal(*, tol=0): %s;  identical(): %s\n", Rver,
+                all.equal(qnrm, qnrm43, tolerance=0), identical(qnrm, qnrm43)))
+    stopifnot(all.equal(qnrm, qnrm43, tolerance = 1e-12))
+}
+
+source(system.file("extraR", "qnorm-asymp-utils.R", package="DPQ"))
+if(!exists("r0", mode="numeric"))
+    q("no")
+if(!dev.interactive(orNone=TRUE)) {
+    dev.off()
+    pdf("pqnorm-qnormAsy2.pdf", height=8*sqrt(2), width=8) # ~ 'A4'
+}
+
+###################################################
+### code chunk number 27: plot-qnormAsy2
+###################################################
+sfsmisc::mult.fig(5, main = "qnormAsymp(*, k) approximations in the 5 cutpoint regions")
+r0 <- c(27, 55, 109, 840, 36000, 6.4e8) # <-- cutoffs  <--> in ../R/norm_f.R
+# use k =  5   4    3    2      1       0    e.g.  k = 0  good for r >= 6.4e8
+for(ir in 2:length(r0))
+    p.qnormAsy2(r0[ir], k = 5 +2-ir, cex.main = .90)
+
