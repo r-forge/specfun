@@ -184,12 +184,17 @@ if(getRversion() <= "4.0.5") { # our qnormR(.., version="4.0.x")
 } else if(getRversion() < "4.3") { # our qnormR(*, version="2020-10-17") matches:
     cat(sprintf("%s, \"4.1.0\",\n   all.equal(*, tol=0): %s;  identical(): %s\n", Rver,
                 all.equal(qnrm, qnrm410, tolerance=0), identical(qnrm, qnrm410)))
+    ## see TRUE twice, for R 4.2.2, Linux{x86_64-pc-linux-gnu}  *and*  Windows{x86_64-w64-mingw32/x64}
+                                        # M1mac(aarch64-apple-darwin20, R 4.2.1 ptchd): 2.675587e-16
     stopifnot(all.equal(qnrm, qnrm410, tolerance = 1e-12))
 } else { # R version >= 4.3.x
     qnrm43 <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version = "2022")
     cat(sprintf("%s, >= 4.3.x,\n   all.equal(*, tol=0): %s;  identical(): %s\n", Rver,
                 all.equal(qnrm, qnrm43, tolerance=0), identical(qnrm, qnrm43)))
-    stopifnot(all.equal(qnrm, qnrm43, tolerance = 1e-12))
+    rE6 <- qnorm(-1e6, log.p=TRUE)/-1414.2077829910174  - 1
+    cat(sprintf("  rE(-1e6) = %g\n", rE6))
+    if(abs(rE6) < 7e-16) # have R-devel with new 2022 code:
+        stopifnot(all.equal(qnrm, qnrm43, tolerance = 1e-14))
 }
 
 source(system.file("extraR", "qnorm-asymp-utils.R", package="DPQ"))
