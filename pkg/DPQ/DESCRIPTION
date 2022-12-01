@@ -20,8 +20,8 @@ Description: Computations for approximations and alternatives for the 'DPQ'
   This is for the use of researchers in these numerical approximation
   implementations, notably for my own use in order to improve standard
   R pbeta(), qgamma(), ..., etc: {'"dpq"'-functions}.
-Depends: R (>= 3.6.0)
-Imports: stats, graphics, methods, utils, sfsmisc (>= 1.1-13)
+Depends: R (>= 4.1.0)
+Imports: stats, graphics, methods, utils, sfsmisc (>= 1.1-14)
 Suggests: Rmpfr, DPQmpfr (>= 0.3-1), gmp, MASS, mgcv, scatterplot3d, interp
 SuggestsNote: MASS::fractions() in ex | mgcv, scatt.., interp: some tests/
 License: GPL (>= 2)

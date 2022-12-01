@@ -2,8 +2,10 @@
 %% NOTA BENE: More definitions --> further down
 %%%%%%%%%%%%
 %
-\author{Martin M\"achler \\ Seminar f\"ur Statistik, \ ETH Zurich}
+%\author{Martin M\"achler \\ Seminar f\"ur Statistik, \ ETH Zurich}
+\author{Martin M\"achler \\ Seminar f\"ur Statistik, \ ETH Zurich\\ Nov.\ 2022 \ {\tiny \LaTeX'ed \today}}
 \title{Asymptotic Tail Formulas For Gaussian Quantiles in R}
+% w/ jss, no effect:\date{Nov 2022 {\tiny \LaTeX'ed \today}}
 %%
 %%%\def\mythanks{a version of this paper ... has been published in JSS, \url{http://www.jstatsoft.org/....}.}
 %%
