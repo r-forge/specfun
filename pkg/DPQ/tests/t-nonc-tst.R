@@ -429,7 +429,7 @@ stopifnot(all.equal(ft, dt(1:6, df=3, ncp=5), tol = 1e-11))
 ## MM:
 options(nwarnings = 5e5)
 
-sapply(-1:-10, \(ncp) qt(1-1*(10^(-4+ncp)), 35, ncp))
+sapply(-1:-10, function(ncp) qt(1-1*(10^(-4+ncp)), 35, ncp))
  ## [1]  3.6527153  3.0627759  2.4158355  1.7380812  1.0506904  0.3700821
  ## [7]        Inf -0.9279783 -1.5341759 -2.1085213
 ## There were 1060 warnings (use warnings() to see them)
@@ -439,7 +439,7 @@ summary(warnings())
 ##   full precision may not have been achieved in 'pnt{final}'
 
 nc1 <- seq(-12, -1, by=1/32)
-r1 <- vapply(nc1, \(ncp) qt(1 - 10^(-4+ncp), df=35, ncp=ncp), 1.23)
+r1 <- vapply(nc1, function(ncp) qt(1 - 10^(-4+ncp), df=35, ncp=ncp), 1.23)
 ## There were 8264 warnings (use warnings() to see them)
 summary(warnings())
 ## 8264 identical warnings:
@@ -447,7 +447,7 @@ summary(warnings())
 ##   full precision may not have been achieved in 'pnt{final}'
 
 ## MM: better than "1 - <small" is to use 'lower.tail=FALSE':
-r1. <- vapply(nc1, \(ncp) qt(10^(-4+ncp), df=35, ncp=ncp, lower.tail=FALSE), 1.23)
+r1. <- vapply(nc1, function(ncp) qt(10^(-4+ncp), df=35, ncp=ncp, lower.tail=FALSE), 1.23)
 summary(warnings())
 matplot(nc1, cbind(r1,r1.), type="l")
 ## Zoom in "left tail":  ==>  {lower.tail=FALSE} did not help much
@@ -455,7 +455,7 @@ i <- nc1 <= -10
 matplot(nc1[i], cbind(r1,r1.)[i,], type="l")
 
 ## Zoom in around -7
-r2 <- sapply(seq(-6.9, -7.9, -0.1), \(ncp) qt(1-1*(10^(-4+ncp)), 35, ncp))
+r2 <- sapply(seq(-6.9, -7.9, -0.1), function(ncp) qt(1-1*(10^(-4+ncp)), 35, ncp))
  ## [1] -0.2268386        Inf        Inf        Inf -0.4857400 -0.5497784
  ## [7] -0.6135402 -0.6770143 -0.7401974 -0.8030853 -0.8656810
 summary(warnings())
@@ -464,12 +464,12 @@ summary(warnings())
 ##   full precision may not have been achieved in 'pnt{final}'
 
 nc2 <- seq(-60, -55, by=1/32)/8 # {1/8, 1/32: exact decimals}
-r2 <- vapply(nc2, \(ncp) qt(1 - 10^(-4+ncp), df=35, ncp=ncp), 1.23)
+r2 <- vapply(nc2, function(ncp) qt(1 - 10^(-4+ncp), df=35, ncp=ncp), 1.23)
 ## There were 52444 warnings (use warnings() to see them)
 summary(warnings())
 ## 52444 identical warnings: ....
 ## lower.tail=FALSE
-r2. <- vapply(nc2, \(ncp)
+r2. <- vapply(nc2, function(ncp)
               qt(10^(-4+ncp), df=35, ncp=ncp, lower.tail=FALSE), 1.23)
 all.equal(r2., r2) ## "Mean relative difference: 6.740991e-06"
 matplot(nc2, cbind(r2,r2.), type="l")

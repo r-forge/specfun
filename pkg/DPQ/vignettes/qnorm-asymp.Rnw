@@ -182,7 +182,7 @@
 %% Note that you should use the \pkg{}, \proglang{} and \code{} commands.
 % \section[About Java]{About \proglang{Java}}
 \VerbatimFootnotes% <-- {fancyvrb} below
-%% Note: If there is markup in \(sub)section, then it has to be escape as above.
+%% Note: If there is markup in \(sub)section, then it has to be escaped as above.
 %% Note: These are explained in '?RweaveLatex' :
 <<preliminaries, echo=FALSE, results=hide>>=
 pdfDB <- function(name, width, height, ...)
@@ -679,7 +679,7 @@ specifically, $x_k(s) = $ \code{qnormAsymp(lp = -s, order = k)}\footnote{%
   identical to \code{qnormAsymp(p = lp, lower.tail=FALSE, log.p=TRUE, order = k)} .}
 <<qnormAsymp>>=
 k.s <- 0:5; nks <- paste0("k=", k.s)
-qnAsym <- sapply(setNames(k.s, nks), \(k) qnormAsymp(lp=lp, order = k))
+qnAsym <- sapply(setNames(k.s, nks), function(k) qnormAsymp(lp=lp, order = k))
 relEasym <- apply(qnAsym, 2, relErrV, target = qs) # rel.errors for all
 @
 
