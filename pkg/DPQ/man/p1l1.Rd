@@ -196,7 +196,7 @@ abline(h = c(-8,-4,-2:2,4,8)* 2^-52, lty=2, col=adjustcolor("gray20", 1/4))
 ## well, have a "spike" at around -0.8 -- why?
 
 plot(abs(y) ~ x, data = rErr1k, ylim = c(4e-17, max(abs(y))),
-     ylab=quote(abs(hat(p)/p - 1)),
+     ylab = expression(abs(hat(p)/p - 1)),
      main = "p1l1p(x) -- Relative Error wrt mpfr(*. 4096) [log]",
      col=2, lwd=1.5, type = "b", cex=1/2, log="y", yaxt="n")
 sfsmisc::eaxis(2)
