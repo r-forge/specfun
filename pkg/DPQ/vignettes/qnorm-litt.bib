@@ -1,3 +1,6 @@
+@string{JRSS = "Journal of the Royal Statistical Society"} %% ALWAYS #~A or #~B!
+@string{JRSSC-AS = "Applied Statistics --- " # JRSS # "~C"}
+
 @string{NY = "N.~Y."}
 
 @comment 10th and last printing (9th printing, 1970, is also often cited) :
@@ -29,8 +32,8 @@
 
 @Article{AS111:BeaSpr1977,
   author = 	 {Beasley, J. D. and S. G. Springer},
-  title = 	 {Algorithm AS 111: The percentage points of the normal distribution},
-  journal = 	 {Applied Statistics},
+  title = 	 {Algorithm {AS 111}: The percentage points of the normal distribution},
+  journal = 	 JRSSC-AS,
   year = 	 1977,
   volume = 	 26,
   number = 	 1,
@@ -40,11 +43,49 @@
 
 @Article{AS241:Wichura1988,
   author = 	 {Wichura, Michael J.},
-  title = 	 {Algorithm AS 241: The Percentage Points of the Normal Distribution},
-  journal = 	 {Applied Statistics},
+  title = 	 {Algorithm {AS 241}: The Percentage Points of the Normal Distribution},
+  journal = 	 JRSSC-AS,
   year = 	 1988,
   volume = 	 37,
   number = 	 3,
   doi = {10.2307/2347330},
   pages = 	 {477--484}
 }% url = {https://doi.org/10.2307/2347330},
+
+@Manual{R,
+  title = {\proglang{R}: {A} Language and Environment for Statistical Computing},
+  author = {{\proglang{R} Core Team}},
+  organization = {\proglang{R} Foundation for Statistical Computing},
+  address = {Vienna, Austria},
+  year = 2022,
+  url = {https://www.R-project.org/},
+}
+
+@Comment  citation("DPQ")
+@Manual{DPQ,
+    title = {\pkg{DPQ}: Density, Probability, Quantile ('DPQ') Computations},
+    author = {Martin Maechler},
+    year = 2022,
+    note = {\proglang{R} package version 0.5-3},
+    url = {https://CRAN.R-project.org/package=DPQ},
+}
+
+
+@Comment  citation("Rmpfr")
+@Manual{Rmpfr,
+    title = {\pkg{Rmpfr}: R MPFR - Multiple Precision Floating-Point Reliable},
+    author = {Martin Maechler},
+    year = 2022,
+    note = {\proglang{R} package version 0.9-0},
+    url = {https://rmpfr.r-forge.r-project.org/},
+}
+
+
+@Comment citation("sfsmisc")
+@Manual{sfsmisc,
+    title = {\pkg{sfsmisc}: Utilities from 'Seminar fuer Statistik' ETH Zurich},
+    author = {Martin Maechler},
+    year = 2022,
+    note = {\proglang{R} package version 1.1-14},
+    url = {https://CRAN.R-project.org/package=sfsmisc},
+}

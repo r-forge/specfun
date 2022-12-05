@@ -3,18 +3,19 @@
 %%%%%%%%%%%%
 %
 %\author{Martin M\"achler \\ Seminar f\"ur Statistik, \ ETH Zurich}
-\author{Martin M\"achler \\ Seminar f\"ur Statistik, \ ETH Zurich\\ Nov.\ 2022 \ {\tiny \LaTeX'ed \today}}
-\title{Asymptotic Tail Formulas For Gaussian Quantiles in R}
+\author{Martin M\"achler~\orcidlink{0000-0002-8685-9910} \\
+  Seminar f\"ur Statistik, \ ETH Zurich\\ Nov.\ 2022 \ {\tiny \LaTeX'ed \today}}
+\title{Asymptotic Tail Formulas For Gaussian Quantiles}% in R
 % w/ jss, no effect:\date{Nov 2022 {\tiny \LaTeX'ed \today}}
 %%
 %%%\def\mythanks{a version of this paper ... has been published in JSS, \url{http://www.jstatsoft.org/....}.}
 %%
 %% for pretty printing and a nice hypersummary also set:
 \Plainauthor{Martin M\"achler}
-% \Plaintitle{Asymptotic Tail Formulas For Gaussian Quantiles in R} % without formatting
+% \Plaintitle{Asymptotic Tail Formulas For Gaussian Quantiles}% in R % without formatting
 % \Shorttitle{}
 %
-%\VignetteIndexEntry{Asymptotic Tail Formulas For Gaussian Quantiles in R}% << shown on CRAN page!
+%\VignetteIndexEntry{Asymptotic Tail Formulas For Gaussian Quantiles}% in R% << shown on CRAN page!
 %\VignetteDepends{DPQ}
 %\VignetteDepends{sfsmics}
 %\VignetteDepends{stats}
@@ -24,28 +25,30 @@
 \Abstract{
   \R's Gaussian quantile function \code{qnorm(p, ..)} has been based on the
   published algorithm AS~241 of \cite{AS241:Wichura1988} which is fully
-  accurate only on the regular scale for p down to the smallest double
+  accurate only on the regular scale for $p$ down to the smallest double
   precision numbers $> 0$.
   When probabilities are used on the log scale, i.e., \code{qnorm(lp,
     log.p=TRUE)}, the argument is a log probability, and \code{lp}$=\log p
-  \to -\infty$ when $p\to 0$, \code{qnorm()} using AS~241 has been very
+  \to -\infty$ when $p\to 0$, \fct{qnorm} using AS~241 has been very
   inaccurate in the very extreme tails.
 
-  We have derived asymptotic formulas for that case, using recursive
-  plug-in to the asymptotic formula for $\Phi(x)$ (which \code{qnorm()}
+  We have derived novel asymptotic formulas for that case, using recursive
+  plug-in to the asymptotic formula for $\Phi(x)$ (which \fct{qnorm}
   should invert).
 
   Using these formulas for order $k=0, 1, \dots, 5$, for six different regions (adjacent intervals)
-  allows to provide fully accurate \code{qnorm()} computations also on the
+  allows to provide fully accurate \fct{qnorm} computations also on the
   log-scale.
-  Pure \R{} implementations of these are provided in our \R{} package \CRANpkg{DPQ},
-  functions \code{qnormAsymp()} and \code{qnormR()} and have also been
+  Pure \R{} implementations of these are provided in our \R{} package
+  \CRANpkg{DPQ}, \citep{DPQ}, functions \fct{qnormAsymp} and \fct{qnormR}
+  and have also been
   prepared to be added to (the C code in \file{Rmathlib} in) the next
-  version of \R's \code{qnorm()}.
+  version of \R's \fct{qnorm}.
 }
 
-\Keywords{asymptotic, approximation, extreme tail, Gaussian, Normal Quantile}
-%\Plainkeywords{...........} %% without formatting
+\Keywords{asymptotic, approximation, extreme tail, Gaussian, Normal Quantile, \R}
+% ditto, without formatting:
+\Plainkeywords{asymptotic, approximation, extreme tail, Gaussian, Normal Quantile, R}
 
 %% publication information
 %% NOTE: Typically, this can be left commented and will be filled out by the technical editor
@@ -71,6 +74,8 @@
 %% MM: this is "substituted" by  jss.cls:
 %% need no \usepackage{Sweave.sty}
 
+%% JSS{ ..../examples/JSS/article.Rnw } recommended:
+\usepackage{orcidlink,thumbpdf,lmodern}
 %% Marius' packages
 \usepackage[american]{babel}%for American English
 %\usepackage{microtype}%for character protrusion and font expansion (only with pdflatex)
@@ -171,6 +176,7 @@
 \newcommand{\CRANpkg}[1]{\href{https://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
 \newcommand*{\file}[1]{\code{#1}}
+\newcommand*{\fct}[1]{\code{#1()}}
 %% journal specific aliases
 \newcommand*{\setcapwidth}[1]{}
 
@@ -216,7 +222,7 @@ if(Sys.getenv("USER") == "maechler") # my latest checked development version
 %% see ./qnorm-svn-log.md  for the "history" notes (svn log) and
 %%       ^^^^^^^^^^^^^^^^
 %% ~/R/D/r-devel/R/src/nmath/qnorm.c*  for versions of the C source
-Gaussian or normal quantiles have been made available in \R\ from the very
+Gaussian or normal quantiles have been made available in \R\ \citep{R}, from the very
 beginning.
 Ross Ihaka (one of the two ``fathers'' of \R) wrote the first
 version; visible in R's subversion (svn) repository, rev 574, dated Jan.\ 14, 1998 % ~/R/D/r-devel/R/src/nmath/qnorm.c.~r574~
@@ -254,7 +260,7 @@ we had introduced the \code{log.p} and \code{lower.tail}  logical switches,
 \end{quotation}
 
 Already a few months after releasing R 1.0.0 (June 6, svn r9464),
-I had switched \code{qnorm()} to use the more recent and accurate AS~241
+I had switched \fct{qnorm} to use the more recent and accurate AS~241
 % r9464 | maechler | 2000-06-06 16:03:37 +0200 (Di, 06 Jun 2000) | 2 lines
 % new qnorm() AS241
 with NEWS entry
@@ -302,19 +308,18 @@ and then quickly loses precision (see below).
 The goal of the remaining part of this paper is to describe our research
 for finding accurate approximations in these outermost tails.
 
-\subsection[DPQ's qnormR()]{\pkg{DPQ}'s \code{qnormR()} documenting history}
+\subsection[DPQ's qnormR()]{\pkg{DPQ}'s \fct{qnormR} documenting history}
 
 Note that in our \pkg{DPQ}, we do provide pure R code implementations of
- \R's \code{qnorm()} in function \code{qnormR()} which has
+ \R's \fct{qnorm} in function \fct{qnormR} which has
 (almost\footnote{`mu' $\neq$ `mean'}) the same arguments
-\code{p, mu = 0, sd = 1, lower.tail = TRUE, log.p = FALSE} as \R's \code{qnorm()}
+\code{p, mu = 0, sd = 1, lower.tail = TRUE, log.p = FALSE} as \R's \fct{qnorm}
 and additionally \code{trace = 0, version = c("4.0.x", "2020-10-17", "2022-08-04")},
 where the default \code{version = "4.0.x"} corresponds
  to \R{} version up to 4.0.5 (2021-03-31) which uses basically the above AS~241,
 additionally treating extreme cases including $\pm$\code{Inf} and \code{NA, NaN}
 well.
 The newer versions are explained subsequently.
-
 
 \section[Accurate qnorm(., log.p=TRUE)]{Accurate \code{qnorm(.., log.p=TRUE)}}
 
@@ -328,15 +333,15 @@ The newer versions are explained subsequently.
 
 %% more history <---> ./qnorm-svn-log.md  and ~/R/D/r-devel/R/src/nmath/qnorm.c.~*
 
-In order to compare versions of \code{qnorm()} approximations with their
+In order to compare versions of \fct{qnorm} approximations with their
 ``true" values, we use the fact that it, $x = \Phi^{-1}(p)=$\code{qnorm(p)},
 is defined as \emph{inverse} of $p = \Phi(x) =$\code{pnorm(x)} \emph{and}
 we additionally assume that \code{pnorm(x)} is ``fully accurate'' which it
 basically is, also on the log--scale, demonstrably, e.g., using our CRAN
-pkg \CRANpkg{Rmpfr} with its own very accurate \code{pnorm()},
+pkg \CRANpkg{Rmpfr} with its own very accurate \fct{pnorm},
 but we are not providing the evidence here.
 
-With this assumption, the error of \code{qnorm()} is the deviation from the identity
+With this assumption, the error of \fct{qnorm} is the deviation from the identity
 $\Phi^{-1}(\Phi(x)) \equiv x$.
 If $x \ne 0$, the \emph{relative} error is
 \begin{align}
@@ -344,15 +349,15 @@ If $x \ne 0$, the \emph{relative} error is
   \frac{\widehat{\Phi^{-1}}(\Phi(x)) - x }{x} &=
         \widehat{\Phi^{-1}}(\Phi(x)) / x - 1,
 \end{align}
-and we ``define'' the relative error of \code{qnorm()} as
+and we ``define'' the relative error of \fct{qnorm} as
 \code{qnorm(pnorm(x)) / x - 1} where we need to adjust for cases where $x$
 is (very close to) zero or not finite, etc.
-This is done by function \code{relErrV()} from package
+This is done by function \fct{relErrV} from package
 \CRANpkg{sfsmisc}, shown in the appendix \ref{sec:relErrV},
 which takes care of all special or boundary cases.
 
 And as a matter of fact, we will work in log-scale, hence using
-\code{log.p = TRUE} in both \code{pnorm()} and \code{qnorm()}, and we want
+\code{log.p = TRUE} in both \fct{pnorm} and \fct{qnorm}, and we want
 to use positive numbers both for argument and result (and nicer formulae),
 so work with the \emph{upper tail}, i.e., use \code{lower.tail = FALSE}.
 Consequently, instead of computing and inverting $\Phi(x)$, i.e., our
@@ -415,7 +420,7 @@ local({ # larger range for s -- qnorm-extreme-bad.R.~1~ (Sep 25, 2020):
 \caption{Extreme tail log-scale \code{qnorm(-s, ..)} in R 4.0.5 or earlier, i.e., up to 2021}
 \label{fig:qnorm405}
 \end{figure}
-looks good up to about $10^{12}$, i.e., \code{qnorm()} coinciding with the
+looks good up to about $10^{12}$, i.e., \fct{qnorm} coinciding with the
 true $x$ \code{qs}, but beyond $10^{14}$ diverging for larger $s$,
 and for even larger $s$ showing
 complete loss of accuracy as \code{qnorm(-s, *)} converges (to
@@ -477,7 +482,7 @@ for large $|x|$ or large $|l_p| = -l_p =: s$ (using notation as in the \R{}
 code above with \code{lp} and \code{s <- -lp}).
 
 Consequently, a first order remedy against the ``catastrophic'' precision
-loss for extreme tail \code{qnorm()} was to use the above $\sqrt{2s}$
+loss for extreme tail \fct{qnorm} was to use the above $\sqrt{2s}$
 approximation for upper tail probabilities specified in log scale.
 
 Computer experimentation was used to find a numerically optimal (for the
@@ -512,7 +517,7 @@ qC <- cP.$root # 1153.242
 @
 %%[1] -664991
 so the optimal cutoff where to use the sqrt-approximation is at \code{lp}$
-= \log p = -664991$ or $r = \sqrt{-\log p} = 815.470$ (with $r$ defined in (\ref{r.def})), and for convenience (round number), using the cutoff $r \ge 816$ in \code{qnorm()}, i.e., basically
+= \log p = -664991$ or $r = \sqrt{-\log p} = 815.470$ (with $r$ defined in (\ref{r.def})), and for convenience (round number), using the cutoff $r \ge 816$ in \fct{qnorm}, i.e., basically
 \begin{Schunk}
 \begin{Sinput}
   if(r >= 816)  value = sqrt(2) * r;
@@ -532,7 +537,7 @@ to be in R 4.1.0  with NEWS entry
   \end{quote}
 \end{minipage}
 
-Indeed, \code{qnorm()} was now ``first order accurate'' even in the extreme tails, and in a plot
+Indeed, \fct{qnorm} was now ``first order accurate'' even in the extreme tails, and in a plot
 such as Figure~\ref{fig:qnorm405} one would not notice any inaccuracy.
 But then, there you'd visually only notice deviations in the order of
 $1\;\%$, i.e, already visible in 2 digits accuracy.  Looking at the
@@ -554,19 +559,19 @@ ablaxis1(x=816)
 \section[More accurate asymptotic qnorm(., log.p=TRUE)]{%
   More accurate asymptotic \code{qnorm(., log.p=TRUE)}}
 
-In \R, the function \code{qnorm()} and notably the underlying C API
-function \code{qnorm()}\footnote{\R's C API \code{qnorm()} is an alias for
-  \code{qnorm5()} in the source file \file{<R>/src/nmath/qnorm.c}}
+In \R, the function \fct{qnorm} and notably the underlying C API
+function \fct{qnorm}\footnote{\R's C API \fct{qnorm} is an alias for
+  \fct{qnorm5} in the source file \file{<R>/src/nmath/qnorm.c}}
 are used in other places, not the least also to (approximately) compute
 quantiles of other distributions, such as the (non central) t.
 
 In addition, $\Phi^{-1}(x)$ is a very smooth monotone function, it
-may naturally be desirable that \code{qnorm()} computes its values to the
+may naturally be desirable that \fct{qnorm} computes its values to the
 same full (double precision) accuracy as most other mathematically well
 defined functions in \R.
 
 Now, the classical simple first order asymptotic (\ref{eq:Phi-asym-0}) for
-$\Phi(.)$, i.e., \R's \code{pnorm()}, has been known to many more terms,
+$\Phi(.)$, i.e., \R's \fct{pnorm}, has been known to many more terms,
 also for a long time. \citet{Mills1926} builds already on work by Laplace,
 said to have derived some of the two asymptotic series, in
 \cite{AbrMS72}[p. 932],
@@ -612,7 +617,7 @@ As previously, we need to use this in $\log$-scale,
                                                       \label{q:nested}
 \end{align}
 and $l_p$ is the log probability (given as first argument to
-\code{qnorm()}), and we would like to \emph{solve} for $x$, as in the
+\fct{qnorm}), and we would like to \emph{solve} for $x$, as in the
 simple $1^{st}$ order case in (\ref{eq:log-Phi-asym-0}) and
 (\ref{eq:x-asym-0}) above, but of course that is not possible.
 
@@ -672,9 +677,9 @@ cumulative normal, $\Phi^{-1}\bigl(e^{-s}\bigr)$, namely
   x_1(s) =& \sqrt{2s - \log(4\pi s)}, \mathrm{\ \ from\ } (\ref{x1sq}) \\
   x_2(s) =& \sqrt{2s - \log(2\pi\; x_1^2) - 2/(x_1^2+2)}, \mathrm{\ \ from\ } (\ref{x2sq}) \\
   x_3(s) =& \sqrt{2s - \log(2\pi\; x_2^2) + 2 \logIp( r(x_2) )}, \mathrm{\ \ see\ } (\ref{x3sq}) \\
-  x_4(s) =& \dots\dots,\quad x_5(s) = \dots\dots,  \mathrm{\ \ see\ } (\ref{x4sq}),\ (\ref{x5sq}). \\
+  x_4(s) =& \dots\dots,\quad x_5(s) = \dots\dots,  \mathrm{\ \ see\ } (\ref{x4sq}),\ (\ref{x5sq}), \\
 \end{align*}
-These $x_k(s)$ are provided as plain \R{} function \code{qnormAsymp()}, in
+these $x_k(s)$ are provided as plain \R{} function \fct{qnormAsymp}, in
 our \CRANpkg{DPQ} package,
 specifically, $x_k(s) = $ \code{qnormAsymp(lp = -s, order = k)}\footnote{%
   which is the short form; indeed, \code{qnormAsymp(lp = lp, order = k)} is
@@ -720,8 +725,8 @@ legend(4e7, 1e-9, nks, col=1:6, lty=1:5, lwd=2, bty="n")#, cex=.75, bg=adjustcol
 \end{figure}
 
 \subsection*{Fully accurate qnorm()}
-Our (package \CRANpkg{DPQ}) \code{qnormR(... version = "2022-08")} now implements
-a (pure \R{} implementation) also to be used in
+Our package \CRANpkg{DPQ}'s \code{qnormR(... version = "2022-08")} now implements
+a (pure \R{} implementation) also to be used (in C) in
 the next version of R,
 which uses ``the optimal'' asymptotic approximation $x_k(s)$ for $s = r^2 > 27^2$ and $k \in \{0,1,\dots,5\}$
 as defined above in (\ref{x0sq})--(\ref{x5sq}).
@@ -747,13 +752,13 @@ e.g. $k = 0$ is fully accurate and hence optimal and used  for $r \ge 6.4e8 = 64
  equivalently, for $s = -\mathrm{lp} \ge 4.096e17$, where as
 for $r \in [55, 109) \Longleftrightarrow s\in [3025, 11880)$ one needs (and uses) $k = 4$.
 %% see also R code ../R/norm_f.R {and R's qnorm.c eventually}
-These were determined using function \code{p.qnormAsy2()} in appendix \ref{sec:p.qnormAsy},
+These were determined using function \fct{p.qnormAsy2} in appendix \ref{sec:p.qnormAsy},
 for visualizing the
 optimal region for switching from $k-1$ to $k$, for $k = 1,2,3,4,5$.
 
-To see how the final \code{qnormR()} is implemented, you can look at the \code{length-1} version
-\code{qnormR1()}\footnote{indeed, in the package source file \verb|DPQ/R/norm_f.R|,
-  \code{qnormR()} is defined to correctly vectorize in its main arguments \code{p}, \code{mu},
+To see how the final \fct{qnormR} is implemented, you can look at the \code{length-1} version
+\fct{qnormR1}\footnote{indeed, in the package source file \verb|DPQ/R/norm_f.R|,
+  \fct{qnormR} is defined to correctly vectorize in its main arguments \code{p}, \code{mu},
   and \code{sd}, by \ \code{qnormR <- Vectorize(qnormR1, c("p", "mu", "sd"))}}.
 
 \afterpage{\clearpage}
@@ -771,11 +776,18 @@ regions, i.e., intervals for $r$, partitioning $(27, \infty)$ and
 implemented in \R{} function \code{qnormR(*, version = "2022-08")} for
 reproducibility
 and to be used in (the C code in \file{Rmathlib} in) the next version of
-\R's \code{qnorm()}.
+\R's \fct{qnorm}.
 
 
-\section{Session Information}
+\section{Computational details, Session Information}
 %%       ------------------------
+
+For most of our plots we made use of utilities for log-scale axis drawing,
+notably \fct{eaxis} and for \fct{p.qnormAsy2} in appendix
+\ref{sec:p.qnormAsy} from our package \CRANpkg{sfsmisc}, \citep{sfsmisc},
+from which also \fct{relErrV} was used, for computing \code{relEasym},
+plotted in Fig.~\ref{fig:qnormAsym} and \ref{fig:qnormAsymZoom}.
+
 
 <<sessionInfo, results=tex>>=
 toLatex(sessionInfo(), locale=FALSE)
@@ -787,14 +799,15 @@ unlist(packageDescription("DPQ")[c("Package", "Version", "Date")])
 
 % \section{Conclusion}
 % ...
-
-\appendix
+
+\appendix%=============================================================================
+%======================================================================================
 \section[relErrV() (from sfsmisc)]{%
-  Function \code{relErrV()} (package \pkg{sfsmisc})}\label{sec:relErrV}
+  Function \fct{relErrV} (package \pkg{sfsmisc})}\label{sec:relErrV}
 
 To compute relative (approximation) errors, in a way that works correctly, also with
 \code{Inf}, \code{NA}, and \code{NaN}s, we make use of the function
-\code{relErrV()} from (our own) CRAN package \CRANpkg{sfsmisc},
+\fct{relErrV} from (our own) CRAN package \CRANpkg{sfsmisc},
 defined\footnote{currently; for updates, see
   \url{https://github.com/mmaechler/sfsmisc/blob/master/R/relErr.R}} as
 <<relErrV-def>>=
@@ -836,7 +849,7 @@ relErrV <- function(target, current, eps0 = .Machine$double.xmin) {
 @
 
 \section[p.qnormAsy2() for cutpoints]{%
-  Function \code{p.qnormAsy2()} for showing optimal cutpoints}\label{sec:p.qnormAsy}
+  Function \fct{p.qnormAsy2} for showing optimal cutpoints}\label{sec:p.qnormAsy}
 
 This function, currently also used in \pkg{DPQ}'s \code{example(qnormAsymp)},
 was used by the author and may be used for reproducibility to visualize the

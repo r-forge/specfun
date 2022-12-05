@@ -4,6 +4,14 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
+\section{Version 0.5-4 (2022-12-05, svn r241)}{
+  \subsection{Misc}{
+    \itemize{
+      \item Tweaks to the \file{qnorm-asymp} vignette.
+    }
+  }
+}
+
 \section{Version 0.5-3 (2022-12-01, svn r240)}{
   \subsection{NEW FEATURES}{
     \itemize{
