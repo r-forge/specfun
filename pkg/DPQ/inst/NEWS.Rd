@@ -4,10 +4,10 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-4 (2022-12-05, svn r241)}{
+\section{Version 0.5-4 (2022-12-28, svn r242)}{
   \subsection{Misc}{
     \itemize{
-      \item Tweaks to the \file{qnorm-asymp} vignette.
+      \item Tweaks to the \file{qnorm-asymp} vignette, related to JSS submission.
     }
   }
 }

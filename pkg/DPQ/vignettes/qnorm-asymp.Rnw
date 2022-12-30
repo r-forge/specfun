@@ -17,7 +17,7 @@
 %
 %\VignetteIndexEntry{Asymptotic Tail Formulas For Gaussian Quantiles}% in R% << shown on CRAN page!
 %\VignetteDepends{DPQ}
-%\VignetteDepends{sfsmics}
+%\VignetteDepends{sfsmisc}
 %\VignetteDepends{stats}
 %--not-yet--\VignetteDepends{Rmpfr}
 \SweaveOpts{engine=R,pdf=FALSE,grdevice=pdfDB, width=7,height=4, strip.white=true,keep.source=TRUE}
@@ -109,41 +109,6 @@
 %% makes space between Sinput and Soutput smaller:
 \fvset{listparameters={\setlength{\topsep}{0pt}}}% !! quite an effect!
 %%
-% %% Marius' environments
-% \newtheoremstyle{mythmstyle}%
-% 	{0.5em}%space above
-% 	{0.5em}%space below
-% 	{}%body font
-% 	{}%indent amount
-% 	{\bfseries}%head font
-% 	{}%punctuation after head
-% 	{\newline}%space after head
-% 	{\thmname{#1}\ \thmnumber{#2}\ \thmnote{(#3)}}%head spec
-% \newcommand*{\myskip}{~\vspace{-1.2em}}%skip and space when environment begins with enumerate
-% \newcommand*{\myskipalgo}{~\vspace{-2.6em}}%skip and space when algorithm begins with tabbing
-% \newcommand*{\myskipalgotext}{~\par\vspace{-1.2em}}%skip and space when algorithm begins with text
-% \theoremstyle{mythmstyle}
-% \newtheorem{definition}{Definition}[section]%number all environments in a sequence (for every section)
-% \newtheorem{proposition}[definition]{Proposition}
-% \newtheorem{lemma}[definition]{Lemma}
-% \newtheorem{theorem}[definition]{Theorem}
-% \newtheorem{corollary}[definition]{Corollary}
-% \newtheorem{remark}[definition]{Remark}
-% \newtheorem{example}[definition]{Example}
-% \newtheorem{algorithm}[definition]{Algorithm}
-% \renewcommand*\proofname{Proof}
-% \makeatletter%correct qed adjustment
-% \renewenvironment{proof}[1][\proofname]{\par
-%   \pushQED{\qed}%
-%   \normalfont\topsep2\p@\@plus2\p@\relax
-%   \trivlist
-%   \item[\hskip\labelsep
-%      \sffamily\bfseries #1]~\newline\ignorespaces
-% }{%
-%   \popQED\endtrivlist\@endpefalse
-% }
-% \makeatother
-%
 %---{m-floating}: Relaxed Floating FIGUREs options (=> more figures on page w/o text):
 %                                     defaults from REPORT/ARTICLE.STY
 \renewcommand{\topfraction}{1}        %\def\topfraction{.7}
@@ -254,9 +219,12 @@ and the reference to \cite{AS111:BeaSpr1977}.
 Also, already before releasing R 1.0.0 on Feb.~29, 2000,
 we had introduced the \code{log.p} and \code{lower.tail}  logical switches,
 \begin{quotation}\smaller
- r7615 | maechler | 2000-01-17 12:18:30 +0100 (Mo, 17 Jan 2000)
-
- add new argument  lower.tail and log[p]; at first only to [dpq]pois()
+  \noindent
+  r7615 | maechler | 2000-01-17 12:18:30 +0100 (Mo, 17 Jan 2000)\\
+  \verb|add new argument lower.tail and log[p]; at first only to [dpq]pois()|
+  \\[1ex] \noindent
+  r7639 | maechler | 2000-01-18 12:10:44 +0100 (Di, 18 Jan 2000)\\
+  \verb|[dpq]norm() & [dpq]lnorm() have new args|
 \end{quotation}
 
 Already a few months after releasing R 1.0.0 (June 6, svn r9464),
@@ -353,7 +321,7 @@ and we ``define'' the relative error of \fct{qnorm} as
 \code{qnorm(pnorm(x)) / x - 1} where we need to adjust for cases where $x$
 is (very close to) zero or not finite, etc.
 This is done by function \fct{relErrV} from package
-\CRANpkg{sfsmisc}, shown in the appendix \ref{sec:relErrV},
+\CRANpkg{sfsmisc}, shown in the appendix~\ref{sec:relErrV},
 which takes care of all special or boundary cases.
 
 And as a matter of fact, we will work in log-scale, hence using
@@ -372,6 +340,7 @@ require("DPQ") # -->  qnormR():
 qnrm    <- qnorm (-s, lower.tail=FALSE, log.p=TRUE)
 qnrm405 <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version= "4.0.x") # R <= 4.0.5
 qnrm410 <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version= "2020-10-17")
+qnrm43  <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version= "2022")
 Rver <- sfsmisc::shortRversion()
 if(getRversion() <= "4.0.5") { # our qnormR(.., version="4.0.x")
     cat(sprintf("%s, \"4.0.5\",\n   all.equal(*, tol=0): %s;  identical(): %s\n", Rver,
@@ -382,7 +351,6 @@ if(getRversion() <= "4.0.5") { # our qnormR(.., version="4.0.x")
                 all.equal(qnrm, qnrm410, tolerance=0), identical(qnrm, qnrm410)))
     stopifnot(all.equal(qnrm, qnrm410, tolerance = 1e-12))
 } else { # R version >= 4.3.x
-    qnrm43 <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version = "2022")
     cat(sprintf("%s, >= 4.3.x,\n   all.equal(*, tol=0): %s;  identical(): %s\n", Rver,
                 all.equal(qnrm, qnrm43, tolerance=0), identical(qnrm, qnrm43)))
     rE6 <- qnorm(-1e6, log.p=TRUE)/-1414.2077829910174  - 1
@@ -431,10 +399,11 @@ asymptotically, $\mathtt{qnorm}(|s|, ..) \sim \sqrt{2|s|}$ which in log-log scal
 is a line (with intercept $\log\sqrt{2}$ and slope $1/2$).
 
 Closer inspection, showing the relative errors in Figure~\ref{fig:relErr405} :
+<<ablaxis1, echo=FALSE>>=
+ablaxis1 <- function(x) { abline(v = x^2, col=4, lty=2)
+    axis(1, at=x^2, labels = substitute(X^2, list(X=x)), col=4, col.axis=4, line=-.61, cex.axis=0.75) }
 <<p-relErr0, eval=FALSE>>=
 if(!exists("version.txt"))  version.txt <- R.version.string
-ablaxis1 <- function(x) { abline(v = x^2, col=4, lty=2)
-    axis(1, at=x^2, labels = substitute(X^2, list(X=x)), col=4, col.axis=4, line=-.61, cex=0.25) }
 plot(abs(relE_qn) ~ s, type="l", log="xy",
      main = "inaccuracy of qnorm(-s, log.p=TRUE, lower.tail=F)", axes=FALSE)
 eaxis(1, nintLog = 13, sub10 = 2); eaxis(2); ablaxis1(x=27)
@@ -447,7 +416,7 @@ for
 <<relE405>>=
 relE_qn <- relErrV(qs, qnrm405) ; version.txt <- "R versions up to R 4.0.5"
 @
-\begin{figure}[h!]
+\begin{figure}[H]
 \centering
 <<do-p-relE405, fig=TRUE, echo=FALSE>>=
 <<p-relErr>>
@@ -546,7 +515,7 @@ than $10^{-5}$ and maximal at the cutoff $s = 816^2 = 665856$ :
 <<relE410>>=
 relE_qn <- relErrV(qs, qnrm410); version.txt <- "R 4.1.0 to 4.2.x"
 @
-\begin{figure}[h!]
+\begin{figure}[H]
 \centering
 <<do-p-relE410, fig=TRUE, echo=FALSE>>=
 <<p-relErr>>
@@ -745,21 +714,73 @@ $r\ge$     & 27  &   55 &  109  &   840  &     36000       & 6.4e8 \\
 $s=r^2\ge$ & 729 & 3025 & 11880 & 705600 & 1296$\cdot 10^6$ & 4.096e17
 %  k             5      4       3        2                 1          0
 \end{tabular}
-\label{tab:cutpoints}\caption[optimal cutpoints]{%
+\caption[optimal cutpoints]{%
   optimal cutpoints to determine $k$ to use $x_k(s)$ for $r=\sqrt{s} > 27$.}
+\label{tab:cutpoints}
 \end{table}
 e.g. $k = 0$ is fully accurate and hence optimal and used  for $r \ge 6.4e8 = 640\cdot 10^6$, or
  equivalently, for $s = -\mathrm{lp} \ge 4.096e17$, where as
 for $r \in [55, 109) \Longleftrightarrow s\in [3025, 11880)$ one needs (and uses) $k = 4$.
 %% see also R code ../R/norm_f.R {and R's qnorm.c eventually}
-These were determined using function \fct{p.qnormAsy2} in appendix \ref{sec:p.qnormAsy},
+These were determined using function \fct{p.qnormAsy2} in appendix~\ref{sec:p.qnormAsy},
 for visualizing the
 optimal region for switching from $k-1$ to $k$, for $k = 1,2,3,4,5$.
+
+Empirically, we see that now most relative errors are numerically zero and the others are at most
+$\epsilon_c = 2^{-52} \approx 2.22 \cdot 10^{-16}$, indeed the asymptotic $x_5(s)$ see (\ref{x5sq}) may be seen to be even better than algorithm AS~241 for the small region $s \in [22.8^2, 27^2]=[519.84, 729]$. %
+<<p-relE-x5-zoom, fig=TRUE, height=3, echo=FALSE>>=
+absE <- function(e) pmax(abs(e), 2^-54) # = 1/4 eps_c
+local({ # larger range for s -- qnorm-extreme-bad.R.~1~ (Sep 25, 2020):
+  qs <- seq(27, 40, by=1/256)
+  lp <- pnorm(qs, lower.tail=FALSE, log.p=TRUE)
+  s <- -lp # = -pnorm(..) = -log(1 - Phi(qs)) > 0
+  qnrm43  <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version= "2022")
+  relEq43 <- relErrV(qs, qnrm43)
+<<p-mar>>
+  par(mar=c(2, par("mar")[-1]))
+  plot(absE(relEq43) ~ s, type="l", log="xy", ylim = 10^c(-16.3,-15.05), col=adjustcolor(1, 1/2), axes=FALSE)
+  qnAsym5 <- qnormAsymp(lp=lp, order = 5)
+  relE5 <- relErrV(qs, qnAsym5)
+  lines(absE(relE5) ~ s, col=adjustcolor(2, 1/2),  lwd = 2)
+  ## smoothing "discrete" relative errors:
+  lines(smooth.spline(s, abs(relEq43)), col=adjustcolor(1, 2/3), lwd=4, lty="6132")
+  lines(smooth.spline(s, abs(relE5)  ), col=adjustcolor(2, 2/3), lwd=4, lty="72")
+  ## nice axes etc
+  axis(1, at=c(17,19,20)^2)
+  eaxis(1, nintLog = 16, sub10 = 2); eaxis(2); ablaxis1(27)
+  r. <- c(17,19:23,25,27, 30, 35, 40) ;        ablaxis1(21.5); ablaxis1(22.8)
+  axis(3, at=r.^2, label=r., col=4, col.axis=4, line=-.5, cex.axis=.75)
+  axis(3, at=19.5^2, label=quote(r == {}), col=4, col.axis=4, col.ticks=NA, cex.axis=1.4, line=-.5)
+  if(FALSE) {## visually inspect "table" values
+    cbind(qs,  r = sqrt(s), s, relE5, relEq43)[21^2 <= s & s <= 27^2, ]
+   cbind(qs, r=sqrt(s), s)[ which(abs(relE5) > 0),]  # very last one is r = 23.9081
+  }
+})
+@
+% , but for back compatibility we keep using it ..
+<<relE43>>=
+relE_qn <- relErrV(qs, qnrm43); version.txt <- "R > 4.2.x (after 2022)"
+@
+We \emph{tabulate} the values as multiples of$\epsilon_c$ not needing a visualization:
+<<relE43-tab>>=
+table(2^52 * relE_qn)           # all in [-2.5, 3]
+table(2^52 * relE_qn[s > 27^2]) #     in [-1,   1]
+@
+% \begin{figure}[H]
+% \centering
+% *NOT* doing it:                              vvvvvvvvvv
+<<do-p-relE43, fig=TRUE, height=2, echo=FALSE, eval=FALSE>>=
+<<p-relErr>>
+@
+% \caption{qnormR(-s, .., version= "2022") relative error in extreme tails}% planned R ver.~$> 4.2.x$
+% \label{fig:relErr43}
+% \end{figure}
 
 To see how the final \fct{qnormR} is implemented, you can look at the \code{length-1} version
 \fct{qnormR1}\footnote{indeed, in the package source file \verb|DPQ/R/norm_f.R|,
   \fct{qnormR} is defined to correctly vectorize in its main arguments \code{p}, \code{mu},
   and \code{sd}, by \ \code{qnormR <- Vectorize(qnormR1, c("p", "mu", "sd"))}}.
+
 
 \afterpage{\clearpage}
 
@@ -783,11 +804,10 @@ and to be used in (the C code in \file{Rmathlib} in) the next version of
 %%       ------------------------
 
 For most of our plots we made use of utilities for log-scale axis drawing,
-notably \fct{eaxis} and for \fct{p.qnormAsy2} in appendix
-\ref{sec:p.qnormAsy} from our package \CRANpkg{sfsmisc}, \citep{sfsmisc},
+notably \fct{eaxis} and also \fct{mult.fig} (for \fct{p.qnormAsy2} in appendix~\ref{sec:p.qnormAsy})
+from our package \CRANpkg{sfsmisc} \citep{sfsmisc},
 from which also \fct{relErrV} was used, for computing \code{relEasym},
 plotted in Fig.~\ref{fig:qnormAsym} and \ref{fig:qnormAsymZoom}.
-
 
 <<sessionInfo, results=tex>>=
 toLatex(sessionInfo(), locale=FALSE)
@@ -853,7 +873,8 @@ relErrV <- function(target, current, eps0 = .Machine$double.xmin) {
 
 This function, currently also used in \pkg{DPQ}'s \code{example(qnormAsymp)},
 was used by the author and may be used for reproducibility to visualize the
-five ``cutpoint - regions'' to switch from approximation $x_{k-1}(r)$ to
+five ``cutpoint - regions'', Table~\ref{tab:cutpoints},
+to switch from approximation $x_{k-1}(r)$ to
 $x_k(r)$, for $k=1,\dots,5$ and $r = \sqrt{s} = \sqrt{- \log p}$, using
 <<def-r-cutoffs, echo=FALSE>>=
 r0 <- c(27, 55, 109, 840, 36000, 6.4e8) # <-- cutoffs  <--> in ../R/norm_f.R
@@ -910,7 +931,7 @@ p.qnormAsy2 <- function(r0, k, # use k-1 and k in region around r0
 }
 @
 
-\begin{figure}
+\begin{figure}[H]
   \centering
 \setkeys{Gin}{width=1.05\textwidth}% default 0.8
 %%  using  A4 portrait => ratio = sqrt(2)
