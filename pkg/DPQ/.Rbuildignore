@@ -21,8 +21,10 @@ TAGS
 etags
 ^(dt|Rplots|p1l1|stirlerr.*)\.pdf
 vignettes/.*:
+vignettes/DPQ_.*\.tar\.gz$
 vignettes/.*\.(pdf|aux|out|tex)$
 vignettes/.*-woven
+vignettes/.*JSS
 inst/doc/.*woven
 tests/.*\.pdf
 tests/.*\.Rout[-_]?

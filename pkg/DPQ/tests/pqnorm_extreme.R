@@ -9,17 +9,59 @@
 library(DPQ)
 library(sfsmisc)# {we import it in DPQ}
 
+p.ver <- function() mtext(R.version.string, cex=3/4, adj=1)
+readUser <- function(i, max.i) {
+    if(interactive() && i != max.i) {
+        cat("[Enter] to continue: ")
+        cat(readLines(stdin(), n=1), "\n")
+    }
+}
+# "bisque4" , "coral2" ..
+p.epsC <- function(col = "coral2", alpha = 3/4, lwd1 = 3) {
+    lg <- par("ylog")
+    mult <- if(lg) c(1/2, 1, 2) else -2:2 # multiplicities
+    is1 <- abs(mult) == 1
+    abline(h = .Machine$double.eps * mult,
+           col = adjustcolor(col, alpha),
+           lty = ifelse(is1, 2, 5),
+           lwd = ifelse(is1, lwd1, 1))
+}
+
+absP <- function(re) pmax(abs(re), 2e-17) # not zero, so log-scale "shows" it
+
+
 if(!dev.interactive(orNone=TRUE)) pdf("pqnorm-extreme.pdf")
 
-r <- sort(c(seq(1,100, by=1/8),
-            2 ^ c(seq(6.5, 10, by=1/16), seq(10.25, 14.5, by=1/4))))
-str(r)
-summary(r)
-## Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
-## 1.00    28.09    55.19   231.97    82.28 23170.47
+x <- sort(2 ^ c(seq(3, 10, by=1/16), seq(10.125, 17, by=1/8)))
+str(x)
+summary(x)
 
-s <- r^2
-lp <- -s
+pn <- pnorm(x, lower.tail=FALSE, log.p=TRUE)
+## look at the asymptotic approximations:
+k.s <- 0:5; nks <- paste0("k=", k.s); k. <- setNames(k.s, nks)
+pnAsy <- sapply(k., function(k) pnormAsymp(x, k=k, lower.tail=FALSE, log.p=TRUE))
+
+relEpnAsy <- apply(pnAsy, 2, relErrV, target = pn)
+tit <- "relErrV(pnormAsym(x, k=k, lower.tail=FALSE, log.p=TRUE)\n  vs  pnorm(x, ..)"
+leg.k <- function(x, y=NULL, ...) legend(x,y, legend=paste0("k=",0:5), lwd=2, col=1:6, lty=1:6, bty="n", ...)
+matpl <- function(x, y, ...) {
+    matplot(x,y, type="l", lwd=2, log="x", main=tit, xaxt="n", ...)
+    eaxis(1, sub10=3); grid()
+}
+
+matpl(x, relEpnAsy, ylim = c(-8,1)*5e-6 ); leg.k("center")
+matpl(x, relEpnAsy, ylim = c(-1,1)*1e-8 ); leg.k("topright")
+matpl(x, relEpnAsy, ylim = c(-1,1)*1e-10); leg.k("topright")
+matpl(x, relEpnAsy, ylim = c(-1,1)*1e-12); leg.k("topright")
+matpl(x, relEpnAsy, ylim = c(-1,1)*1e-14); leg.k("topright"); p.epsC()
+matpl(x, relEpnAsy, ylim = c(-1,1)*1e-15); leg.k("topright"); p.epsC()
+abline(v = 38581.371, col=adjustcolor(4, 1/2), lwd=3) # the Rmpfr maximal value (for "independent accurate pnorm")
+
+## They seem to be of opposite sign - mostly (and apart from +/- epsC)
+## *but*  k=5 (at the beginning; (and then +/- epsC)
+
+## ?proof?  --- use Rmpfr-version pnormAsymp()  but there,
+## .......  pnorm(x, log.p=TRUE) *underflows* to -Inf as soon as x > 38581.371
 
 ## Start with quantiles so we know the  "truth according to pnorm()" :
 qs <- c(2^seq(0, 35, by=1/256), Inf) # => s >= 1.84  --> no NaN in xs_5 etc
@@ -35,18 +77,6 @@ head(dat <- data.frame(l2q=log2(qs), qs, # lp,
                        relE_qn = relErrV(qs, qnp)))
 				##^^^^^^  will depend much on R version
 stopifnot(dat[nrow(dat), "relE_qn"] == 0)
-
-p.ver <- function() mtext(R.version.string, cex=3/4, adj=1)
-readUser <- function(i, max.i) {
-    if(interactive() && i != max.i) {
-        cat("[Enter] to continue: ")
-        cat(readLines(stdin(), n=1), "\n")
-    }
-}
-p.epsC <- function(col = adjustcolor("bisque", 3/4), lwd1 = 3)
-    abline(h = .Machine$double.eps * c(1/2, 1, 2),
-           col=col, lty=c(5,2,5), lwd=c(1,lwd1,1))
-
 
 ## relative Error (log x)
 plot(relE_qn ~ s, dat, log="x", type="l", col = 2); p.ver()
@@ -83,8 +113,6 @@ for(j in seq_along(xL)) {
     legend("top", nks, col=1:6, lty=1:5, lwd=2, bty="n")
     readUser(j, length(xL))
 }
-
-absP <- function(re) pmax(abs(re), 2e-17) # not zero, so log-scale "shows" it
 
 for(j in seq_along(xL)) {
     if(!is.null(yli <- yL[[j]])) yli <- c(2e-17, 100*yli[2])

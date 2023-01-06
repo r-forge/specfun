@@ -6,8 +6,8 @@
   \code{\link{pnorm}()}'s (extreme) tail, from Abramawitz and Stegun's
   26.2.13 (p.932).% \url{https://personal.math.ubc.ca/~cbm/aands/page_932.htm}
 }
-\usage{
-pnormAsymp(x, k, lower.tail = FALSE, log.p = FALSE)% ../R/norm_f.R
+\usage{% ----------> ../R/norm_f.R
+pnormAsymp(x, k, lower.tail = FALSE, log.p = FALSE)
 }
 \arguments{
   \item{x}{positive (at least non-negative) numeric vector.}
@@ -50,16 +50,17 @@ if(requireNamespace("Rmpfr")) {
   PxA. <- new("mpfrMatrix", unlist(PxA.), Dim=dim(PxA.), Dimnames=dimnames(PxA.))
   PxA2 <- Rmpfr::cbind(pn_dbl = Px, PxA.,
                        pnormU_S53 = pnormU_S53(x=x., lower.tail = FALSE, log.p=TRUE))
-  ## rel.errors : {note that pnormU_S53() is very slightly better than "k=2":
+  ## rel.errors : note that pnormU_S53() is very slightly better than "k=2":
   print( Rmpfr::roundMpfr(Rmpfr::cbind(x., 1 - PxA2/Px.), precBits = 13), width = 111)
   pch <- c("R", 0:5, "U")
   matplot(x, abs(1 -PxA2/Px.), type="o", log="xy", pch=pch,
           main="pnorm(<tail>) approximations' relative errors - pnormAsymp(*, k=k)")
   legend("bottomleft", colnames(PxA2), col=1:6, pch=pch, lty=1:5, bty="n", inset=.01)
-  at1 <- axTicks(1, axp=c(par("xaxp")[1:2], 3))
+  at1 <- axTicks(1, axp = c(par("xaxp")[1:2], 3))
   axis(1, at=at1)
   abline(h = 1:2* 2^-53, v = at1, lty=3, col=adjustcolor("gray20", 1/2))
   axis(4, las=2, at= 2^-53, label = quote(epsilon[C]), col="gray20")
 }
-}
+
+}% end{ex.}
 \keyword{distribution}

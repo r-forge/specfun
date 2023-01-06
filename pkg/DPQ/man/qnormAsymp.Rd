@@ -137,5 +137,5 @@ for(ir in 2:length(r0)) {
        cat("[Enter] to continue: "); cat(readLines(stdin(), n=1), "\n") }
 }
 
-}
+}% ex.
 \keyword{distribution}
