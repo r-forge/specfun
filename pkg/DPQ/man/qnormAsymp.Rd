@@ -14,7 +14,7 @@ qnormAsymp(p,
 }
 \arguments{
   \item{p}{numeric vector of probabilities, possibly transformed, depending
-    on \code{log.p}.  Does not need to be specified, if \code{lp} is instead.}
+    on \code{log.p}.  Does not need to be specified, if \code{lp} is used instead.}
   \item{lp}{numeric (vector) of \code{log(1-p)} values; if not specified,
     computed from \code{p}, depending on \code{lower.tail} and \code{log.p}.}
   \item{order}{an integer in \eqn{\{0,1,\dots,5\}}{{0,1,..,5}}, specifying the
@@ -25,7 +25,7 @@ qnormAsymp(p,
     \eqn{p} are given as \eqn{\log(p)} in argument \code{p}.}
 }
 \details{
-  These \emph{asymptotic} approximations have been derived by Maechler(2022)
+  These \emph{asymptotic} approximations have been derived by Maechler (2022)
   via iterative plug-in to the well known asymptotic approximations of
   \eqn{Q(x) = 1 - \Phi(x)} from Abramowitz and Stegun (26.2.13), p.932,
   which are provided in our package \pkg{DPQ} as \code{\link{pnormAsymp}()}.

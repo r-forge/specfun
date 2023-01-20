@@ -4,10 +4,10 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-4 (2023-1-6, svn r243)}{
+\section{Version 0.5-4 (2023-01-20, svn r244)}{
   \subsection{Misc}{
     \itemize{
-      \item Tweaks to the \file{qnorm-asymp} vignette, related to JSS submission.
+      \item Tweaks to the \file{qnorm-asymp} vignette, related to the JSS submission.
 
       \item \file{../tests/pqnorm_extreme.R} plots more about the
       \code{pnormAsymp()} relative errors.

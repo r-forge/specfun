@@ -207,7 +207,7 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
 	###  r = sqrt( - log(min(p,1-p)) )  <==>  min(p, 1-p) = exp( - r^2 ) :
         r  <- sqrt(-lp)
         if(trace) cat(sprintf("\t somewhat close to 0 or 1: r := sqrt(-lp) = %11g\n", r))
-        if(is.na(r))
+        if(is.na(r)) # safety-check, should never happen
             warning("r = sqrt( - log(min(p,1-p)) )  is NA -- \"we have lost\"")
 
         if (!is.na(r) && r <= 5.) { ## <==> min(p,1-p) >= exp(-25) ~= 1.3888e-11 */

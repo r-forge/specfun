@@ -19,6 +19,8 @@
 %\VignetteDepends{DPQ}
 %\VignetteDepends{sfsmisc}
 %\VignetteDepends{stats}
+\newif\ifJSS
+\JSSfalse
 %--not-yet--\VignetteDepends{Rmpfr}
 \SweaveOpts{engine=R,pdf=FALSE,grdevice=pdfDB, width=7,height=4, strip.white=true,keep.source=TRUE}
 
@@ -38,9 +40,10 @@
 
   Using these formulas for order $k=0, 1, \dots, 5$, for six different regions (adjacent intervals)
   allows to provide fully accurate \fct{qnorm} computations also on the
-  log-scale.
-  Pure \R{} implementations of these are provided in our \R{} package
-  \CRANpkg{DPQ}, \citep{DPQ}, functions \fct{qnormAsymp} and \fct{qnormR}
+  log scale.
+  Pure \R{} implementations of these are provided in % our
+  \R{} package
+  \CRANpkg{DPQ} \citep{DPQ}, functions \fct{qnormAsymp} and \fct{qnormR}
   and have also been
   prepared to be added to (the C code in \file{Rmathlib} in) the next
   version of \R's \fct{qnorm}.
@@ -87,6 +90,8 @@
 %NON-STANDARD:\RequirePackage{bbm}%only for indicator functions
 % \usepackage{enumitem}%for automatic numbering of new enumerate environments
 \usepackage{relsize}%-> \larger and \smaller
+%%MM: jss.cls load xcolors, but *not* with option [x11names] .. work around
+\definecolorstrue\input{x11nam.def}\definecolorstrue
 \usepackage[
   format=hang,
   % NOT for JSS: labelsep=space,
@@ -183,7 +188,7 @@ if(Sys.getenv("USER") == "maechler") # my latest checked development version
 % \dots\dots
 
 \section[Gaussian Quantiles in R]{%
-  Gaussian Quantiles in R -- okay on regular probability range}
+  Gaussian quantiles in \R\ -- okay on regular probability range}
 %% see ./qnorm-svn-log.md  for the "history" notes (svn log) and
 %%       ^^^^^^^^^^^^^^^^
 %% ~/R/D/r-devel/R/src/nmath/qnorm.c*  for versions of the C source
@@ -192,7 +197,7 @@ beginning.
 Ross Ihaka (one of the two ``fathers'' of \R) wrote the first
 version; visible in R's subversion (svn) repository, rev 574, dated Jan.\ 14, 1998 % ~/R/D/r-devel/R/src/nmath/qnorm.c.~r574~
 %% TODO? maybe  have even earlier version?
-basically interfacing R with a C version of the published AS~111
+basically interfacing \R{} with a C version of the published AS~111
 algorithm (which was in Fortran 66 with \code{GOTO} etc), \cite{AS111:BeaSpr1977},
 but improving AS~111 already by using a more accurate formula from Wichura for
 the ``outer'' tail (defined to have $p' := min(p, 1-p)$ close to zero,
@@ -273,13 +278,13 @@ Now this changes the picture of ``sufficient'' approximation dramatically, as, i
 the log scale, the AS~241 algorithm only goes up to $\log p = r^2 = 729$,
 and then quickly loses precision (see below).
 
-The goal of the remaining part of this paper is to describe our research
+The goal of the remaining part of this paper is to describe the research
 for finding accurate approximations in these outermost tails.
 
-\subsection[DPQ's qnormR()]{\pkg{DPQ}'s \fct{qnormR} documenting history}
+\subsection[DPQ's qnormR()]{\pkg{DPQ}'s \fct{qnormR} -- documenting R history}
 
-Note that in our \pkg{DPQ}, we do provide pure R code implementations of
- \R's \fct{qnorm} in function \fct{qnormR} which has
+Note that in \pkg{DPQ}, pure \R{} code implementations of
+ \R's \fct{qnorm} are provided by function \fct{qnormR} which has
 (almost\footnote{`mu' $\neq$ `mean'}) the same arguments
 \code{p, mu = 0, sd = 1, lower.tail = TRUE, log.p = FALSE} as \R's \fct{qnorm}
 and additionally \code{trace = 0, version = c("4.0.x", "2020-10-17", "2022-08-04")},
@@ -287,9 +292,10 @@ where the default \code{version = "4.0.x"} corresponds
  to \R{} version up to 4.0.5 (2021-03-31) which uses basically the above AS~241,
 additionally treating extreme cases including $\pm$\code{Inf} and \code{NA, NaN}
 well.
-The newer versions are explained subsequently.
 
-\section[Accurate qnorm(., log.p=TRUE)]{Accurate \code{qnorm(.., log.p=TRUE)}}
+These versions are explained subsequently, starting with the \code{"4.0.x"} version which may be considered as ``catastrophically wrong'' if we look closely in log scale:
+
+\section[Correcting qnorm(., log.p=TRUE)]{Correcting \code{qnorm(.., log.p=TRUE)}}
 
 %% ~/R/MM/NUMERICS/dpq-functions/qnorm-extreme-bad.R
 %% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ^^^^^^^^^^^^^^^^^^^
@@ -305,8 +311,13 @@ In order to compare versions of \fct{qnorm} approximations with their
 ``true" values, we use the fact that it, $x = \Phi^{-1}(p)=$\code{qnorm(p)},
 is defined as \emph{inverse} of $p = \Phi(x) =$\code{pnorm(x)} \emph{and}
 we additionally assume that \code{pnorm(x)} is ``fully accurate'' which it
-basically is, also on the log--scale, demonstrably, e.g., using our CRAN
-pkg \CRANpkg{Rmpfr} with its own very accurate \fct{pnorm},
+basically is, also on the log scale, demonstrably, e.g., using % our
+CRAN pkg \CRANpkg{Rmpfr} \citep{Rmpfr},
+with its own very accurate \fct{pnorm}%
+\ifJSS{}\else
+\footnote{\code{Rmpfr::pnorm(<mpfr>)} is limited in range because it currently has no log scale (or otherwise scaled) version, and we need to take explicit \code{log(.)} the values it computes from its \code{pnorm(x) := erfc}$(\sqrt{2}\cdot x)/d)$ which underflow to zero before \code{x == 1e6} even with extended mpfr erange.}
+\fi
+,
 but we are not providing the evidence here.
 
 With this assumption, the error of \fct{qnorm} is the deviation from the identity
@@ -321,10 +332,12 @@ and we ``define'' the relative error of \fct{qnorm} as
 \code{qnorm(pnorm(x)) / x - 1} where we need to adjust for cases where $x$
 is (very close to) zero or not finite, etc.
 This is done by function \fct{relErrV} from package
-\CRANpkg{sfsmisc}, shown in the appendix~\ref{sec:relErrV},
+\CRANpkg{sfsmisc} \citep{sfsmisc}, %-- appendix "Function relErrV" -- only in non-JSS
+\ifJSS{}\else shown in the appendix~\ref{sec:relErrV},
+\fi
 which takes care of all special or boundary cases.
 
-And as a matter of fact, we will work in log-scale, hence using
+And as a matter of fact, we will work in log scale, hence using
 \code{log.p = TRUE} in both \fct{pnorm} and \fct{qnorm}, and we want
 to use positive numbers both for argument and result (and nicer formulae),
 so work with the \emph{upper tail}, i.e., use \code{lower.tail = FALSE}.
@@ -361,7 +374,11 @@ if(getRversion() <= "4.0.5") { # our qnormR(.., version="4.0.x")
 @
 
 Computing a version of the above (with larger range for $s$, starting from
-\verb|qs <- 2^seq(0, 70, by=1/8)|) in \R\ version 4.0.5 and plotting in log-log scale,
+\verb|qs <- 2^seq(0,70,by=1/8)|) in \R\ version 4.0.5 and plotting in log-log scale,
+\ifJSS% not showing the R code below, explaining `true`
+  and for the \textsf{true} curve %(almost a line),
+ plotting \code{qs ~ s}%
+\fi
 \begin{figure}[H]% 'H' provided by {float}
 \centering
 <<p-mar, echo=FALSE, eval=FALSE>>=
@@ -385,9 +402,13 @@ local({ # larger range for s -- qnorm-extreme-bad.R.~1~ (Sep 25, 2020):
 <<qn-plot-def>>
 })
 @
-\caption{Extreme tail log-scale \code{qnorm(-s, ..)} in R 4.0.5 or earlier, i.e., up to 2021}
+\caption{Extreme tail log scale \code{qnorm(-s, ..)} in R 4.0.5 or earlier,
+  i.e., up to 2021%
+  ; note that {\sffamily \textcolor{LightBlue3}{true}} is just
+  \code{ \textcolor{LightBlue3}{lines(qs\~{}s, ..)}}}
 \label{fig:qnorm405}
 \end{figure}
+Figure~\ref{fig:qnorm405}
 looks good up to about $10^{12}$, i.e., \fct{qnorm} coinciding with the
 true $x$ \code{qs}, but beyond $10^{14}$ diverging for larger $s$,
 and for even larger $s$ showing
@@ -421,13 +442,13 @@ relE_qn <- relErrV(qs, qnrm405) ; version.txt <- "R versions up to R 4.0.5"
 <<do-p-relE405, fig=TRUE, echo=FALSE>>=
 <<p-relErr>>
 @
-\caption{Relative error of qnorm() in extreme tails in R version before R 4.1.0}
+\caption{Relative error of \fct{qnorm} in extreme tails in \R\ version before R 4.1.0}
 \label{fig:relErr405}
 \end{figure}
 
 From this, in September 2020, I started to investigate the visually
 obvious asymptotic behavior of the \emph{correct} inversion of
-\code{qnorm(.)}, using the classical first order asymptotic
+\fct{qnorm}, using the classical first order asymptotic
 \begin{align}
   \label{eq:Phi-asym-0}
   1 - \Phi(x) \sim \frac{\phi(x)}{x}, \quad \mathrm{for \ } x \to \infty,
@@ -442,6 +463,7 @@ On the log scale, this is equivalent to
                     &= -x^2/2 - 1/2 \log{2\pi} - \log{x} + o(x)\\ \nonumber
                     &= -x^2/2 + o(x),
 \end{align}
+as $O(\log x) = o(x)$,
 i.e. $l_p := \log(1 - \Phi(x)) \approx -x^2/2$ for large $x$ and hence,
 \begin{align}
   \label{eq:x-asym-0}
@@ -457,9 +479,10 @@ approximation for upper tail probabilities specified in log scale.
 Computer experimentation was used to find a numerically optimal (for the
 double precision implementation of AS~241) cutoff.
 
-Computing the absolute value of the relative error, (in R~4.0.x, \emph{not}
-current R):
-<<delta-relE, fig=TRUE, height = 5, width=6>>=
+Computing the difference (``delta'') betwen the absolute value of the relative errors for
+R~4.0.x's \fct{qnorm} and for the asymptotic approximation (\ref{eq:x-asym-0})%
+\ifJSS{,}\else{:}\fi
+!<<delta-relE, fig=TRUE, height = 5, width=6>>=
 delta.relE <- function(q, qNorm = function(...) qnormR(..., version = "4.0.x")) {
   lp <- pnorm(q, lower.tail=FALSE, log.p=TRUE) # <==>  q = true qnorm(lp, *)
   ## the "delta" of the two relative errors qnorm() vs sqrt(2*s) approx:
@@ -469,8 +492,7 @@ delta.relE <- function(q, qNorm = function(...) qnormR(..., version = "4.0.x")) 
 plot(delta.relE(qs) ~ qs, subset = 10 < qs & qs < 4e6, type="l", log="x")
 abline(h=0, col = adjustcolor(2, 1/2))
 @
-
-As this looks good, let us find the root location which then is the optimal
+looks like a well defined zero, we now determine the root location as the optimal
 cutoff, as it will minimize the absolute value of the relative error of
 computing \code{qnorm(..)}.  At first:
 <<root-delta-raw>>=
@@ -485,14 +507,15 @@ qC <- cP.$root # 1153.242
 (lpC <- pnorm(qC, lower.tail=FALSE, log.p=TRUE))
 @
 %%[1] -664991
-so the optimal cutoff where to use the sqrt-approximation is at \code{lp}$
-= \log p = -664991$ or $r = \sqrt{-\log p} = 815.470$ (with $r$ defined in (\ref{r.def})), and for convenience (round number), using the cutoff $r \ge 816$ in \fct{qnorm}, i.e., basically
+so the optimal cutoff where to use the sqrt-approximation is at \code{lp}$ = \log p = -664991$
+or $r = \sqrt{s} = \sqrt{-\log p} = 815.470$
+(with $r$ defined in (\ref{r.def})), and for convenience (round number), using the cutoff $r \ge 816$ in \fct{qnorm}, i.e., basically
 \begin{Schunk}
 \begin{Sinput}
   if(r >= 816)  value = sqrt(2) * r;
 \end{Sinput}
 \end{Schunk}
-This consequently was added to the R (i.e., ``R-devel'') sources after more testing, a
+This consequently was added to the \R{} (i.e., ``R-devel'') sources after more testing, a
 few weeks later
 \\[-5ex]
 \begin{verbatim}
@@ -510,8 +533,10 @@ Indeed, \fct{qnorm} was now ``first order accurate'' even in the extreme tails, 
 such as Figure~\ref{fig:qnorm405} one would not notice any inaccuracy.
 But then, there you'd visually only notice deviations in the order of
 $1\;\%$, i.e, already visible in 2 digits accuracy.  Looking at the
-relative errors directly, indeed shows the relative error being smaller
-than $10^{-5}$ and maximal at the cutoff $s = 816^2 = 665856$ :
+relative errors directly in Figure~\ref{fig:relErr410} (cf. Figure~\ref{fig:relErr405} for the
+original version),
+indeed shows that the relative error now is smaller than $10^{-5}$
+and maximal at the cutoff $s = 816^2 = 665856$ :
 <<relE410>>=
 relE_qn <- relErrV(qs, qnrm410); version.txt <- "R 4.1.0 to 4.2.x"
 @
@@ -521,12 +546,12 @@ relE_qn <- relErrV(qs, qnrm410); version.txt <- "R 4.1.0 to 4.2.x"
 <<p-relErr>>
 ablaxis1(x=816)
 @
-\caption{qnorm() relative error in extreme tails, R ver.~4.1.0--4.2.x, ca.\ 2021--'22}
+\caption{\fct{qnorm} relative error in extreme tails, R ver.~4.1.0--4.2.x, ca.\ 2021--'22}
 \label{fig:relErr410}
 \end{figure}
 
-\section[More accurate asymptotic qnorm(., log.p=TRUE)]{%
-  More accurate asymptotic \code{qnorm(., log.p=TRUE)}}
+\section[Fully accurate asymptotic qnorm(., log.p=TRUE)]{%
+  Fully accurate asymptotic \code{qnorm(., log.p=TRUE)}}
 
 In \R, the function \fct{qnorm} and notably the underlying C API
 function \fct{qnorm}\footnote{\R's C API \fct{qnorm} is an alias for
@@ -609,7 +634,7 @@ asymptotic approximation $x_0^2 = 2s$ gives
               x^2       \approx&\:  x_1^2 := 2s - \log(2\pi\; x_0^2) = 2s - \log(4\pi s),\label{x1sq}
 \end{align}
 and we do have a substantially better approximation, verified empirically in
-Fig.~\ref{fig:qnormAsym} below ($k=0$ vs $k=1$), where we show further steps,
+Figure~\ref{fig:qnormAsym} below ($k=0$ vs $k=1$), where we show further steps,
 continuing our selective recursive plug-in of $x^2$ itself, now no longer
 neglecting $q(x^2)$ but still only using a first term, from (\ref{eq:log-ser}),
 \begin{align}
@@ -659,7 +684,7 @@ qnAsym <- sapply(setNames(k.s, nks), function(k) qnormAsymp(lp=lp, order = k))
 relEasym <- apply(qnAsym, 2, relErrV, target = qs) # rel.errors for all
 @
 
-In Fig.~\ref{fig:qnormAsym} we depict the absolute values of their
+In Figure~\ref{fig:qnormAsym} we depict the absolute values of their
 respective relative errors (in log-log scale against $s = -lp = -\log(1-\Phi(x))$), and
 and then zoom in more closely in Figure~\ref{fig:qnormAsymZoom}:
 \begin{figure}[H]
@@ -693,7 +718,7 @@ legend(4e7, 1e-9, nks, col=1:6, lty=1:5, lwd=2, bty="n")#, cex=.75, bg=adjustcol
 \label{fig:qnormAsymZoom}
 \end{figure}
 
-\subsection*{Fully accurate qnorm()}
+\subsection*{Fully accurate \fct{qnorm}}
 Our package \CRANpkg{DPQ}'s \code{qnormR(... version = "2022-08")} now implements
 a (pure \R{} implementation) also to be used (in C) in
 the next version of R,
@@ -714,8 +739,8 @@ $r\ge$     & 27  &   55 &  109  &   840  &     36000       & 6.4e8 \\
 $s=r^2\ge$ & 729 & 3025 & 11880 & 705600 & 1296$\cdot 10^6$ & 4.096e17
 %  k             5      4       3        2                 1          0
 \end{tabular}
-\caption[optimal cutpoints]{%
-  optimal cutpoints to determine $k$ to use $x_k(s)$ for $r=\sqrt{s} > 27$.}
+\caption[Optimal cutpoints]{%
+  Optimal cutpoints to determine $k$ to use $x_k(s)$ for $r=\sqrt{s} > 27$.}
 \label{tab:cutpoints}
 \end{table}
 e.g. $k = 0$ is fully accurate and hence optimal and used  for $r \ge 6.4e8 = 640\cdot 10^6$, or
@@ -724,7 +749,8 @@ for $r \in [55, 109) \Longleftrightarrow s\in [3025, 11880)$ one needs (and uses
 %% see also R code ../R/norm_f.R {and R's qnorm.c eventually}
 These were determined using function \fct{p.qnormAsy2} in appendix~\ref{sec:p.qnormAsy},
 for visualizing the
-optimal region for switching from $k-1$ to $k$, for $k = 1,2,3,4,5$.
+optimal region for switching from $k-1$ to $k$, for $k = 1,2,3,4,5$,
+see Figure~\ref{fig:cutp-Asym}.
 
 Empirically, we see that now most relative errors are numerically zero and the others are at most
 $\epsilon_c = 2^{-52} \approx 2.22 \cdot 10^{-16}$, indeed the asymptotic $x_5(s)$ see (\ref{x5sq}) may be seen to be even better than algorithm AS~241 for the small region $s \in [22.8^2, 27^2]=[519.84, 729]$. %
@@ -761,7 +787,7 @@ local({ # larger range for s -- qnorm-extreme-bad.R.~1~ (Sep 25, 2020):
 <<relE43>>=
 relE_qn <- relErrV(qs, qnrm43); version.txt <- "R > 4.2.x (after 2022)"
 @
-We \emph{tabulate} the values as multiples of$\epsilon_c$ not needing a visualization:
+We \emph{tabulate} the values as multiples of $\epsilon_c$ not needing a visualization:
 <<relE43-tab>>=
 table(2^52 * relE_qn)           # all in [-2.5, 3]
 table(2^52 * relE_qn[s > 27^2]) #     in [-1,   1]
@@ -784,30 +810,32 @@ To see how the final \fct{qnormR} is implemented, you can look at the \code{leng
 
 \afterpage{\clearpage}
 
-\section{Concluding Summary}
+\section{Concluding summary}
 
-We have derived asymptotic formulas for \code{qnorm(lp, lower.tail=FALSE, log.p=TRUE)},
+We have derived novel asymptotic formulas for \code{qnorm(lp, lower.tail=FALSE, log.p=TRUE)},
 i.e. $\Phi^{-1}(e^s) = \Phi^{-1}(e^{r^2})$ for large $s = r^2$, notably for $r > 27$
 which is beyond the range where the published algorithm AS~241,
-\cite{AS241:Wichura1988}, is accurate.
+\cite{AS241:Wichura1988}, is accurate,
+see (\ref{x0sq}), (\ref{x1sq}), and (\ref{x2sq})--(\ref{x5sq}).
+ % (12),(13), and (15)-(18).
 
 For these formulas of order $k=0, 1, \dots, 5$, implemented in \pkg{DPQ}'s \R\ function
 \code{qnormAsymp(*, order=k)} we have derived optimal
-regions, i.e., intervals for $r$, partitioning $(27, \infty)$ and
-implemented in \R{} function \code{qnormR(*, version = "2022-08")} for
+regions, i.e., intervals for $r$, partitioning $(27, \infty)$, see Table~\ref{tab:cutpoints},
+and implemented in \R{} function \code{qnormR(*, version = "2022-08")} for
 reproducibility
 and to be used in (the C code in \file{Rmathlib} in) the next version of
 \R's \fct{qnorm}.
 
 
-\section{Computational details, Session Information}
+\section{Computational details, session information}
 %%       ------------------------
 
-For most of our plots we made use of utilities for log-scale axis drawing,
+For most of our plots we made use of utilities for log scale axis drawing,
 notably \fct{eaxis} and also \fct{mult.fig} (for \fct{p.qnormAsy2} in appendix~\ref{sec:p.qnormAsy})
 from our package \CRANpkg{sfsmisc} \citep{sfsmisc},
 from which also \fct{relErrV} was used, for computing \code{relEasym},
-plotted in Fig.~\ref{fig:qnormAsym} and \ref{fig:qnormAsymZoom}.
+plotted in Figure~\ref{fig:qnormAsym} and \ref{fig:qnormAsymZoom}.
 
 <<sessionInfo, results=tex>>=
 toLatex(sessionInfo(), locale=FALSE)
@@ -822,6 +850,7 @@ unlist(packageDescription("DPQ")[c("Package", "Version", "Date")])
 
 \appendix%=============================================================================
 %======================================================================================
+\ifJSS{}\else
 \section[relErrV() (from sfsmisc)]{%
   Function \fct{relErrV} (package \pkg{sfsmisc})}\label{sec:relErrV}
 
@@ -867,8 +896,9 @@ relErrV <- function(target, current, eps0 = .Machine$double.xmin) {
     else R
 }
 @
+\fi%----Function relErrV() -- only in non-JSS vignette --------------------------------
 
-\section[p.qnormAsy2() for cutpoints]{%
+\section[p.qnormAsy2() for optimal cutpoints]{%
   Function \fct{p.qnormAsy2} for showing optimal cutpoints}\label{sec:p.qnormAsy}
 
 This function, currently also used in \pkg{DPQ}'s \code{example(qnormAsymp)},
@@ -941,7 +971,7 @@ sfsmisc::mult.fig(5, main = "qnormAsymp(*, k) approximations in the 5 cutpoint r
 for(ir in 2:length(r0))
     p.qnormAsy2(r0[ir], k = 5 +2-ir, n = 1024, verbose=FALSE, cex.main = .90)
 @
-  \caption{qnormAsymp(*, k) approximation in the 5 cutpoint regions:\\
+  \caption{\code{qnormAsymp(*, k)} approximation in the 5 cutpoint regions:\\
     \code{r0 <- c(27, 55, 109, 840, 36000, 6.4e8)}\\ % sync w/ % <<def-r-cutoffs>>=  above!
     \code{for(ir in 2:length(r0))   p.qnormAsy2(r0[ir], k = 5 + 2-ir, ..)}
   }

@@ -31,14 +31,15 @@ qnormR (p, mu = 0, sd = 1, lower.tail = TRUE, log.p = FALSE, trace = 0,
 \details{
   For \code{qnormR1(p, ..)}, \code{p} must be of length one, whereas
   \code{qnormR(p, m, s, ..)} works vectorized in \code{p}, \code{mu}, and
-  \code{sd}.  In the \pkg{DPQ} package source, it simply the result of
+  \code{sd}.  In the \pkg{DPQ} package source, \code{qnormR} is simply the result of
   \code{\link{Vectorize}(qnormR1, ...)}.
 }
 \value{
   a numeric vector like the input \code{q}.
 }
 \references{
-  For the asymptotic approximations in later \code{version}s, see the
+  For the asymptotic approximations used in \code{version}s other than
+  \code{"4.0.x"}, i.e., \code{"2020-10-17"} and later, see the
   reference(s) on \code{\link{qnormAsymp}}'s help page.
 }
 \author{Martin Maechler}
