@@ -34,7 +34,7 @@
   \to -\infty$ when $p\to 0$, \fct{qnorm} using AS~241 has been very
   inaccurate in the very extreme tails.
 
-  We have derived novel asymptotic formulas for that case, using recursive
+  I have derived novel asymptotic formulas for that case, using recursive
   plug-in to the asymptotic formula for $\Phi(x)$ (which \fct{qnorm}
   should invert).
 
@@ -206,7 +206,7 @@ $p' \in (10^{-300}, \epsilon_c ]$, where $\epsilon_c$, the computer epsilon,
 (= \code{DBL\_EPSILON} in C's \code{math} library $=$ \R's \code{.Machine\$double.eps}
 is nowadays always $\epsilon_c = 2^{-52} = 2.220446..\cdot 10^{-16}$.
 
-This first algorithm AS~111, e.g. in \R~1.0.0, Feb.29, 2000,
+This first algorithm AS~111, e.g., in \R~1.0.0, Feb.29, 2000,
 (svn rev~7639, 2000-01-18), % ~/R/D/r-devel/R/src/nmath/qnorm.c.~r7639~
 the version of \file{\emph{<R>}/src/nmath/qnorm.c} had
 contained the description
@@ -222,7 +222,7 @@ contained the description
 and the reference to \cite{AS111:BeaSpr1977}.
 
 Also, already before releasing R 1.0.0 on Feb.~29, 2000,
-we had introduced the \code{log.p} and \code{lower.tail}  logical switches,
+as R Core team, we had introduced the \code{log.p} and \code{lower.tail} logical switches,
 \begin{quotation}\smaller
   \noindent
   r7615 | maechler | 2000-01-17 12:18:30 +0100 (Mo, 17 Jan 2000)\\
@@ -270,8 +270,8 @@ $e^{-27^2} = e^{-729}  \approx 2.51 \cdot 10^{-317}$ is smaller than \code{DBL\_
 
 
 \emph{However}, as mentioned above, in the R core team we had already seen
-that it is often advisable to work on the \emph{$\log$}--scale with probabilities.  For
-that reason we had introduced the option \code{log.p = TRUE} for all our
+that it is often advisable to work on the \emph{$\log$}--scale with probabilities and
+therefore had introduced the option \code{log.p = TRUE} for all our
 (cumulative) distribution and quantile functions.
 %%
 Now this changes the picture of ``sufficient'' approximation dramatically, as, indeed, on
@@ -373,7 +373,8 @@ if(getRversion() <= "4.0.5") { # our qnormR(.., version="4.0.x")
 }
 @
 
-Computing a version of the above (with larger range for $s$, starting from
+Computing a version of the above (with larger range for $s$, % starting from
+% not enough: \linebreak[3]
 \verb|qs <- 2^seq(0,70,by=1/8)|) in \R\ version 4.0.5 and plotting in log-log scale,
 \ifJSS% not showing the R code below, explaining `true`
   and for the \textsf{true} curve %(almost a line),
@@ -464,7 +465,7 @@ On the log scale, this is equivalent to
                     &= -x^2/2 + o(x),
 \end{align}
 as $O(\log x) = o(x)$,
-i.e. $l_p := \log(1 - \Phi(x)) \approx -x^2/2$ for large $x$ and hence,
+i.e., $l_p := \log(1 - \Phi(x)) \approx -x^2/2$ for large $x$ and hence,
 \begin{align}
   \label{eq:x-asym-0}
   x \approx \sqrt{-2 l_p},
@@ -482,7 +483,7 @@ double precision implementation of AS~241) cutoff.
 Computing the difference (``delta'') betwen the absolute value of the relative errors for
 R~4.0.x's \fct{qnorm} and for the asymptotic approximation (\ref{eq:x-asym-0})%
 \ifJSS{,}\else{:}\fi
-!<<delta-relE, fig=TRUE, height = 5, width=6>>=
+<<delta-relE, fig=TRUE, height = 5, width=6>>=
 delta.relE <- function(q, qNorm = function(...) qnormR(..., version = "4.0.x")) {
   lp <- pnorm(q, lower.tail=FALSE, log.p=TRUE) # <==>  q = true qnorm(lp, *)
   ## the "delta" of the two relative errors qnorm() vs sqrt(2*s) approx:
@@ -509,7 +510,8 @@ qC <- cP.$root # 1153.242
 %%[1] -664991
 so the optimal cutoff where to use the sqrt-approximation is at \code{lp}$ = \log p = -664991$
 or $r = \sqrt{s} = \sqrt{-\log p} = 815.470$
-(with $r$ defined in (\ref{r.def})), and for convenience (round number), using the cutoff $r \ge 816$ in \fct{qnorm}, i.e., basically
+(with $r$ defined in Equation~\ref{r.def}),
+and for convenience (round number), using the cutoff $r \ge 816$ in \fct{qnorm}, i.e., basically
 \begin{Schunk}
 \begin{Sinput}
   if(r >= 816)  value = sqrt(2) * r;
@@ -620,7 +622,7 @@ here:
 For the first step, we may neglect $q(x^2) \approx 1/(x^2+2)$ entirely as
 we know that $x^2 \approx 2s$ for relatively large $s$, and hence drop
 $\log\bigl(1 - q(x^2)\bigr) \approx \log(1) = 0$, such that
-$(-2)$ times eq.~(\ref{eq:log-ser}) becomes
+$(-2)$ times Equation~\ref{eq:log-ser} becomes
 \begin{align}
   -2 l_p = 2s \approx&\: x^2 + \log(2\pi) + 2\log(x) = \nonumber\\
                      &\: x^2 + \log(2\pi\; x^2) \label{eq:ser1},
@@ -635,8 +637,8 @@ asymptotic approximation $x_0^2 = 2s$ gives
 \end{align}
 and we do have a substantially better approximation, verified empirically in
 Figure~\ref{fig:qnormAsym} below ($k=0$ vs $k=1$), where we show further steps,
-continuing our selective recursive plug-in of $x^2$ itself, now no longer
-neglecting $q(x^2)$ but still only using a first term, from (\ref{eq:log-ser}),
+continuing to recursively plug in $x^2$ itself, now no longer
+neglecting $q(x^2)$ but still only using a first term, from Equation~\ref{eq:log-ser},
 \begin{align}
  -2 \log(1-\Phi(x)) =  2s \approx&\:  x^2 + \log(2\pi\; x^2) - 2\log\bigl(1 - q(x^2)\bigr) \approx \nonumber\\
                                  &\:  x^2 + \log(2\pi\; x^2) + 2 q(x^2),
@@ -702,6 +704,8 @@ legend("right", nks, col=1:6, lty=1:5, lwd=2, bty="n")
 \label{fig:qnormAsym}
 \end{figure}
 \enlargethispage{2ex}
+and then zoomed in more closely in Figure~\ref{fig:qnormAsymZoom}:
+%%-------------------
 \begin{figure}[H]
 \centering
 \setkeys{Gin}{width=0.88\textwidth}% default 0.8
@@ -743,7 +747,7 @@ $s=r^2\ge$ & 729 & 3025 & 11880 & 705600 & 1296$\cdot 10^6$ & 4.096e17
   Optimal cutpoints to determine $k$ to use $x_k(s)$ for $r=\sqrt{s} > 27$.}
 \label{tab:cutpoints}
 \end{table}
-e.g. $k = 0$ is fully accurate and hence optimal and used  for $r \ge 6.4e8 = 640\cdot 10^6$, or
+e.g., $k = 0$ is fully accurate and hence optimal and used  for $r \ge 6.4e8 = 640\cdot 10^6$, or
  equivalently, for $s = -\mathrm{lp} \ge 4.096e17$, where as
 for $r \in [55, 109) \Longleftrightarrow s\in [3025, 11880)$ one needs (and uses) $k = 4$.
 %% see also R code ../R/norm_f.R {and R's qnorm.c eventually}
@@ -753,7 +757,10 @@ optimal region for switching from $k-1$ to $k$, for $k = 1,2,3,4,5$,
 see Figure~\ref{fig:cutp-Asym}.
 
 Empirically, we see that now most relative errors are numerically zero and the others are at most
-$\epsilon_c = 2^{-52} \approx 2.22 \cdot 10^{-16}$, indeed the asymptotic $x_5(s)$ see (\ref{x5sq}) may be seen to be even better than algorithm AS~241 for the small region $s \in [22.8^2, 27^2]=[519.84, 729]$. %
+$\epsilon_c = 2^{-52} \approx 2.22 \cdot 10^{-16}$, indeed the asymptotic $x_5(s)$,
+see Equation~\ref{x5sq},
+may be seen to be even better than algorithm AS~241 for the small region
+$s \in [22.8^2, 27^2]=[519.84, 729]$. %
 <<p-relE-x5-zoom, fig=TRUE, height=3, echo=FALSE>>=
 absE <- function(e) pmax(abs(e), 2^-54) # = 1/4 eps_c
 local({ # larger range for s -- qnorm-extreme-bad.R.~1~ (Sep 25, 2020):
@@ -785,7 +792,7 @@ local({ # larger range for s -- qnorm-extreme-bad.R.~1~ (Sep 25, 2020):
 @
 % , but for back compatibility we keep using it ..
 <<relE43>>=
-relE_qn <- relErrV(qs, qnrm43); version.txt <- "R > 4.2.x (after 2022)"
+relE_qn <- relErrV(qs, qnrm43)
 @
 We \emph{tabulate} the values as multiples of $\epsilon_c$ not needing a visualization:
 <<relE43-tab>>=
@@ -796,6 +803,7 @@ table(2^52 * relE_qn[s > 27^2]) #     in [-1,   1]
 % \centering
 % *NOT* doing it:                              vvvvvvvvvv
 <<do-p-relE43, fig=TRUE, height=2, echo=FALSE, eval=FALSE>>=
+version.txt <- "R > 4.2.x (after 2022)"
 <<p-relErr>>
 @
 % \caption{qnormR(-s, .., version= "2022") relative error in extreme tails}% planned R ver.~$> 4.2.x$
@@ -813,7 +821,7 @@ To see how the final \fct{qnormR} is implemented, you can look at the \code{leng
 \section{Concluding summary}
 
 We have derived novel asymptotic formulas for \code{qnorm(lp, lower.tail=FALSE, log.p=TRUE)},
-i.e. $\Phi^{-1}(e^s) = \Phi^{-1}(e^{r^2})$ for large $s = r^2$, notably for $r > 27$
+i.e., $\Phi^{-1}(e^s) = \Phi^{-1}(e^{r^2})$ for large $s = r^2$, notably for $r > 27$
 which is beyond the range where the published algorithm AS~241,
 \cite{AS241:Wichura1988}, is accurate,
 see (\ref{x0sq}), (\ref{x1sq}), and (\ref{x2sq})--(\ref{x5sq}).
