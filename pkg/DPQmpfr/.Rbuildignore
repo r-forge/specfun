@@ -2,4 +2,5 @@ DESCRIPTION_Author
 ^Misc
 Rplots\.pdf
 slow\.Rout
+^svn-
 \.grep$

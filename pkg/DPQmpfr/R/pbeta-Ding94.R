@@ -35,8 +35,7 @@ pbetaD94 <- function(q, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALS
 
     ## NB: We *could* work in log-scale and actually should  "in extreme cases"
     ## NB(2): FIXME for really large 'ncp' this algorithm "never ends"
-    ##        and we need to work in log-space
-
+    ##        and we need to work in log-space <--> 'log_scale'
     ## Inititialize n=0 :
     if(log_scale) { # Work in log scale
         lq <- log(q)
@@ -104,10 +103,9 @@ pbetaD94 <- function(q, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALS
     ## never reached
 } ## {pbetaD94}
 
-### Experimental:
-## Quantile of incomplete Beta-distribution according to Ding(1994), Algorithm C, p.453-4
+## Density of incomplete Beta-distribution according to Ding(1994), Algorithm B, p.453
 ##
-## - take identical arguments as qbeta() + extras
+## - take identical arguments as dbeta() + extras
 ## - non-default (lower.tail, log.p) are *NOT* properly supported
 dbetaD94 <- function(x, shape1, shape2, ncp = 0, log = FALSE,
                    eps = 1e-10,     # desired accuracy for f()
@@ -151,11 +149,11 @@ dbetaD94 <- function(x, shape1, shape2, ncp = 0, log = FALSE,
     ## NB(2): FIXME for really large 'ncp' this algorithm "never ends"
     ## Inititialize n=0 :
     ## FIXME: for really large a or b, this overflows to Inf (or Inf/Inf) or underflows to 0
-    ##        and we need to work in log-space
+    ##        and we need to work in log-space  <==> see 'log_scale' in pbetaD94
     s <- x^a * (1-x)^b / beta(a,b)
     c <- ncp/2 # == \lambda/2
     v <- u <- exp(-c) ## FIXME: if this underflows to 0 we need to work in log-space
-    f <- u*s
+    f <- u*s  # = 'PDF' in paper
     n <- 1L
     ## pre B-3
     an.1 <- a # = a+n-1
@@ -182,7 +180,7 @@ dbetaD94 <- function(x, shape1, shape2, ncp = 0, log = FALSE,
             return(structure(f, iter = n))
 
         } else if(verbose >= 2) cat(sprintf("n=%4d, f=%s, bound= %12s\n",
-                                       n, Fn(f), formt(bound,digits=8)))
+                                            n, Fn(f), formt(bound,digits=8)))
         ## B6 (identical to B4, apart from error message):
         u <- u*c/n
         v <- v+u

@@ -54,15 +54,16 @@ for(x in 0:9)
 (ph. <- phyperQall(m=10, n=7, k=8))
 ## Big Rational ('bigq') object of length 8:
 ## [1] 1/2431    5/374     569/4862  2039/4862 3803/4862 4685/4862 4853/4862 1
-stopifnot(identical(gmp:::c.bigq(0, ph.),
+stopifnot(identical(gmp::c_bigq(list(0, ph.)),
                     1- c(phyperQall(10,7,8, lower.tail=FALSE), 0)))
 
-\donttest{ ## too slow for standard testing
-k <- 5000
-system.time(ph <-   phyper(k, 2*k, 2*k, 2*k)) #   0 (< 0.001 sec)
-system.time(phQ <- phyperQ(k, 2*k, 2*k, 2*k)) # 6.3 sec
-## Relative error of R's phyper()
-gmp::asNumeric(1 - ph/phQ) # 1.063e-15 -- very small
+(doExtras <- DPQmpfr:::doExtras())
+if(doExtras) { # too slow for standard testing
+ k <- 5000
+ system.time(ph <-   phyper(k, 2*k, 2*k, 2*k)) #   0 (< 0.001 sec)
+ system.time(phQ <- phyperQ(k, 2*k, 2*k, 2*k)) # 5.6 (was 6.3) sec
+ ## Relative error of R's phyper()
+ stopifnot(print(gmp::asNumeric(1 - ph/phQ)) < 1e-14) # seen 1.063e-15
 }
 }
 \keyword{ distribution }

@@ -1,20 +1,26 @@
 importFrom("DPQ"
-         , .D_1, .D_exp, dbinom_raw
+         , .D_1, .D_exp, .D_qIv, .DT_Clog
+         , all_mpfr, any_mpfr # simple wrappers in  ../DPQ/R/utils.R
+         , dbinom_raw
          , dntJKBf # ~/R/Pkgs/DPQ/R/t-nonc-fn.R
          , dtWV
+         , ldexp # will wrap this and export that, see below
          , logspace.add
          , logspace.sub
          , .suppHyper              # DPQ 0.4-0
          , pnormL_LD10, pnormU_S53 # DPQ 0.4-2
+         , pnormAsymp , qnormAsymp # DPQ 0.5-3
 )
 
 importFrom("Rmpfr"
          , getPrec, .getPrec
+         , ldexpMpfr
          , mpfr, Const
          , asNumeric
          , dnorm, pnorm
          , dpois
          , log1mexp
+         , .mpfr_erange
 )
 
 importFrom("gmp"
@@ -28,9 +34,10 @@ importClassesFrom("Rmpfr"
                 , "mpfr", "mpfrMatrix", "mpfrArray"
 )
 
-## importFrom("sfsmisc"
-##          , mult.fig
-##      )
+importFrom("sfsmisc"
+         # , mult.fig
+           , relErrV # R/dpoisEr.R  rE2mat()
+           )
 
 
 importFrom("stats"
@@ -52,8 +59,18 @@ importFrom("methods"
          , is, initialize
            )
 
+importFrom("grDevices", adjustcolor)
+
+importFrom("graphics", abline, axis
+         , lines, mtext
+         , par
+         , points, text
+           )
+
+
 importFrom("utils"
          , str
+         , packageVersion # for package-version-dependent code
            )
 
 ### ------------------ Exports -------------------------------------------------
@@ -66,8 +83,18 @@ export(dhyperQ, phyperQ, phyperQall)# simple via chooseZ()
 export(dntJKBm)
 
 ## R/dnbinom-etc.R :
-## NOT yet: export(dnbinomM, dnbinom.mu)
+## Not needed, Rmpfr has the functionality!  export(dnbinomM, dnbinom.mu)
+
+## R/dpoisEr.R -- not yet
+# export(deparse1seq)
+# export(formatRng)
+# export(p.dpoisEr)
+# export(rE2mat)
+
 
 ## Re-export this R/dpq-mpfrized.R :
+##                ~~~~~~~~~~~~~~~~
+export(ldexp) # our own {using *either* DPQ or Rmpfr's}
 export(pnormL_LD10, pnormU_S53)
+export(pnormAsymp, qnormAsymp)
 export(stirlerrM, stirlerrSer)

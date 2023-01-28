@@ -64,7 +64,7 @@ qbetaD94(p, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALSE,
 %% }
 \value{
   In all three cases, a numeric vector with the same attributes as
-  \code{x},
+  \code{x} (or \code{q} respectively),
   containing (an approximation) to the correponding beta distribution function.
 }
 \references{

@@ -69,13 +69,17 @@ dpoisEr <- function(lambda, prBits = 1536, ## prBits = 256 is too small for lamb
 
 
 ##' Deparse a *seq*uence, trying  seq() form (for arithmetic seq.)
-deparse1seq <- function(x, nonSmall = 37, digits = 6, wEnd = nonSmall %/% 4, epsD = 1e-5) {
+deparse1seq <- function(x, nonSmall = 37,
+                        ##            ^^ (large but not for plot here)
+                        digits = 6,
+                        ##       ^ using = 10 .. hmm default ?
+                        wEnd = nonSmall %/% 4, epsD = 1e-5) {
     r <- deparse1(x) # in integer cases, already gives  <n>:<m>  {but not in "double"!}
     if((w <- nchar(r)) >= nonSmall) { # try arithmetic sequence  seq(a, z, by = delta)
-	if(length(ud <- unique(d <- diff(x))) == 1 ||
+	if(length(ud <- unique(diff(x))) == 1 ||
            max(abs(ud/(ud <- mean(ud)) - 1)) < epsD)
         {
-            n <- length(x); xr <- x[c(1,n)]
+            n <- length(x); xr <- x[c(1,n)] # xr = x-range
             f0 <- if(all(abs(xr) < .Machine$integer.max) &&
                      all(xr == as.integer(xr))) "%d"
                   else if(digits == 6) "%g"
@@ -154,7 +158,7 @@ p.dpoisEr <- function(rEstr, cex = 1/4, xlab = deparse1seq(x, digits=10),
     ## bd0() has had the "historical" cutoff  abs(x-np) < 0.1*(x+np)
     ## -- w/ np := lambda for dpois_raw()
     if(small.bd0 > 0) {
-        d <- delta <- small.bd0 # 0.1 was hardwired in bd0()
+        d <- small.bd0 # = delta = 0.1 was hardwired in bd0()
         bd0Rng <- c((1-d)/(1+d), (1+d)/(1-d)) * lambda
         abline(v = bd0Rng, col=adjustcolor(col.bd0, 3/4), lty=2, lwd=3)
         u <- par("usr")
