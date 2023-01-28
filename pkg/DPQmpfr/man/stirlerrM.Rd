@@ -23,8 +23,8 @@ stirlerrSer(n, k)
 }
 \details{
   Stirling's approximation to \eqn{n!} has been
-  \deqn{n! \approx \bigl(\frac{n}{e}\bigr)^n \sqrt{2\pi n}}{%
-    n! ~= (n/e)^n * sqrt(2*pi*n)},
+  \deqn{n! \approx \bigl(\frac{n}{e}\bigr)^n \sqrt{2\pi n},}{%
+    n! ~= (n/e)^n * sqrt(2*pi*n),}
   where by definition the error is the difference of the left and right
   hand side of this formula, in  \eqn{\log}-scale,
   \deqn{\delta(n) =  \log\Gamma(n + 1) - n \log(n) + n - \log(2 \pi n)/2.}{%
