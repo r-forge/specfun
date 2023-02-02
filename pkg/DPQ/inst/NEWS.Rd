@@ -4,7 +4,18 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-4 (2023-01-20, svn r244)}{
+\section{Version 0.5-4 (2023-02-02, svn r246)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item New \R function \code{qnormCappr()}.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item \code{qnormUappr()} & \code{qnormUappr6()} were \emph{wrongly}
+      negative for lp in \eqn{[-.693147, 0)} (corresponding to \eqn{p > 1/2}).
+    }
+  }
   \subsection{Misc}{
     \itemize{
       \item Tweaks to the \file{qnorm-asymp} vignette, related to the JSS submission.

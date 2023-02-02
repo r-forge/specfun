@@ -39,7 +39,7 @@ qnormR (p, mu = 0, sd = 1, lower.tail = TRUE, log.p = FALSE, trace = 0,
 }
 \references{
   For the asymptotic approximations used in \code{version}s other than
-  \code{"4.0.x"}, i.e., \code{"2020-10-17"} and later, see the
+  \code{"4.0.x"}, (i.e., \code{"2020-10-17"} and later) see the
   reference(s) on \code{\link{qnormAsymp}}'s help page.
 }
 \author{Martin Maechler}

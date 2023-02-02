@@ -41,8 +41,9 @@ qnormAsymp(p,
   \eqn{s} is \code{-lp}.
 }
 \references{
-  Martin Maechler (2022). Asymptotic Tail Formulas For Gaussian Quantiles for R;
-  \CRANpkg{DPQ} vignette, see \url{https://CRAN.R-project.org/package=DPQ}.
+  Martin Maechler (2022). Asymptotic Tail Formulas For Gaussian Quantiles;
+  \CRANpkg{DPQ} vignette, see
+  \url{https://CRAN.R-project.org/package=DPQ/vignettes/qnorm-asymp.pdf}.
 }
 \author{Martin Maechler}
 \seealso{

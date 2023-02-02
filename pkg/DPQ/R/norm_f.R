@@ -339,3 +339,50 @@ qnormAsymp <- function(p, lp = .DT_Clog(p, lower.tail=lower.tail, log.p=log.p),
     ## R[p. == 1/2] <- 0
     R
 }
+
+## An approximation close to p=1/2, i.e., x ~= 0
+## Using Upper Bound P_1(x)  of  Abramowitz & Stegun, 26.2.24, p.933
+## and *inverting it
+##
+qnormU1 <- function(p) {
+    neg <- p < 1/2
+    r <- sqrt(pi/2 * (-log(4*p*(1-p))))
+    r[neg] <- -r[neg]
+    r
+}
+
+## "CAppr" := [C]enter [Appr]oximation
+## TODO: 1) lower.tail=TRUE/FALSE, log.p=FALSE/TRUE
+##       2) stable  log(4*p*(1-p))  for log.p=TRUE ==> explored below
+## Using Upper Bound P_1(x)  of  Abramowitz & Stegun, 26.2.24, p.933
+## and               P_3(x)  of       "         "   , 26.2.25
+## *and* iterative plugin
+qnormCappr <- function(p, k=1L) {
+    stopifnot(length(k <- as.integer(k)) == 1, k >= 1L)
+    neg <- p < 1/2
+    pih <- pi/2
+    x2 <- -pih * (l4p1p <- log(4*p*(1-p)))
+    if(k >= 2L) {
+        fpi <- 2*(pi-3)/(3*pi^2)
+        for(j in 1:(k-1L))
+            x2 <- -pih * (l4p1p - fpi*x2^2*exp(-x2/2))
+    }
+    r <- sqrt(x2)
+    r[neg] <- -r[neg]
+    r
+}
+
+##' Compute log(4*p'*(1-p')) for p' \in [0,1];  where
+##' p' = p (log.p=FALSE) -- lower.tail does not matter as we need both p,1-p !
+##' p' = exp(p) or exp(1-p) for log.p=TRUE
+log4p1p <- function(p, log.p=FALSE) {
+    if(log.p) {
+        ## log(4) + p + log1mexp(-p)
+        ## +/- equivalent, but slightly faster; around p=log(1/2) even slightly less problematic
+        log(-4*expm1(p)) + p
+    } else { # p' = p or 1-p -- does not matter: p'(1-p') == p(1-p)
+        log(4*p*(1-p)) # is the best from those tried (see Rmpfr below)
+        ## == log1p(-4*(p-1/2)^2)
+        ## log(4)+log(p)+log1p(-p)
+    }
+}

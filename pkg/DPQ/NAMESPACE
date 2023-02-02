@@ -187,8 +187,9 @@ export(
   , pnormL_LD10, pnormU_S53
   , pnormAsymp
   , qnormAsymp
-  , qnormAppr, qnormUappr
-  , qnormUappr6
+  , qnormAppr # deprecated!
+  , qnormCappr
+  , qnormUappr, qnormUappr6
   , qnormR, qnormR1
   , qntR, qntR1
   , qtAppr

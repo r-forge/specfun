@@ -638,6 +638,7 @@ qnormAppr <- function(p) {
   ## -- to be used in  qbeta(.)
   ## The relative error of this approximation is quite ASYMMETRIC: mainly < 0
   ## NB:  This is Abramowitz & Stegun 26.2.22
+    .Deprecated("qnormUappr")
   a0 <- 2.30753
   a1 <- 0.27061
   b1 <- 0.99229
@@ -649,21 +650,21 @@ qnormAppr <- function(p) {
 qnormUappr <- function(p,
                        lp = .DT_Clog(p, lower.tail=lower.tail, log.p=log.p),
                                         # ~= log(1-p) -- independent of lower.tail, log.p
-                       lower.tail=FALSE, log.p=FALSE, tLarge = 1e10)
+                       lower.tail=FALSE, log.p = missing(p), tLarge = 1e10)
 {
     ## qnorm: normal quantile approximation;
     ## -- to be used in  qbeta(.)
     ## The relative error of this approximation is quite ASYMMETRIC: mainly < 0
-    ## NB:  This is Abramowitz & Stegun 26.2.22
+    ## NB:  This is Abramowitz & Stegun 26.2.22; improved with swapping etc
     a0 <- 2.30753
     a1 <- 0.27061
     b1 <- 0.99229
     b2 <- 0.04481
 
-    if(missing(p)) { ## log.p unused;  lp = log(1-p)  <==>  e^lp = 1-p  <==>  p = 1 - e^lp
+    if(use.lp <- missing(p)) { ## log.p unused;  lp = log(1-p)  <==>  e^lp = 1-p  <==>  p = 1 - e^lp
+        if(lower.tail) stop("lower.tail=TRUE not allowed when p is not specified, but lp is")
         p. <- -expm1(lp)
-        ## swap p <--> 1-p -- so we are where approximation is better
-        swap <- if(lower.tail) p. < 1/2 else p. > 1/2 # logical vector
+        ## swap <- TRUE -- will swap *all* below
     } else {
         p. <- .D_qIv(p, log.p)
         ## swap p <--> 1-p -- so we are where approximation is better
@@ -675,7 +676,7 @@ qnormUappr <- function(p,
     ## for t >= tLarge:  R = t numerically in formula below
     t <- t[t.ok]
     R[t.ok] <- t - (a0 + a1 * t) / (1 + (b1 + b2 * t) * t)
-    R[swap] <- -R[swap]
+    if(use.lp) R <- -R else R[swap] <- -R[swap]
     R[p. == 1/2] <- 0
     R
 }
@@ -683,7 +684,7 @@ qnormUappr <- function(p,
 qnormUappr6 <- function(p,
                         lp = .DT_Clog(p, lower.tail=lower.tail, log.p=log.p),
                                         # ~= log(1-p) -- independent of lower.tail, log.p
-                        lower.tail=FALSE, log.p=FALSE, tLarge = 1e10)
+                        lower.tail=FALSE, log.p = missing(p), tLarge = 1e10)
 {
     ## qnorm: normal quantile approximation;
     ## ....
@@ -693,10 +694,10 @@ qnormUappr6 <- function(p,
     c1 <-  .802853;  d2 <-  .189269
     c2 <-  .010328;  d3 <-  .001308
 
-    if(missing(p)) { ## log.p unused;  lp = log(1-p)  <==>  e^lp = 1-p  <==>  p = 1 - e^lp
+    if(use.lp <- missing(p)) { ## log.p unused;  lp = log(1-p)  <==>  e^lp = 1-p  <==>  p = 1 - e^lp
+        if(lower.tail) stop("lower.tail=TRUE not allowed when p is not specified, but lp is")
         p. <- -expm1(lp)
-        ## swap p <--> 1-p -- so we are where approximation is better
-        swap <- if(lower.tail) p. < 1/2 else p. > 1/2 # logical vector
+        ## swap <- TRUE -- will swap *all* below
     } else {
         p. <- .D_qIv(p, log.p)
         ## swap p <--> 1-p -- so we are where approximation is better
@@ -709,7 +710,7 @@ qnormUappr6 <- function(p,
     ## for t >= tLarge:  R = t numerically in formula below
     t <- t[t.ok]
     R[t.ok] <- t - (c0 + (c1 + c2*t) * t) / (1 + (d1 + (d2 + d3*t) * t) * t)
-    R[swap] <- -R[swap]
+    if(use.lp) R <- -R else R[swap] <- -R[swap]
     R[p. == 1/2] <- 0
     R
 }

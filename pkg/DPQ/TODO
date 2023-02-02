@@ -1,5 +1,6 @@
 ##-*- org -*-->  Emacs .. [Tab] key + [Org] menu; C-c C-o to follow links
 
+* DONE *Embarrassing*: both qnormUappr() & qnormUappr6() were *negative* (wrong sign), for lp in [-.69, 0)
 * DONE Provide R functions interfacing to the "applied math utilities" in ./src/DPQ-misc.c : ./R/utils.R
 * TODO pbeta() approximations notably for log scale where bpser underflows to -Inf <<<<<<<<<<<
 * TODO Compare pnchi1sq() with t1() function in tests/chisq-nonc-ex.R
