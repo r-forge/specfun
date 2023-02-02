@@ -189,13 +189,53 @@ lbetaIhalf <- function(a, n)
   stop("unfinished -- FIXME")
 }
 
-### pbeta()  --- is now used from TOM708 exclusively
+
+### pbeta()  --- is now used from TOMS 708 exclusively
 ### -------  ~/R/D/r-devel/R/src/nmath/toms708.c
 ###                                    ~~~~~~~~~
 
+## Provide TOMS 708 version of  expm1(), called REXP() in Fortran, then rexpm1() in our C code
+## Keeping name '*exmp1()' because, indeed, it should be close to expm1()
+##
+## EVALUATION OF THE FUNCTION EXP(X) - 1
+rexpm1 <- function(x)
+{
+    ## Vectorize in 'x' -- and work with NaN/NA
+    r <- x
+    notNA <- !is.na(x)
+    sml <- abs(x) <= 0.15
 
-
-
+    if(any(s <- sml & notNA))
+      r[s] <- # |x| <= 0.15
+        local({ x <- x[s]
+            ## minimax rational approximation, according to Didonato & Morris (1986)
+            ## "Computation of the Incomplete Gamma Function Ratios and their Inverse"
+            ## ACM Trans. on Math. Softw. 12, 377--393  // https://dl.acm.org/doi/10.1145/22721.23109
+            p1 = 9.14041914819518e-10;
+            p2 = .0238082361044469;
+            q1 = -.499999999085958;
+            q2 = .107141568980644;
+            q3 = -.0119041179760821;
+            q4 = 5.95130811860248e-4;
+            ##
+            x * (((p2 * x + p1) * x + 1.) /
+                 ((((q4 * x + q3) * x + q2) * x + q1) * x + 1.))
+        })
+    if(any(B <- !sml & notNA))
+      r[B] <- # |x| > 0.15
+        local({ x <- x[B]
+            w = exp(x)
+            ## ifelse(x > 0,
+            ##        w * (0.5 - 1./w + 0.5),
+            ##        w - 0.5 - 0.5)
+            if(any(p <- x > 0))
+                w[p] <- w[p] * (0.5 - 1/w[p] + 0.5)
+            if(any(n <- !p)) # n = (x <= 0)
+                w[n] <- (w[n] - 0.5) - 0.5
+            w
+        })
+    r
+} # rexpm1
 
 
 ## From ~/R/D/r-devel/R/src/nmath/pgamma.c :

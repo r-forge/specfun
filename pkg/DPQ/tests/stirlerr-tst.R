@@ -27,12 +27,11 @@ plot(st.n ~ n, log="xy", type="b") ## looks good now
 nM <- mpfr(n, 2048)
 st.nM <- stirlerr(nM, use.halves=FALSE) ## << on purpose
 all.equal(asNumeric(st.nM), st.n)# TRUE
-all.equal(st.nM, as(st.n,"mpfr"))# .. difference: 1.05884..............................e-15
-all.equal(roundMpfr(st.nM, 64), as(st.n,"mpfr"), tol=1e-16)# diff.: 1.05884...e-15
+all.equal(st.nM, as(st.n,"mpfr"))# .. difference: 3.381400e-14 was 1.05884.........e-15
+all.equal(roundMpfr(st.nM, 64), as(st.n,"mpfr"), tol=1e-16)# (ditto)
 
-
-## Very revealing plot showing the *relative* approximation error of stirlerr(<dblprec>)
-
+##' Very revealing plot showing the *relative* approximation error of stirlerr(<dblprec>)
+##'
 p.stirlerrDev <- function(n, precBits=2048, stnM = stirlerr(mpfr(n, precBits)), abs=FALSE,
                           ## cut points, n=*, in the stirlerr() algorithm :
                           cutoffs = c(15,35,80,500),
