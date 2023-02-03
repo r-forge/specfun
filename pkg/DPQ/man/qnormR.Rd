@@ -79,7 +79,7 @@ matplot(-lp, -qpAll, log="xy", type="l", lwd=3, col=cAdj, axes=FALSE,
         main = "- qnormR(lp, log.p=TRUE, version = * )")
 sfsmisc::eaxis(1, nintLog=15, sub=2); sfsmisc::eaxis(2)
 lines(-lp, sqrt(-2*lp), col=cAdj[ncol(qpAll)+1])
-leg <- as.expression(c(paste("version=", ver.qn), quote(sqrt(-2\%*\%lp))))
+leg <- as.expression(c(paste("version=", ver.qn), quote(sqrt(-2 \%.\% lp))))
 matlines(-lp, -qpAll[,2:3], lwd=6, col=cAdj[2:3])
 legend("top", leg, bty='n', col=cAdj, lty=1:3, lwd=2)
 
