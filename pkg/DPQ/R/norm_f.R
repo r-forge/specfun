@@ -148,7 +148,9 @@ pnormAsymp <- function(x, k, lower.tail=FALSE, log.p=FALSE) {
 ## <--> ../man/qnormR.Rd
 
 qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
-                    trace = 0, version = c("4.0.x", "2020-10-17", "2022-08-04")) {
+                    trace = 0,
+                    version = c("4.0.x", "1.0.x", "1.0_noN", "2020-10-17", "2022-08-04"))
+{
     stopifnot(length(p) == 1, length(mu) == 1, length(sd) == 1,
               length(lower.tail) == 1, length(log.p) == 1,
               !is.na(lower.tail), !is.na(log.p))
@@ -167,10 +169,75 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
     q = p. - 0.5;
 
     if(trace)
-        cat(sprintf("qnormR1(p=%10.7g, m=%g, s=%g, l.t.= %d, log= %d): q = %g\n",
-                    p,mu,sd, lower.tail, log.p, q))
+        cat(sprintf(
+            "qnormR1(p=%10.7g, m=%g, s=%g, l.t.= %d, log= %d, version=\"%s\"): q = %g\n",
+            p,mu,sd, lower.tail, log.p,  version,  q))
 
-## -- use AS 241 --- */
+    if(startsWith(version, "1.0")) {
+        final_Newton <- (version == "1.0.x")
+        if (abs(q) <= 0.42) {
+            ## 0.08 <= p <= 0.92 */
+            r <- q * q;
+            val <- q * (((-25.44106049637 * r + 41.39119773534) * r
+                - 18.61500062529) * r + 2.50662823884
+            ) / ((((3.13082909833 * r - 21.06224101826) * r
+                + 23.08336743743) * r + -8.47351093090) * r + 1.)
+        }
+        else {
+            ## p < 0.08 or p > 0.92, set r = min(p, 1 - p) */
+
+            if (q > 0)
+                r = .DT_CIv(p, lower.tail, log.p) # 1-p
+            else
+                r = p. # = R_DT_Iv(p) ^=  p
+            if(trace)
+                cat(sprintf("\t 'middle p': r = %7g\n", r))
+
+            if(r > DBL_EPSILON) {
+                r = sqrt(- if(log.p &&
+                              ((lower.tail && q <= 0) || (!lower.tail && q > 0))) p else log(r))
+                if(trace)
+                    cat(sprintf("\t new r = %7g ( =? sqrt(- log(r)) )\n", r))
+
+                val = (((2.32121276858 * r + 4.85014127135) * r
+                        - 2.29796479134) * r - 2.78718931138
+                      ) / ((1.63706781897 * r + 3.54388924762) * r + 1.)
+	    if (q < 0)
+		val = -val;
+            }
+            else if(r >= DBL_MIN) { ## r = p <= eps : Use Wichura */
+                val <- -2 * if(log.p) .D_Lval(p, lower.tail)
+                            else  log(.D_Lval(p, lower.tail))
+                r = log(2 * M_PI * val);
+                if(trace)
+                    cat(sprintf("\t DBL_MIN <= r <= DBL_EPS: val = %g, new r = %g\n",
+                                val, r))
+                p = val * val;
+                r = r/val + (2 - r)/p + (-14 + 6 * r - r * r)/(2 * p * val);
+                val = sqrt(val * (1 - r));
+                if(q < 0)
+                    val = -val;
+                final_Newton <- FALSE
+            }
+            else {
+                ## if(trace)
+                ##     cat("\t r < DBL_MIN : giving up (-> +- Inf \n")
+                cat("r < DBL_MIN (ME_RANGE error) -- infinite result\n") # ML_ERROR(ME_RANGE);
+                return(if(q < 0) ML_NEGINF else ML_POSINF)
+            }
+        }
+        if(final_Newton) {
+            ## FIXME: This could be improved when log.p or !lower.tail ?
+            ## 	  (using p, not p. , and a different derivative )
+            if(trace)
+                cat(sprintf("\t before final step: val = %7g\n", val))
+            ## Final Newton step: */
+            val = val - (pnorm(val) - p.) / dnorm(val);
+        }
+    }
+
+    ## otherwise -- use AS 241 ---
+
 ##  double ppnd16_(double *p, long *ifault)*/
 ##       ALGORITHM AS241  APPL. STATIST. (1988) VOL. 37, NO. 3
 
@@ -180,7 +247,7 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
 ##       (original fortran code used PARAMETER(..) for the coefficients
 ##        and provided hash codes for checking them...)
 
-    if (abs(q) <= .425) { ## 0.075 <= p <= 0.925 */
+    else if (abs(q) <= .425) { ## 0.075 <= p <= 0.925 */
         r  <- .180625 - q * q; ## History: AS241 has SPLIT1 = 0.425, CONST1 = 0.180625
         if(trace) cat(sprintf(" --> usual rational form 1, r=%12.7g\n", r))
 	val <-
@@ -228,15 +295,16 @@ qnormR1 <- function(p, mu=0, sd=1, lower.tail=TRUE, log.p=FALSE,
         }
         else { ## p is very close to  0 or 1:  r > 5 <==> min(p,1-p) < exp(-25) = 1.3888..e-11
           if(version == "2020-10-17" && r >= 816) { # p is *extremly* close to 0 or 1 - only possibly when log_p =TRUE
-             ## Using the asymptotical formula -- is *not* optimal but uniformly better than branch below
-             val = r * M_SQRT2;
+              if(trace) cat("\t *extremely* close to 0 or 1; ==> r large: asymptotic sqrt(2*s) = r*sqrt(2)\n")
+              ## Using the asymptotical formula -- is *not* optimal but uniformly better than branch below
+              val = r * M_SQRT2;
           }
           else if(version == "2022-08-04" && r > 27) {
               ## p is *really* close to 0 or 1 .. practically only when log_p =TRUE
-            if(trace) cat(sprintf("\t *really* close to 0 or 1; ==> using an asymptotic formula; "))
+            if(trace) cat("\t *really* close to 0 or 1; ==> using an asymptotic formula; ")
 	    if(r >= 6.4e8) { ## p is *very extremly* close to 0 or 1
 		## Using the asymptotical formula ("0-th order"): qn = sqrt(2*s)
-                if(trace) cat(sprintf("  r large \n"))
+                if(trace) cat("  r large:  sqrt(2*s) = r*sqrt(2)\n")
 		val = r * M_SQRT2;
 	    } else {
 		s2 <- -ldexp(lp, 1) ## = -2*lp = 2s

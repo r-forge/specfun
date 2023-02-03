@@ -4,12 +4,13 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-4 (2023-02-02, svn r250)}{
+\section{Version 0.5-4 (2023-02-03, svn r251)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item New \R function \code{qnormCappr()}.
-
       \item New \R function \code{rexpm1()} from TOMS 708.
+      \item Provide also \code{qnormR(*, version = "1.0.x")} and \code{"1.0_noN"},
+      for history's sake.
     }
   }
   \subsection{BUG FIXES}{
