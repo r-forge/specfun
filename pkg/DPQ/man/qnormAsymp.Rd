@@ -30,7 +30,7 @@ qnormAsymp(p,
   \eqn{Q(x) = 1 - \Phi(x)} from Abramowitz and Stegun (26.2.13), p.932,
   which are provided in our package \pkg{DPQ} as \code{\link{pnormAsymp}()}.
   %%
-  They will be used in R >= 4.3.0's \code{qnorm()} to provide very accurate
+  They will be used in \R >= 4.3.0's \code{qnorm()} to provide very accurate
   quantiles in the extreme tails.
 }
 \value{

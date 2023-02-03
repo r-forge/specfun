@@ -1,4 +1,3 @@
-ML_NAN <- NaN
 ISNAN <- is.na
 ISNA <- function(x) is.na(x) && !is.nan(x)
 

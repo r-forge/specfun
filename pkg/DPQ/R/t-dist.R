@@ -6,7 +6,7 @@
 ## --- look at a pure R version of R's own qt() in  src/nmath/qt.c
 
  ## Mathlib : A C Library of Special Functions
- ## Copyright (C) 2000-2022 The R Core Team
+ ## Copyright (C) 2000-2023 The R Core Team
  ## Copyright (C) 2003-2022 The R Foundation
  ## Copyright (C) 1998 Ross Ihaka
 
@@ -65,13 +65,6 @@ qtR1 <- function(p, df, lower.tail=TRUE, log.p=FALSE, eps = 1e-12,
         return(NaN)
     }
 
-    DBL_MAX     <- .Machine$double.xmax
-    DBL_MIN     <- .Machine$double.xmin
-    DBL_EPSILON <- .Machine$double.eps
-    DBL_MANT_DIG<- .Machine$double.digits     # 53
-
-    ML_POSINF <-  Inf
-    ## ML_NEGINF <- -Inf
     R_FINITE <- is.finite
 
     if (df < 1) { ## based on qnt() --> see ./t-nonc-fn.R <<<<<<<<<<<<<

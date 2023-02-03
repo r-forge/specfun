@@ -131,7 +131,7 @@ pntJW39.0 (t, df, ncp, lower.tail = TRUE, log.p = FALSE)
 
   Lenth, R. V. (1989). \emph{Algorithm AS 243} ---
   Cumulative distribution function of the non-central \eqn{t} distribution,
-  \emph{Applied Statistics} \bold{38}, 185--189.
+  \emph{JRSS C (Applied Statistics)} \bold{38}, 185--189.
 
   Abramowitz, M. and Stegun, I. A. (1972)
   \emph{Handbook of Mathematical Functions}. New York: Dover.

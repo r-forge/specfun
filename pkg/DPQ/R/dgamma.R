@@ -77,7 +77,6 @@ dpois_raw <- function(x, lambda, log=FALSE,
 
     if(M == 0) return(r)
 
-    DBL_MIN <- .Machine$double.xmin # 2.225e-308
     stopifnot(length(small.x__lambda) == 1, small.x__lambda >= DBL_MIN)
 
     ## M >= 1 :
