@@ -199,6 +199,7 @@ export(
   , r_pois, r_pois_expr
     ## no! titleR.exp (FIXME eventually: should not need such a global)
   , rexpm1
+  , rlog1
 
   , chebyshevPoly, chebyshevEval, chebyshev_nc
 )

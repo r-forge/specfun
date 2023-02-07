@@ -1,13 +1,20 @@
 \name{log1pmx}
+\title{Accurate  \code{log(1+x) - x}  Computation}
 \alias{log1pmx}
 \alias{log1pmxC}
-\title{Accurate  \code{log(1+x) - x}  Computation}
+\alias{rlog1}
 \description{
   Compute \deqn{\log(1+x) - x}{log(1+x) - x}
   accurately also for small \eqn{x}, i.e., \eqn{|x| \ll 1}{|x| << 1}.
 
   Since April 2021, the pure \R code version \code{log1pmx()} also works
   for "mpfr" numbers (from package \CRANpkg{Rmpfr}).
+
+  \code{rlog1(x)}, provided mostly for reference and reproducibility, is
+  used in TOMS Algorithm 708, see e.g. the reference of \code{\link{lgamma1p}}.
+  and computes \emph{minus} log1pmx(x), i.e., \eqn{x - \log(1+x)}{x - log(1+x)},
+  using (argument reduction) and a rational approximation when
+  \eqn{x \in [-0.39, 0.57)}{x in [-0.39, 0.57)}.
 }
 \usage{
 log1pmx (x, tol_logcf = 1e-14, eps2 = 0.01, minL1 = -0.79149064,
@@ -88,6 +95,10 @@ curve(log1pmx, -.1,  .1,  n=n1); abline(h=0, v=0, lty=3)
 curve(log1pmx, -.01, .01, n=n1) -> l1xz2; abline(h=0, v=0, lty=3)
 ## C and R versions correspond closely:
 with(l1xz2, stopifnot(all.equal(y, log1pmxC(x), tol = 1e-15)))
+## Compare rexp1() with log1pmx
+x <- seq(-0.5, 5/8, by=1/256)
+all.equal(log1pmx(x), -rlog1(x), tol = 0) # 2.838e-16 {|rel.error| <= 1.33e-15}
+stopifnot(all.equal(log1pmx(x), -rlog1(x), tol = 1e-14))
 
 e <- if(doExtras) 2^-12 else 2^-8; by.p <- 1/(if(doExtras) 256 else 64)
 xd <- c(seq(-1+e, 0+100*e, by=e), seq(by.p, 5, by=by.p)) # length 676 or 5476 if do.X.

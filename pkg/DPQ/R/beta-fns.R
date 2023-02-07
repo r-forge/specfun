@@ -237,6 +237,57 @@ rexpm1 <- function(x)
     r
 } # rexpm1
 
+## Provide TOMS 708 version of  rlog1(), called RLOG1() in Fortran
+##
+rlog1 <- function(x)
+{
+## /* -----------------------------------------------------------------------
+##  *             Evaluation of the function  x - ln(1 + x)
+##  *                                        ~=~ - log1pmx(x)  in ./pgamma.c
+##  * ----------------------------------------------------------------------- */
+    ## Vectorize in 'x' -- and work with NaN/NA
+    r <- x
+    notNA <- !is.na(x)
+    sml <- -0.39 <= x & x < 0.57 # x inside [-0.39, 0.57)
+    if(any(s <- sml & notNA))
+      r[s] <- # x in [-0.39, 0.57)
+        local({ x <- x[s]
+            ## only for "mid": |x| <= 0.18 ; Argument Reduction
+            h <- x
+            w1 <- 0
+            if (any(L <- x < -0.18)) { ## "Left": x in [-0.39, -0.18)  ("L10")
+                h[L] <- h. <- (x[L] + .3) / .7
+                a = .0566749439387324
+                w1[L] <- a - h. * .3
+            }
+            if (any(R <- x > 0.18)) { ## "Right": x in (0.18, 0.57) ("L20")
+                h[R] <- h. <- x[R] * .75 - .25
+                b = .0456512608815524
+                w1[R] <- b + h. / 3.
+            }
+            ##  L30: "Series Expansion" i.e., rational approximation
+            r = h / (h + 2.)
+            t = r * r
+
+            p0 = .333333333333333;
+            p1 = -.224696413112536;
+            p2 = .00620886815375787;
+            q1 = -1.27408923933623;
+            q2 = .354508718369557;
+            w <- ((p2 * t + p1) * t + p0) / ((q2 * t + q1) * t + 1.)
+
+            t * 2 * (1/(1 - r) - r * w) + w1
+        })
+
+    if(any(B <- !sml & notNA))
+      r[B] <- { #  direct evaluation
+        x <- x[B]
+        x - log((x + 0.5) + 0.5)
+      }
+    r
+} ## rlog1
+
+
 
 ## From ~/R/D/r-devel/R/src/nmath/pgamma.c :
 ##                                --------

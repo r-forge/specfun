@@ -2,11 +2,16 @@
 \alias{rexpm1}
 \title{TOMS 708 Approximation REXP(x) of expm1(x) = exp(x) - 1}
 \description{
-  This is the numeric (double precision) approximation of \eqn{exp(x) - 1},
+  Originally \code{REXP()}, now \code{rexpm1()} is a numeric (double
+  precision) approximation of \eqn{exp(x) - 1},
   notably for small \eqn{|x| \ll 1}{|x| << 1} where direct evaluation
   looses accuracy through cancellation.
 
-  The \code{REXP()} aka \code{rexpm1()} approximation
+  Fully accurate computations of \eqn{exp(x) - 1} are now known as
+  \code{\link{expm1}(x)} and have been provided by math libraries (for C,
+  C++, ..) and \R, (and are typically more accurate than \code{rexp1()}).
+
+  The \code{rexpm1()} approximation
   was developed by Didonato & Morris (1986) and uses a minimax rational
   approximation for \eqn{|x| <= 0.15}; the authors say
   \dQuote{\emph{accurate to within 2 units of the 14th significant digit}}
@@ -24,7 +29,13 @@ rexpm1(x)
 \references{
   Didonato, A.R. and Morris, A.H. (1986)
   Computation of the Incomplete Gamma Function Ratios and their Inverse.
-  \emph{ACM Trans. on Math. Softw.} \bold{12}, 377--393, \doi{10.1145/22721.23109}.
+  \emph{ACM Trans. on Math. Softw.} \bold{12}, 377--393, \doi{10.1145/22721.23109};
+  The above is the \dQuote{flesh} of \sQute{TOMS 654}:
+
+  Didonato, A.R. and Morris, A.H. (1987)
+  Algorithm 654: FORTRAN subroutines for Compute the Incomplete Gamma
+  Function Ratios and their Inverse.
+  \emph{ACM Transactions on Mathematical Software} \bold{13}, 318--319, \doi{10.1145/29380.214348}.
 }
 \author{Martin Maechler, for the C to R *vectorized* translation.
 }
@@ -53,7 +64,7 @@ axis(4, at = (1:9)*2^-53, las = 1, labels =
 do.15()
  par(op)
 
-## True comparison of  rexpm1() with [OS mathlib based] expm1():
+## "True" Accuracy comparison of  rexpm1() with [OS mathlib based] expm1():
 if(require("Rmpfr")) withAutoprint({
   xM <- mpfr(x, 128); Xexpm1 <- expm1(xM)
   REr1 <- asNumeric(rexpm1(x)/Xexpm1 - 1)
