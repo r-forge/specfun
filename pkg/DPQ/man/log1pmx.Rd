@@ -122,15 +122,16 @@ table(n.relD)
 stopifnot(-10 <= n.relD, n.relD <= 20) # above Lnx: [-6, 14]
 
 if(requireNamespace("Rmpfr")) {
-  relE <- asNumeric(sfsmisc::relErrV(log1pmx(Rmpfr::mpfr(x,128)), -rlog1(x)))
+  relE <- Rmpfr::asNumeric(sfsmisc::relErrV(log1pmx(Rmpfr::mpfr(x,128)), -rlog1(x)))
   plot(x, pmax(2^-54, abs(relE)), log="y", type="l", main= "|rel.Err| of rlog1(x)")
   rl1.c <- c(-.39, 0.57, -.18, .18) # the cutoffs used inside rlog1()
   lc <- "gray"
   abline(v = rl1.c, col=lc, lty=2)
   axis(3, at=rl1.c, col=lc, cex.axis=3/4, mgp=c(2,.5,0))
   abline(h= (1:4)*2^-53,  lty=3, col = (cg <- adjustcolor(1, 1/4)))
-  axis(4, at=(1:4)*2^-53, labels=expression(frac(epsilon[c],2), epsilon[c], frac(3,2)*epsilon[c], 2*epsilon[c]),
-       cex.axis = 3/4, tcl=-1/4, las = 1, mgp=c(1.5,.5,0), col=cg)# col.axis=cg
+  axis(4, at=(1:4)*2^-53, labels=expression(frac(epsilon[c],2), epsilon[c],
+                                            frac(3,2)*epsilon[c], 2*epsilon[c]),
+       cex.axis = 3/4, tcl=-1/4, las = 1, mgp=c(1.5,.5,0), col=cg)
   ## it seems the -.18 +.18 cutoffs should be slightly moved "outside"
 }
 
