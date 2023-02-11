@@ -22,9 +22,11 @@ log1pmx (x, tol_logcf = 1e-14, eps2 = 0.01, minL1 = -0.79149064,
          logCF = if(is.numeric(x)) logcf else logcfR.)
 log1pmxC(x)  # TODO in future: arguments (minL1, eps2, tol_logcf),
              # possibly with *different* defaults (!)
+rlog1(x)
 }
 \arguments{
-  \item{x}{numeric (or \code{"\link[Rmpfr]{mpfr}"} number) vector with values \eqn{x > -1}.}
+  \item{x}{numeric (or, for \code{log1pmx()} only, \code{"\link[Rmpfr]{mpfr}"}
+    number) vector with values \eqn{x > -1}.}
   \item{tol_logcf}{a non-negative number indicating the tolerance
     (maximal relative error) for the auxiliary \code{\link{logcf}()} function.}
   \item{eps2}{non-negative cutoff where the algorithm switches from a few
@@ -35,7 +37,9 @@ log1pmxC(x)  # TODO in future: arguments (minL1, eps2, tol_logcf),
     Welinder's C code for \code{log1pmx()} in \file{R/src/nmath/pgamma.c},
     hard coded there to -0.79149064 which seems not optimal for
     computation of \code{log1pmx()}, at least in some cases, and hence
-    \bold{the default may be changed in the future}.}
+    \bold{the default may be changed in the future}.  Also, for mpfr numbers,
+    the default -0.79149064 may well be far from optimal.
+  }
   \item{trace.lcf}{\code{\link{logical}} used in
     \code{\link{logcf}(.., trace=trace.lcf)}.}
   \item{logCF}{the \code{\link{function}} to be used as
@@ -95,15 +99,40 @@ curve(log1pmx, -.1,  .1,  n=n1); abline(h=0, v=0, lty=3)
 curve(log1pmx, -.01, .01, n=n1) -> l1xz2; abline(h=0, v=0, lty=3)
 ## C and R versions correspond closely:
 with(l1xz2, stopifnot(all.equal(y, log1pmxC(x), tol = 1e-15)))
-## Compare rexp1() with log1pmx
-x <- seq(-0.5, 5/8, by=1/256)
-all.equal(log1pmx(x), -rlog1(x), tol = 0) # 2.838e-16 {|rel.error| <= 1.33e-15}
-stopifnot(all.equal(log1pmx(x), -rlog1(x), tol = 1e-14))
 
 e <- if(doExtras) 2^-12 else 2^-8; by.p <- 1/(if(doExtras) 256 else 64)
 xd <- c(seq(-1+e, 0+100*e, by=e), seq(by.p, 5, by=by.p)) # length 676 or 5476 if do.X.
 plot(xd, log1pmx(xd), type="l", col=2, main = "log1pmx(x)")
 abline(h=0, v=-1:0, lty=3)
+
+## --- Compare rexp1() with log1pmx() ----------------------------
+x <- seq(-0.5, 5/8, by=1/256)
+all.equal(log1pmx(x), -rlog1(x), tol = 0) # 2.838e-16 {|rel.error| <= 1.33e-15}
+stopifnot(all.equal(log1pmx(x), -rlog1(x), tol = 1e-14))
+## much more closely:
+x <- c(-1+1e-9, -1+1/256, -(127:50)/128, (-199:295)/512, 74:196/128)
+if(is.unsorted(x)) stop("x must be sorted for plots")
+rlog1.x <- rlog1(x)
+summary(relD <- sfsmisc::relErrV(log1pmx(x), -rlog1.x))
+n.relD <- relD * 2^53
+table(n.relD)
+## 64-bit Linux F36 (gcc 12.2.1):
+## -6  -5  -4  -3  -2  -1   0   2   4   6   8  10  12  14
+##  2   3  13  24  79  93 259 120  48  22  14  15   5   1
+stopifnot(-10 <= n.relD, n.relD <= 20) # above Lnx: [-6, 14]
+
+if(requireNamespace("Rmpfr")) {
+  relE <- asNumeric(sfsmisc::relErrV(log1pmx(Rmpfr::mpfr(x,128)), -rlog1(x)))
+  plot(x, pmax(2^-54, abs(relE)), log="y", type="l", main= "|rel.Err| of rlog1(x)")
+  rl1.c <- c(-.39, 0.57, -.18, .18) # the cutoffs used inside rlog1()
+  lc <- "gray"
+  abline(v = rl1.c, col=lc, lty=2)
+  axis(3, at=rl1.c, col=lc, cex.axis=3/4, mgp=c(2,.5,0))
+  abline(h= (1:4)*2^-53,  lty=3, col = (cg <- adjustcolor(1, 1/4)))
+  axis(4, at=(1:4)*2^-53, labels=expression(frac(epsilon[c],2), epsilon[c], frac(3,2)*epsilon[c], 2*epsilon[c]),
+       cex.axis = 3/4, tcl=-1/4, las = 1, mgp=c(1.5,.5,0), col=cg)# col.axis=cg
+  ## it seems the -.18 +.18 cutoffs should be slightly moved "outside"
+}
 
 ## much more graphics etc in ../tests/dnbinom-tst.R  (and the vignette, see above)
 }

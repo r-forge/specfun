@@ -254,7 +254,7 @@ rlog1 <- function(x)
         local({ x <- x[s]
             ## only for "mid": |x| <= 0.18 ; Argument Reduction
             h <- x
-            w1 <- 0
+            w1 <- rep(0, length(x))
             if (any(L <- x < -0.18)) { ## "Left": x in [-0.39, -0.18)  ("L10")
                 h[L] <- h. <- (x[L] + .3) / .7
                 a = .0566749439387324
@@ -280,7 +280,7 @@ rlog1 <- function(x)
         })
 
     if(any(B <- !sml & notNA))
-      r[B] <- { #  direct evaluation
+      r[B] <- { #  direct evaluation: x - log(1+x)
         x <- x[B]
         x - log((x + 0.5) + 0.5)
       }
@@ -518,10 +518,12 @@ logcf <- function (x, i, d, eps, trace = FALSE) {
 }
 
 ## Accurate calculation of log(1+x)-x, particularly for small x.
-## See also R-interface to R's C API [src/nmath/pgamma.c] log1pmx()  --> log1pmxC() in >> ./utils.R
-## NB: minL1 was hard-wired 'minLog1Value'  in R's source of log1pmx()
-log1pmx <- function(x, tol_logcf = 1e-14, eps2 = 0.01,
-                    minL1 = -0.79149064, trace.lcf = FALSE,
+## See also R-interface to R's C API [src/nmath/pgamma.c] log1pmx()
+##     --> log1pmxC() in >> ./utils.R >> ../src/DPQ-misc.c
+log1pmx <- function(x, tol_logcf = 1e-14,
+                    eps2 = 0.01,
+                    minL1 = -0.79149064, ## << was hard-wired 'minLog1Value' in R's source of log1pmx()
+                    trace.lcf = FALSE,
                     logCF = if(is.numeric(x)) logcf else logcfR.)
 {
     stopifnot(is.numeric(eps2), eps2 >= 0, is.numeric(minL1), -1 <= minL1, minL1 < 0)# < -1/4 ?

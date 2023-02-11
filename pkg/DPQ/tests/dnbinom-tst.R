@@ -8,7 +8,7 @@ source(system.file(package="DPQ", "test-tools.R",
 
 (doExtras <- DPQ:::doExtras() && !grepl("valgrind", R.home()))
 
-if(!dev.interactive(orNone=TRUE)) pdf("wienergerm-accuracy.pdf")
+if(!dev.interactive(orNone=TRUE)) pdf("dnbinom-log1pmx.pdf")
 
 
 ### 1. Testing  dbinom_raw(), dnbinomR() and dnbinom.mu() >>> ../R/dbinom-nbinom.R <<<
@@ -93,7 +93,7 @@ showProc.time()
 ## The first part is from original ../man/log1pmx.Rd
 
 e <- if(doExtras) 2^-12 else 2^-8; by.p <- 1/(if(doExtras) 256 else 64)
-xd <- c(seq(-1+e, 0+100*e, by=e), seq(by.p, 5, by=by.p)) # length 676 or 5476 if do.X.
+xd <- sort(c(seq(-1+e, 0+100*e, by=e), seq(by.p, 5, by=by.p))) # length 676 or 5476 if do.X.
 plot(xd, log1pmx(xd), type="l", col=2, main = "log1pmx(x)")
 abline(h=0, v=-1:0, lty=3)
 
@@ -103,25 +103,30 @@ asNumeric <- Rmpfr::asNumeric
 if(doExtras) {
   print( system.time( # the logcfR() completely unvectorized is *slow*
         lg1pM <- log1pmx(xM, tol_logcf = 1e-25, eps2 = 1e-4, trace=TRUE)
-  )) # 2 sec [new logcfR.()] if(doExtras) 0.43s otherwise, but ??s (!) on winbuilder!
-  lines(xd, asNumeric(lg1pM), col=adjustcolor(4, 3/4), lwd=2)
+  )) # 2 sec [new logcfR.()] if(doExtras), otherwise 0.43s, but ??s (!) on winbuilder!
+  lines(xd, asNumeric(lg1pM), col=adjustcolor(4, 1/4), lwd=3)
 }
 lg1pdR <- log1pmx(xd, trace=TRUE, logCF=logcfR)
-lines(xd, lg1pdR, col=adjustcolor(5, 3/4), lwd=3)
+lines(xd, lg1pdR, col=adjustcolor(5, 1/4), lwd=5)
 ##
 lg1pM. <- log1p(xM) - xM
-xM2k <- Rmpfr::mpfr(xd, 2048) # even more accurate
+xM2k <- Rmpfr::mpfr(xd, 2048) # even more bits
 lg1pM2k <- log1p(xM2k) - xM2k
 relErrV <- sfsmisc::relErrV
 reE00 <- asNumeric( relErrV(lg1pM2k, lg1pM.) )
-print(signif(range(reE00)), 2) # [-1.5e-151, 4.8e-151] -- 512 bits is perfect
+print(signif(range(reE00)), 2) # [-1.5e-151, 4.8e-151] ==> 512 bits is sufficient
+plot(reE00 ~ xd, type="l")
+plot(abs(reE00) ~ xd, type="l", log="y")
+plot(reE00 ~ xd, type="l", subset = abs(xd) <= 1/64)
+plot(abs(reE00) ~ xd, type="l", log="y", subset = abs(xd) <= 1)
 if(doExtras) { ## the error of the log1pmx() "algorithm" even for "perfect" mpfr-accuracy:
   rE.log1pm <- asNumeric(relErrV(lg1pM2k, lg1pM))
-  print(signif(range(  rE.log1pm ), 2)) # -1.1e-26 7.9e-28
+  print(summary(  rE.log1pm ) )  # -1.1e-26 7.9e-28 {"matching" tol_logcf = 1e-25 above}
 }
-re <- asNumeric(relErrV(lg1pM., log1pmx(xd)))
 showProc.time()
+reR <- asNumeric(relErrV(lg1pM., log1pmx(xd)))
 
+re  <- asNumeric(relErrV(lg1pM., log1pmx(xd)))
 ## MM: From around here, "move" to vignette  <<<<<<<<<<<<<<<<<<<<<<<<< ../vignettes/log1pmx-etc.Rnw <<<<<<
 
 plot(xd, re, type="b", cex=1/4,

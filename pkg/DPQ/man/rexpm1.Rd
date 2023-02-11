@@ -30,7 +30,7 @@ rexpm1(x)
   Didonato, A.R. and Morris, A.H. (1986)
   Computation of the Incomplete Gamma Function Ratios and their Inverse.
   \emph{ACM Trans. on Math. Softw.} \bold{12}, 377--393, \doi{10.1145/22721.23109};
-  The above is the \dQuote{flesh} of \sQute{TOMS 654}:
+  The above is the \dQuote{flesh} of \sQuote{TOMS 654}:
 
   Didonato, A.R. and Morris, A.H. (1987)
   Algorithm 654: FORTRAN subroutines for Compute the Incomplete Gamma
