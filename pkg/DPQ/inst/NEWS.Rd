@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-4 (2023-02-11, svn r255)}{
+\section{Version 0.5-4 (2023-04-03, svn r257)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item New \R function \code{qnormCappr()}.
@@ -26,6 +26,9 @@
 
       \item \file{../tests/pqnorm_extreme.R} plots more about the
       \code{pnormAsymp()} relative errors.
+
+      \item Apple clang 14.0.3 needs looser tolerance for \code{logcf{R}()}
+      and \code{dbinom_raw()} comparisons.
     }
   }
 }

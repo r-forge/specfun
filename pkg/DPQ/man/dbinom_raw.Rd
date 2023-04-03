@@ -42,7 +42,7 @@ for(n in c(3, 10, 27, 100, 500, 2000, 5000, 1e4, 1e7, 1e10)) {
  x <- if(n <= 2000) 0:n else round(seq(0, n, length.out=2000))
  p <- 3/4
  stopifnot(all.equal(dbinom_raw(x, n, p, q=1-p),
-                     dbinom    (x, n, p), tol = 1e-14))
+                     dbinom    (x, n, p), tol = 4e-14))# 1.636e-14 (Apple clang 14.0.3)
 }
 n <- 1024 ; x <- 0:n
 plot(x, dbinom_raw(x, n, p, q=1-p) - dbinom(x, n, p), type="l", main = "|db_r(x) - db(x)|")

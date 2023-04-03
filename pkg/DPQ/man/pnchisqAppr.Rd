@@ -96,7 +96,7 @@
 }
 \usage{
 %% R code in  ../R/pnchisq.R :
-%                 ----------
+%%                ----------
 pnchisq          (q, df, ncp = 0, lower.tail = TRUE, %% TODO?!? log.p = FALSE,
                   cutOffncp = 80, itSimple = 110, errmax = 1e-12, reltol = 1e-11,
                   maxit = 10* 10000, verbose = 0, xLrg.sigma = 5)
@@ -277,4 +277,3 @@ cbind(pL., pL, relEc = signif(1-pL./pL, 3), relE0 = signif(1-pL./pL0, 3))
 cbind(pR., pR, relEc = signif(1-pR./pR, 3), relE0 = signif(1-pR./pR0, 3))
 }
 \keyword{distribution}
-
