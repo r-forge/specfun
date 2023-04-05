@@ -45,16 +45,14 @@ log1mexp <- function(x) ifelse(x <= M_LN2, log(-expm1(-x)), log1p(-exp(-x)))
     .D_val(.D_Cval(x, lower.tail), log.p) # 1 - x in pF
 
 ## .DT_qIv <- function(p)	.D_Lval(.D_qIv(p))	  #   p	 in qF !
-.DT_qIv <- function(p, lower.tail, log.p) {
+.DT_qIv <- function(p, lower.tail, log.p)
     if(log.p) if(lower.tail) exp(p) else - expm1(p)
     else .D_Lval(p, lower.tail)
-}
 
 ## .DT_CIv <- function(p)	.D_Cval(.D_qIv(p))	  #  1 - p in qF
-.DT_CIv <- function(p, lower.tail, log.p) {
+.DT_CIv <- function(p, lower.tail, log.p)
     if(log.p) if(lower.tail) -expm1(p) else exp(p)
     else .D_Cval(p, lower.tail)
-}
 
 .DT_exp  <- function(x, lower.tail, log.p)		# exp( x )
     .D_exp(.D_Lval(x, lower.tail), log.p)

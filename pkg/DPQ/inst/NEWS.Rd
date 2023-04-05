@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-4 (2023-04-03, svn r257)}{
+\section{Version 0.5-4 (2023-04-05, svn r258)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item New \R function \code{qnormCappr()}.
@@ -24,11 +24,15 @@
     \itemize{
       \item Tweaks to the \file{qnorm-asymp} vignette, related to the JSS submission.
 
-      \item \file{../tests/pqnorm_extreme.R} plots more about the
+      \item \file{tests/pqnorm_extreme.R} plots more about the
       \code{pnormAsymp()} relative errors.
 
       \item Apple clang 14.0.3 needs looser tolerance for \code{logcf{R}()}
       and \code{dbinom_raw()} comparisons.
+
+      \item Minimally document the \emph{internal} \code{.D_*()} and
+      \code{.DT_*()} utilities, as we provide them to experts and e.g.,
+      package \CRANpkg{DPQmpfr}.
     }
   }
 }

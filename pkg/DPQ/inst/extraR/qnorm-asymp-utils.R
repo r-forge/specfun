@@ -1,4 +1,5 @@
-### R code from vignette source '..../DPQ/vignettes/qnorm-asymp.Rnw'
+### R code from vignette <DPQ-src>/vignettes/qnorm-asymp.Rnw
+### ======                                   =============== ../../vignettes/qnorm-asymp.Rnw
 
 ###################################################
 ### code chunk number 26: p.qnormAsy2-def
@@ -43,7 +44,7 @@ p.qnormAsy2 <- function(r0, k, # use k-1 and k in region around r0
   invisible(cbind(r = r, qn = q., relE))
 }
 
-r0 <- c(27, 55, 109, 840, 36000, 6.4e8) # <-- cutoffs  <--> in ../R/norm_f.R
+r0 <- c(27, 55, 109, 840, 36000, 6.4e8) # <-- cutoffs  <--> in ../../R/norm_f.R
 # use k =  5   4    3    2      1       0    e.g.  k = 0  good for r >= 6.4e8
 if(FALSE) # not here, but typically from caller
   for(ir in 2:length(r0))

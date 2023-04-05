@@ -37,9 +37,8 @@ importFrom("utils"
 
 ### ----------------------- Exporting ----------------------------
 
-## For now export everything (but the C_*() C routines
 export(
-    ## R/dpq-h.R
+    ## R/dpq-h.R: provide for experts:
     ## ---------
     ".D_0", ".D_1"
   , ".D_Clog", ".D_Cval", ".D_exp"
