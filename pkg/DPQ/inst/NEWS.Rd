@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-4 (2023-04-05, svn r258)}{
+\section{Version 0.5-4 (2023-04-05, svn r259)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item New \R function \code{qnormCappr()}.
