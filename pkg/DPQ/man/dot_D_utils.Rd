@@ -48,7 +48,7 @@
 .D_log (p, log.p)  #     p           "      "     "    "   log(p)
 .D_Clog(p, log.p)  #   1-p           "      "     "    "   log(1-p) == log1p(-)
 
-.D_LExp(x, log.p)  ## [log](1 - exp(-x))            # == log1p(- .D_qIv(x))) even more stable
+.D_LExp(x, log.p)  ## [log](1 - exp(-x))     == log1p(- .D_qIv(x))) even more stable
 
 .DT_val (x, lower.tail, log.p) # := .D_val(.D_Lval(x, lower.tail), log.p) ==    x  in pF
 .DT_Cval(x, lower.tail, log.p) # := .D_val(.D_Cval(x, lower.tail), log.p) ==  1-x  in pF
@@ -61,7 +61,7 @@
 
 .DT_log (p, lower.tail, log.p) # log ( p )  in qF
 .DT_Clog(p, lower.tail, log.p) # log (1-p)  in qF
-.DT_Log (p, lower.tail)   # == .DT_log(..) when we "know" log.p=TRUE ==  log(p) in qF(p, .. log.p=TRUE)
+.DT_Log (p, lower.tail)        # log ( p )  in qF(p,..,log.p=TRUE)
 
 % currently unused and not exported:
 % .D_fexp(f, x, log.p)

@@ -537,7 +537,7 @@ showProc.time()
 
 
 ## also seems to hang (or take much too long?) on Winbuilder [32 bit *and* 64 bit ]
-if(.Platform$OS.type == "unix" && !noLdbl) {
+if(.Platform$OS.type == "unix" && !noLdbl) withAutoprint({
 pncRC <- pnchisqRC(pxy$x, df=1, ncp=300, lower=FALSE, verbose=1)
 all.equal(pxy$y, pncRC, tol = 0)# "often" TRUE, depends on exact R version, etc
 stopifnot(
@@ -545,7 +545,7 @@ stopifnot(
 )
 summary(warnings())
 showProc.time()
-}# ---------------------only if(.. "unix" ....)----------------------------
+})# ---------------------only if(.. "unix" ....)----------------------------
 
 
 ## Really large 'df' and 'x' -- "case I":
@@ -563,7 +563,7 @@ stopifnot(!is.unsorted(xm <- 1e18*(1 + c(-tt, 0, rev(tt)))))
 (pn <- pnchisqV (xm, df=1e18, ncp=1)) #-> 0...1 is correct
 pp  <- pchisq   (xm, df=1e18, ncp=1)
 ##
-if(.Platform$OS.type == "unix") { #-------------------
+if(.Platform$OS.type == "unix") withAutoprint({ #-------------------
 pp. <- pnchisqRC(xm, df=1e18, ncp=1, verbose=1)
 ## Pnchisq_R(x, f, th, ... lower.tail=1, log.p=0, cut_ncp=80, it_simple=110,
 ##   errmax=1e-12, reltol=1.77636e-15, epsS=8.88178e-16, itrmax=1000000, verbose=1)
@@ -577,7 +577,7 @@ stopifnot(exprs = {
     all.equal(pp, pp., tol = 1e-15) # see 0
     all.equal(pp, pn,  tol = 1e-15) # see 1.6e-16
 })
-}## only if( .. unix .. )
+})## only if( .. unix .. )
 
 ## (also "problematic" with Wienergerm: s=0)
 showProc.time()#-----------------

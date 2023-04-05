@@ -68,6 +68,6 @@ readRDS_ <- function(file, do.time=TRUE, verbose=TRUE, ...) {
     readRDS(file=file, ...)
 }
 
-##' load a named list
+##' load a named list `L` into environment `envir`
 loadList <- function(L, envir = .GlobalEnv)
     invisible(lapply(names(L), function(nm) assign(nm, L[[nm]], envir=envir)))
