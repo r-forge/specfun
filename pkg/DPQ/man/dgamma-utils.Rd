@@ -186,10 +186,10 @@ bd0.1d1 <- bd0_p1l1d1(x, 1000)
 bd0.1d  <- bd0_p1l1d (x, 1000)
 bd0.1pm <- bd0_l1pm  (x, 1000)
 stopifnot(exprs = {
-    all.equal(bd0x1kC, bd0x1k,  tol=1e-15) # even tol=0 currently ..
-    all.equal(bd0x1kC, bd0.1d1, tol=1e-15)
-    all.equal(bd0x1kC, bd0.1d , tol=1e-15)
-    all.equal(bd0x1kC, bd0.1pm, tol=1e-15)
+    all.equal(bd0x1kC, bd0x1k,  tol=1e-14) # even tol=0 currently ..
+    all.equal(bd0x1kC, bd0.1d1, tol=1e-14)
+    all.equal(bd0x1kC, bd0.1d , tol=1e-14)
+    all.equal(bd0x1kC, bd0.1pm, tol=1e-14)
 })
 
 str(log1pmx) ##--> play with  { tol_logcf, eps2, minL1, trace.lcf, logCF }

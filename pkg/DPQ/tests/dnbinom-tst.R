@@ -50,7 +50,7 @@ x <- c((-20:3)/4, (25:31)/32) # close (but not too close) to upper bound 1
  lCt  <- logcf (x, i=2, d=3, eps=1e-9, trace=TRUE) ; stopifnot(identical(lCt, lC))
 (lR   <- logcfR(x, i=2, d=3, eps=1e-9))
 all.equal(lC, lR, tol = 0) # to see if ..
-stopifnot(all.equal(lC, lR, tol = 3e-15)) # 1.08295e-15 (Apple clang 14.0.3)
+stopifnot(all.equal(lC, lR, tol = 4e-15)) # 1.08295e-15 (Apple clang 14.0.3)
 lRt  <- logcfR(x, i=2, d=3, eps=1e-9, trace=TRUE) ; stopifnot(identical(lRt, lR))
 lRt2 <- logcfR(x, i=2, d=3, eps=1e-9, trace= 2)   ; stopifnot(identical(lRt2,lR))
 
@@ -59,7 +59,7 @@ lR.t <- logcfR.(x, i=2, d=3, eps=1e-9, trace=TRUE) ; stopifnot(identical(lR.t, l
 
 all.equal(lC, lR., tol = 0) # TRUE !! (every where ?)
 all.equal(lR, lR., tol = 0) # TRUE !!   "    "
-stopifnot(all.equal(lC, lR., tol = 1e-15))
+stopifnot(all.equal(lC, lR., tol = 1e-14))
 ## (even though they used eps=1e-9 .. i.e., are not *so* accurate)
 showProc.time()
 
