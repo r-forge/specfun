@@ -5,7 +5,7 @@
  * to provide compatibility to *previous* R (and DPQ) implementations.
  * These are
  *
- *	Copyright (C) 2021-2022 Martin Maechler,  maechler@stat.math.ethz.ch
+ *	Copyright (C) 2021-2023 Martin Maechler,  maechler@stat.math.ethz.ch
  *
  *
  *  AUTHORS
@@ -389,13 +389,13 @@ SEXP dpq_bd0(SEXP x_, SEXP np_, SEXP delta_,
 	delta = asReal(delta_);
     int
 	maxit   = asInteger(maxit_),
-	version = asInteger(version_),
+//	version = asInteger(version_),
 	trace   = asInteger(trace_);
 
     if(trace) {
 	REprintf("dpq_bd0(x[1:%d], np[1:%d], delta=%g, ... ):\n", delta, n_x, n_np);
     }
-    version++; // currently unused
+//    version++; // currently unused
 
     for(R_xlen_t i=0; i < n; i++) {
 	r[i] = bd0(x[i % n_x], np[i % n_np], delta, maxit, trace);

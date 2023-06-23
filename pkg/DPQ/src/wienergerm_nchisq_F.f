@@ -14,7 +14,7 @@
 
       double precision mu2,s,y,help1,help2,eta,corre
       external h
-      double precision h, derfc,sqrt,dlog
+      double precision h, erfc, sqrt, dlog
 
       double precision one,two,three,four,nine
       data one,two,three,four,nine/1.d0,2.d0,3.d0,4.d0,9.d0/
@@ -81,7 +81,7 @@ c 10
 
       if (s.lt.one) help2 = -help2
 
-      p=0.5*derfc(-help2/sqrt(two))
+      p=0.5*erfc(-help2/sqrt(two))
 
       end
 
