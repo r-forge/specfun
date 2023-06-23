@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-5 (2023-06-23, svn r263)}{
+\section{Version 0.5-5 (2023-06-23, svn r264)}{
   \subsection{BUG FIXES}{
     \itemize{
       \item \code{qbinomR(p, *)}, \code{qnbinomR(p, *)}, and \code{qpoisR(p, *)}:
