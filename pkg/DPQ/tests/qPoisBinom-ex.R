@@ -4,6 +4,17 @@
 if(!dev.interactive(orNone=TRUE)) pdf("qPoisBinom-ex.pdf")
 .O.P. <- par(no.readonly=TRUE)
 
+## Embarrassing forgotten FIXME (for boring boundary cases only):
+M <- 2^31; pr <- 1e-9
+stopifnot(exprs = {
+    qbinomR (0:1, size=M, prob=pr) == c(0, M) # was 0 1
+    qnbinomR(0:1, size=M, prob=pr) == c(0, Inf) # " "
+    qpoisR  (0:1,      M)          == c(0, Inf)
+    qbinomR (c(-Inf,0), size=M, prob=pr, log.p=TRUE) == c(0, M)
+    qnbinomR(c(-Inf,0), size=M, prob=pr, log.p=TRUE) == c(0, Inf)
+    qpoisR  (c(-Inf,0),      M,          log.p=TRUE) == c(0, Inf)
+})
+
 
 ## It's source code  ~/R/D/r-devel/R/src/nmath/qpois.c  contains
 '

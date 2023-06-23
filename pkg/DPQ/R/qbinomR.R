@@ -7,7 +7,7 @@
 if(FALSE) ## C source:
 invisible( "~/R/D/r-devel/R/src/nmath/qbinom.c" )
 
-##' @title For P(x) := pbinom(x, n, pr),  find p-quantile  y(p)   :<==>   P(y) < p <= P(y)
+##' @title For P(x) := pbinom(x, n, pr),  find p-quantile  y(p)   :<==>   P(y-1) < p <= P(y)
 ##'   @param y    current guess
 ##'   @param *z   == pbinom(y, ..)
 ##'   @param p    target probability
@@ -89,16 +89,16 @@ qbinomR1 <- function(p, size, prob, lower.tail=TRUE, log.p=FALSE,
     }
     if (prob == 1 || size == 0) return(0)
 
-    ## FIXME:
-    ## R_Q_P01_boundaries(p, 0, ML_POSINF);
-    ## Learned from ~/R/Pkgs/DPQ/R/beta-fns.R
+    ## R_Q_P01_boundaries(p, 0, size); (n == size)
+    ## {TODO? simplify via if(p == .D_0(log.p)) .. as in ./t-dist.R }
     if(log.p) {
-        if(p == -Inf) return(if(lower.tail) Inf else 0)
-        if(p ==   0 ) return(if(lower.tail) 0 else Inf)
+        if(p == -Inf) return(if(lower.tail) 0 else size)
+        if(p ==   0 ) return(if(lower.tail) size else 0)
         if(p > 0) { warning("p > 0 -> returning NaN"); return(NaN) }
         ## now  p \in (-Inf, 0)  (open interval)
     } else {
-        if (p == 0 || p == 1) return(if(lower.tail) p else 1-p)
+        if(p == 0) return(if(lower.tail) 0 else size)
+        if(p == 1) return(if(lower.tail) size else 0)
         if(p < 0 || p > 1) {
             warning("p out of [0,1] -> returning NaN"); return(NaN) }
         ## now  p \in (0, 1)     (open interval)

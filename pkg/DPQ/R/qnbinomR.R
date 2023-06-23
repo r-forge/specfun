@@ -104,16 +104,16 @@ qnbinomR1 <- function(p, size, prob, mu, lower.tail=TRUE, log.p=FALSE,
     }
     if (prob == 1 || size == 0) return(0)
 
-    ## FIXME:
     ## R_Q_P01_boundaries(p, 0, ML_POSINF);
-    ## Learned from ~/R/Pkgs/DPQ/R/beta-fns.R
+    ## {TODO? simplify via if(p == .D_0(log.p)) .. as in ./t-dist.R }
     if(log.p) {
-        if(p == -Inf) return(if(lower.tail) Inf else 0)
-        if(p ==   0 ) return(if(lower.tail) 0 else Inf)
+        if(p == -Inf) return(if(lower.tail) 0 else Inf)
+        if(p ==   0 ) return(if(lower.tail) Inf else 0)
         if(p > 0) { warning("p > 0 -> returning NaN"); return(NaN) }
         ## now  p \in (-Inf, 0)  (open interval)
     } else {
-        if (p == 0 || p == 1) return(if(lower.tail) p else 1-p)
+        if(p == 0) return(if(lower.tail) 0 else Inf)
+        if(p == 1) return(if(lower.tail) Inf else 0)
         if(p < 0 || p > 1) {
             warning("p out of [0,1] -> returning NaN"); return(NaN) }
         ## now  p \in (0, 1)     (open interval)
