@@ -20,24 +20,16 @@ qnbinomR(p, size, prob, mu, lower.tail = TRUE, log.p = FALSE,
          fpf = 4, # *MUST* be >= 1 (did not exist previously)
          trace = 0)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{p, size, prob, mu, lower.tail, log.p}{\code{\link{qnbinom}()} standard
     argument, see its help page.}%  ~/R/D/r-devel/R/src/library/stats/man/NegBinomial.Rd
-  \item{yLarge}{
-}
-  \item{incF}{
-}
-  \item{iShrink}{
-}
-  \item{relTol}{
-}
-  \item{pfEps.n}{
-}
-  \item{pfEps.L}{
-}
-  \item{fpf}{
-}
+  \item{yLarge, incF, iShrink, relTol, pfEps.n, pfEps.L, fpf}{numeric
+    arguments tweaking the \dQuote{root finding} search after the initial
+    Cornish-Fisher approximation, see \code{\link{qbinomR}}, for details.
+    The defaults should be more reliable (but also a bit more
+    \dQuote{expensive}) than \R's (original) \code{\link{qnbinom}()} hard
+    wired values.
+  }
   \item{trace}{logical (or integer) specifying if (and how much) output
     should be produced from the algorithm.}
 }

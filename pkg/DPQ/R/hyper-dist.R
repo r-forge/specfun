@@ -86,6 +86,7 @@ phyper2molenaar <- function(q, m, n, k)
         (sqrt((x + .75)*(N - Np - n + x + .75)) -
          sqrt((n - x -.25)*(Np - x - .25)) ))
 }
+
 phyperPeizer <- function(q, m, n, k)
 {
   ## Purpose: Peizer's extremely good Normal Approx. to cumulative Hyperbolic
@@ -106,7 +107,7 @@ phyperPeizer <- function(q, m, n, k)
   n <- nn
   m <- mm
   ## After (6.93):
-  L <-
+  L <- # NB:  for all 4 log(r_j) :  have r_j ~=~ 1 -- would probably *benefit* from log1p(.) -- cancellation?
     A * log((A*N)/(n*r)) +
     B * log((B*N)/(n*s)) +
     C * log((C*N)/(m*r)) +
@@ -155,7 +156,7 @@ hyper2binomP <- function(x, m,n,k) {
 .suppHyper <- function(m,n,k) max(0, k-n) : min(k, m)
 
 ##' The two symmetries <---> the four different ways to compute :
-phypers <- function(m,n,k, q = .suppHyper(m,n,k)) {
+phypers <- function(m,n,k, q = .suppHyper(m,n,k), tol = sqrt(.Machine$double.eps)) {
     N <- m+n
     pm <- cbind(ph = phyper(q,     m,  n , k), # 1 = orig.
                 p2 = phyper(q,     k, N-k, m), # swap m <-> k (keep N = m+n)
@@ -164,13 +165,18 @@ phypers <- function(m,n,k, q = .suppHyper(m,n,k)) {
                 Ip1= phyper(k-1-q, n,   m, k, lower.tail=FALSE))
 
     ## check that all are (approximately) the same :
-    stopifnot(all.equal(pm[,1], pm[,2]),
-              all.equal(pm[,2], pm[,3]),
-              all.equal(pm[,3], pm[,4]))
+    stopifnot(all.equal(pm[,1], pm[,2], tolerance=tol),
+              all.equal(pm[,2], pm[,3], tolerance=tol),
+              all.equal(pm[,3], pm[,4], tolerance=tol))
     list(q = q, phyp = pm)
 }
 
 phyperBinMolenaar <-
+function(q, m, n, k, lower.tail=TRUE, log.p=FALSE) {
+    .Deprecated("phyperBinMolenaar.1")
+    phyperBinMolenaar.1(q, m, n, k, lower.tail=lower.tail, log.p=log.p)
+}
+
 phyperBinMolenaar.1 <- function(q, m, n, k, lower.tail=TRUE, log.p=FALSE)
     pbinom(q, size = k, prob = hyper2binomP(q, m,n,k),
            lower.tail=lower.tail, log.p=log.p)
@@ -314,7 +320,7 @@ lgammaAsymp <- function(x, n)
 ## NB: Now *vectorized* in all four arguments
 ## --
 ## was     function(x, NR, NB, n)
-phyperR <- function(q,  m,  n, k)
+phyperR <- function(q, m,  n, k, lower.tail=TRUE, log.p=FALSE)
 {
     q <- floor(q)
     NR <- floor(m + 0.5)
@@ -325,31 +331,42 @@ phyperR <- function(q,  m,  n, k)
     xstart <- pmax(0, k - NB)
     xend   <- pmin(k, NR)
     inside <- (xstart <= q & q < xend) # << is of correct recycled length
+    len <- length(inside)
     ## result
-    r <- numeric(length(inside)) # = 0
+    r <- numeric(len) # = 0
     ## if(q < xstart) return(0.0)
     r[q >= xend] <- 1
-    xr <- xstart + 0*r # (of correct length)
+    qI <- q[inside]
+    ## recycle others *before* [inside]:
+    NB <- rep_len(NB,    len)[inside]
+    NR <- rep_len(NR,    len)[inside]
+    N  <- rep_len(N ,    len)[inside]
+    xr <- rep_len(xstart,len)[inside]
+    k  <- rep_len(k,     len)[inside]
     xb <- k - xr
     ltrm <- lchoose(NR, xr) + lchoose(NB, xb) - lchoose(N, k)
     ##o term <- exp(ltrm)
     NR <- NR - xr
     NB <- NB - xb
     ## Sm <-
-    s2 <- 0.0
-    while(any(xr <= q)) {
+    s2 <- rep(0, length(qI))
+    while(any(I <- xr <= qI)) {
         ##o Sm <- Sm + term
-        s2 <- s2 + exp(ltrm)
+        s2[I] <- s2[I] + exp(ltrm[I])
         xr <- xr+1
         NB <- NB+1
-        ff <- NR * xb / (xr * NB) ## (NR / xr) * (xb / NB)
-        ltrm <- ltrm + log(ff)
+        ff <- (NR * xb / (xr * NB))[I] ## (NR / xr) * (xb / NB)
+        ltrm[I] <- ltrm[I] + log(ff)
         ##o term <- term * ff
         xb <- xb-1
         NR <- NR-1
     }
     r[inside] <- s2 ##o return(Sm,s2)
-    r
+    ## return
+    if(lower.tail)
+         .D_val (r, log.p)
+    else .D_Clog(r, log.p)
+
 }
 
 ###------- pure R version of "new" Morten_Welinder--phyper() ----
@@ -416,8 +433,7 @@ pdhyper <- function(q,  m,  n, k, log.p = FALSE,
 
 
 ## C code args:      x, NR, NB, n,
-phyperR2 <- function(q,  m,  n, k,
-                     lower.tail=TRUE, log.p=FALSE, ...)
+phyperR2 <- function(q,  m,  n, k, lower.tail=TRUE, log.p=FALSE, ...)
 {
 ## Sample of  k balls from  m red  and	 n black ones;	 q are red
 

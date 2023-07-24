@@ -57,7 +57,7 @@ pdhyper (q, m, n, k,                    log.p = FALSE,
 \references{
   Morten Welinder (2004)
   phyper accuracy and efficiency;
-  R bug report \PR{6772}. %\url{https://bugs.r-project.org/show_bug.cgi?id=6772}
+  R bug report \PR{6772}; \url{https://bugs.r-project.org/show_bug.cgi?id=6772}
 }
 \author{Martin Maechler, based on \R's C code originally provided by Morton
   Welinder from the Gnumeric project, who thanks Ian Smith for ideas.
@@ -76,10 +76,19 @@ vapply(0:9, phyperR2, 0.1, m=m, n=n, k=k,  verbose=TRUE)
 
 ## Larger arguments:
 k <- 100 ; x <- .suppHyper(k,k,k)
-ph  <- phyper(x, k,k,k)
+ph  <- phyper (x, k,k,k)
+ph1 <- phyperR(x, k,k,k) # ~ old R version
 ph2 <- vapply(x, phyperR2, 0.1, m=k, n=k, k=k)
-cbind(x, ph, ph2, rE = 1-ph2/ph)
+cbind(x, ph, ph1, ph2, rE1 = 1-ph1/ph, rE = 1-ph2/ph)
 stopifnot(abs(1 -ph2/ph) < 8e-16) # 64bit FC30: see -2.22e-16 <= rE <= 3.33e-16
-}
 
+## Morten Welinder's example:
+(p1R <- phyperR (59, 150, 150, 60, lower.tail=FALSE))
+## gave 6.372680161e-14 in "old R";, here -1.04361e-14 (worse!!)
+(p1x <-  dhyper ( 0, 150, 150, 60))# is 5.111204798e-22.
+(p1N <- phyperR2(59, 150, 150, 60, lower.tail=FALSE)) # .. "perfect"
+(p1. <- phyper  (59, 150, 150, 60, lower.tail=FALSE))# R's own
+all.equal(p1x, p1N, tol=0) # on Lnx even perfectly
+all.equal(p1x, p1., tol=0) # on Lnx even perfectly
+}
 \keyword{ distribution }

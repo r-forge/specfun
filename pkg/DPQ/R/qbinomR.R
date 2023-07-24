@@ -7,9 +7,14 @@
 if(FALSE) ## C source:
 invisible( "~/R/D/r-devel/R/src/nmath/qbinom.c" )
 
-##' @title For P(x) := pbinom(x, n, pr),  find p-quantile  y(p)   :<==>   P(y-1) < p <= P(y)
+##======= TODO:  this is practically identical to  doSearch_pnb() in  ./qnbinomR.R === use ONE function
+##                                             and doSearch_poi() in  ./qpoisR.R   ...  "  "    "
+##  with  (<pDist>, <pDname>)  arguments, here (pnbinom, "pnbinom")
+## ==> can MPFR-ify it by passing pnbinomMpfr()..
+
+##' @title For P(x) := pbinom(x, n, pr),  find p-quantile  y = y(p)   :<==>   P(y-1) < p <= P(y)
 ##'   @param y    current guess
-##'   @param *z   == pbinom(y, ..)
+##'   @param z   == pbinom(y, ..)
 ##'   @param p    target probability
 ##'   @param n, pr : (n = size); parameters of the  binomial
 ##'   @param incr increment, integer valued >= 1.

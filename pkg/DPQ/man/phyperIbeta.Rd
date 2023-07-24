@@ -27,7 +27,8 @@ phyperIbeta(q, m, n, k)
 }
 
 \references{
-  Johnson, Kotz & Kemp (1992):  (6.90), p.260 -- Bol'shev (1964)
+  Johnson, Kotz & Kemp (1992):  (6.90), p.260 -->
+  Bol'shev (1964)
 }
 \author{Martin Maechler}
 \seealso{

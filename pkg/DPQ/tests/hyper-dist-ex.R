@@ -18,41 +18,72 @@ if(!dev.interactive(orNone=TRUE)) pdf("hyper-dist-ex.pdf")
 
 ### ----------- -----------
 
+rErr.phypDiv <- function(q, m,n,k) {
+    ph  <- phyper(q, m=m, n=n, k=k)
+    cbind(
+      rERR.Ibeta= rErr(phyperIbeta     (q, m=m, n=n, k=k) , ph),
+      rERR.as151= rErr(phyperApprAS152 (q, m=m, n=n, k=k) , ph),
+      rERR.1mol = rErr(phyper1molenaar (q, m=m, n=n, k=k) , ph),
+      rERR.2mol = rErr(phyper2molenaar (q, m=m, n=n, k=k) , ph),
+      rERR.Peizer=rErr(phyperPeizer    (q, m=m, n=n, k=k) , ph))
+}
+
+## Plotting of the rel.error:
+p.rErr.phypDiv <- function(m,n,k, q = .suppHyper(m,n,k), abslog = FALSE, logx= "", type = "b")
+{
+    rE <- rErr.phypDiv(m=m, n=n, k=k, q=q)
+    nc <- ncol(rE)
+    cc <- adjustcolor(1:nc, 0.5)
+    ppch <- as.character(1:nc)
+    cl <- sys.call()
+    cl[[1]] <- quote(phyper)
+    matplot(q, if(abslog) abs(rE) else rE, type = type, lwd=2, col=cc, pch=ppch,
+            ylab = if(abslog) quote(abs(rE)) else quote(rE),
+            log = paste0(logx, if(abslog) "y" else ""),
+            main = sprintf("%s", deparse1(cl)))#
+    mtext(paste(if(abslog) "|rel.Err|" else "rel.Err.",
+                "of diverse phyper() pbinom* approximations"))
+    if(!abslog) abline(h=0, col=adjustcolor("gray", 0.5), lty=2)
+    legend("topright", legend = paste(1:ncol(rE), colnames(rE), sep=": "),
+           lwd=2, col=cc, lty=1:4, pch=ppch, bty="n")
+    invisible(rE)
+}
+
+
 k <- c(10*(1:9),100*(1:9),1000*(1:9))
-
+k1 <- k
 options(digits=4)
-ph.k2k <- phyper(k,2*k,2*k,2*k) # rel.err ~ 10^-7
-cbind(k=k, phyper= ph.k2k,
-      rERR.Ibeta= rErr(phyperIbeta     (k,2*k,2*k,2*k) , ph.k2k),
-      rERR.as151= rErr(phyperApprAS152 (k,2*k,2*k,2*k) , ph.k2k),
-      rERR.1mol = rErr(phyper1molenaar (k,2*k,2*k,2*k) , ph.k2k),
-      rERR.2mol = rErr(phyper2molenaar (k,2*k,2*k,2*k) , ph.k2k),
-      rERR.Peizer=rErr(phyperPeizer    (k,2*k,2*k,2*k) , ph.k2k))
 
-## Here, the Ibeta  fails (NaN) ; moleaar's are both very good :
-ph.k2k <- phyper(k, 1.2*k, 2*k,1.5*k)
-cbind(k=k, phyper= ph.k2k,
-      rERR.Ibeta= rErr(phyperIbeta     (k,1.2*k,2*k,1.5*k) , ph.k2k),
-      rERR.as151= rErr(phyperApprAS152 (k,1.2*k,2*k,1.5*k) , ph.k2k),
-      rERR.1mol = rErr(phyper1molenaar (k,1.2*k,2*k,1.5*k) , ph.k2k),
-      rERR.2mol = rErr(phyper2molenaar (k,1.2*k,2*k,1.5*k) , ph.k2k),
-      rERR.Peizer=rErr(phyperPeizer    (k,1.2*k,2*k,1.5*k) , ph.k2k))
+ rErr12 <- p.rErr.phypDiv(q=k, 2*k,2*k,2*k)
+           p.rErr.phypDiv(q=k, 2*k,2*k,2*k, abslog=TRUE)
 
+k <- c(10*(7:9),100*(1:9),1000*(1:9), 1e4*(1:9))
+k2 <- k
+
+p.rErr.phypDiv(q=k, 2*k,2*k,2*k, abslog=TRUE, logx="x")
+
+k <-  c(10*(1:9),100*(1:3)) # small k only (afterwards --> all phyper*() == 1 !)(revert)
+## Here, the Ibeta  fails (NaN) ; *also* Molenaar's (???? contradiction to below)
+(rErr1215 <- p.rErr.phypDiv(q=k, 1.2*k, 2*k, 1.5*k))
+             p.rErr.phypDiv(q=k, 1.2*k, 2*k, 1.5*k, abslog=TRUE, logx="x")
+
+(rErr1215 <- p.rErr.phypDiv(q=k, 1.2*k, 2*k, 1.5*k))
+             p.rErr.phypDiv(q=k, 1.2*k, 2*k, 1.5*k, abslog=TRUE, logx="x")
+
+
+k <- c(10*(7:9), t(outer(10^(2:5), 1:9)))
 x <- round(.8*k); ph.k2k <- phyper(x,1.6*k, 2*k,1.8*k)
-(ph.mat <-
-cbind(k=k, phyper= ph.k2k,
-      rERR.Ibeta= rErr(phyperIbeta     (x,1.6*k,2*k,1.8*k) , ph.k2k),
-      rERR.as151= rErr(phyperApprAS152 (x,1.6*k,2*k,1.8*k) , ph.k2k),
-      rERR.1mol = rErr(phyper1molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
-      rERR.2mol = rErr(phyper2molenaar (x,1.6*k,2*k,1.8*k) , ph.k2k),
-      rERR.Peiz = rErr(phyperPeizer    (x,1.6*k,2*k,1.8*k) , ph.k2k))
-)
-matplot(k, abs(ph.mat[,-(1:2)]), type='o', log='xy')
+(rErr1618 <- p.rErr.phypDiv(q=x, 1.6*k, 2*k, 1.8*k, logx="x")) ## AS151 is really unusable here !
+             p.rErr.phypDiv(q=x, 1.6*k, 2*k, 1.8*k, abslog=TRUE, logx="x")
+## interestingly, Peizer suffers from some erratic behavior for large q
+## --> the L has  4  log(.) terms, each of which has argument ~= 1 <--> could use log1p(.) or ???
 
+k <- k1 # the old set
 par(mfrow=c(2,1))
 for(Reps in c(0,1)) {
     options(rErr.eps = Reps) ## 0: always RELATIVE error; 1: always ABSOLUTE
     x <- round(.6*k); ph.k2k <- phyper(x,1.6*k, 2*k,1.8*k)
+    ##         ^^^
     print(ph.mat <-
           cbind(k=k, phyper= ph.k2k,
            rERR.Ibeta= rErr(phyperIbeta     (x,1.6*k,2*k,1.8*k) , ph.k2k),
@@ -64,8 +95,8 @@ for(Reps in c(0,1)) {
     ## The two molenaar's  ``break down''; Peizer remains decent!
     Err.phyp <- abs(ph.mat[,-(1:2)])
     matplot(k, Err.phyp,
-            ylim=
-            if((ee <- .Options$rErr.eps) > 0) c(1e-200,1),
+            ylim= if((ee <- .Options$rErr.eps) > 0) c(1e-200,1),
+            main="|relE.{phyper(x = .6×k, 1.6k, 2k, 1.8k)}|",
             type='o', log='xy')
 }
 
@@ -115,31 +146,36 @@ rErr.Mol.bin <- function(m,n,k, q = .suppHyper(m,n,k), lower.tail=TRUE, log.p=FA
     apply(phM, 2, rErr, true = ph)
 }
 ## Plotting of the rel.error:
-p.rErr.Mol.bin <- function(m,n,k, q = .suppHyper(m,n,k),
+p.rErr.Mol.bin <- function(m,n,k, q = .suppHyper(m,n,k), abslog = FALSE,
                            lower.tail=TRUE, log.p=FALSE)
 {
     rE <- rErr.Mol.bin(m=m, n=n, k=k, q=q, lower.tail=lower.tail, log.p=log.p)
     cc <- adjustcolor(1:4, 0.5)
     ppch <- as.character(1:4)
-    matplot(q, rE, type = "b", lwd=2, col=cc, pch=ppch,
+    matplot(q, if(abslog) abs(rE) else rE, type = "b", lwd=2, col=cc, pch=ppch,
+            log = if(abslog) "y" else "",
             main = sprintf("phyper(*, m = %d, n = %d, k = %d)", m,n,k))
-    mtext("rel.Err. of the 4 phyper() binom.Molenaar's approximations")
-    legend("topright", legend = paste("ph.appr.Mol", 1:4),
+    mtext(paste(if(abslog) "|rel.Err|" else "rel.Err.",
+                "of the 4 phyper() binom.Molenaar's approximations"))
+    if(!abslog) abline(h=0, col=adjustcolor("gray", 0.5), lty=2)
+    legend("topright", legend = paste("phyp.Mol", 1:4),
            lwd=2, col=cc, lty=1:4, pch=ppch, bty="n")
     invisible(rE)
 }
 
 p.rErr.Mol.bin (5,15, 7) # same plot, as the "manual" one above
 p.rErr.Mol.bin (70,100, 7)# here, 1 and 4 are good
-p.rErr.Mol.bin (70,100, 20)#  4
+p.rErr.Mol.bin (70,100, 20)#  4 (and 1) ((maybe their *mean* !)
+p.rErr.Mol.bin (70,100, 20, abslog=TRUE)#  4 (and 1)
 p.rErr.Mol.bin (70,100, 50)#  4
-(p.rErr.Mol.bin (70,100, 70))#  1 & 2; but *none* is good for small q
-## however, *again* the *mean* of  1|2  with 3|4 seems fine
+p.rErr.Mol.bin (70,100, 50, abslog=TRUE) -> rE.71c50
+(p.rErr.Mol.bin (70,100, 70,abslog=TRUE) -> rE.71c70)#  1 & 2; but *none* is good for small q
 par(new=TRUE)
 plot(0:70, phyper(0:70, 70,100, 70), type = "l", col="blue", ann=FALSE,axes=FALSE)
 
 ## rel error on log-scale ... really nonsense
 (p.rErr.Mol.bin (70,100, 70, log.p=TRUE))#  1 & 2; but *none* is good for small q
+## however, *again* the *mean* of  1|2  with 3|4 seems fine
 
 
 ## Total Variation error -- what Kuensch(1998) used for binom() -- hyper() approx.
@@ -352,7 +388,7 @@ stopifnot(all.equal(dhyper(34,410,312,49),
 
 ### phyperR() === R version of pre-2004 C version in <R>/src/nmath/phyper.c :
 
-## This takes long, currently {18 sec, on sophie [Ultra 1]}
+## This takes long, currently (1999??)  {18 sec, on sophie [Ultra 1]}  -- now all fast!
 k <- (1:100)*1000
 system.time(phyper.k <- phyper(k, 2*k, 2*k, 2*k))
 

@@ -4,6 +4,29 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
+\section{Version 0.5-6 (2023-07-24, svn r265)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item \code{phyperR()} gets \code{lower.tail=TRUE, log.p=FALSE} arguments.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Correctly vectorize \code{phyperR()}.
+    }
+  }
+  \subsection{Misc}{
+    \itemize{
+      \item Documentation (and internal comment) updates for
+      \code{qbinomR()} and \code{qnbinomR()}, notably fixing "empty"
+      argument doc.
+
+      \item Deprecated \code{phyperBinMolenaar()}; it has been
+	synonym to \code{phyperBinMolenaar.1()}.
+    }
+  }
+}
+
 \section{Version 0.5-5 (2023-06-23, svn r264)}{
   \subsection{BUG FIXES}{
     \itemize{

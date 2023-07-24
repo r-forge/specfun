@@ -163,7 +163,8 @@ export(
   , phyperAllBin, phyperAllBinM
   , phyperApprAS152
   , phyperBin.1, phyperBin.2, phyperBin.3, phyperBin.4
-  , phyperBinMolenaar, phyperBinMolenaar.1, phyperBinMolenaar.2, phyperBinMolenaar.3, phyperBinMolenaar.4
+  , phyperBinMolenaar # deprecated (2023-07-22)
+  , phyperBinMolenaar.1, phyperBinMolenaar.2, phyperBinMolenaar.3, phyperBinMolenaar.4
   , phyperIbeta, phyperPeizer, phyperR, phypers
   , pdhyper, phyperR2
     ##  from R/dbinom-nbinom.R :

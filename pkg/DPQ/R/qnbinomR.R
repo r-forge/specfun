@@ -5,7 +5,13 @@
 if(FALSE)## C source:
 invisible( "~/R/D/r-devel/R/src/nmath/qnbinom.c" )
 
-##' @title For P(x) := pnbinom(x, n, pr),  find p-quantile  y(p)   :<==>   P(y) < p <= P(y)
+##======= TODO:  this is practically identical to  doSearch_bin() in  ./qbinomR.R === use ONE function
+##                                             and doSearch_poi() in  ./qpoisR.R   ...  "  "    "
+##  with  (<pDist>, <pDname>)  arguments, here (pbinom, "pbinom")
+## ==> can MPFR-ify it by passing pnbinomMpfr()..
+
+
+##' @title For P(x) := pnbinom(x, n, pr),  find p-quantile  y = y(p)   :<==>   P(y-1) < p <= P(y)
 ##'   @param y    current guess
 ##'   @param *z   == pnbinom(y, ..)
 ##'   @param p    target probability

@@ -9,8 +9,6 @@
   distribution approximations.
   The arguments of these functions are \emph{exactly} those of \R's own
   \code{\link{phyper}()}.
-
-  . . .
 }% ~/R/D/r-devel/R/src/library/stats/man/Hypergeometric.Rd
 \usage{
 phyperBin.1(q, m, n, k, lower.tail = TRUE, log.p = FALSE)
@@ -30,11 +28,12 @@ phyperBin.4(q, m, n, k, lower.tail = TRUE, log.p = FALSE)
   \item{log.p}{logical; if TRUE, probabilities p are given as log(p).}
 }
 
-%% \details{
-
-%% }
+\details{
+  TODO
+}
 \value{
-  . . .
+ a \code{\link{numeric}} vector, with the length the maximum of the
+ lengths of \code{q, m, n, k}.
 }
 %% \references{
 
@@ -45,7 +44,7 @@ phyperBin.4(q, m, n, k, lower.tail = TRUE, log.p = FALSE)
   \code{\link{pbinom}}
 }
 \examples{
-## The function is simply defined as
+## The 1st function is
 function (q, m, n, k, lower.tail = TRUE, log.p = FALSE)
   pbinom(q, size = k, prob = m/(m + n), lower.tail = lower.tail,
          log.p = log.p)

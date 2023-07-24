@@ -4,7 +4,8 @@
 if(!dev.interactive(orNone=TRUE)) pdf("qPoisBinom-ex.pdf")
 .O.P. <- par(no.readonly=TRUE)
 
-## It's source code  ~/R/D/r-devel/R/src/nmath/qpois.c  contains
+## Its source code, since {r80271 | 2021-05-08} in ~/R/D/r-devel/R/src/nmath/qDiscrete_search.h
+## contains
 '
     /* Note : "same" code in qpois.c, qbinom.c, qnbinom.c --
      * FIXME: This is far from optimal [cancellation for p ~= 1, etc]: */

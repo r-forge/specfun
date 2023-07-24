@@ -44,10 +44,9 @@ qpoisR(p, lambda, lower.tail = TRUE, log.p = FALSE,
     tolerance for the search iterations when \code{y >= yLarge}; the
     iterations stop when (new) \code{incr <= y * relTol}.}
   \item{pfEps.n, pfEps.L}{positive factors defining \dQuote{fuzz to ensure
-      left continuity}, both originally hardwired to \code{64}.
-    originally, the fuzz adjustment was
+      left continuity}, both originally hardwired to \code{64}, the fuzz adjustment was
     \preformatted{p <- p * (1 - 64 *.Machine$double.eps)}
-    Now,  \code{pfEps.L} is used \code{if(log.p)} is true and \code{pfEps.n}
+    Now, \code{pfEps.L} is used \code{if(log.p)} is true and \code{pfEps.n}
     is used otherwise ("n"ormal case), and the adjustments also depend on
     \code{lower.tail}, and also on \code{fpf} : }
   \item{fpf}{a number larger than \code{1}, together with \code{pfEps.n}

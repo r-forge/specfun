@@ -5,7 +5,7 @@
   Compute Peizer's extremely good normal approximation to the cumulative
   hyperbolic distribution.
 
-  This implementation corrects a typo in the reference
+  This implementation corrects a typo in the reference.
 }
 \usage{
 phyperPeizer(q, m, n, k)
@@ -19,21 +19,19 @@ phyperPeizer(q, m, n, k)
   \item{k}{the number of balls drawn from the urn, hence must be in
     \eqn{0,1,\dots, m+n}.}
 }
-%% \details{
-%% }
 \value{
-  . .
+ a \code{\link{numeric}} vector, with the length the maximum of the
+ lengths of \code{q, m, n, k}.
 }
 \references{
   Johnson, Kotz & Kemp (1992):  (6.93) & (6.94), p.261  \emph{CORRECTED} by M.M.
 }
-\author{Martin Maechler}% when
+\author{Martin Maechler}% % ---> ../R/hyper-dist.R 
 \seealso{
  \code{\link{phyper}}.
 }
 \examples{
-
-## The function is currently defined as
+## The function is defined as
 
 phyperPeizer <- function(q, m, n, k)
 {

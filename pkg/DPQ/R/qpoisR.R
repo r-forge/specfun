@@ -5,11 +5,16 @@
 if(FALSE) ## C source:
 invisible( "~/R/D/r-devel/R/src/nmath/qpois.c" )
 
-##' @title For P(x) := ppois(x, n, pr),  find p-quantile  y(p)   :<==>   P(y) < p <= P(y)
+##======= TODO(?):  this is almost identical to  doSearch_bin() in  ./qbinomR.R === use ONE function
+##  with  (<pDist>, <pDname>)  arguments, here (ppois, "ppois")
+## ==> can MPFR-ify it by passing ...
+## "Extra problem":  here 1 param  lambda <-->  n, pr (2 param) for {n}binom()
+
+##' @title For P(x) := ppois(x, n, pr),  find p-quantile  y = y(p)   :<==>   P(y-1) < p <= P(y)
 ##'   @param y    current guess
 ##'   @param z   == ppois(y, ..)
 ##'   @param p    target probability
-##'   @param lambda  parameters of the negative binomial
+##'   @param lambda  parameter of Poisson
 ##'   @param incr increment, integer valued >= 1.
 ##'   @param lower.tail
 ##'   @param log.p
