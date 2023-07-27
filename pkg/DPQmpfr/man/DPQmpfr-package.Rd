@@ -13,20 +13,15 @@
 The DESCRIPTION file:
 \packageDESCRIPTION{DPQmpfr}
 \packageIndices{DPQmpfr}
-%% ~~ An overview of how to use the package, including the most important ~~
-%% ~~ functions ~~
 }
 \author{
-\packageAuthor{DPQmpfr}
+ \packageAuthor{DPQmpfr}
 
-Maintainer: \packageMaintainer{DPQmpfr}
+ Maintainer: \packageMaintainer{DPQmpfr}
 }
-%% \references{
-%% ~~ Literature or other references for background information ~~
-%% }
 \seealso{
-  Packages \code{\link[DPQ:DPQ-package]{DPQ}},
-           \code{\link[DPQ:DPQ-package]{Rmpfr}} are both used by this package.
+  Packages \pkg{\link[DPQ:DPQ-package]{DPQ}},
+           \pkg{\link[Rmpfr:Rmpfr-package]{Rmpfr}} are both used by this package.
 }
 \examples{
 ## An example how mpfr-numbers  "just work" with reasonable R functions:
