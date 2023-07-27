@@ -34,6 +34,9 @@ static double thpi= 4.7123889803846898576939650749;// = 3/2 pi
 static double rthpi=1.2533141373155002512078826424;// = sqrt(pi/2)
 static double aic = 1.265512123484645396488945797; // = log( 2*sqrt(pi) ) = log(2) + log(pi)/2
 
+static double ufl = DBL_MIN * 1e3; // = 2.225..e-305 ;  ufl := dexp(-elim)
+
+
 void zbesh(double *zr, double *zi, double *fnu, int *kode, int *m, int *n,
 	   double *cyr, double *cyi, int *nz, int *ierr)
 {
@@ -258,7 +261,6 @@ void zbesh(double *zr, double *zi, double *fnu, int *kode, int *m, int *n,
 /* -----------------------------------------------------------------------
      overflow test on the last member of the sequence
  ----------------------------------------------------------------------- */
-    static double ufl = DBL_MIN * 1e3;
     if (az < ufl) {
 	goto L230;
     }
@@ -344,7 +346,7 @@ void zbesh(double *zr, double *zi, double *fnu, int *kode, int *m, int *n,
  ----------------------------------------------------------------------- */
     int
 	inu = (int) *fnu,
-	inuh = inu / 2,
+	inuh = inu / 2, // integer div: inuh = floor( nu/2 )
 	ir = inu - (inuh << 1);
     arg = (*fnu - (double) ((float) (inu - ir))) * sgn;
     double
@@ -353,7 +355,7 @@ void zbesh(double *zr, double *zi, double *fnu, int *kode, int *m, int *n,
 	       znr = -rhpi*dsin(arg) */
 	csgni = rhpi * cos(arg),
 	csgnr = -rhpi * sin(arg);
-    if (inuh % 2 == 1) {
+    if (inuh % 2 == 1) { // nu/2 is odd  <==>  nu = 2(2k+1) (+1) = 4k + {2 or 3}
 	/*     znr = -znr
 	       zni = -zni */
 	csgnr = -csgnr;
@@ -1175,9 +1177,7 @@ void zbesk(double *zr, double *zi, double *fnu, int *kode, int *n,
     }
 /* -----------------------------------------------------------------------
      overflow test on the last member of the sequence
- -----------------------------------------------------------------------
-     ufl = dexp(-elim) */
-    double ufl = DBL_MIN * 1e3;			// = 2.225.. e -305
+   ----------------------------------------------------------------------- */
     if (az < ufl) {
 	goto L_err_2;
     }

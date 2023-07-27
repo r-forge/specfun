@@ -105,10 +105,10 @@ BesselJ <- function(z, nu, expon.scaled = FALSE, nSeq = 1, verbose = 0)
 	## J(-fnu,z) = J(fnu,z)*cos(pi*fnu) - Y(fnu,z)*sin(pi*fnu)
 	if(expon.scaled)
 	    stop("'expon.scaled=TRUE' not yet implemented for nu < 0")
-	pnu <- rep(pi*(-nu + seq_len(nSeq) - 1), each=nz)
-	return(BesselJ(z, -nu, nSeq=nSeq, verbose=verbose)*cos(pnu) -
+	nu <- rep(-nu + seq_len(nSeq) - 1, each=nz)
+	return(BesselJ(z, -nu, nSeq=nSeq, verbose=verbose)*cospi(nu) -
 	       if(nu == round(nu)) 0 else
-	       BesselY(z, -nu, nSeq=nSeq, verbose=verbose)*sin(pnu))
+	       BesselY(z, -nu, nSeq=nSeq, verbose=verbose)*sinpi(nu))
     }
     ## else  nu >= 0 :
 
@@ -243,10 +243,10 @@ BesselY <- function(z, nu, expon.scaled = FALSE, nSeq = 1, verbose = 0)
 	## Y(-fnu,z) = Y(fnu,z)*cos(pi*fnu) + J(fnu,z)*sin(pi*fnu)
 	if(expon.scaled)
 	    stop("'expon.scaled=TRUE' not yet implemented for nu < 0")
-	pnu <- rep(pi*(-nu + seq_len(nSeq) - 1), each=nz)
-	return(BesselY(z, -nu, nSeq=nSeq, verbose=verbose)*cos(pnu) +
+	nu <- rep(-nu + seq_len(nSeq) - 1, each=nz)
+	return(BesselY(z, -nu, nSeq=nSeq, verbose=verbose)*cospi(nu) +
 	       if(nu == round(nu)) 0 else
-	       BesselJ(z, -nu, nSeq=nSeq, verbose=verbose)*sin(pnu))
+	       BesselJ(z, -nu, nSeq=nSeq, verbose=verbose)*sinpi(nu))
     }
     ## else  nu >= 0 :
 

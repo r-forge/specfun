@@ -1,12 +1,13 @@
 -*- org -*-
 
-* array under-run in .C("zbesk") ..
+* DONE array under-run in .C("zbesk") ..
+** DONE
  > options(CBoundsCheck=TRUE)
- > BesselK(664.87, nu = 2, verbose=TRUE)
- [1] 8.68047e-291
- > BesselK(664.88, nu = 2, verbose=TRUE)
- Error in BesselK(664.88, nu = 2) :
-   array under-run in .C("zbesk") in double argument 6
+ > BesselK(664.87, nu = 2, verbose=TRUE) ## -> shows ... Miller algo, k=6 ...
+ ## [1] 8.68047e-291
+ > BesselK(664.88, nu = 2, verbose=TRUE) ## now "fixed": 8.594032e-291
+  Error in BesselK(664.88, nu = 2) :
+    array under-run in .C("zbesk") in double argument 6
 
 * R bessel "Bugs": Wrong and correct "Lost precision" warnings in R's bessel[IJKY]()
 ** besselI*asym() and others => Where are they good enough?
@@ -15,7 +16,7 @@
 ** TODO `besselIs(z, nu, log=TRUE)` for *complex* -- fails because `log1p(<cplx>)` fails !
 ** TODO `expon.scaled = TRUE` notably for *complex* args needs to be compatible for the
    *s*eries and asymptotic functions  besselIs(), besselIasym(), besselI.nuAsym(), besselK.nuAsym()
-  ---> ../R/I-fn.R || Mostly DONE, but
+  ---> R/I-fn.R || Mostly DONE, but
  *Why* is `I.nuAsym(*, expon.scaled=TRUE, k.max)` not particularly good ??? see "why" in ./tests/IJKY.R
 * More Tests:
 ** besselI.ftrms() has *NO* code coverage

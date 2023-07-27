@@ -4,6 +4,21 @@
 \title{News for \R Package \pkg{Bessel}}
 \encoding{UTF-8}
 
+\section{Changes in version 0.6-1 (2022-02-04, svn r..)}{
+  \subsection{New Features}{
+    \itemize{
+      \item Using \code{cospi(nu)} instead of \code{cos(pi*nu)}, for
+      negative \code{nu}, both in \code{BesselJ()} and \code{BesselY()} may
+      increase accuracy.
+    }
+  }
+  \subsection{Bug Fixes}{
+    \itemize{
+      \item .
+    }
+  }
+}
+
 \section{Changes in version 0.6-0 (2019-04-24, svn r67)}{
   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
     \itemize{

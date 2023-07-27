@@ -35,7 +35,7 @@ besselJs(x, nu, nterm = 800, log = FALSE,
   vector of the same class and length as \code{x}.
 }
 \references{
-  Abramowitz, M., and Stegun, I. A. (1955, etc).
+  Abramowitz, M., and Stegun, I. A. (1964--1972).
   \emph{Handbook of mathematical functions}
   (NBS AMS series 55, U.S. Dept. of Commerce).
   \url{https://personal.math.ubc.ca/~cbm/aands/page_360.htm}
