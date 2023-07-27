@@ -28,8 +28,7 @@
 %% ~~ Literature or other references for background information ~~
 %% }
 \seealso{
-  The package %\pkg{\link[DPQmpfr:DPQmpfr-package]{DPQmpfr}},
-  \pkg{DPQmpfr} (not yet on CRAN),
+  The package \pkg{\link[DPQmpfr:DPQmpfr-package]{DPQmpfr}},
   which builds on this package and on
   \pkg{\link[Rmpfr:Rmpfr-package]{Rmpfr}}.
 }
@@ -38,7 +37,7 @@
 ## Show problem in R's non-central t-distrib. density (and approximations):
 example(dntJKBf)
 }
-%% TODO add other few cases (must *fast*!) maybe  non-central chisq
+%% TODO add other few cases (be *fast*!), maybe  non-central chisq
 }
 \keyword{ distribution }
 \keyword{ math }

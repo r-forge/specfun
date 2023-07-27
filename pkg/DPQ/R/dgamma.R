@@ -752,23 +752,13 @@ stirlerr <- function(n, scheme = c("R3", "R4.x"),
                (inherits(n, "mpfr") || inherits(n, "bigz") || inherits(n, "bigq")))
     if(useBig) {
         if(verbose) cat(sprintf("stirlerr(n): As 'n' is \"%s\", going to use \"mpfr\" numbers", class(n)))
-###  Use this, once DPQmpfr >= 0.3-1 is available from CRAN, i.e., DPQmpfr::stirlerrM() exists :
-        ## if(requireNamespace("DPQmpfr") &&
-        ##    is.function(stirlFn <- get0("stirlerrM", asNamespace("DPQmpfr"), inherits=FALSE))) {
-        ##     ## this will warn in R CMD check before DPQmpfr is updated there!
-        ##     return(stirlFn(n)) # , precB = <n>   would be possible
-        ## } else
-        ##     stop("Need CRAN package 'DPQmpfr' with its new stirlerrM()")
-###  But for now, use this :
-        if(!(requireNamespace("DPQmpfr") &&
-             is.function(stirlFn <- get0("stirlerrM", asNamespace("DPQmpfr"), inherits=FALSE)))) {
-            ## define it locally here :
-            pk <- "Rmpfr"; req <- require
-            if(!req(pk)) stop("Must use 'Rmpfr' for this")
-            ## direct formula:
-            stirlFn <- stirlerr_simpl
-        }
-        return(stirlFn(n)) # , precB = <n>   would be possible
+        ##  DPQmpfr >= 0.3-1 on CRAN  where  DPQmpfr::stirlerrM() exists :
+        if(requireNamespace("DPQmpfr") &&
+           is.function(stirlFn <- get0("stirlerrM", asNamespace("DPQmpfr"), inherits=FALSE))) {
+            ## this will warn in R CMD check before DPQmpfr is updated there!
+            return(stirlFn(n)) # , precB = <n>   would be possible
+        } else
+            stop("Need CRAN package 'DPQmpfr' (>= 0.3-1) with its stirlerrM()")
     }
     else {
         scheme <- match.arg(scheme)
