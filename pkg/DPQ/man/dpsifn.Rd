@@ -52,7 +52,7 @@ dpsifn(x, m, deriv1 = 0L, k2 = FALSE)
 }
 \examples{
 x <- seq(-3.5, 6, by=1/4)
-dpx <- dpsifn(x, m = if(getRversion() >= 4.2) 7 else 5)
+dpx <- dpsifn(x, m = if(getRversion() >= "4.2") 7 else 5)
 dpx # in R <= 4.2.1, see that sometimes the 'nz' (under-over-flow count) was uninitialized !!
 j <- -1L+seq_len(nrow(dpx)); (fj <- (-1)^(j+1)*gamma(j+1))
 ## mdpsi <- cbind(di =   digamma(x),      -dpx[1,],
@@ -65,7 +65,7 @@ j <- -1L+seq_len(nrow(dpx)); (fj <- (-1)^(j+1)*gamma(j+1))
 ## cbind(x, ie=attr(dpx,"errorCode"), round(mdpsi, 4))
 str(psig <- outer(x, j, psigamma))
 dpsi <- t(fj * (`attributes<-`(dpx, list(dim=dim(dpx)))))
-if(getRversion() >= 4.2) {
+if(getRversion() >= "4.2") {
       print( all.equal(psig, dpsi, tol=0) )# -> see 1.185e-16
   stopifnot( all.equal(psig, dpsi, tol=1e-15) )
 } else { # R <= 4.1.x; dpsifn(x, ..) *not* ok for x < 0
