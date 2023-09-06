@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-6 (2023-07-27, svn r266)}{
+\section{Version 0.5-6 (2023-09-06, svn r271)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{phyperR()} gets \code{lower.tail=TRUE, log.p=FALSE} arguments.
