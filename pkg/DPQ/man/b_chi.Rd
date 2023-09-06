@@ -94,7 +94,7 @@ c_pt(nu)       # warning("use better c_dt()") %---> FIXME deprecate even stronge
 \references{
   Johnson, Kotz,  Balakrishnan (1995)
   \emph{Continuous Univariate Distributions},
-  Vol 2, 2nd Edition; Wiley.\cr
+  Vol 2, 2nd Edition; Wiley;  
   Formula on page 520, after (31.26a)
 
   Abramowitz, M. and Stegun, I. A. (1972)

@@ -67,8 +67,8 @@ dnoncentchisq(x, df, ncp, kmax = floor(ncp/2 + 5 * (ncp/2)^0.5))
   links to the full text which is in public domain.
 
   Johnson, N.L., Kotz, S. and Balakrishnan, N. (1995)
-  Continuous Univariate Distributions Vol~2, 2nd ed.; Wiley.
-  \cr Chapter 29, Section \emph{3  Distribution}, (29.4), p. 436.
+  Continuous Univariate Distributions Vol~2, 2nd ed.; Wiley;
+  chapter 29, Section \emph{3  Distribution}, (29.4), p. 436.
 }
 \author{Martin Maechler, April 2008}
 \note{

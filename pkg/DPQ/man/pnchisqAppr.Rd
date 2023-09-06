@@ -185,9 +185,9 @@ ss2. (q, df, ncp = 0, errmax = 1e-12, reltol = 2 * .Machine$double.eps,
 }
 \references{
   Johnson, N.L., Kotz, S. and Balakrishnan, N. (1995)
-  Continuous Univariate Distributions Vol~2, 2nd ed.; Wiley;
+  Continuous Univariate Distributions Vol 2, 2nd ed.; Wiley;
   % \doi{10...............}
-  \cr Chapter 29 \emph{Noncentral \eqn{\chi^2}-Distributions};
+  chapter 29 \emph{Noncentral \eqn{\chi^2}{Chi^2}-Distributions};
   notably Section \emph{8  Approximations}, p.461 ff.
 
   Abramowitz, M. and Stegun, I. A. (1972)

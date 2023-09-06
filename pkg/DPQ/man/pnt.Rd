@@ -126,16 +126,16 @@ pntJW39.0 (t, df, ncp, lower.tail = TRUE, log.p = FALSE)
 }
 \references{
   Johnson, N.L., Kotz, S. and Balakrishnan, N. (1995)
-  Continuous Univariate Distributions Vol~2, 2nd ed.; Wiley.
-  \cr Chapter 31, Section \emph{5  Distribution Function}, p.514 ff
+  Continuous Univariate Distributions Vol~2, 2nd ed.; Wiley;
+  chapter 31, Section \emph{5  Distribution Function}, p.514 ff
 
   Lenth, R. V. (1989). \emph{Algorithm AS 243} ---
   Cumulative distribution function of the non-central \eqn{t} distribution,
   \emph{JRSS C (Applied Statistics)} \bold{38}, 185--189.
 
   Abramowitz, M. and Stegun, I. A. (1972)
-  \emph{Handbook of Mathematical Functions}. New York: Dover.
-  \cr Formula (26.7.10), p.949
+  \emph{Handbook of Mathematical Functions}. New York: Dover;
+  formula (26.7.10), p.949
 
   %%__NOT_YET__
   %% Chattamvelli, R. and Shanmugam, R. (1994)

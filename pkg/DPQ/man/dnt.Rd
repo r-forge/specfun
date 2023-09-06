@@ -64,8 +64,8 @@ dntJKBf (x, df, ncp, log = FALSE, M = 1000)
 }
 \references{
   Johnson, N.L., Kotz, S. and Balakrishnan, N. (1995)
-  Continuous Univariate Distributions Vol~2, 2nd ed.; Wiley.
-  \cr Chapter 31, Section \emph{5  Distribution Function}, p.514 ff
+  Continuous Univariate Distributions Vol~2, 2nd ed.; Wiley;
+  chapter 31, Section \emph{5  Distribution Function}, p.514 ff
 }
 \author{Martin Maechler}
 \seealso{

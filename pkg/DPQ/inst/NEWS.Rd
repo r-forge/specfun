@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-6 (2023-09-06, svn r271)}{
+\section{Version 0.5-6 (2023-09-06, svn r272)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{phyperR()} gets \code{lower.tail=TRUE, log.p=FALSE} arguments.
@@ -22,7 +22,10 @@
       argument doc.
 
       \item Deprecated \code{phyperBinMolenaar()}; it has been
-	synonym to \code{phyperBinMolenaar.1()}.
+      synonym to \code{phyperBinMolenaar.1()}.
+
+      \item Fix \LaTeX warnings/errors by removing amazingly many
+      \verb{\cr} in \file{man/*.Rd} files.
     }
   }
 }

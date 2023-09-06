@@ -33,12 +33,12 @@ qtNappr(p, df,      lower.tail = TRUE, log.p=FALSE, k) % ../R/t-dist.R
 }
 \references{
   Johnson, N.L., Kotz, S. and Balakrishnan, N. (1995)
-  Continuous Univariate Distributions Vol~2, 2nd ed.; Wiley.
-  \cr Chapter 31, Section \emph{6  Approximation}, p.519 ff
+  Continuous Univariate Distributions Vol~2, 2nd ed.; Wiley;
+  chapter 31, Section \emph{6  Approximation}, p.519 ff
 
   Abramowitz, M. and Stegun, I. A. (1972)
-  \emph{Handbook of Mathematical Functions}. New York: Dover.
-  \cr Formula (26.7.5), p.949
+  \emph{Handbook of Mathematical Functions}. New York: Dover;
+  formula (26.7.5), p.949;
   \url{https://en.wikipedia.org/wiki/Abramowitz_and_Stegun} provides
   links to the full text which is in public domain.
 }

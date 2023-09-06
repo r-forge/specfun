@@ -76,8 +76,7 @@ Qab_terms(a, k)
   Abramowitz, M. and Stegun, I. A. (1972)
   \emph{Handbook of Mathematical Functions}. New York: Dover.
   \url{https://en.wikipedia.org/wiki/Abramowitz_and_Stegun} provides
-  links to the full text which is in public domain.
-  \cr
+  links to the full text which is in public domain;
   Formula (6.1.47), p.257
 }
 \author{Martin Maechler}
