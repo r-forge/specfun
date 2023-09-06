@@ -11,7 +11,7 @@ gammaVer(x, version, traceLev = 0)
 \arguments{
   \item{x}{numeric vector of absissa value for the Gamma function.}
   %% FIXME: use c("..", ...) match.arg() etc:
-  \item{version}{integer in {1,2,..,5} specifying which variant is desired.}
+  \item{version}{integer in \{1,2,..,5\} specifying which variant is desired.}
   \item{traceLev}{non-negative integer indicating the amount of diagnostic
     \dQuote{tracing} output to the console during computation.}
 }

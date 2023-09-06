@@ -83,8 +83,8 @@ qnchisqSankaran_d(p, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 }
 \references{
   Johnson, N.L., Kotz, S. and Balakrishnan, N. (1995)
-  Continuous Univariate Distributions Vol~2, 2nd ed.; Wiley.
-  \cr Chapter 29 \emph{Noncentral \eqn{\chi^2}-Distributions};
+  Continuous Univariate Distributions Vol 2, 2nd ed.; Wiley;\cr
+  chapter 29 \emph{Noncentral \eqn{\chi^2}{Chi^2}-Distributions};
   notably Section \emph{8  Approximations}, p.461 ff.
 }
 \author{Martin Maechler, from May 1999;  starting from a post to the S-news

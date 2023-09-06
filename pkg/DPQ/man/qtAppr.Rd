@@ -24,7 +24,7 @@ qtNappr(p, df,      lower.tail = TRUE, log.p=FALSE, k) % ../R/t-dist.R
   \item{ncp}{non-centrality parameter \eqn{\delta}{delta}; ....}
   \item{lower.tail, log.p}{logical, see, e.g., \code{\link{qt}()}.}
   \item{method}{a string specifying the approximation method to be used.}
-  \item{k}{an integer in {0,1,2,3,4}, choosing the number of terms in \code{qtNappr()}.}
+  \item{k}{an integer in \{0,1,2,3,4\}, choosing the number of terms in \code{qtNappr()}.}
 }
 %% \details{
 %% }
