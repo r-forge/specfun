@@ -1,7 +1,7 @@
 Package: DPQmpfr
 Title: DPQ (Density, Probability, Quantile) Distribution Computations using MPFR
-Version: 0.3-2
-Date: 2023-01-28
+Version: 0.3-3
+Date: 2023-10-10
 Authors@R: person("Martin","Maechler", role=c("aut","cre"),
    email="maechler@stat.math.ethz.ch", comment = c(ORCID = "0000-0002-8685-9910"))
 Description: An extension to the 'DPQ' package with computations for 'DPQ'
@@ -14,3 +14,8 @@ Suggests: Matrix
 SuggestsNote: Matrix for its test-tools-1.R
 License: GPL (>= 2)
 Encoding: UTF-8
+URL: https://specfun.r-forge.r-project.org/,
+     https://r-forge.r-project.org/R/?group_id=611,
+     https://r-forge.r-project.org/scm/viewvc.php/pkg/DPQmpfr/?root=specfun,
+     svn://svn.r-forge.r-project.org/svnroot/specfun/pkg/DPQmpfr
+BugReports: https://r-forge.r-project.org/tracker/?atid=2462&group_id=611
