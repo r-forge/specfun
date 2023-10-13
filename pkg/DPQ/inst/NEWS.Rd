@@ -4,6 +4,14 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
+\section{Version 0.5-7 (2023-10-13, svn r272)}{
+  \subsection{Misc}{
+    \itemize{
+      \item fix "lost braces"
+    }
+  }
+}
+
 \section{Version 0.5-6 (2023-09-06, svn r272)}{
   \subsection{NEW FEATURES}{
     \itemize{
@@ -100,7 +108,7 @@
       versions of \code{gamma()} implementations.
 
       \item New \code{qnormUappr6()}, % ../man/qnormUappr.Rd
-      providing the {6 coefficients}-approximation of A. & S. to \code{qnorm()}.
+      providing the \sQuote{6 coefficients}-approximation of A. & S. to \code{qnorm()}.
 
       \item \code{qnormR()} gets new \code{version = "2022-08-04"} which
       uses MM's newly derived asymptotic approximations to \code{qnorm()}.
