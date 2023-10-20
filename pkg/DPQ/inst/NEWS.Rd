@@ -4,10 +4,11 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-7 (2023-10-13, svn r272)}{
+\section{Version 0.5-7 (2023-10-20, svn r275)}{
   \subsection{Misc}{
     \itemize{
       \item fix "lost braces"
+      \item replace UTF-8 greek glyps by plotmath
     }
   }
 }

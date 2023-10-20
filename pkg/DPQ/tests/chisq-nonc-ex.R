@@ -1899,8 +1899,9 @@ print(Pn., digits=3) # ">>" annotated: shows bug !
 ##    1.00e+00      1.0      1.0       1.0       1.0       1.0
 ##    1.00e+00      1.0      1.0       1.0       1.0       1.0
 ##    .....         ....
-matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)",
-        main = paste0("pchisq*(q = μ(1 + k* 2^",twoExp,"), df=",df,", ncp=",ncp,")"))
+tExp <- substitute(`pchisq*`(list(q == mu(1 + k * 2^TWOEXP), df==DF, ncp==NCP)),
+                   list(TWOEXP = twoExp,  DF=df, NCP=ncp))
+matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)", main = tExp)
 
 kk <- seq(min(ks), max(ks), length.out=401)
 qs <- (1 + kk * 2^twoExp)*df
@@ -1929,7 +1930,8 @@ twoExp <- -18 # well chosen for this "range" and behavior of pchisq()
 Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
 showProc.time()
 
-tit <- paste0("pchisq*(q = μ(1 + k* 2^",twoExp,"), df=",df,", ncp=",ncp,")")
+tit <- substitute(`pchisq*`(list(q == mu(1 + k * 2^TWOEXP), df==DF, ncp==NCP)),
+                  list(TWOEXP = twoExp,  DF=df, NCP=ncp))
 matplot(ks, Pn., type = "l", xlab = quote(k), ylab = "pchisq*(q, ..)", main = tit)
 
 cat("'Error' (difference to pchisq(*)):\n")
@@ -1963,10 +1965,13 @@ showProc.time()
 
 ##===  L 2.  large ncp,  df/ncp << 1 ====================
 
-pchiTit <- function(twoE, df, ncp, fN = "pchisq*", xtr = "", ncN = "ncp")
-    sprintf("%s(q = μ(1 + k* 2^%g)%s, µ = ν+λ = df+ncp; df=%g, %s=%g)",
-            fN, twoE, xtr, df, ncN, ncp)
-## paste0("pchisq*(q = μ(1 + k* 2^",twoExp,"), µ = ν+λ = df+ncp; df=",df,", ncp/df=",ncp/df,")"))
+pchiTit <- function(twoE, df, ncp, fN = "pchisq*", xtr = "", ncN = "ncp") {
+    substitute(FUN(list(q == mu(1 + k* 2^TWO_E)*XTR, mu == {nu+lambda == DF+NCP}, df == DF, NCN == NCP)),
+               list(FUN = fN, TWO_E = twoE, XTR=xtr, DF=df, NCN=ncN, NCP=ncp))
+    ## sprintf("%s(q = μ(1 + k* 2^%g)%s, µ = ν+λ = df+ncp; df=%g, %s=%g)",
+    ##         fN, twoE, xtr, df, ncN, ncp)
+}
+
 pchiTit.1 <- function(twoE, df, ncp)
     pchiTit(twoE, df, ncp, fN = "pchi*", xtr = " - pchi.1")
 pchiTit.n.d <- function(twoE, df, ncp) pchiTit(twoE, df, ncp=ncp/df, ncN="ncp/df")

@@ -96,7 +96,7 @@ for(Reps in c(0,1)) {
     Err.phyp <- abs(ph.mat[,-(1:2)])
     matplot(k, Err.phyp,
             ylim= if((ee <- .Options$rErr.eps) > 0) c(1e-200,1),
-            main="|relE.{phyper(x = .6×k, 1.6k, 2k, 1.8k)}|",
+            main="|relE.{phyper(x = 0.6k, 1.6k, 2k, 1.8k)}|",
             type='o', log='xy')
 }
 
