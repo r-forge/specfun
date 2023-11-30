@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-8 (2023-11-30, svn r...)}{
+\section{Version 0.5-8 (2023-11-30, svn r277)}{
   \subsection{BUG FIXES}{
     \itemize{
       \item \code{ebd0()} and C level \code{ebd0C()} now work with \emph{long} vectors and
