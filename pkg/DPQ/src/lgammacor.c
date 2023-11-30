@@ -99,17 +99,18 @@ double dpq_lgammacor(double x, int nalgm, double xbig)
 // To be  .Call()ed  from R :
 SEXP R_lgammacor(SEXP x_, SEXP nalgm_, SEXP xbig_)
 {
+    int nalgm = asInteger(nalgm_);
+    if(nalgm <= 0)
+	error("nalgm = %d <= 0", nalgm);
+    else if(nalgm > 15)
+	error("nalgm = %d > 15", nalgm);
+    // else 1 <= nalgm <= 15 :
     PROTECT(x_ = isReal(x_) ? x_ : coerceVector(x_, REALSXP));
     // other args are checked via  asReal(.), asInteger() below
     R_xlen_t i,	n = XLENGTH(x_);
     SEXP r_ = PROTECT(allocVector(REALSXP, n));
     double *x = REAL(x_), *r = REAL(r_),
 	xbig = asReal(xbig_);
-    int nalgm = asInteger(nalgm_);
-    if(nalgm <= 0)
-	error("nalgm = %g <= 0", nalgm);
-    if(nalgm > 15)
-	error("nalgm = %g > 15", nalgm);
     for(i=0; i < n; i++) {
 	r[i] = dpq_lgammacor(x[i], nalgm, xbig);
     }

@@ -1,6 +1,6 @@
 \name{dtWV}
 \alias{dtWV}
-\title{Noncentral t Distribution Density by W.V.}
+\title{Noncentral t Distribution Density by Viechtbauer}
 \description{
   Compute the density function \eqn{f(x)} of the t distribution with
   \code{df} degrees of freedom and non-centrality parameter \code{ncp},

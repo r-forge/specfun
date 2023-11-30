@@ -411,7 +411,7 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
     for (n = 1, f_2n = f + 2., f_x_2n += 2.; n <= itrmax ; n++, f_2n += 2, f_x_2n += 2) { // --------
 	if(verbose >= 2) {
 	    if(n % 1000 == 0)
-		REprintf("\n _OL_: n=%d,  f_x_2n = %g",n);
+		REprintf("\n _OL_: n=%d,  f_x_2n = %g", n, f_x_2n);
 	    else
 		REprintf(n % 100 == 0 ? ".\n" : ".");
 	}
@@ -553,9 +553,9 @@ SEXP Pnchisq_R(SEXP x_, //	  q
     if(verbose) {
 	REprintf("Pnchisq_R(x, f, th, ... lower.tail=%d, log.p=%d, cut_ncp=%g, it_simple=%d,\n"
 		 "  errmax=%g, reltol=%g, epsS=%g, itrmax=%d, verbose=%d)\n"
-		 "  --> n:= max(length(.),..) = %d\n",
+		 "  --> n:= max(length(.),..) = %lld\n",
 		 lower_tail, log_p, cutoff_ncp, it_simple,
-		 errmax, reltol, epsS, itrmax, verbose, n);
+		 errmax, reltol, epsS, itrmax, verbose, (long long)n);
     }
     SEXP r_ = PROTECT(allocVector(REALSXP, n)); // result
     double *x = REAL(x_), *f = REAL(f_), *theta = REAL(theta_),

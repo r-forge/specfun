@@ -4,6 +4,18 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
+\section{Version 0.5-8 (2023-11-30, svn r...)}{
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item \code{ebd0()} and C level \code{ebd0C()} now work with \emph{long} vectors and
+      hence return \code{data.frame(yh = *, yl = *)} instead of 2-row matrix.
+
+      \item format fixes: \code{"\%lld"} and \code{(long long)} notably for
+      \code{R_xlen_t}.
+    }
+  }
+}
+
 \section{Version 0.5-7 (2023-10-20, svn r275)}{
   \subsection{Misc}{
     \itemize{

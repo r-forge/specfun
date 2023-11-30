@@ -47,7 +47,7 @@ p.stirlerrDev <- function(n, precBits=2048, stnM = stirlerr(mpfr(n, precBits)), 
     N <- asNumeric
     form <- if(abs) abs(N(relE)) ~ n else N(relE) ~ n
     plot(form, log=log, type=type, cex=cex, col=col, xlim=xlim, ylim=ylim,
-         ylab = quote(relErrV(stM, st)), axes=FALSE, frame=TRUE,
+         ylab = quote(relErrV(stM, st)), axes=FALSE, frame.plot=TRUE,
          main = sprintf("stirlerr(n, cutoffs) rel.error [wrt stirlerr(Rmpfr::mpfr(n, %d))]",
                         precBits))
     sfsmisc::eaxis(1, sub10=3)
@@ -303,7 +303,7 @@ options(digits=9)
 ## ---> 199.9999919413334091607468236761591740489
     asNumeric(bd.1 / bd.1M - 1)# -1.82e-17 -- suggests bd0() is really accurate here
 stopifnot(abs(bd.1 / bd.1M - 1) < 3e-16,
-          all.equal(199.999991941333, bd.1, tol=1e-14))
+          all.equal(199.999991941333, bd.1, tolerance=1e-14))
 
 ebd0(x1, LL, verbose=TRUE)# fixed since  June 6, 2021
 
@@ -317,8 +317,8 @@ mpfrPrec <- 256
 
 yy <-   bd0 (1e307, 10^(-5:1), verbose=TRUE)
 yhl <- ebd0 (1e307, 10^(-5:1), verbose=TRUE)
-yhlC<- ebd0C(1e307, 10^(-5:1))
-stopifnot(yy == Inf, colSums(yhl) == Inf, yhlC == yhl)
+yhlC<- ebd0C(1e307, 10^(-5:1)) ## newly returns data.frame
+stopifnot(yy == Inf, yhl$yh == Inf, yhlC == yhl)
 yM <- bd0(mpfr(1e307, mpfrPrec), 10^(-5:1))
 roundMpfr(range(yM), 12) ##  7.0363e+309 7.1739e+309 -- *are* larger than  DBL_MAX
 
@@ -350,13 +350,13 @@ bd0ver <- function(x, np, mpfrPrec, chkVerb=TRUE, keepMpfr=FALSE) {
     aeq0 <- all.equal(yhl, yhlC, tol = 0)
     aeq4 <- all.equal(yhl, yhlC, tol = 4*epsC)
     if(!isTRUE(aeq4)) warning("the C and R versions of ebd0() differ:", aeq4)
-    stopifnot(is.whole(yhl ["yh",]),
-              is.whole(yhlC["yh",]))
+    stopifnot(is.whole(yhl [["yh"]]),
+              is.whole(yhlC[["yh"]]))
     yM  <-  bd0(mpfr(x, mpfrPrec),
                 mpfr(np,mpfrPrec), verbose=chkVerb)# more accurate ! (?? always ??)
     relE <- relErrV(target = yM, # the mpfr one
-                    cbind(ebd0 = yhl ["yh",] + yhl ["yl",],
-                          ebd0C= yhlC["yh",] + yhlC["yl",],
+                    cbind(ebd0 = yhl [["yh"]] + yhl [["yl"]],
+                          ebd0C= yhlC[["yh"]] + yhlC[["yl"]],
                           bd0 = yy))
     relE <- structure(asNumeric(relE), dim=dim(relE), dimnames=dimnames(relE))
     ## return:
@@ -406,9 +406,9 @@ with(bd0v.8, cbind(log2.lam = log2(np), np, relE)) ## around 2^[1018, 1021]
 
 
 with(bd0v.8, stopifnot(exprs = {
-    yhl["yl",] == 0 # which is not really good and should maybe change !
+    yhl[["yl"]] == 0 # which is not really good and should maybe change !
     ## Fixed now : both have 4 x Inf and then are equal {but do Note relE difference above!}
-    all.equal(ebd0["yh",], bd0, tol = 4 * .Machine$double.eps)
+    all.equal(ebd0[["yh"]], bd0, tol = 4 * .Machine$double.eps)
 }))
 showProc.time()
 
@@ -416,13 +416,13 @@ showProc.time()
 ## bd0()  and  ebd0()  are _Inf_  for smaller lambda's .. but they *must* be as true > DBL_MAX
 ## (almost: at the 4th value, Llam = 2^993, ideally the would *not* overflow: yM = 1.7598e+308)
 bd0M <- bd0ver(x., Llam, mpfrPrec = 256, keepMpfr=TRUE)
-with(bd0M, data.frame(log2.L = log2(np), bd0 = bd0, t(ebd0), bd0M. = format(bd0M, digits=8)))
+with(bd0M, data.frame(log2.L = log2(np), bd0 = bd0, ebd0, bd0M. = format(bd0M, digits=8)))
 
-matplot(log2(Llam), with(bd0M, cbind(bd0 = bd0/x., yh=ebd0["yh",]/x., asNumeric(bd0M/x.))),
+matplot(log2(Llam), with(bd0M, cbind(bd0 = bd0/x., yh=ebd0[["yh"]]/x., asNumeric(bd0M/x.))),
         type="o", ylab = "*bd0*(x., L) / x.", pch=1:3,
         main= paste("ebd0(x., Lam) and bd0(*) for x=",format(x.)," *and* larg Lam"))
 abline(h=0, lty=3, col=adjustcolor("gray20", 1/2))
-axis(1, at=log2(x.), label="log2(x.)", line=-1, tck=-1/16, col=2, col.axis=2)
+axis(1, at=log2(x.), labels="log2(x.)", line=-1, tck=-1/16, col=2, col.axis=2)
 legend("top", c("bd0()", "ebd0()", "MPFR bd0()"), bty="n", lty=1:3, pch=1:3, col=1:3)
 dMax <- .Machine$double.xmax
 abline(h = dMax / x., col=4, lty=3) ; ux <- par("usr")[1:2]
@@ -440,16 +440,16 @@ if(!interactive()) # gets too expensive
 
 ## zoom in more:
 L.3 <- 2^c(seq(1019, 1021, by=1/128))
-bd0.3 <- bd0ver(x., L.3, mpfrPrec = 1024, chkVerb=FALSE)
+system.time(bd0.3 <- bd0ver(x., L.3, mpfrPrec = 1024, chkVerb=FALSE)) # 7.3 sec
 p.relE(bd0.3) # up to 1e-11  rel.error !!
 
 ## different x :
-bd0.2.2e307 <- bd0ver(2e307, L.2[L.2 > 1e306], mpfrPrec = 1024, chkVerb=FALSE)
+system.time(bd0.2.2e307 <- bd0ver(2e307, L.2[L.2 > 1e306], mpfrPrec = 1024, chkVerb=FALSE)) # 1.2 s
 p.relE(bd0.2.2e307)
 
 ## less large x .. still same problem:  ebd0() is worse than bd0()
 L.4 <- 2^c(seq(1009, 1015, by=1/64))
-bd0.2.2e305 <- bd0ver(2e305, L.4, mpfrPrec = 256, chkVerb=FALSE)
+system.time(bd0.2.2e305 <- bd0ver(2e305, L.4, mpfrPrec = 256, chkVerb=FALSE)) # 1.9 s
 p.relE(bd0.2.2e305)
 
 ## less large x .. still same problem:  ebd0() is worse than bd0()

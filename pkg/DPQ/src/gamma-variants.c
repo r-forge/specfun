@@ -6,7 +6,7 @@
  *
  * These are
  *
- *	Copyright (C) 2022 ff Martin Maechler,  maechler@stat.math.ethz.ch
+ *  Copyright (C) 2022--2023 Martin Maechler,  maechler@stat.math.ethz.ch
  *
  * everything else, of course
  *
@@ -344,7 +344,7 @@ double gammafn_ver(double x, int version, int trace_lev)
 				       i.e., the region where gamma(x) is subnormal > 0 */
 		    // using the code from lgamma() :
 		    double y = fabs(x), sinpiy = fabs(sinpi(y));
-		    if(trace_lev >= 1) REprintf("n < 0, *not* long.double, x < xminNorm=%g: -> |sinpi(y)|",
+		    if(trace_lev >= 1) REprintf("n < 0, *not* long.double, x < xminNorm=%g: -> |sinpi(y)|=%g",
 						xminNorm, sinpiy);
 		    return /* sign : gamma(x) is negative if (x % 2) > 1 <==> n is even  */
 			(n % 2 == 0 ? -1. : 1.) *
@@ -359,7 +359,7 @@ double gammafn_ver(double x, int version, int trace_lev)
 					(trace_lev >= 2)? "value = (" : "");
 	    for (i = 0; i < n; i++) {
 		value /= (x_ + i);
-		if(trace_lev >= 2) REprintf("%g%s", value, (i < n-1) ? ", " : "");
+ 		if(trace_lev >= 2) REprintf(PR_g_ "%s", value, (i < n-1) ? ", " : "");
 	    };  if(trace_lev >= 2) REprintf(")\n");
 	}
 	else { // n >= 1  <==> floor(x) >= 2 :  gamma(x) for 2 <= x <= xmax */
@@ -367,7 +367,7 @@ double gammafn_ver(double x, int version, int trace_lev)
 					(trace_lev >= 2)? "value = (" : "");
 	    for (i = 1; i <= n; i++) {
 		value *= (x_ - i); // was  *= (y + i)
-		if(trace_lev >= 2) REprintf("%g%s", value, (i < n) ? ", " : "");
+		if(trace_lev >= 2) REprintf(PR_g_ "%s", value, (i < n) ? ", " : "");
 	    };  if(trace_lev >= 2) REprintf(")\n");
 
 	}

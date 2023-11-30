@@ -393,7 +393,8 @@ SEXP dpq_bd0(SEXP x_, SEXP np_, SEXP delta_,
 	trace   = asInteger(trace_);
 
     if(trace) {
-	REprintf("dpq_bd0(x[1:%d], np[1:%d], delta=%g, ... ):\n", delta, n_x, n_np);
+	REprintf("dpq_bd0(x[1:%lld], np[1:%lld], delta=%g, ... ):\n",
+		 (long long)n_x, (long long)n_np, delta);
     }
 //    version++; // currently unused
 
@@ -413,41 +414,45 @@ SEXP dpq_ebd0(SEXP x_, SEXP np_, SEXP trace_)
 	n_np  = XLENGTH(np_),
 	n = (n_x >= n_np ? n_x : n_np);
     if(n > INT_MAX) // as R's matrices cannot yet have long dim()
-	error("length() of 'x' or 'np' = %ld > max.int = %d", n, INT_MAX);
+	error("length() of 'x' or 'np' = %lld > max.int = %d", (long long)n, INT_MAX);
     if(!n_x || !n_np) return allocVector(REALSXP, 0); // length 0
     if(length(trace_) != 1)
 	error("'length(%s)' must be 1, but is %d", "trace",  length(trace_));
     // otherwise, recycle (x, np) to common length n :
     PROTECT(x_  = isReal(x_)  ? x_  : coerceVector(x_,  REALSXP));
     PROTECT(np_ = isReal(np_) ? np_ : coerceVector(np_, REALSXP));
-    SEXP r_ = PROTECT(allocMatrix(REALSXP, 2, (int)n)); // result =^= rbind(yh=yh, yl=yl)
+    /* Natural would be (not possible: matrix-dim must be int!):
+       SEXP r_ = PROTECT(allocMatrix(REALSXP, 2, n)); // result =^= rbind(yh=yh, yl=yl)
+    * instead, do the 2 rows separately in a `list` which may have _long_ vectors  */
+    SEXP r  = PROTECT(allocVector(VECSXP, 2)),
+     rnames = PROTECT(allocVector(STRSXP, 2)),
+	yh_ = allocVector(REALSXP, n),
+        yl_ = allocVector(REALSXP, n); /* both protected inside r : */
+    SET_VECTOR_ELT(r, 0, yh_);
+    SET_VECTOR_ELT(r, 1, yl_);
+    SET_STRING_ELT(rnames, 0, mkChar("yh"));
+    SET_STRING_ELT(rnames, 1, mkChar("yl"));
+    setAttrib(r, R_NamesSymbol, rnames);
     double *x = REAL(x_), *np = REAL(np_)
 	/* , delta = asReal(delta_) */
-	, *r = REAL(r_);
+	, *yh = REAL(yh_)
+	, *yl = REAL(yl_);
     int
 	/* maxit   = asInteger(maxit_), */
 	// version = asInteger(version_),
 	trace   = asInteger(trace_);
 
     if(trace) {
-	REprintf("dpq_ebd0(x[1:%d], np[1:%d], ... ):\n", n_x, n_np);
+	REprintf("dpq_ebd0(x[1:%lld], np[1:%lld], ... ):\n", (long long)n_x, (long long)n_np);
     }
     // version++; // currently unused
 
-    for(R_xlen_t i=0, i2=0; i < n; i++, i2+=2) {
+    for(R_xlen_t i=0; i < n; i++) {
         // void ebd0(double x, double M, double *yh, double *yl, int trace)
-	ebd0(x[i % n_x], np[i % n_np], r+i2, r+(i2+1), trace);
+	ebd0(x[i % n_x], np[i % n_np], yh+i, yl+i, trace);
     }
-    // add row names to  returned matrix :
-    SEXP dm = PROTECT(allocVector(VECSXP, 2)); // dimnames(r_)
-    SEXP rnames = PROTECT(allocVector(STRSXP, 2));
-    SET_STRING_ELT(rnames, 0, mkChar("yh"));
-    SET_STRING_ELT(rnames, 1, mkChar("yl"));
-    SET_VECTOR_ELT(dm, 0, rnames);
-    // SET_VECTOR_ELT(dm, 1, R_NilValue); // empty colnames
-    setAttrib(r_, R_DimNamesSymbol, dm);
 
-    UNPROTECT(5);
-    return(r_);
+    UNPROTECT(4);
+    return(r);
 }
 

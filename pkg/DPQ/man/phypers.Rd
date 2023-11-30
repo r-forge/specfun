@@ -1,6 +1,6 @@
 \name{phypers}
 \alias{phypers}
-\title{The Four (4) Symmetric 'phyper()' calls.}
+\title{The Four (4) Symmetric 'phyper()' Calls}
 \description{
   Compute the four (4) symmetric \code{\link{phyper}()} calls which
   mathematically would be identical but in practice typically slightly

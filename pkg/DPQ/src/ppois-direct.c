@@ -142,11 +142,11 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0, SEXP verbose_)
 		if((f = expl(exp_arg)) > 0) {
 		    P += f; // P == sum_{m=0, i} f_m
 		    if(verbose)
-			REprintf(" ..>> i=%d, finally new f = expl(exp_arg = %"PR_g_
-				 ") = %"PR_g_ " > 0\n", i, exp_arg, f);
+			REprintf(" ..>> i=%lld, finally new f = expl(exp_arg = %"PR_g_
+				 ") = %"PR_g_ " > 0\n", (long long)i, exp_arg, f);
 		} else if(verbose >= 2)
-			REprintf(" .. i=%d, f = expl(exp_arg = %"PR_g_") = %"PR_g_"\n",
-				 i, exp_arg, f);
+			REprintf(" .. i=%lld, f = expl(exp_arg = %"PR_g_") = %"PR_g_"\n",
+				 (long long)i, exp_arg, f);
 	    }
 	    prob[i] = (double) P;
 	}
@@ -154,7 +154,7 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0, SEXP verbose_)
 	    // xi = x[i] .. x[] may be out of order, so we "start from scratch"
 	    double xi = floor(x[i] + 1e-7);
 	    if (ISNAN(xi))
-		error("x[%d] is NA -- invalid here", i+1);
+		error("x[%lld] is NA -- invalid here", (long long)i+1);
 	    if (xi < 0)		{ prob[i]= 0.; break; } // incl -Inf
 	    if (!R_FINITE(xi))	{ prob[i]= 1.; break; } //      +Inf
 	    Rboolean sml_x = (xi <= jI);

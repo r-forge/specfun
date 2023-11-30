@@ -144,7 +144,7 @@
 #  ifdef __USE_MINGW_ANSI_STDIO
 #  undef __USE_MINGW_ANSI_STDIO
 #  endif
-// (such that "%Lg" works) :
+// (such that PR_g_ == "%Lg" works) :
 #  define __USE_MINGW_ANSI_STDIO 1
 #endif
 
