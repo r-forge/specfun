@@ -183,8 +183,8 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0, SEXP verbose_)
 		if(verbose >= 2) {
 		    f = expl(-ldlam + xi*llam - lgammal((long double)(xi+1)));
 		    if(f == 0L) {
-			REprintf("ppoisD(x=%g, lambda=%g, expl(-ldlam)=%"PR_g_ "=0 ==> log(lam)=%"
-				 PR_g_ ", exp_arg=%" PR_g_ "\n",
+			REprintf("ppoisD(x=%g, lambda=%g, expl(-ldlam)=%"PR_g_ "=0 ==> log(lam)=%"PR_g_
+				 ", exp_arg=%" PR_g_ "\n",
 				 xi, lam, f0, llam, exp_arg);
 			xi--;
 			while((f = expl(-ldlam + xi*logl(ldlam) - lgammal((long double)(xi+1)))) == 0L

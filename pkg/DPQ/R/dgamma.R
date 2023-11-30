@@ -152,14 +152,14 @@ dpois_raw <- function(x, lambda, log=FALSE,
                                               trace.lcf=trace.lcf, logCF=logCF),
                             "ebd0_C1" = ebd0C(x, lambda, verbose=verb1),
                             stop("internal version error:", version))
-               yl <- yM["yl",] + del.x
+               yl <- yM[["yl"]] + del.x
                ## return
                if(log) ## "FIXME" ifelse() is inefficient (and fails for MPFR!)
-                   -yl - yM["yh",] - ifelse(BL,
+                   -yl - yM[["yh"]] - ifelse(BL,
                                             0.5 * (log(2*pi)+log(x)),
                                             0.5 * log(2*pi*x))
                else
-                   exp(-yl) * exp(-yM["yh",]) / ifelse(BL, sqrt(2*pi)*sqrt(x), sqrt(2*pi*x))
+                   exp(-yl) * exp(-yM[["yh"]]) / ifelse(BL, sqrt(2*pi)*sqrt(x), sqrt(2*pi*x))
            },
            stop("invalid 'version'": version))
     }

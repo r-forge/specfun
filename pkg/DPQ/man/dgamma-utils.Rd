@@ -205,7 +205,7 @@ str(log1pmx) ##--> play with  { tol_logcf, eps2, minL1, trace.lcf, logCF }
 ebd0x1k <- ebd0 (x, 1000)
 exC     <- ebd0C(x, 1000)
 stopifnot(all.equal(exC, ebd0x1k, tol=4e-16))
-lines(x, colSums(ebd0x1k), col=adjustcolor(4, 1/2), lwd=4)
+lines(x, rowSums(ebd0x1k), col=adjustcolor(4, 1/2), lwd=4)
 
 x <- 0:250
 dp   <- dpois    (x, 48, log=TRUE)# R's 'stats' pkg function
