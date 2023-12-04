@@ -4,6 +4,14 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
+\section{Version 0.5-9 (2023-12-04, svn r279)}{
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item \emph{fix} format fixes for when 'long != long long'.
+    }
+  }
+}
+
 \section{Version 0.5-8 (2023-11-30, svn r278)}{
   \subsection{BUG FIXES}{
     \itemize{

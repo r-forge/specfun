@@ -18,6 +18,7 @@ source(system.file(package="DPQ", "test-tools.R",
                    mustWork=TRUE))# ../inst/test-tools.R
 ## => showProc.time(), ...  list_() , loadList() ,  readRDS_() , save2RDS()
 
+unlist(.Platform)
 ## For package-testing "diagnostics":
 sessionInfoX(c("DPQ","Rmpfr"))
 

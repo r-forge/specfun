@@ -12,7 +12,7 @@ SEXP R_dpsifn(SEXP x_, SEXP m_, SEXP deriv_1, SEXP kode2_) {
     // other args are checked via  asReal(.), asInteger() below
     R_xlen_t i;
     if(XLENGTH(x_) > INT_MAX)
-	error("length(%s) = %ld > max.int = %d", "x", (long)XLENGTH(x_), INT_MAX);
+	error("length(%s) = %lld > max.int = %d", "x", (long long)XLENGTH(x_), INT_MAX);
     int n  = (int)XLENGTH(x_),
 	m  = asInteger(m_),
 	d1 = asInteger(deriv_1);

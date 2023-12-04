@@ -1,4 +1,4 @@
-/* Copyright (C) 2022  Martin Maechler
+/* Copyright (C) 2022-2023  Martin Maechler
 
    Apart from these first lines: DIRECT COPY  from R sources  of
    <R>/src/nmath/chebyshev.c
@@ -123,7 +123,7 @@ SEXP R_chebyshev_nt(SEXP coef_, SEXP eta_)
 {
     PROTECT(coef_ = isReal(coef_) ? coef_ : coerceVector(coef_, REALSXP));
     if(XLENGTH(coef_) > INT_MAX)
-	error("length(%s) = %ld > max.int = %d", "coef", (long)XLENGTH(coef_), INT_MAX);
+	error("length(%s) = %lld > max.int = %d", "coef", (long long)XLENGTH(coef_), INT_MAX);
     int n_a = chebyshev_init(REAL(coef_), LENGTH(coef_), asReal(eta_));
     UNPROTECT(1);
     return ScalarInteger(n_a);

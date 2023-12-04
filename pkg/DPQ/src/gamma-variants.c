@@ -157,7 +157,7 @@ double gammafn_ver(double x, int version, int trace_lev)
     /* If the argument is exactly zero or a negative integer
      * then return NaN. */
     if(x == 0 || (x < 0 &&
-		  ((version <= 2 && x == (long)x) ||
+		  ((version <= 2 && x == (long long)x) ||
 		   /* later versions */ x == round(x)))) {
 	ML_WARNING(ME_DOMAIN, "gammafn_ver");
 	return ML_NAN;
