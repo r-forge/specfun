@@ -4,7 +4,7 @@
 \title{DPQmpfr News}
 \encoding{UTF-8}
 
-\section{Version 0.3-2 (2023-12-05, svn r280)}{
+\section{Version 0.3-2 (2023-12-05, svn r281)}{
   \subsection{NEW FEATURES}{
     \itemize{
       %% not yet exported nor documented  {maybe go to DPQ vignette tools ?}

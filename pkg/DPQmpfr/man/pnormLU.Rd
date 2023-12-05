@@ -80,6 +80,7 @@ abline(h=(1:4)*2^-53, col=adjustcolor(1, 1/4))
 
 x <- 2^seq(0,    30, by = 1/64)
 col4 <- adjustcolor(1:4, 1/2)
+options(width = 111) -> oop # (nicely printing "tables")
 if(FALSE)## or even HUGE:
    x <- 2^seq(4, 513, by = 1/16)
 px <- cbind(
@@ -159,5 +160,6 @@ sfsmisc::eaxis(2)
 lines(2^l2t, asNumeric(abs(nQt-pnU)/abs(pnU)), type="o", cex=1/4, col=2)
 abline(h=c(1:4)*2^-53, lty=2, col=adjustcolor(1, 1/4))
 
+options(oop)# reverting
 }
 \keyword{distribution}
