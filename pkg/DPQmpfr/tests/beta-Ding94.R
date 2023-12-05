@@ -7,12 +7,6 @@ options(warn = 1)# warnings *immediately*
 source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
 source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
 ## => list_() , loadList() ,  readRDS_() , save2RDS()
-## Fixing thinko in DPQ <= 0.4-3 's test-tools.R:
-readRDS_ <- function(file, do.time=TRUE, verbose=TRUE, ...) {
-    if(verbose) cat("Reading from ", file, "\n")
-    if(do.time) on.exit(showProc.time())
-    readRDS(file=file, ...)
-}
 
 (doExtras <- DPQmpfr:::doExtras())
 ## save directory (to read from):
@@ -104,7 +98,6 @@ qbetaD94sim <- function(p = 0.95, # p = 1 - alpha
         cat("simMpfr =", simMpfr, ":\n")
         sFile <- file.path(saveDir, qb_sfile(p, precBits, simMpfr))
         if(file.exists(sFile) && (simMpfr || !doExtras)) {
-            cat("reading simulation results from", sQuote(sFile), ".. ")
             ssR_l <- readRDS_(sFile)
             str(ssR_l)
             loadList(ssR_l, envir = environment())

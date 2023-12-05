@@ -1,7 +1,7 @@
 Package: DPQmpfr
 Title: DPQ (Density, Probability, Quantile) Distribution Computations using MPFR
-Version: 0.3-3
-Date: 2023-10-10
+Version: 0.3-2
+Date: 2023-12-04
 Authors@R: person("Martin","Maechler", role=c("aut","cre"),
    email="maechler@stat.math.ethz.ch", comment = c(ORCID = "0000-0002-8685-9910"))
 Description: An extension to the 'DPQ' package with computations for 'DPQ'

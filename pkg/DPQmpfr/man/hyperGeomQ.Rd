@@ -40,7 +40,7 @@ phyperQall(m, n, k, lower.tail=TRUE)
  function (x, m, n, k)
  {
     stopifnot(k - x == as.integer(k - x))
-    chooseZ(m, x) * chooseZ(n, k - x)/chooseZ(m + n, k)
+    chooseZ(m, x) * chooseZ(n, k - x) / chooseZ(m + n, k)
  }
 
 # a case where  phyper(11, 15, 0, 12, log=TRUE) gave 'NaN'

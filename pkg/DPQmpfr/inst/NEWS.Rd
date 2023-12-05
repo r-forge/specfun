@@ -4,7 +4,7 @@
 \title{DPQmpfr News}
 \encoding{UTF-8}
 
-\section{Version 0.3-2 (2023-01-28, svn r248)}{
+\section{Version 0.3-2 (2023-12-05, svn r280)}{
   \subsection{NEW FEATURES}{
     \itemize{
       %% not yet exported nor documented  {maybe go to DPQ vignette tools ?}
@@ -14,6 +14,11 @@
       \item new \dQuote{mpfr-ified} \code{pnormAsymp()} and \code{qnormAsymp()}
 
       \item new \code{ldexp(f, E)} utility.
+    }
+  }
+  \subsection{Misc}{
+    \itemize{
+      \item URLs in \file{DESCRIPTION}
     }
   }
 }
