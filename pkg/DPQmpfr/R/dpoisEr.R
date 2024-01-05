@@ -21,7 +21,7 @@ x4dpois <- function(lambda, f.max = 2) {
 ##' @param x, lambda, log  The arguments to dpoisFUN(), see \code{\link{dpois}}.  Note that \code{x}
 ##'                        gets a smart default derived from \code{lambda} and \code{f.maxX}.
 ##' @param prBits precision in bits to be used for "ground truth" \pkg{Rmpfr}'s \code{\link{dpois}()}.
-##' @param f.maxX
+##' @param f.maxX positive number, passed to \code{x4dpois}(*), the default for \code{x}.
 ##' @param errOnly  logical indicating if only `relE` the vector of relative errors should be returned.
 ##' @param keepMpfr logical indicating if the full Rmpfr() part should be returned as well.
 ##' @param dpoisFUN typically stats::dpois() but can use DPQ alternatives now, must have
@@ -30,9 +30,11 @@ x4dpois <- function(lambda, f.max = 2) {
 ##'
 ##' @note  The result can be nicely graphed via   p.dpoisEr()
 dpoisEr <- function(lambda, prBits = 1536, ## prBits = 256 is too small for lambda=1e100 !!!
-                    log=FALSE, f.maxX = 2
+                    log = FALSE
+                  , f.maxX = 2
                   , x = x4dpois(lambda, f.max = f.maxX)
                   , errOnly = FALSE, keepMpfr = FALSE
+                  , log2.min = .Machine$double.min.exp # .mpfr_erange("Emin") is *much* smaller!
                   , dpoisFUN = stats::dpois, ...)
 {
     dpoisNam <- deparse(substitute(dpoisFUN))
@@ -51,10 +53,10 @@ dpoisEr <- function(lambda, prBits = 1536, ## prBits = 256 is too small for lamb
     ## must use *absolute* error when "truth" is zero:
     ## NOTE: mpfr will underflow *much* later than double.xmin:
     ##      mpfr(2,22)^.mpfr_erange("Emin")  # |--> 4.7651298e-323228497
-    if(had0 <- any(d0 <- log2(abs(dpM)) < .mpfr_erange("Emin")))
+    if(had0 <- any(d0 <- log2(abs(dpM)) < log2.min))
         ## dpR "must have underflown" here: replace rel.error values by absolute ones:
         relE[d0] <- asNumeric(dpR[d0] - dpM[d0])
-                                        # the latter is typically 0 (se relE[.] was NaN)
+                                        # the latter is typically 0 (as relE[.] was NaN)
     if(errOnly)
         relE
     else { ## return more {but via *attributes*, so the result can still be treated like a numeric}:

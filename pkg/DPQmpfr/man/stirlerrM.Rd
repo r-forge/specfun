@@ -56,7 +56,8 @@ stirlerrSer(n, k)
 }
 \author{Martin Maechler}
 \seealso{
- \code{\link{dbinom}}, \code{\link[DPQ]{stirlerr}()} in package
+  \code{\link{dbinom}}; rational exact \code{\link[gmp]{dbinomQ}()} in package \CRANpkg{gmp}.
+  \code{\link[DPQ]{stirlerr}()} in package
   \CRANpkg{DPQ} which is a pure \R version \R's mathlib-internal C function.
 }
 \examples{

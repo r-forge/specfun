@@ -4,6 +4,15 @@
 \title{DPQmpfr News}
 \encoding{UTF-8}
 
+\section{Version 0.3-3 (2024-01-05, svn r282)}{
+  \subsection{Misc}{
+    \itemize{
+      \item internal \code{dpoisEr()}, gets arg \code{log2.min}, back to previous (2020)
+      value, such that "correct underflow" in R does not give rel.err of -1.
+    }
+  }
+}
+
 \section{Version 0.3-2 (2023-12-05, svn r281)}{
   \subsection{NEW FEATURES}{
     \itemize{

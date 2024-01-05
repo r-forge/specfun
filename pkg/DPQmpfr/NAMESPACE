@@ -26,8 +26,7 @@ importFrom("Rmpfr"
 importFrom("gmp"
          , as.bigq, as.bigz
          , chooseZ
-##_TODO: once gmp_0.6-3 is on CRAN
-##_TODO: , dbinomQ
+         , dbinomQ
 )
 
 importClassesFrom("Rmpfr"
