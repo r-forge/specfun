@@ -51,7 +51,8 @@ f1 <- (1+x)^99
 f2 <- exp(y * log1p(x))
 fp <- pow1p(x, 99)
 matplot(x, cbind(f1, f2, fp), type = "l", col = 2:4)
-legend("top", legend = expression((1+x)^99, exp(99 * log1p(x)), pow1p(x, 99)), bty="n", col=2:4, lwd=2)
+legend("top", legend = expression((1+x)^99, exp(99 * log1p(x)), pow1p(x, 99)),
+       bty="n", col=2:4, lwd=2)
 cbind(x, f1, f2, sfsmisc::relErrV(f2, f1))
 }
 \keyword{arithmetic}

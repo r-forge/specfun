@@ -27,7 +27,7 @@
   where \eqn{d_0(r) := r\log(r) + 1-r}{d_0(r) := r*log(r) + 1-r}.
 
   Mostly, pure \R transcriptions of the C code utility functions for
-  \code{\link{dgamma}()}, \code{\link{dbinomial}()}, \code{\link{dpois}()}, \code{\link{dt}()},
+  \code{\link{dgamma}()}, \code{\link{dbinom}()}, \code{\link{dpois}()}, \code{\link{dt}()},
   and similar \dQuote{base} density functions by Catherine Loader. \cr
   These have extra arguments with defaults that correspond
   to \R's Mathlib C code hardwired cutoffs and tolerances.
