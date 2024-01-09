@@ -13,17 +13,26 @@
 \alias{stirlerr}
 \alias{stirlerr_simpl}
 \alias{lgammacor}
-\description{
+\description{%% -- ~ = ~ as ../../DPQmpfr/man/stirlerrM.Rd
+  Stirling's approximation (to the factorial or \eqn{\Gamma} function)
+  error in \eqn{\log}{log} scale is the difference of the left and right hand
+  side of Stirling's approximation to \eqn{n!},%
+  \eqn{n! \approx \bigl(\frac{n}{e}\bigr)^n \sqrt{2\pi n},}{%
+       n! ~= (n/e)^n * sqrt(2*pi*n),} i.e., \code{stirlerr(n) :=} \eqn{\delta(n)},
+  where \deqn{\delta(n) =  \log\Gamma(n + 1) - n\log(n) + n - \log(2 \pi n)/2.}{%
+               delta(n) =   log\Gamma(n + 1) - n*log(n) + n -  log(2*pi*n)/2.}
+
+  The \dQuote{binomial deviance} function
+  \code{bd0(x, M) :=} \eqn{D_0(x,M) := M \cdot d_0(x/M)}{D0(x,M) := M * d_0(x/M)},
+  where \eqn{d_0(r) := r\log(r) + 1-r}{d_0(r) := r*log(r) + 1-r}.
+
   Mostly, pure \R transcriptions of the C code utility functions for
-  \code{\link{dgamma}()} and similar \dQuote{base} density functions by
-  Catherine Loader.
-
-  \code{bd0C()} interfaces to C code which corresponds to \R's C Mathlib (Rmath)
-  \code{bd0()}.
-
+  \code{\link{dgamma}()}, \code{\link{dbinomial}()}, \code{\link{dpois}()}, \code{\link{dt}()},
+  and similar \dQuote{base} density functions by Catherine Loader. \cr
   These have extra arguments with defaults that correspond
   to \R's Mathlib C code hardwired cutoffs and tolerances.
-}
+}% .. more in \details below
+
 \usage{% >>> ../R/dgamma.R <<<
 dpois_raw(x, lambda, log=FALSE,
           version, % =  c("bd0_v1", "bd0_p1l1d", "bd0_p1l1d1", "bd0_l1pm", "ebd0_v1")
@@ -54,9 +63,10 @@ ebd0C(x, M, verbose = getOption("verbose"))
 stirlerr(n, scheme = c("R3", "R4.x"),
          cutoffs = switch(scheme
                         , R3   = c(15, 35, 80, 500)
-                        , R4.x = c(7.5, 8.5, 10.625, 12.125, 20, 26, 55, 200, 3300)
+                        , R4.x = c(5.4, 7.5, 8.5, 10.625, 12.125, 20, 26, 60, 200, 3300)
                           ),
          use.halves = missing(cutoffs),
+         lgamma1p = lgamma1pC,
          verbose = FALSE)
 
 stirlerr_simpl(n, minPrec = 128L)
@@ -94,7 +104,7 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
     up to 10 term approximations for non-small \code{n}, where the direct
     formula loses precision.  When missing (as by default), \code{scheme}
     is used, where \code{scheme = "R3"} chooses (15, 35, 80, 500), the
-    cutoffs in use in \R versions up to (and including) 4.0.z.}
+    cutoffs in use in \R versions up to (and including) 4.3.z.}
   \item{use.halves}{\code{\link{logical}} indicating if the full-accuracy
     prestored values should be use when
     \eqn{2n \in \{0,1,\dots,30\}}{2n in {0,1,..,30}}, i.e.,
@@ -103,6 +113,10 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
     Turn this off to judge the underlying approximation accuracy by
     comparison with MPFR.   However, keep the default \code{TRUE} for
     back-compatibility.}
+  \item{lgamma1p}{a \code{\link{function}} used for computing
+    \code{\link{lgamma}(n+1)} whenever \code{n < cutoff[1]}.  Originally
+    hard wired to \code{function(n) lgamma(n + 1)} which was suboptimal for
+    \eqn{0 < |n| < 1/2}.}
   \item{minPrec}{a positive integer; for \code{stirlerr_simpl}, the minimal
     accuracy or precision in bits when \code{\link[Rmpfr]{mpfr}} numbers
     are used.}
@@ -143,7 +157,18 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
 
       Note that \code{bd0(x, M)} now also works when \code{x} and/or
       \code{M} are arbitrary-accurate mpfr-numbers (package \CRANpkg{Rmpfr}).
-    }% item
+
+      \code{bd0C()} interfaces to C code which corresponds to \R's C Mathlib (Rmath) \code{bd0()}.
+    }% bd0
+    \item{\code{stirlerr()}:}{Stirling's error, \code{stirlerr(n):=}
+      \eqn{\delta(n)} has asymptotic (\eqn{n \to\infty}{n -> Inf}) expansion
+      \deqn{\delta(n) = \frac 1{12 n} - \frac 1{360 n^3} + \frac 1{1260 n^5} \pm O(n^{-7}),}{%
+	delta(n) = 1/(12 n) - 1/(360 n^3) + 1/(1260 n^5) +/- O(n^{-7}),}
+      and this expansion is used up to remainder \eqn{O(n^{-23})} in \code{stirlerr(n)};
+      different numbers of terms between different cutoffs for \eqn{n}, and
+      using the direct formula for \eqn{n <= c_1}, where \eqn{c_1} is the first
+      cutoff, \code{cutoff[1]}.
+    }% stirlerr
   }% describe
 }
 \value{
@@ -175,7 +200,7 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
 \seealso{
   \code{\link{dgamma}}, % ~/R/D/r-devel/R/src/library/stats/man/GammaDist.Rd
   \code{\link{dpois}}.
-  High precision versions \code{\link[DPQmpfr]{stirlerrM}(n)} and
+  High precision versions \code{\link[DPQmpfr]{stirlerrM}(n)} and % ../../DPQmpfr/man/stirlerrM.Rd
   \code{stirlerrSer(n,k)} in package \CRANpkg{DPQmpfr} (via the
   \CRANpkg{Rmpfr} and \CRANpkg{gmp} packages).
 }

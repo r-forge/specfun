@@ -4,7 +4,7 @@
  *    October 23, 2000.
  *
  *  Merge in to R:
- *	Copyright (C) 2000-2021, The R Core Team
+ *	Copyright (C) 2000-2024, The R Core Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -47,6 +47,9 @@
 
 /* NB 2 --- in DPQ's R code, we have much improved and versatile stirlerr() ==> ../R/dgamma.R
  * --       This is *really* only for reproducibility of R's C level (non-API!) stirlerr()
+_________ CURRENTLY *NOT* directly called from R, only used in gammafn_ver() ==> ./gamma-variants.c
+
+_________ TODO:  add  'int version'  or 'order' or   double* cutoffs ________________
  */
 double dpq_stirlerr(double n)
 {

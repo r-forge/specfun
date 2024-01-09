@@ -1,9 +1,37 @@
-#### R version of  dbinom_raw()          from ~/R/D/r-devel/R/src/nmath/dbinom.c
+#### R version of  dbinom_raw()          from ~/R/D/r-devel/R/src/nmath/dbinom.c  <<< now (Dec 30, 2023) improved!
 ####        and dnbinom() / dnbinom_mu()  "   ~/R/D/r-devel/R/src/nmath/dnbinom.c
 ##
 ##  (orig. was ~/R/MM/NUMERICS/dpq-functions/dbinom_raw.R )
 
+##' Compute  (1+x)^y  accurately also for |x| << 1
+
+pow1p.1 <- function(x, y,  # C code in ...../dbinom.c
+                    ## Use naive/direct (1+x)^y  in two cases: (1) when 1+x is exact
+                    ## and (2) when |x| > 1/2 and we have no better algorithm.
+                    pow = ((x + 1) - 1) == x || abs(x) > 0.5 || is.na(x))
+{   ## comment apart from when developing:
+    stopifnot(length(x) == 1, length(y) == 1)
+    if(is.na(y))
+	if(x == 0) 1. else y # (0+1)^NaN := 1  by standards
+    else if(0 <= y && y == trunc(y) && y <= 4.) {
+        if(!y) 1
+        else switch(as.integer(y),
+		    x + 1,  # ^1
+		    x*(x + 2) + 1,			# (x+1)^2
+		    x*(x*(x + 3.) + 3.) + 1,		# ( . )^3
+		    x*(x*(x*(x + 4.) + 6.) + 4.) + 1	# ( . )^4
+		    )
+    } else {
+        if(pow)
+            (1 + x)^y
+        else # not perfect, e.g., for small |x|, non-huge y, use binom expansion 1 + y*x + y(y-1)/2 x^2 + ..
+            exp(y * log1p(x))
+    }
+}
+pow1p  <- Vectorize(pow1p.1, c("x", "y"))
+
 dbinom_raw <- function(x, n, p, q=1-p, log = FALSE # >> ../man/dbinom_raw.Rd <<<
+                       , version = c("2008", "R4.4")
                        , verbose = getOption("verbose")
                        )
 {
@@ -25,11 +53,12 @@ dbinom_raw <- function(x, n, p, q=1-p, log = FALSE # >> ../man/dbinom_raw.Rd <<<
     p <- rep_len(p,  M)
     q <- rep_len(q,  M)
 
+    version <- match.arg(version)
     if(any(B <- p == 0)) r[B] <- ifelse(x[B] ==  0  , .D_1(log), .D_0(log))
     if(any(B <- q == 0)) r[B] <- ifelse(x[B] == n[B], .D_1(log), .D_0(log))
     BB <- !B & (p != 0)
-    if(verbose) cat(sprintf("dbinom_raw(): #(bndr, rglr): (%d,%d)\n",
-                            sum(!BB), sum(BB)))
+    if(verbose) cat(sprintf("dbinom_raw(*, version='%s'): #(bndr, rglr): (%d,%d)\n",
+                            version, sum(!BB), sum(BB)))
     verb1 <- pmax(0L, verbose - 1L)
 
     if(any(B <- BB & x == 0)) {
@@ -40,22 +69,48 @@ dbinom_raw <- function(x, n, p, q=1-p, log = FALSE # >> ../man/dbinom_raw.Rd <<<
             ii <- ii[!i0] # for the rest of this clause
         }
         n. <- n[ii]
-	lc <- ifelse(p[ii] < 0.1,
-                     -bd0(n., n.*q[ii], verbose=verb1) - n.*p[ii],
-                     n.*log(q[ii]))
-
-        r[ii] <- .D_exp(lc, log)
+        p. <- p[ii]
+        q. <- q[ii]
+        r[ii] <-
+         switch(version,
+                "2008" = {
+                    lc <- ifelse(p. < 0.1,
+                                 -bd0(n., n.*q., verbose=verb1) - n.*p.,
+                                 n.*log(q.))
+                    .D_exp(lc, log)
+                },
+                "R4.4" = {
+                    ifelse(p. > q.,
+                           if(log) n. * log(q.)    else q. ^ n.,
+                           ## else   0 < p. <= 1/2
+                           if(log) n. * log1p(-p.) else pow1p(-p., n.))
+                },
+                stop("invalid 'version':", version))
         BB <- BB & !B
     }
     if(any(B <- BB & x == n)) {
         ii <- which(B)
         if(verbose) cat(sprintf("x=n for i = %s\n", deparse(ii, control="S")))
         n. <- n[ii]
-	lc <- ifelse(q[ii] < 0.1,
-                     -bd0(n.,n.*p[ii], verbose=verb1) - n.*q[ii],
-                     n.*log(p[ii]))
+        p. <- p[ii]
+        q. <- q[ii]
+        r[ii] <-
+         switch(version,
+                "2008" = {
+                   lc <- ifelse(q. < 0.1,
+                                -bd0(n.,n.*p., verbose=verb1) - n.*q.,
+                                n.*log(p.))
 
-        r[ii] <- .D_exp(lc, log)
+                   .D_exp(lc, log)
+               },
+               "R4.4" = {
+                    ifelse(p. > q.,
+                           if(log) n. * log1p(-q.) else pow1p(-q., n.),
+                           ## else   0 < p. <= 1/2
+                           if(log) n. * log  (p.)  else p. ^ n.)
+               },
+               stop("invalid 'version':", version))
+
         BB <- BB & !B
     }
     if(any(B <- BB & x < 0 | x > n)) {

@@ -42,7 +42,7 @@ dpois_simpl0 <- function(x, lambda, log=FALSE)
 
 ## when  x & lambda  are different orders of magnitude, this may be more accurate than anything:
 dpois_simpl <- function(x, lambda, log=FALSE)
-    .D_exp(-lambda + (x*log(lambda) - lgamma(x+1)), log)
+    .D_exp(-lambda + (x*log(lambda) - lgamma(x+1)), log) # use lgamma1pC(x) for x << 1  (?)
 
 ## ~/R/D/r-devel/R/src/nmath/dpois.c   --> dpois_raw()
 ## // called also from dgamma.c, pgamma.c, dnbeta.c, dnbinom.c, dnchisq.c :
@@ -747,16 +747,17 @@ stirlerr_simpl <- function(n, minPrec = 128L) {
 stirlerr <- function(n, scheme = c("R3", "R4.x"),
                      cutoffs = switch(scheme
                                     , R3   = c(15, 35, 80, 500)
-                                    , R4.x = c(7.5, 8.5, 10.625, 12.125, 20, 26, 55, 200, 3300)
+                                    , R4.x = c(5.4, 7.5, 8.5, 10.625, 12.125, 20, 26, 60, 200, 3300)
                                       )
                     , use.halves = missing(cutoffs)
+                    , lgamma1p = lgamma1pC # was "hard wired"  \(x) lgamma(x+1)
                     , verbose = FALSE
                      )
 {
     useBig <- (!is.numeric(n) &&
                (inherits(n, "mpfr") || inherits(n, "bigz") || inherits(n, "bigq")))
     if(useBig) {
-        if(verbose) cat(sprintf("stirlerr(n): As 'n' is \"%s\", going to use \"mpfr\" numbers", class(n)))
+        if(verbose) message(sprintf("stirlerr(n): As 'n' is \"%s\", using \"mpfr\" & stirlerrM():", class(n)))
         ##  DPQmpfr >= 0.3-1 on CRAN  where  DPQmpfr::stirlerrM() exists :
         if(requireNamespace("DPQmpfr") &&
            is.function(stirlFn <- get0("stirlerrM", asNamespace("DPQmpfr"), inherits=FALSE))) {
@@ -784,13 +785,13 @@ stirlerr <- function(n, scheme = c("R3", "R4.x"),
             S <- !hlf
         } else
             S <- TRUE
-        if (any(S <- S & n <= cutoffs[1])) {
+        if (any(S <- S & (sml <- n <= cutoffs[1]))) {
             if(verbose) cat(" case I (n <= ",format(cutoffs[1]),"), ", sep="")
             n. <- n[S]
             if(verbose) { cat(" using direct formula for n="); str(n.) }
-            r[S] <- lgamma(n. + 1.) - (n. + 0.5)*log(n.) + n. - log(2*pi)/2
+            r[S] <- lgamma1p(n.) - (n. + 0.5)*log(n.) + n. - log(2*pi)/2
         }
-        if (any(!S)) { # has n > cutoffs[1]
+        if (any(!sml)) { # has n > cutoffs[1]
             if(verbose) {
                 cat(" case II (n > ",format(cutoffs[1]),"), ",nC, " cutoffs: (",
                     paste(cutoffs, collapse=", "),"):  n in cutoff intervals:")
@@ -850,7 +851,7 @@ stirlerr <- function(n, scheme = c("R3", "R4.x"),
 ## stirlerr(n) for n = 0, 0.5, 1.0, 1.5, ..., 14.5, 15.0.
 ## const static double
 sferr_halves <- c(
-    0.0, ## n=0 - wrong, place holder only */
+    Inf, #  n=0
     0.1534264097200273452913848,  ## 0.5 */
     0.0810614667953272582196702,  ## 1.0 */
     0.0548141210519176538961390,  ## 1.5 */
@@ -882,4 +883,3 @@ sferr_halves <- c(
     0.005746216513010115682023589, ## 14.5 */
     0.005554733551962801371038690  ## 15.0 */
 )
-

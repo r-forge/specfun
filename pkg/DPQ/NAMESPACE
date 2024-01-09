@@ -130,6 +130,8 @@ export(
   , pntP94, pntP94.1
   , pntR, pntR1
 
+  , pow1p
+
   , ppoisD, qpoisR
 
   , qbetaAppr, qbetaAppr.1, qbetaAppr.2, qbetaAppr.3, qbetaAppr.4, qbeta.R

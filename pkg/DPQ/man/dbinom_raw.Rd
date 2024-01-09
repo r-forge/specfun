@@ -8,7 +8,9 @@
   non-integer \code{x}.
 }
 \usage{% NB:  dpois_raw()	--->>> ./dgamma-utils.Rd <<<
-dbinom_raw (x, n, p, q = 1-p, log = FALSE, verbose = getOption("verbose"))
+dbinom_raw (x, n, p, q = 1-p, log = FALSE,
+            version = c("2008", "R4.4"),
+            verbose = getOption("verbose"))
 }
 \arguments{
   \item{x}{vector with values typically in \code{0:n},  but here allowed to
@@ -21,6 +23,9 @@ dbinom_raw (x, n, p, q = 1-p, log = FALSE, verbose = getOption("verbose"))
   \item{log}{logical indicating if the \code{\link{log}()} of the resulting
     probability should be returned; useful notably in case the probability
     itself would underflow to zero.}
+  \item{version}{a \code{\link{character}} string; originally,
+    \code{"2008"} was the only option.  Still the default currently,
+    this \emph{may change} in the future.}
   \item{verbose}{integer indicating the amount of verbosity of
     diagnostic output, \code{0} means no output, \code{1} more, etc.}
 }
@@ -41,9 +46,14 @@ dbinom_raw (x, n, p, q = 1-p, log = FALSE, verbose = getOption("verbose"))
 for(n in c(3, 10, 27, 100, 500, 2000, 5000, 1e4, 1e7, 1e10)) {
  x <- if(n <= 2000) 0:n else round(seq(0, n, length.out=2000))
  p <- 3/4
- stopifnot(all.equal(dbinom_raw(x, n, p, q=1-p),
-                     dbinom    (x, n, p), tol = 1e-13))# 1.636e-14 (Apple clang 14.0.3)
+ stopifnot(all.equal(dbinom_raw(x, n, p, q=1-p) -> dbin,
+                     dbinom    (x, n, p), tolerance = 1e-13))# 1.636e-14 (Apple clang 14.0.3)
+ stopifnot(all.equal(dbin, dbinom_raw(x, n, p, q=1-p, version = "R4.4") -> dbin44,
+                     tolerance = 1e-13))
+ cat("n = ", n, ": ", (aeq <- all.equal(dbin44, dbin, tolerance = 0)), "\n")
+ if(n < 3000) stopifnot(is.character(aeq)) # check that dbin44 is "better" ?!
 }
+
 n <- 1024 ; x <- 0:n
 plot(x, dbinom_raw(x, n, p, q=1-p) - dbinom(x, n, p), type="l", main = "|db_r(x) - db(x)|")
 plot(x, dbinom_raw(x, n, p, q=1-p) / dbinom(x, n, p) - 1, type="b", log="y",

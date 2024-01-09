@@ -4,7 +4,20 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-9 (2023-12-04, svn r279)}{
+\section{Version 0.5-9 (2024-01-09, svn r286)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item \code{dbinom_raw()} gets a new more accurate
+      \code{version = "R4.4"}, using the new \code{pow1p()} function, from
+      R-devel, i.e., \R 4.4.0 and newer.
+
+      \item \code{stirlerr()} gets argument \code{lgamma1p}, the function
+      to compute \code{lgamma(n+1)} which was suboptimal for the very
+      rarely used \eqn{n < 1/2} case.
+
+      More documentation and tests; experiments added in \file{../Misc/stirlerr-trms.R}.
+    }
+  }
   \subsection{BUG FIXES}{
     \itemize{
       \item \emph{fix} format fixes for when 'long != long long'.

@@ -56,7 +56,7 @@ double log1mexp(double x) { return R_Log1_Exp(-x); }
 SEXP R_log1mexp(SEXP x_)
 {
     R_xlen_t n = XLENGTH(PROTECT(x_ = isReal(x_) ?
-				Rf_duplicate(x_) : coerceVector(x_, REALSXP)));
+				 Rf_duplicate(x_) : coerceVector(x_, REALSXP)));
     SEXP r_ = allocVector(REALSXP, n);
     double *x = REAL(x_), *r = REAL(r_);
     for(R_xlen_t i=0; i < n; i++)
@@ -66,11 +66,12 @@ SEXP R_log1mexp(SEXP x_)
 }
 
 
-// Computes 'log(gamma(X + 1))'  accurately even for small x, i.e., 0 < x < 0.5.
+/* Computes 'log(gamma(X + 1))'  accurately even for small x, i.e., 0 < x < 0.5.
+*  called from  DPQ :: lgamma1pC() */
 SEXP R_lgamma1p(SEXP x_)
 {
     R_xlen_t n = XLENGTH(PROTECT(x_ = isReal(x_) ?
-				Rf_duplicate(x_) : coerceVector(x_, REALSXP)));
+				 Rf_duplicate(x_) : coerceVector(x_, REALSXP)));
     SEXP r_ = PROTECT(allocVector(REALSXP, n));
     double *x = REAL(x_), *r = REAL(r_);
     for(R_xlen_t i=0; i < n; i++)
