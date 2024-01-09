@@ -236,7 +236,7 @@ if(!dev.interactive(orNone=TRUE)) {
 ###################################################
 ### code chunk number 27: plot-qnormAsy2
 ###################################################
-sfsmisc::mult.fig(5, main = "qnormAsymp(*, k) approximations in the 5 cutpoint regions")
+mult.fig(5, main = "qnormAsymp(*, k) approximations in the 5 cutpoint regions")
 r0 <- c(27, 55, 109, 840, 36000, 6.4e8) # <-- cutoffs  <--> in ../R/norm_f.R
 # use k =  5   4    3    2      1       0    e.g.  k = 0  good for r >= 6.4e8
 for(ir in 2:length(r0))

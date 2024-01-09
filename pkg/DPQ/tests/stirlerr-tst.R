@@ -11,7 +11,7 @@ require("Rmpfr")
 
 source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
 ## => showProc.time(), ...  list_() , loadList() ,  readRDS_() , save2RDS()
-relErrV <- sfsmisc::relErrV
+require(sfsmisc)
 
 pks <- c("sfsmisc", "DPQ", "Rmpfr", "DPQmpfr")
 sapply(lapply(setNames(,pks), packageVersion), format)
@@ -134,8 +134,8 @@ p.stirlerrDev <- function(n, precBits=2048,
          ylab = quote(relErrV(stM, st)), axes=FALSE, frame.plot=TRUE,
          main = sprintf("stirlerr(n, cutoffs) rel.error [wrt stirlerr(Rmpfr::mpfr(n, %d))]",
                         precBits))
-    sfsmisc::eaxis(1, sub10=3)
-    sfsmisc::eaxis(2)
+    eaxis(1, sub10=3)
+    eaxis(2)
     mtext(paste("cutoffs =", deparse(cutoffs)))
     ylog <- par("ylog")
     if(ylog) {
@@ -215,7 +215,7 @@ p.stirlerrDev(n=n, stnM=st.nM, cex=1/4, type="o", ylim = 2e-15*c(-1,1),
 if(do.pdf) { dev.off(); pdf("stirlerr-relErr_6-fin-3.pdf") }
 
 ##-- April 20: have more terms up to S10 in stirlerr() --> can use more cutoffs
-n <- sfsmisc::lseq(1/64, 5000, length=4096)
+n <- lseq(1/64, 5000, length=4096)
 nM <- mpfr(n, 2048)
 st.nM <- roundMpfr(stirlerr(nM, use.halves=FALSE, ## << on purpose
                             verbose=TRUE), precBits = 128)
@@ -283,7 +283,7 @@ showProc.time()
 
 ## below, 7 "it's okay, but not perfect:" ===>  need more terms in stirlerr()  __or__ ??
 ## April 20: MM added more terms up to S10
-x <- sfsmisc::lseq(1/16, 7, length=2048)
+x <- lseq(1/16, 7, length=2048)
 system.time(stM <- DPQmpfr::stirlerrM(Rmpfr::mpfr(x,2048))) # 1.7 sec elapsed
 plot(x, stirlerr(x, use.halves=FALSE) - stM, type="l", log="x", main="absolute Error")
 plot(x,     stirlerr(x, use.halves=FALSE) / stM - 1,  type="l", log="x", main="relative Error")
@@ -515,7 +515,7 @@ p.relE <- function(bd0v, dFac = if(max(np) >= 8e307) 1e10 else 1,
             xlim = range(np)/dFac, # show full range
             xlab = paste0("np[iOk]", if(dFac != 1) sprintf("/ dFac,  dFac=%g",dFac)),
             ## could use  sfsmisc::pretty10exp(1e10, drop.1=TRUE)
-            xaxt="n"); sfsmisc::eaxis(1, sub10=3)
+            xaxt="n"); eaxis(1, sub10=3)
     mtext(sprintf("bd0(x, np),  x = %g", x))
     if(k >= 2) legend("top", colnames(relE), pch=pc, lty=1:2, col=1+pc, bty="n")
     rug(np[!iOk]/dFac, col=2)
