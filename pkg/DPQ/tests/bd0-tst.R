@@ -48,7 +48,7 @@ diff(bd0.n) # -16 -16 -15 -15 -15 -15 -14 -14 -15 -13 -14 ...
 do.pdf <- TRUE
 do.pdf <- !dev.interactive(orNone = TRUE)
 do.pdf
-if(do.pdf) { dev.off(); pdf("diff-bd0_tab.pdf") }
+if(do.pdf) pdf("diff-bd0_tab.pdf")
 
 plot(diff(bd0.n), type="b")
 c2 <- adjustcolor(2, 1/2)
