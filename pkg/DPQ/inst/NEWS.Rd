@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-9 (2024-01-09, svn r290)}{
+\section{Version 0.5-9 (2024-01-14, svn r292)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{dbinom_raw()} gets a new more accurate
@@ -15,7 +15,11 @@
       to compute \code{lgamma(n+1)} which was suboptimal for the very
       rarely used \eqn{n < 1/2} case.
 
-      More documentation and tests; experiments added in \file{../Misc/stirlerr-trms.R}.
+      More documentation and tests; experiments added in
+      \file{../Misc/stirlerr-trms.R}.
+
+      \item New functions \code{pow(x,y)} and \code{pow_di(x,y)} computing
+      \eqn{x^y} as in \R's C API \file{Rmathlib}.
     }
   }
   \subsection{BUG FIXES}{

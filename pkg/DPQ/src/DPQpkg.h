@@ -298,6 +298,25 @@ SEXP R_chebyshev_nt  (SEXP coef_, SEXP eta_);
 
 // 1. Functions from R's  C API  Rmath.h  -- not (yet) existing as base R functions
 
+SEXP dpq_pow   (SEXP x_, SEXP y_);
+SEXP dpq_pow_di(SEXP x_, SEXP y_);
+/*
+  double R_pow(double x, double y)
+  double R_pow_di(double, int)
+*/
+
+
+/* double R_pow(double X)
+     Computes 'log(1 + X) - X' (_log 1 plus x minus x_), accurately even
+     for small X, i.e., |x| << 1.
+*/
+
+SEXP R_log1pmx(SEXP x_);
+/* double log1pmx (double X)
+     Computes 'log(1 + X) - X' (_log 1 plus x minus x_), accurately even
+     for small X, i.e., |x| << 1.
+*/
+
 SEXP R_log1pmx(SEXP x_);
 /* double log1pmx (double X)
      Computes 'log(1 + X) - X' (_log 1 plus x minus x_), accurately even

@@ -31,6 +31,16 @@ log1pexpC <- function(x) .Call(C_R_log1pexp, x)
 log1pmxC  <- function(x) .Call(C_R_log1pmx,  x)
 lgamma1pC <- function(x) .Call(C_R_lgamma1p, x)
 
+pow <- function(x, y, try.int.y = TRUE) {
+    if(try.int.y && ((Iy <- is.integer(y)) ||
+                     all(abs(y) <= .Machine$integer.max)))
+        pow_di(x, if(Iy) y else as.integer(y))
+    else
+        .Call(C_dpq_pow, x, y)
+}
+
+pow_di <- function(x, y) .Call(C_dpq_pow_di, x, y)
+
 logcf <- function (x, i, d, eps, trace = FALSE)
     .Call(C_R_logcf, x, i, d, eps, trace)
 lgammacor <- function (x, nalgm = 5, xbig = 2^26.5)

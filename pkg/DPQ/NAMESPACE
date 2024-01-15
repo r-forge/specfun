@@ -54,7 +54,7 @@ export(
 
   , frexp, ldexp
   , modf
-
+  , pow, pow_di
   , .dntJKBch, .dntJKBch1
 
 
