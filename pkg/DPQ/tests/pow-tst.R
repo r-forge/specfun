@@ -49,7 +49,7 @@ stopifnot(re1. == re1) # ===> 256 bit suffice here
 summary(re1)
 summary(abs(re1))
 
-re1pow <- relEP(p1, k1, precBits = 256, FN = .pow)
+re1pow <- relEP(p1, k1, precBits = 256, FN = pow)
 re1pdi <- relEP(p1, k1, precBits = 256, FN = pow_di)
 stopifnot(identical(re1pow, re1pdi))# because pow() smartly uses pow_di() here
 ## however
@@ -59,8 +59,7 @@ summary(re1pdi) # negatively biased !
 ## -9.179e-14 -9.106e-14 -9.070e-14 -7.740e-14 -9.025e-14  0.000e+00
 plot(k1, re1pdi, type="l"); abline(v = min(k1[p1^k1 < 2^-1022]), lty=3)
 
-re1pow <- relEP(p1, k1, precBits = 256,
-                FN = function(x,y) pow(x,y, try.int.y = FALSE))
+re1pow <- relEP(p1, k1, precBits = 256, FN = .pow)
 summary(re1pow)
 ##       Min.    1st Qu.     Median       Mean    3rd Qu.       Max.  (Linux Fedora 38):
 ## -1.070e-16 -3.082e-17  0.000e+00  7.063e-19  3.507e-17  1.075e-16
@@ -68,16 +67,16 @@ summary(re1pow)
 ## Explore more about pow_di()'s "flaw"
 k1. <- c(2:64, as.integer(unique(round(lseq(66, 44980, length = 1000)))))
 re1.pdi <- relEP(p1, k1., precBits = 256, FN = pow_di)
-plot(k1., re1.pdi, type="l", log="x", 
+plot(k1., re1.pdi, type="l", log="x",
      main = "rel.error {wrt MPFR} of (63/64)^k -- using R_pow_di()")
 abline(h=0, lty=3)
 
-plot(k1., re1.pdi, type="o", cex=1/4, log="x", ylim = c(-50, 2)*2^-53, 
+plot(k1., re1.pdi, type="o", cex=1/4, log="x", ylim = c(-50, 2)*2^-53,
      main = "rel.error of (63/64)^k -- R_pow_di() -- zoomed in")
 abline(h=0, lty=3)
 
 
-all.equal(p1^k1., pow(p1, k1., FALSE), tolerance=0)
+all.equal(p1^k1., pow(p1, k1., FALSE), tolerance=0) # TRUE (everywhere?)
 
 ## to enhance  |rel.Err| plots;:
 drawEps.h <- function(p2 = -(53:51), lty=3, lwd=2, col=adjustcolor(2, 1/2)) {
@@ -112,7 +111,7 @@ tail(cbind(k, pk))
 plot(pk ~ k, type = "l", log="xy")
 re.pdi <- relEP(p1, k, precBits = 256, FN = pow_di)
 
-plot(k, abs(re.pdi), type="l", log="xy", xaxt="n", yaxt="n", ylim = c(1e-17, max(abs(re.pdi))), 
+plot(k, abs(re.pdi), type="l", log="xy", xaxt="n", yaxt="n", ylim = c(1e-17, max(abs(re.pdi))),
      xlab = quote(k), main = substitute(abs(rel.error) ~~ "of" ~~ P^k, list(P = format(p1))))
 lines(k, abs(relEP(p1, k, 256)), col = adjustcolor(2, 1/2))
 legend("top", paste("using", c("R_pow_di(x,k)", "x ^ k")), lwd = 1,
