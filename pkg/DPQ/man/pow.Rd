@@ -1,7 +1,8 @@
 \name{pow}
+\title{X to Power of Y -- R C API \code{R_pow()}}
 \alias{pow}
 \alias{pow_di}
-\title{X to Power of Y -- R C API \code{R_pow()}}
+\alias{.pow}
 \description{
   \code{pow(x,y)} calls \R C API \file{Rmathlib}'s \code{R_pow(x,y)}
   function to compute \code{x^y} \emph{or} when \code{try.int.y} is true
@@ -13,6 +14,7 @@
 \usage{
 pow   (x, y, try.int.y = TRUE)
 pow_di(x, y)
+.pow  (x, y)
 }
 \arguments{
   \item{x}{a numeric vector.}
@@ -21,10 +23,19 @@ pow_di(x, y)
     \code{y} is integer valued and fits into integer range, and in that
     case call \code{pow_di()} automatically.}
 }
-%% \details{
-%% }
+\details{
+  In January 2024, I found (e.g., in \file{tests/pow-tst.R}) % ../tests/pow-tst.R
+  that the accuracy of \code{pow_di()}, i.e., also the C function
+  \code{R_pow_di()} in \R's API is of much lower precision than \R's
+  \code{x^y} or (equivalently) \code{R_pow(x,y)} in \R's API, notably on
+  Linux and macOS, using glib etc, sometimes as soon as \eqn{y \ge 6}{y >= 6}
+  or so.
+
+  \code{.pow(x,y)} is identical to \code{pow(x,y, try.int.y = FALSE)}
+}
 \value{
-  a numeric vector like \code{x} or \code{y}.
+  a numeric vector like \code{x} or \code{y} which are recycled to common
+  length, of course.
 }
 %% \references{
 

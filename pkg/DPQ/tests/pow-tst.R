@@ -3,6 +3,7 @@ require("Rmpfr")
 
 (doExtras <- DPQ:::doExtras())
 (noLdbl <- (.Machine$sizeof.longdouble <= 8)) ## TRUE when --disable-long-double
+options(width = 100)
 
 k1 <- 44300 + (1:800)
 p1 <- (63/64)
@@ -29,13 +30,18 @@ dput(p3^ k3, control = "hex")
 
 require(sfsmisc) # for relErrV()
 ## relative error of  x ^ k  computation - comparing with truth = <x_mpfr_{precBits])
-relEP <- function(x, k, precBits) { # see below about  precBits needed
-    stopifnot(is.numeric(x))
-    asNumeric(relErrV(mpfr(x, precBits)^k, x^k))
+relEP <- function(x, k, precBits, # see below about  precBits needed
+                  mp = mpfr(x, precBits)^k,
+                  FN = function(x,k) x^k) {
+    stopifnot(is.numeric(x), inherits(mp, "mpfr"))
+    asNumeric(relErrV(mp, FN(x,k)))
 }
 
-stopifnot(.Machine$double.xmin == 2^-1022) # will use  2^-1022
 osV <- abbreviate(sub("\\(.*", "", osVersion), 10)
+if(!dev.interactive(TRUE)) pdf(paste0("pow-tst_", osV, ".pdf"),
+                               width = 9, height=5)
+
+stopifnot(.Machine$double.xmin == 2^-1022) # will use  2^-1022
 
 re1. <- relEP(p1, k1, precBits = 2^12) # high precision
 re1  <- relEP(p1, k1, precBits = 256)
@@ -43,14 +49,98 @@ stopifnot(re1. == re1) # ===> 256 bit suffice here
 summary(re1)
 summary(abs(re1))
 
-if(!dev.interactive(TRUE)) pdf(paste0("pow-ex_", osV, ".pdf"),
-                               width = 9, height=5)
+re1pow <- relEP(p1, k1, precBits = 256, FN = .pow)
+re1pdi <- relEP(p1, k1, precBits = 256, FN = pow_di)
+stopifnot(identical(re1pow, re1pdi))# because pow() smartly uses pow_di() here
+## however
+all.equal(re1, re1pdi, tolerance = 0) # 2201.618 !!
+summary(re1pdi) # negatively biased !
+##       Min.    1st Qu.     Median       Mean    3rd Qu.       Max.
+## -9.179e-14 -9.106e-14 -9.070e-14 -7.740e-14 -9.025e-14  0.000e+00
+plot(k1, re1pdi, type="l"); abline(v = min(k1[p1^k1 < 2^-1022]), lty=3)
+
+re1pow <- relEP(p1, k1, precBits = 256,
+                FN = function(x,y) pow(x,y, try.int.y = FALSE))
+summary(re1pow)
+##       Min.    1st Qu.     Median       Mean    3rd Qu.       Max.  (Linux Fedora 38):
+## -1.070e-16 -3.082e-17  0.000e+00  7.063e-19  3.507e-17  1.075e-16
+
+## Explore more about pow_di()'s "flaw"
+k1. <- c(2:64, as.integer(unique(round(lseq(66, 44980, length = 1000)))))
+re1.pdi <- relEP(p1, k1., precBits = 256, FN = pow_di)
+plot(k1., re1.pdi, type="l", log="x", 
+     main = "rel.error {wrt MPFR} of (63/64)^k -- using R_pow_di()")
+abline(h=0, lty=3)
+
+plot(k1., re1.pdi, type="o", cex=1/4, log="x", ylim = c(-50, 2)*2^-53, 
+     main = "rel.error of (63/64)^k -- R_pow_di() -- zoomed in")
+abline(h=0, lty=3)
+
+
+all.equal(p1^k1., pow(p1, k1., FALSE), tolerance=0)
+
+## to enhance  |rel.Err| plots;:
+drawEps.h <- function(p2 = -(53:51), lty=3, lwd=2, col=adjustcolor(2, 1/2)) {
+    abline(h = 2^p2, lty=lty, lwd=lwd, col=col)
+    axis(4, las=2, line=-1, at=2^p2,
+         labels = expression(2^-53, 2^-52, 2^-51), ## FIXME - construct !
+         col.axis=col, col=NA, col.ticks=NA)
+}
+
+## comparison:  R's  x^y i.e. R_pow() is *much* better -- starting already at ca k >= 50 (for this x=p1):
+plot(k1., abs(re1.pdi), type="l", log="xy", yaxt="n", ylim = c(1e-17, max(abs(re1.pdi))),
+     xlab = quote(k), main = "|rel.error| {wrt MPFR} of"~ (frac(63,64))^k)
+lines(k1., abs(relEP(p1, k1., 256)), col = adjustcolor(2, 1/2))
+legend("top", paste("using", c("R_pow_di(x,k)", "x ^ k")), lwd = 1,
+       col = c(palette()[[1]], adjustcolor(2, 1/2)), bty="n")
+eaxis(2); drawEps.h(); abline(h = 8e-18, col=adjustcolor(4, 1/2), lwd=2)
+rug(k1.[k1. <= 50], col="gray30")
+
 plot(k1, re1, type="l", main = "rel.error {wrt MPFR} of  (63/64)^k")
-mtext(sfsmisc::shortRversion(spaces=FALSE))
+mtext(sfsmisc::shortRversion(spaces=FALSE), adj=1)
 abline(v = min(k1[p1^k1 < 2^-1022]), lty=3)
 ll <- c(1,1,2,1,1)
 abline(h=(-2:2)*2^-53, lty=3-ll, lwd=ll, col=adjustcolor(ll, 1/2))
 ## looks perfect (in Linux; *not* windows
+
+## ditto (pow_di exploration) for an even more critical p
+p1 <- 0.999 # not exactly representable
+print(p1, digits=19)
+k <- c(2:50, as.integer(lseq(55, 700000, length=1000)))
+pk <- p1^k
+tail(cbind(k, pk))
+plot(pk ~ k, type = "l", log="xy")
+re.pdi <- relEP(p1, k, precBits = 256, FN = pow_di)
+
+plot(k, abs(re.pdi), type="l", log="xy", xaxt="n", yaxt="n", ylim = c(1e-17, max(abs(re.pdi))), 
+     xlab = quote(k), main = substitute(abs(rel.error) ~~ "of" ~~ P^k, list(P = format(p1))))
+lines(k, abs(relEP(p1, k, 256)), col = adjustcolor(2, 1/2))
+legend("top", paste("using", c("R_pow_di(x,k)", "x ^ k")), lwd = 1,
+       col = c(palette()[[1]], adjustcolor(2, 1/2)), bty="n")
+eaxis(1, sub=3); eaxis(2); drawEps.h(); abline(h = 8e-18, col=adjustcolor(4, 1/2), lwd=2)
+rug(k[k <= 50], col="gray30")
+axis(1, at=2:6)
+mtext(sfsmisc::shortRversion(spaces=FALSE), adj=1)
+
+## finaly: pow_di exploration an "easy" p:
+p1 <- 0.001 # not exactly representable
+k <- 2:105
+pk <- p1^k
+tail(cbind(k, pk)) # subnormals ..
+plot(pk ~ k, type = "l", log="xy")
+re.pdi <- relEP(p1, k, precBits = 256, FN = pow_di)
+
+plot(k, abs(re.pdi), type="l", log="xy", xaxt="n", yaxt="n", ylim = c(1e-17, max(abs(re.pdi))),
+     xlab = quote(k), main = substitute(abs(rel.error) ~~ "of" ~~ P^k, list(P = format(p1))))
+lines(k, abs(relEP(p1, k, 256)), col = adjustcolor(2, 1/2))
+legend("top", paste("using", c("R_pow_di(x,k)", "x ^ k")), lwd = 1,
+       col = c(palette()[[1]], adjustcolor(2, 1/2)), bty="n")
+eaxis(1, sub=3); eaxis(2); drawEps.h(); abline(h = 8e-18, col=adjustcolor(4, 1/2), lwd=2)
+rug(k, col="gray30")
+axis(1, at=2:6)
+mtext(sfsmisc::shortRversion(spaces=FALSE), adj=1)
+
+
 
 re2  <- relEP(p2, k2, 2^ 9)
 re2. <- relEP(p2, k2, 2^14)
@@ -75,16 +165,15 @@ if(any((px <- p3^k3) < 2^-1022)) abline(v = min(k3[px < 2^-1022]), lty=3)
 abline(h=(-2:2)*2^-53, lty=3-ll, lwd=ll, col=adjustcolor(ll, 1/2))
 
 ##===> all these are perfect on Linux Fedora 36 & 38;
-## but increasingly (p1, p2, p3)  worse on Windows
+## but increasingly (p1 --> p2 --> p3)  worse on Windows
 
 ## even more extreme
 e2 <- -(10:21)
  ps <- 1 - 2 ^ e2
 (pM <- 1 - mpfr(2, 256) ^ e2) # 12 'mpfr' numbers of precision  256   bits
-## [1]           0.9990234375          0.99951171875          0.999755859375         0.9998779296875
-## [5]       0.99993896484375      0.999969482421875      0.9999847412109375     0.99999237060546875
-## [9]   0.999996185302734375  0.9999980926513671875  0.99999904632568359375 0.999999523162841796875
+##  0.9990234375  0.99951171875 ... 0.999999523162841796875
 stopifnot( (1 - ps) -1 == -ps, ps == pM) ## <==> all ps are exactly representable 1 - 2^{-m}
+
 print(pM, scientific = FALSE, drop0trailing = TRUE)
 
 
@@ -97,6 +186,8 @@ print(pM, scientific = FALSE, drop0trailing = TRUE)
 
 cbind(psN <- setNames(seq_along(ps), paste0("1-2^",e2)))
 reL  <- lapply(psN, function(i) relEP(ps[i], k0[i] + 0:999, precBits = 2^8))
+## can use names(reL) to reconstruct ps exactly:
+stopifnot(identical(ps, vapply(lapply(names(reL), str2lang), eval, 0.9)))
 if(doExtras) { ## much higher precision -- just to show it's *not* needed
     print(system.time(
         reLL <- lapply(psN, function(i) relEP(ps[i], k0[i] + 0:999, precBits = 2^ 14))
@@ -121,11 +212,51 @@ t(sapply(absreL, summary)) # very nice on Linux:
 ## 1-2^-20 5.398257e-20 2.190955e-17 4.092451e-17 4.095826e-17 6.083059e-17 8.062014e-17
 ## 1-2^-21 4.708387e-20 2.429069e-17 4.717160e-17 4.758539e-17 7.079720e-17 9.742768e-17
 
-m.absrel <- data.matrix(as.data.frame(absreL, optional=TRUE))
-matplot(0:999, m.absrel, type="l", log="y", ylim = c(1e-17, max(m.absrel)))
-abline(h = c(1,2,4)*2^-53, lty=2, lwd=2, col=adjustcolor(2, 1/2))
+d.absre <- as.data.frame(absreL, optional=TRUE)
+stopifnot(is.numeric(m.absrel <- as.matrix(d.absre)))
+if(doExtras) { # not particularly interesting ..
+    matplot(0:999, m.absrel, type="l", log="y", ylim = c(1e-17, max(m.absrel)))
+    abline(h = c(1,2,4)*2^-53, lty=2, lwd=2, col=adjustcolor(2, 1/2))
 
-if(.Platform$OS.type == "unix" && !noLdbl) {
-    stopifnot(m.absrel < 2.23e-16) # see max(.) == 1.085e-16 < 2^-53 = 1.11022e-16
+    ## smoothed rel.errors
+    s.absre <- d.absre
+    s.absre[] <- lapply(absreL, function(y) lowess(y, f = 1/20)$y)
+    matlines(0:999, s.absre, lwd=3, col = adjustcolor(1:12, 1/2))
+}
+
+## different "log-scale"  k sets for different ps / ks:
+k2p   <- lapply(setNames(ks, names(psN)), \(k)
+                2^seq(7, floor(log2(k)), by = 1/8))
+reL2  <- lapply(psN, function(i) relEP(ps[i], k2p[[i]], precBits = 2^8))
+absre2 <- lapply(reL2, abs)
+
+K <- length(ks) # 12 here
+
+plot(k2p[[K]], reL2[[K]], type = "l", log = "x", col=K,
+     xlab = quote(k), ylab = "relErr{ p ^ k }",
+     ylim = range((-1:1)*2^-53, unlist(reL2)), xaxt="n"); eaxis(1)
+for(i in rev(seq_along(ks))[-1L])
+    lines(k2p[[i]], reL2[[i]], col=i)
+abline(h = (-2:2)*2^-53, lty=c(3,3,2,3,3), lwd=c(1,1,2,1,1), col=adjustcolor(c(1,1,2,1,1), 1/2))
+
+plot(k2p[[K]], absre2[[K]], type = "l", log = "xy", col=K,
+     xlab = quote(k), ylab = "|relE|", main = expression(abs(rel.Err( p ^ k ))),
+     ylim = range(2^-53, pmax(8e-18, unlist(absre2))), xaxt="n", yaxt="n"); eaxis(1); eaxis(2)
+(pExpr <- as.call(c(quote(list), lapply(names(k2p), str2lang))))
+mtext(substitute(p == group("{", EE, "}"), list(EE = pExpr)), cex= 2/3)
+for(i in rev(seq_along(ks))[-1L])
+    lines(k2p[[i]], absre2[[i]], col=i)
+abline(h = c(1,2,4)*2^-53, lty=3, lwd=2, col=adjustcolor(2, 1/2))
+axis(4, las=2, line=-1, at=c(1,2,4)*2^-53, labels = expression(2^-53, 2^-52, 2^-51),
+     col.axis=adjustcolor(2, 1/2), col=NA, col.ticks=NA)
+## looks perfect (in Linux; *not* windows
+
+t(sapply(absre2, summary))
+summary(are2 <- unlist(absre2))
+
+
+if(.Platform$OS.type == "unix") { # && !noLdbl
+    stopifnot(m.absrel < 2.23e-16, # see max(.) == 1.085e-16 < 2^-53 = 1.11022e-16
+              are2     < 2.23e-16) # see max(.) == 1.037e-16
 }
 

@@ -38,7 +38,8 @@ pow <- function(x, y, try.int.y = TRUE) {
     else
         .Call(C_dpq_pow, x, y)
 }
-
+## for low-level comparisons (e.g. speed):
+.pow   <- function(x, y) .Call(C_dpq_pow, x, y)
 pow_di <- function(x, y) .Call(C_dpq_pow_di, x, y)
 
 logcf <- function (x, i, d, eps, trace = FALSE)
