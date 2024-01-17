@@ -298,7 +298,7 @@ palette("default")# revert
 ## looks perfect (in Linux; *not* Windows)
 
 t(sapply(absred, summary))
-quantile(ared)
+c(summary(ared <- unlist(absred)))
 
 if(.Platform$OS.type == "unix") { # && !noLdbl
     stopifnot(ared < 2.23e-16) # see max(.) == 1.033987e-16 < 2^-53
