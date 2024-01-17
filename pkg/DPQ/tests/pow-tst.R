@@ -9,8 +9,11 @@ k1 <- 44300 + (1:800)
 p1 <- (63/64)
 x <- p1; stopifnot(  (1-x)-1 == -x , 1-x == 2^-6 )
 px <- p1 ^ k1
-dput(         px,, "hex")
-dput(2^1000 * px,, "hex")
+isNorm <- px >= 2^-1022 # is "normal", i.e., not subnormal
+k1 <- k1[isNorm]
+px <- px[isNorm]
+dput(px,, "digits17")
+dput(px,, "hex")
 
 
 x <- p2 <- 1023/1024
@@ -67,14 +70,13 @@ summary(re1pow)
 ## Explore more about pow_di()'s "flaw"
 k1. <- c(2:64, as.integer(unique(round(lseq(66, 44980, length = 1000)))))
 re1.pdi <- relEP(p1, k1., precBits = 256, FN = pow_di)
-plot(k1., re1.pdi, type="l", log="x",
+plot(k1., re1.pdi, type="l", log="x", xaxt="n",
      main = "rel.error {wrt MPFR} of (63/64)^k -- using R_pow_di()")
-abline(h=0, lty=3)
+abline(h=0, lty=3); eaxis(1, sub10=3)
 
-plot(k1., re1.pdi, type="o", cex=1/4, log="x", ylim = c(-50, 2)*2^-53,
+plot(k1., re1.pdi, type="o", cex=1/4, log="x", ylim = c(-50, 2)*2^-53, xaxt="n",
      main = "rel.error of (63/64)^k -- R_pow_di() -- zoomed in")
-abline(h=0, lty=3)
-
+abline(h=(-2:2)*2^-53, lty=c(3,3,1), col=adjustcolor(1, 1/2)); eaxis(1, sub10=3)
 
 all.equal(p1^k1., pow(p1, k1., FALSE), tolerance=0) # TRUE (everywhere?)
 
@@ -225,7 +227,8 @@ if(doExtras) { # not particularly interesting ..
 
 ## different "log-scale"  k sets for different ps / ks:
 k2p   <- lapply(setNames(ks, names(psN)), \(k)
-                2^seq(7, floor(log2(k)), by = 1/8))
+                as.integer(2^seq(7, floor(log2(k)), by = 1/8)))
+stopifnot( sapply(k2p, is.integer) ) # -> so pow_di() / __powi() .. could be used
 reL2  <- lapply(psN, function(i) relEP(ps[i], k2p[[i]], precBits = 2^8))
 absre2 <- lapply(reL2, abs)
 
@@ -253,9 +256,51 @@ axis(4, las=2, line=-1, at=c(1,2,4)*2^-53, labels = expression(2^-53, 2^-52, 2^-
 t(sapply(absre2, summary))
 summary(are2 <- unlist(absre2))
 
-
 if(.Platform$OS.type == "unix") { # && !noLdbl
     stopifnot(m.absrel < 2.23e-16, # see max(.) == 1.085e-16 < 2^-53 = 1.11022e-16
-              are2     < 2.23e-16) # see max(.) == 1.037e-16
+              are2     < 2.23e-16) # see max(.) == 1.032e-16
+}
+
+###---- x ^ y -- with *non-integer* y ---------------
+
+## keep x = ps  { above (1-2^-k) }
+
+yp <- lapply(setNames(ks, names(psN)), \(k)
+             2^seq(7, floor(log2(k)), by = 1/8) - 1/4) # -1/4: sure *not* be int
+
+reLd  <- lapply(psN, function(i) relEP(ps[i], yp[[i]], precBits = 2^8))
+absred <- lapply(reLd, abs)
+
+K <- length(ks) # 12 here
+
+plot(yp[[K]], reLd[[K]], type = "l", log = "x", col=K,
+     xlab = quote(k), ylab = "relErr{ p ^ k }",
+     ylim = range((-1:1)*2^-53, unlist(reLd)), xaxt="n"); eaxis(1)
+for(i in rev(seq_along(ks))[-1L])
+    lines(yp[[i]], reLd[[i]], col=i)
+abline(h = (-2:2)*2^-53, lty=c(3,3,2,3,3), lwd=c(1,1,2,1,1), col=adjustcolor(c(1,1,2,1,1), 1/2))
+
+palROBG <- colorRampPalette(c("red", "darkorange2", "blue", "seagreen"), space = "Lab")
+palette(adjustcolor(palROBG(12), 3/4))
+## pmax(.) for 'y': to "show" the '0' also
+plot(yp[[K]], pmax(1e-20, absred[[K]]), type = "l", log = "xy", col=K,
+     xlab = quote(y), ylab = "|relE|", main = quote(list(abs(rel.Err( x ^ y )), y~"*not* integer")),
+     ylim = range(2^-53, pmax(8e-18, unlist(absred))), xaxt="n"); eaxis(1, sub10=3)
+mtext(substitute(x == group("{", EE, "}"), list(EE = pExpr)), cex= 2/3)
+for(i in rev(seq_along(ks))[-1L])
+    lines(yp[[i]], absred[[i]], col=i)
+abline(h = c(1,2,4)*2^-53, lty=3, lwd=2, col=adjustcolor(2, 1/2))
+axis(4, las=2, line=-1, at=c(1,2,4)*2^-53, labels = expression(2^-53, 2^-52, 2^-51),
+     col.axis=adjustcolor(2, 1/2), col=NA, col.ticks=NA)
+legend("bottomright", legend=do.call(expression, as.list(pExpr[-1])),
+       col=palette(), lwd=3, cex=2/3)
+palette("default")# revert
+## looks perfect (in Linux; *not* Windows)
+
+t(sapply(absred, summary))
+quantile(ared)
+
+if(.Platform$OS.type == "unix") { # && !noLdbl
+    stopifnot(ared < 2.23e-16) # see max(.) == 1.033987e-16 < 2^-53
 }
 
