@@ -87,6 +87,10 @@ drawEps.h <- function(p2 = -(53:51), lty=3, lwd=2, col=adjustcolor(2, 1/2)) {
          labels = expression(2^-53, 2^-52, 2^-51), ## FIXME - construct !
          col.axis=col, col=NA, col.ticks=NA)
 }
+mtextVersion <- function(adj = 1, col = 1) {
+    mtext(osVersion, line=1, col=col, adj=adj)
+    mtext(sfsmisc::shortRversion(spaces=FALSE), col=col, adj=adj)
+}
 
 ## comparison:  R's  x^y i.e. R_pow() is *much* better -- starting already at ca k >= 50 (for this x=p1):
 plot(k1., abs(re1.pdi), type="l", log="xy", yaxt="n", ylim = c(1e-17, max(abs(re1.pdi))),
@@ -98,7 +102,7 @@ eaxis(2); drawEps.h(); abline(h = 8e-18, col=adjustcolor(4, 1/2), lwd=2)
 rug(k1.[k1. <= 50], col="gray30")
 
 plot(k1, re1, type="l", main = "rel.error {wrt MPFR} of  (63/64)^k")
-mtext(sfsmisc::shortRversion(spaces=FALSE), adj=1)
+mtextVersion()
 abline(v = min(k1[p1^k1 < 2^-1022]), lty=3)
 ll <- c(1,1,2,1,1)
 abline(h=(-2:2)*2^-53, lty=3-ll, lwd=ll, col=adjustcolor(ll, 1/2))
@@ -121,7 +125,7 @@ legend("top", paste("using", c("R_pow_di(x,k)", "x ^ k")), lwd = 1,
 eaxis(1, sub=3); eaxis(2); drawEps.h(); abline(h = 8e-18, col=adjustcolor(4, 1/2), lwd=2)
 rug(k[k <= 50], col="gray30")
 axis(1, at=2:6)
-mtext(sfsmisc::shortRversion(spaces=FALSE), adj=1)
+mtextVersion()
 
 ## finaly: pow_di exploration an "easy" p:
 p1 <- 0.001 # not exactly representable
@@ -139,8 +143,7 @@ legend("top", paste("using", c("R_pow_di(x,k)", "x ^ k")), lwd = 1,
 eaxis(1, sub=3); eaxis(2); drawEps.h(); abline(h = 8e-18, col=adjustcolor(4, 1/2), lwd=2)
 rug(k, col="gray30")
 axis(1, at=2:6)
-mtext(sfsmisc::shortRversion(spaces=FALSE), adj=1)
-
+mtextVersion()
 
 
 re2  <- relEP(p2, k2, 2^ 9)
@@ -148,8 +151,8 @@ re2. <- relEP(p2, k2, 2^14)
 stopifnot(re2. == re2)
 summary(re2)
 summary(abs(re2))
-str(rat2 <- c(MASS:::.rat(p2) $ rat))
 
+str(rat2 <- c(MASS:::.rat(p2) $ rat))
 plot(k2, re2, type="l", xlab = quote(k), main = substitute("rel.Err of " ~ (N/Z)^k,
                                                            list(N=rat2[1], Z=rat2[2])),
      ylim = range(0, re2))
@@ -218,7 +221,7 @@ stopifnot(is.numeric(m.absrel <- as.matrix(d.absre)))
 if(doExtras) { # not particularly interesting ..
     matplot(0:999, m.absrel, type="l", log="y", ylim = c(1e-17, max(m.absrel)))
     abline(h = c(1,2,4)*2^-53, lty=2, lwd=2, col=adjustcolor(2, 1/2))
-
+                                        #
     ## smoothed rel.errors
     s.absre <- d.absre
     s.absre[] <- lapply(absreL, function(y) lowess(y, f = 1/20)$y)
