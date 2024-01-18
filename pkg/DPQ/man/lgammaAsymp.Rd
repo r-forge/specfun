@@ -20,33 +20,16 @@ lgammaAsymp(x, n)
   numeric vector with the same attributes (\code{\link{length}()} etc) as
   \code{x}, containing approximate \code{\link{lgamma}(x)} values.
 }
-%% \references{
-
-%% }
 \author{Martin Maechler}
 \seealso{
- \code{\link{lgamma}}.
+ \code{\link{lgamma}}; the \eqn{n}-th Bernoulli number
+ \code{\link{Bern}(n)}, and also \emph{exact} fractions Bernoulli numbers
+ \code{\link[gmp]{BernoulliQ}()} from package \CRANpkg{gmp}.
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
+## The function is currently
+lgammaAsymp
 
-## The function is currently defined as
-function (x, n)
-{
-    s <- (x - 1/2) * log(x) - x + log(2 * pi)/2
-    if (n >= 1) {
-        Ix2 <- 1/(x * x)
-        k <- 1:n
-        Bern(2 * n)
-        Bf <- rev(.bernoulliEnv$.Bern[k]/(2 * k * (2 * k - 1)))
-        bsum <- Bf[1]
-        for (i in k[-1]) bsum <- Bf[i] + bsum * Ix2
-        s + bsum/x
-    }
-    else s
-  }
 }
 \keyword{distribution}
 \keyword{math}

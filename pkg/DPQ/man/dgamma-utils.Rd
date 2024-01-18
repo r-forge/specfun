@@ -63,7 +63,7 @@ ebd0C(x, M, verbose = getOption("verbose"))
 stirlerr(n, scheme = c("R3", "R4.x"),
          cutoffs = switch(scheme
                         , R3   = c(15, 35, 80, 500)
-                        , R4.x = c(5.4, 7.5, 8.5, 10.625, 12.125, 20, 26, 60, 200, 3300)
+                        , R4.4 = c(5.4, 7.5, 8.5, 10.625, 12.125, 20, 26, 60, 200, 3300)
                           ),
          use.halves = missing(cutoffs),
          lgamma1p = lgamma1pC,

@@ -16,6 +16,7 @@
 ### TODO:  E.pnt = E [ . ] = delta * sqrt(nu/2)*gamma(.5*(nu-1))/gamma(.5*nu)
 ###        -----  is very similar to  b_chi (and can use same asymptotic)
 
+## was  b.nu <-
 b_chi <- function(nu, one.minus = FALSE, c1 = 341, c2 = 1000)
 {
     ## Purpose: Compute  E[ chi_nu ] / sqrt(nu)    --- useful for non-central t
@@ -48,6 +49,7 @@ b_chi <- function(nu, one.minus = FALSE, c1 = 341, c2 = 1000)
     r
 }
 
+## was  b.nu.asymp <-
 b_chiAsymp <- function(nu, order = 2, one.minus = FALSE)
 {
   ## Purpose: Compute  E[ chi_nu ] / sqrt(nu)  --- for "LARGE" nu
@@ -123,7 +125,7 @@ lb_chiAsymp <- function(nu, order)
 }
 
 
-## was called 'pt.appr1'
+## was  'pt.appr1'
 pntLrg <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE) {
     ## Approximate pt()  [non-central t] --- using the "extreme case" formula
     ##  from C's pnt.c  and  pntR() below:
@@ -186,6 +188,7 @@ pntJW39 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE)
         lower.tail = lower.tail, log.p = log.p)
 }
 
+## was  c.nu <-
 c_dt <- function(nu) {
     ## Purpose: The constant in  dt(t, nu, log=TRUE) =
     ##         = \log f_{\nu}(t) = c_{\nu} - \frac{\nu+1}{2}\log(1 + x^2/\nu)
@@ -207,6 +210,7 @@ c_dt <- function(nu) {
     r
 }
 
+## was  c.nu.asymp <-
 c_dtAsymp <- function(nu)
 {
     ## Purpose: Asymptotic of c_dt -- via Abramowitz & Stegun, 6.1.47 (p.257)
@@ -225,6 +229,7 @@ c_dtAsymp <- function(nu)
     -log(2*pi)/2 - 1/(4*nu)
 }
 
+## was  c.pt
 c_pt <- function(nu)
 {
   ## Purpose: the asymptotic constant in log F_nu(-x) ~= const(nu) - nu * log(x)
@@ -664,6 +669,7 @@ pntChShP94 <- Vectorize(pntChShP94.1, c("t", "df", "ncp"))
 
 if(FALSE) {## Just for historical reference :
            ## =============================
+## was  dntR.1 <-
 dntRwrong1 <- function(x, df, ncp, log = FALSE, M = 1000, check=FALSE, tol.check = 1e-7)
 {
     ## R's source ~/R/D/r-devel/R/src/nmath/dnt.c  claims -- from 2003 till 2014 -- but *WRONGLY*
@@ -698,6 +704,7 @@ dntRwrong <- Vectorize(dntRwrong1, c("x", "df", "ncp"))
 ###  (31.15) [p.516] and (31.15'), p.519 -- and they  contradict by a factor  (1 / j!)
 ###  in the sum
 ### ==> via the following: "prove" that (31.15) is correct, and  (31.15') is missing the "j!"
+## was *old*  'dnt.1'
 .dntJKBch1 <- function(x, df, ncp, log = FALSE, M = 1000, check=FALSE, tol.check = 1e-7)
 {
     stopifnot(length(x) == 1, length(df) == 1, length(ncp) == 1, length(M) == 1,
@@ -734,6 +741,7 @@ logr <- function(x, a) { ## == log(x / (x + a)) -- but numerically smart; x >= 0
 }
 
 ## New "optimized" and  "mpfr-aware" and *vectorized* (!) version:
+## was 'dnt.1'
 dntJKBf <- function(x, df, ncp, log = FALSE, M = 1000)
 {
     stopifnot(length(M) == 1, df >= 0, is.numeric(M), M >= 1, M == round(M))
@@ -832,6 +840,7 @@ dtWV <- function(x, df, ncp=0, log=FALSE) {
 
 ###-- qnt() {C} i.e. qt(.., ncp=*) did not exist yet at the time I wrote this ...
 ##    ---
+## was  qt.appr <-
 qtAppr <- function(p, df, ncp, lower.tail = TRUE, log.p = FALSE,
                     method = c("a","b","c"))
 {

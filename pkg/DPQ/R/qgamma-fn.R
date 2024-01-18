@@ -313,10 +313,12 @@ qgamma.R <- function(p, alpha, scale = 1, lower.tail = TRUE, log.p = FALSE,
 }## qgamma.R()
 
 ## R interface to C level gamma() variants   <==> ../src/gamma-variants.c
-gammaVer <- function(x, version, traceLev = 0L) {
+gammaVer <- function(x, version, stirlerrV = c("R<=3", "R4..1", "R4.4_0"),
+                     traceLev = 0L) {     ##    --    ----    ----  <--> ../src/DPQpkg.h stirlerr_version_t
     ## TODO: iver <- pmatch(version, c("...", "..",)) or via match.arg()
     stopifnot(is.integer(iver <- as.integer(version)), 1 <= iver, iver <= 5,
               is.integer(traceLev <- as.integer(traceLev)), 0 <= traceLev)
-    ## here version needs to be integer: currently in 1..5
-    .Call(C_R_gamma_ver, x, iver, traceLev)
+    iv.stirlerr <- match(match.arg(stirlerrV), eval(formals()$stirlerrV)) # 1, 2, ..
+    ## both iv.stirlerr and  iver = version needs to be integer: currently in 1..5
+    .Call(C_R_gamma_ver, x, iver, traceLev, iv.stirlerr)
 }

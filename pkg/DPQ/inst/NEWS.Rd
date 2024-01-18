@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-9 (2024-01-17, svn r297)}{
+\section{Version 0.5-9 (2024-01-18, svn r298)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{dbinom_raw()} gets a new more accurate
@@ -25,6 +25,12 @@
   \subsection{BUG FIXES}{
     \itemize{
       \item \emph{fix} format fixes for when 'long != long long'.
+    }
+  }
+  \subsection{Misc}{
+    \itemize{
+      \item new \file{tests/dt-ex.R} exploring \code{dt()} accuracy issues,
+      mostly historical, but newly for \code{df=}\eqn{\nu \ll 1}{nu << 1}.
     }
   }
 }

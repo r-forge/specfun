@@ -42,7 +42,10 @@
  *
  * see also lgammacor() in ./lgammacor.c  which computes almost the same!
  *
- * NB: stirlerr(n/2) is called from dt() *and* gamma(n/2) when n is integer and n/2 <= 50
+ * NB: stirlerr(n/2) & stirlerr((n+1)/2) are called from dt(x,n) for all real n > 0 ;
+ *     stirlerr(n/2) from gamma(n/2) when n is integer and 10 < |n|/2 <= 50
+ *     stirlerr(x)   from dpois_raw(x, lam) for any  x > 0; --> ./dpois.c [dpois_raw() called by many]
+ *     stirlerr(n), stirlerr(x), stirlerr(n-x) from binom_raw(x, n, ..) for all possible 0 < x < n
  */
 
 /* NB 2 --- in DPQ's R code, we have much improved and versatile stirlerr() ==> ../R/dgamma.R
@@ -51,14 +54,20 @@ _________ CURRENTLY *NOT* directly called from R, only used in gammafn_ver() ==>
 
 _________ TODO:  add  'int version'  or 'order' or   double* cutoffs ________________
  */
-double dpq_stirlerr(double n)
+double dpq_stirlerr(double n, stirlerr_version_t version)
 {
-
 #define S0 0.083333333333333333333       /* 1/12 */
 #define S1 0.00277777777777777777778     /* 1/360 */
 #define S2 0.00079365079365079365079365  /* 1/1260 */
 #define S3 0.000595238095238095238095238 /* 1/1680 */
 #define S4 0.0008417508417508417508417508/* 1/1188 */
+/* From S5 on: ---> ../Misc/stirlerr-trms.R  ==> gmp::BernoulliQ() etc */
+#define  S5   0.0019175269175269175269175262 // 691/360360
+#define  S6   0.0064102564102564102564102561 // 1/156
+#define  S7   0.029550653594771241830065352  // 3617/122400
+#define  S8   0.17964437236883057316493850   // 43867/244188
+#define  S9   1.3924322169059011164274315    // 174611/125400
+#define S10  13.402864044168391994478957     // 77683/5796
 
 /*
   exact values for 0, 0.5, 1.0, 1.5, ..., 14.5, 15.0.
@@ -96,18 +105,60 @@ double dpq_stirlerr(double n)
 	0.005746216513010115682023589, /* 14.5 */
 	0.005554733551962801371038690  /* 15.0 */
     };
+
+#define nC 10
+    const static double cutoffs[nC] = {
+	5.4,
+	7.5,
+	8.5,
+	10.625,
+	12.125,
+	20,
+	26,  //  15
+	60,  //  35
+	200, //  80
+	3300 // 500
+    };
+
     double nn;
 
+  switch(version) { // stirlerr_version_t  <--> ./DPQpkg.h
+  case R_3:   // "R<-3"
+  case R_3_1: // "R4..1"
     if (n <= 15.0) {
 	nn = n + n;
-	if (nn == (int)nn) return(sferr_halves[(int)nn]);
-	return(lgammafn(n + 1.) - (n + 0.5)*log(n) + n - M_LN_SQRT_2PI);
+	if (nn == (int)nn) return sferr_halves[(int)nn];
+	return ((version == R_3) ? lgamma(n + 1.) : lgamma1p(n))
+	    - (n + 0.5)*log(n) + n - M_LN_SQRT_2PI;
     }
-
     nn = n*n;
     if (n>500) return((S0-S1/nn)/n);
     if (n> 80) return((S0-(S1-S2/nn)/nn)/n);
     if (n> 35) return((S0-(S1-(S2-S3/nn)/nn)/nn)/n);
     /* 15 < n <= 35 : */
     return((S0-(S1-(S2-(S3-S4/nn)/nn)/nn)/nn)/n);
+
+  case R_4_4: // "R4.4_0"  --- see R code in ../R/dgamma.R  <<<<<<
+      nn = n + n;
+      if (n <= 15. && (nn == (int)nn)) return sferr_halves[(int)nn];
+      // else:
+      if (n <= cutoffs[0])
+	  return lgamma1p(n) - (n + 0.5)*log(n) + n - M_LN_SQRT_2PI;
+      // else n > cutoffs[0] == 5.4
+      nn = n*n;
+      int k = nC;
+      if (n > cutoffs[--k]) return (S0 -S1/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1 -S2/nn)/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1-(S2 -S3/nn)/nn)/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3 -S4/nn)/nn)/nn)/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4 -S5/nn)/nn)/nn)/nn)/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5 -S6/nn)/nn)/nn)/nn)/nn)/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6 -S7/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7 -S8/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8 -S9/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
+      /* else if (n > cutoffs[--k])*/
+			    return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-S10/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
+
+  default: error(_("switch() logic programming errors in '%s()'"), "dpq_stirlerr");
+  } // switch()
 }

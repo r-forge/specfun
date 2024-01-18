@@ -741,13 +741,17 @@ stirlerr_simpl <- function(n, minPrec = 128L) {
     lgamma(n + 1) - (n + 0.5)*log(n) + n - log(2 * pi)/2
 }
 
+##___ "FIXME" -- have C dpq_stirlerr() in  ../src/stirlerr.c  <<<<<<<<<<<
+##     -----
+## but that is called only from  gammafn_ver() <-- R_gamma_ver()   in ../src/gamma-variants.c <<<<<<<<
+##                   *and* from our R level           gammaVer()
 
 
 ##' stirlerr() now *vectorized* in  n
 stirlerr <- function(n, scheme = c("R3", "R4.x"),
                      cutoffs = switch(scheme
                                     , R3   = c(15, 35, 80, 500)
-                                    , R4.x = c(5.4, 7.5, 8.5, 10.625, 12.125, 20, 26, 60, 200, 3300)
+                                    , R4.4 = c(5.4, 7.5, 8.5, 10.625, 12.125, 20, 26, 60, 200, 3300)
                                       )
                     , use.halves = missing(cutoffs)
                     , lgamma1p = lgamma1pC # was "hard wired"  \(x) lgamma(x+1)

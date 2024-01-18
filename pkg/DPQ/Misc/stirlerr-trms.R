@@ -25,6 +25,17 @@ as.bigq(174611, 125400),## 174611/125400
 as.bigq(77683, 5796),	## 77683/5796
 NULL)
 
+## Actually, since ~ 2021, with BernoulliQ() in {gmp}, you can directly get e.g. 16 terms :
+n <- 2*(1:16)
+(Sq <- abs(BernoulliQ(n))/(n*(n-1))) # == |B_n| / (n(n-1))  for n = 2,4,6,...
+##
+##  [1] 1/12                  1/360                 1/1260
+##  [4] 1/1680                1/1188                691/360360
+##  [7] 1/156                 3617/122400           43867/244188
+## [10] 174611/125400         77683/5796            236364091/1506960
+## [13] 657931/300            3392780147/93960      1723168255201/2492028
+## [16] 7709321041217/505920
+
 require(Rmpfr)
 cbind(mpfr(Sq, 80))
 ## 'mpfrMatrix' of dim(.) =  (11, 1) of precision  80   bits
@@ -39,6 +50,11 @@ cbind(mpfr(Sq, 80))
 ##  [9,]    0.17964437236883057316493850
 ## [10,]     1.3924322169059011164274315
 ## [11,]     13.402864044168391994478957
+## [12,]     156.84828462600201730636509
+## [13,]     2193.1033333333333333333318
+## [14,]     36108.771253724989357173269
+## [15,]     691472.26885131306710839498
+## [16,]     15238221.539407416192283370
 
 
 S0 <-    0.083333333333333333333333368
@@ -57,6 +73,7 @@ S10<-      13.402864044168391994478957 ## 77683/5796
 ##=======================================================================================================
 
 ## stirlerr(z)  around  z=0 :
+## ---------------------------  this is really a very different series:
 # In Wolfram Alpha  :
 '
 Series[LogGamma[z+1] - (z+1/2)*Log[z] + z - Log[2 Pi]/2, {z, 0, 12}]
@@ -73,7 +90,7 @@ Series[LogGamma[z+1] - (z+1/2)*Log[z] + z - Log[2 Pi]/2, {z, 0, 12}]
 -1/2 log(2 π z) + z (-log(z) - gamma + 1) + (π^2 z^2)/12 + (z^3 psigamma(1, 2))/6 + (π^4 z^4)/360 + (z^5 psigamma(1, 4))/120 + (π^6 z^6)/5670 + (z^7 psigamma(1, 6))/5040 + (π^8 z^8)/75600 + (z^9 psigamma(1, 8))/362880 + (π^10 z^10)/935550 + (z^11 polygamma(10, 1))/39916800 + (691 π^12 z^12)/7662154500 ## + O(z^13)
 ## (generalized Puiseux series)
 
-setwd('/scratch/users/maechler/R/D/R-forge/specfun/pkg/DPQ/Misc/')
+setwd('/u/maechler/R/D/R-forge/specfun/pkg/DPQ/Misc/')
 system("eog stirlerr_z=0_series_alpha.png &")
 
 ## NOTA BENE:  polygamma(der, z) == psigamma(z, deriv)  is
@@ -193,19 +210,33 @@ BZ <- gmp::as.bigz
 f000 <- function(z) -log(z)/2
 x <- 10^-(308:80)
 relE000 <- asNumeric(relErrV(stirlerrM(mpfr(x, 256)), f000(x)))
-plot(x,  abs(relE000), type="l", log="xy") # far away from accurate ... forget about it
+summary(relE000)
+##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
+## 0.002598 0.003190 0.004131 0.004752 0.005860 0.010078
+##
+#  ===> far away from accurate ... forget about it !
 
 ## This is good however for small z :
 C0 <- asNumeric(c0) # log(2*Pi)/2 ~= 0.9189
 f00 <- function(z) -(log(z)/2 + C0)
 
+str(x <- lseq(2^-100, 2^-10, length=1000))
+plot(x, asNumeric(relErrV(stirlerrM(mpfr(x, 256)), f00(x))), log="x", type="l")
+abline(h=c(-2:2)*2^-53, lty=3, col="gray")
+## rel.err <= 0.0025 : "usable" for plotting  but not as approx
+##
+## ==> much smaller 'x' :
+
 x <- 10^-seq(30,14, length=1000)
 x <- 10^-seq(18,15.5, length=1000)
-plot(x, asNumeric(relErrV(stirlerrM(mpfr(x, 256)), f00(x))), type="l", log="x", ylim = c(-1,1)*1e-15)
+relE00 <- asNumeric(relErrV(stirlerrM(mpfr(x, 256)), f00(x)))
+
+plot(x,   relE00, type="l", log="x", ylim = c(-1,1)*1e-15,
+     main = "relative Error of  -(log(x)/2 + C0)  approx. to  stirlerr(x)")
 abline(h=c(-2:2)*2^-53, lty=3, col="gray")
 
-relE00  <- asNumeric(relErrV(stirlerrM(mpfr(x, 256)), f00(x)))
-plot(x,  abs(relE00), type="l", log="xy")
+plot(x,  abs(relE00), type="l", log="xy",
+     main = "|relative Error|  of  -(log(x)/2 + C0)  approx. to  stirlerr(x)")
 lines(x, abs(relE000), col = adjustcolor(4, 1/2), lwd=2)
 lines(lowess(x, abs(relE00), f=.1), col=2, lwd=2)
 abline(h=c(1:2,4)*2^-53, lty=3, col="gray")
@@ -265,8 +296,8 @@ f0 <- function(z) {
 }
 
 f0.ord.max <- 12L # and below
-f0_<- function(z, order) {
-    stopifnot(0L <= (order <- as.integer(order)), order <= 12L,
+f0_ <- function(z, order) {
+    stopifnot(0L <= (order <- as.integer(order)), order <= f0.ord.max,
               length(order) == 1L)
     lz <- log(z)
     f00 <- -(lz/2 + C0)
@@ -289,10 +320,6 @@ f0_<- function(z, order) {
 
 
 1
-
-str(x <- lseq(2^-100, 2^-8, length=1000))
-plot(x, asNumeric(relErrV(stirlerrM(mpfr(x, 256)), f00(x))), log="x", type="l")
-abline(h=c(-2:2)*2^-53, lty=3, col="gray")
 
 
 ## (4 - 9*log(2) + log(24) - 1/2*log(2*π)) - accurately
@@ -343,20 +370,20 @@ f5 <- function(z)
 ## 1.  z = 0 :
 f0xy <- curve(f0, 0, 1.1, n = 1001)
 lines(stirlerr(x) ~ x, data=f0xy,  lwd = 3, col = adjustcolor(2, 1/2))
-                                        # looks good ... but how large is the error
-
+                                        # "looks good" ...
+                                        # but how large is the error?
 ## even only in [0, 1/4] not good enough:
 ## x <- seq(0, 0.15, length=2000)
 x <- lseq(1e-20, 0.15, length=2000)
 ## more zoom in:
-x <- lseq(1e-5,  0.11, length=2000)
+x <- lseq(1e-8,  0.11, length=2000)
 xM <- mpfr(x, 256)
 relE0  <- asNumeric(f0 (x) / stirlerrM(xM) -1)
 relE0. <- asNumeric(f0.(x) / stirlerrM(xM) -1)
 
 plot (x, abs(relE0), type = "l", lwd=2, log="xy", axes=FALSE, frame=TRUE)# fine
 eaxis(1, nintLog=20); eaxis(2, nintLog = 18)
-lines(x, abs(relE0.), col=adjustcolor(2, 1/2), lwd=2)
+lines(x, abs(relE0.), col=adjustcolor(2, 1/2), lwd=2) # f0.() is a bit worse than f0()  <==> Horner-like nesting *does* pay
 ## f0.() is slightly worse in the "interesting" region [10^-8, 10^-1
 abline(h=c(1,2,4)*2^-53, lty=3, col="gray")
 p2 <- -(9:3)
@@ -371,7 +398,7 @@ xM <- mpfr(x, 512)
 system.time( ## takes time
 relEall <- vapply(0:f0.ord.max,
                   function(io) asNumeric(f0_(x, io) / stirlerrM(xM) - 1), x)
-) # ~ 6.55 sec elapsed
+) # ~ 6.55 sec (7 sec on lynne) elapsed
 
 matplot(x, relEall, type="l", log="x", ylim = c(-1,1)*1e-13, axes=FALSE)
 eaxis(1, nintLog=20); eaxis(2) #                      ^^^^^    ==> zoom in 100 x :

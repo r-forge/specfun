@@ -181,6 +181,12 @@
 */
 typedef int logical;
 
+typedef enum { // must be kept in sync with R-level gammaVer() -->  ../R/qgamma-fn.R  <---
+    R_3   = 1  /* "always" till in R <= 4.3.z */
+  , R_3_1 = 2  /* "R4..1" == R_3, just using lgamma1p() */
+  , R_4_4 = 3  /* "R4.4_0" using 10 cutoffs */
+} stirlerr_version_t;
+
 
 // qchisq_appr.c : -------------------------------------------------------------
 
@@ -278,12 +284,11 @@ SEXP     R_lgammacor(SEXP x_, SEXP nalgm_, SEXP xbig_);
 
 
 // gamma-variants.c : --------------------------------------------------------
-double gammafn_ver(double x, int version, int trace_lev);
-SEXP   R_gamma_ver(SEXP x_, SEXP version_, SEXP trace_);
+double gammafn_ver(double x, int version, int trace_lev, stirlerr_version_t stirl_ver);
+SEXP R_gamma_ver(SEXP x_, SEXP version_, SEXP trace_, SEXP stirlerr_v_);
 
 // stirlerr.c : --------------------------------------------------------------
-double dpq_stirlerr(double n);
-
+double dpq_stirlerr(double n, stirlerr_version_t version);
 
 // chebyshev.c : -------------------------------------------------------------
 
@@ -303,12 +308,6 @@ SEXP dpq_pow_di(SEXP x_, SEXP y_);
 /*
   double R_pow(double x, double y)
   double R_pow_di(double, int)
-*/
-
-
-/* double R_pow(double X)
-     Computes 'log(1 + X) - X' (_log 1 plus x minus x_), accurately even
-     for small X, i.e., |x| << 1.
 */
 
 SEXP R_log1pmx(SEXP x_);

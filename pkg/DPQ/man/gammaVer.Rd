@@ -6,12 +6,14 @@
   (\eqn{\Gamma}) function.
 }
 \usage{% >>> ../R/qgamma-fn.R  ----  ../src/gamma-variants.c <<<------
-gammaVer(x, version, traceLev = 0)
+gammaVer(x, version, stirlerrV = c("R<=3", "R4..1", "R4.4_0"), traceLev = 0L)
 }
 \arguments{
   \item{x}{numeric vector of absissa value for the Gamma function.}
   %% FIXME: use c("..", ...) match.arg() etc:
   \item{version}{integer in \{1,2,..,5\} specifying which variant is desired.}
+  \item{stirlerrV}{a string, specifying the \code{stirlerr()}
+    version/variant to use.}
   \item{traceLev}{non-negative integer indicating the amount of diagnostic
     \dQuote{tracing} output to the console during computation.}
 }
@@ -21,11 +23,23 @@ gammaVer(x, version, traceLev = 0)
   \code{\link{gamma}(x)} over time.  More specifically, the current version
   numbers correspond to
   \enumerate{
+    \item . TODO % --- ../R/qgamma-fn.R       -- gammaVer() ---> .Call(C_R_gamma_ver, ..)
+		 % ==> ../src/gamma-variants.c -- R_gamma_ver()
     \item .
     \item .
-    \item .
-    \item Used in \R from ... up to versions 4.2.z
-    \item Possibly to be used in \R 4.3.z and newer.
+    \item Used in \R from ... up to versions 4.3.z
+    \item Possibly to be used in \R 4.4.z and newer.
+  }
+  The \code{stirlerrV} must be a string specifying the version of
+  \code{\link{stirlerr}()} to be used:
+  \describe{
+    \item{\code{"R<=3"}:}{the historical version}
+    \item{\code{"R4..1"}:}{only started using \code{lgamma1p(n)} instead of
+      \code{lgamma(n + 1.)} in \code{\link{stirlerr}(n)} for \eqn{n \le
+	15}, in the direct formula.}
+    \item{\code{"R4.4_0"}:}{uses 10 cutoffs instead 4, and these are larger to gain
+      accuracy.}
+    %% \item{"...."}{}
   }
 }
 \value{

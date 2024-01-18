@@ -3,7 +3,7 @@ require("Rmpfr")
 
 (doExtras <- DPQ:::doExtras())
 (noLdbl <- (.Machine$sizeof.longdouble <= 8)) ## TRUE when --disable-long-double
-options(width = 100)
+options(width = 100, nwarnings = 1e5)
 
 k1 <- 44300 + (1:800)
 p1 <- (63/64)
@@ -80,12 +80,12 @@ abline(h=(-2:2)*2^-53, lty=c(3,3,1), col=adjustcolor(1, 1/2)); eaxis(1, sub10=3)
 
 all.equal(p1^k1., pow(p1, k1., FALSE), tolerance=0) # TRUE (everywhere?)
 
-## to enhance  |rel.Err| plots;:
-drawEps.h <- function(p2 = -(53:51), lty=3, lwd=2, col=adjustcolor(2, 1/2)) {
+## to enhance  |rel.Err| plots:  {also in ~/R/Pkgs/Rmpfr/tests/special-fun-ex.R }
+drawEps.h <- function(p2 = -(53:51), side = 4, lty = 3, lwd = 2, col = adjustcolor(2, 1/2)) {
     abline(h = 2^p2, lty=lty, lwd=lwd, col=col)
-    axis(4, las=2, line=-1, at=2^p2,
-         labels = expression(2^-53, 2^-52, 2^-51), ## FIXME - construct !
-         col.axis=col, col=NA, col.ticks=NA)
+    axis(side, las=2, line=-1, at = 2^p2,
+         labels = as.expression(lapply(p2, function(p) substitute(2^E, list(E=p)))),
+         col.axis = col, col=NA, col.ticks=NA)
 }
 mtextVersion <- function(adj = 1, col = 1) {
     mtext(osVersion, line=1, col=col, adj=adj)
@@ -220,7 +220,7 @@ d.absre <- as.data.frame(absreL, optional=TRUE)
 stopifnot(is.numeric(m.absrel <- as.matrix(d.absre)))
 if(doExtras) { # not particularly interesting ..
     matplot(0:999, m.absrel, type="l", log="y", ylim = c(1e-17, max(m.absrel)))
-    abline(h = c(1,2,4)*2^-53, lty=2, lwd=2, col=adjustcolor(2, 1/2))
+    drawEps.h(lty=2)
                                         #
     ## smoothed rel.errors
     s.absre <- d.absre
@@ -251,9 +251,7 @@ plot(k2p[[K]], absre2[[K]], type = "l", log = "xy", col=K,
 mtext(substitute(p == group("{", EE, "}"), list(EE = pExpr)), cex= 2/3)
 for(i in rev(seq_along(ks))[-1L])
     lines(k2p[[i]], absre2[[i]], col=i)
-abline(h = c(1,2,4)*2^-53, lty=3, lwd=2, col=adjustcolor(2, 1/2))
-axis(4, las=2, line=-1, at=c(1,2,4)*2^-53, labels = expression(2^-53, 2^-52, 2^-51),
-     col.axis=adjustcolor(2, 1/2), col=NA, col.ticks=NA)
+drawEps.h(lty=3, lwd=2)
 ## looks perfect (in Linux; *not* windows
 
 t(sapply(absre2, summary))

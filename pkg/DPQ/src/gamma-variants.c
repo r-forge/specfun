@@ -6,7 +6,7 @@
  *
  * These are
  *
- *  Copyright (C) 2022--2023 Martin Maechler,  maechler@stat.math.ethz.ch
+ *  Copyright (C) 2022--2024 Martin Maechler,  maechler@stat.math.ethz.ch
  *
  * everything else, of course
  *
@@ -14,7 +14,6 @@
  *  Copyright (C) 2000-2022 The R Core Team
  *  Copyright (C) 2002-2018 The R Foundation
  *  Copyright (C) 1998 Ross Ihaka
- *
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -59,7 +58,7 @@
 #define lgammacor(_Y_)  dpq_lgammacor(_Y_, lgcor_nalgm, lgcor_xbig)
 
 
-double gammafn_ver(double x, int version, int trace_lev)
+double gammafn_ver(double x, int version, int trace_lev, stirlerr_version_t stirl_ver)
 /* version: integer >= 1  for gamma() version:
 
     -  R version        | svn r | Date       | comment
@@ -67,8 +66,8 @@ double gammafn_ver(double x, int version, int trace_lev)
     1: 1.0.0 -1.7.0     |  7982 | 2000-02-05 |
     2: 1.7.1(?)- 2.5.x  | 24344 | 2003-05-16 | gamma(n)
     3: 2.6.0-           | 42549 | 2007-08-18 | ML_UNDERFLOW
-    4: 3.6.0 - 4.2.x    | 75839 | 2018-12-12 | no Inf/0 warning
-    5: 4.2.2/4.3.0      | ?     | 2022-..    | accuracy
+    4: 3.6.0 - 4.3.x    | 75839 | 2018-12-12 | no Inf/0 warning
+    5: 4.4.0 ?          | ?     | 2024-..    | accuracy
 
 ================ UNFINISHED ===========================
  now contains mostly  the R-devel version '5'
@@ -163,7 +162,7 @@ double gammafn_ver(double x, int version, int trace_lev)
 	return ML_NAN;
     }
 
-    if(version <= 4) { // Version from R 1.0.0 till 4.2.0
+    if(version <= 4) { // Version from R 1.0.0 till 4.3.x (at least)
 	xmin = -170.5674972726612;
 	xmax =  171.61447887182298;
     } else { // version == 5 (latest for now)
@@ -260,6 +259,7 @@ double gammafn_ver(double x, int version, int trace_lev)
     }
     else {
 	/* gamma(x) for	 y = |x| > 10. */
+
 	if(trace_lev >= 1) REprintf("version <= 4, |x| > 10 ..\n");
 
 	if (x > xmax) {			/* Overflow */
@@ -279,7 +279,7 @@ double gammafn_ver(double x, int version, int trace_lev)
 	}
 	else { /* normal case */
 	    value = exp((y - 0.5) * log(y) - y + M_LN_SQRT_2PI +
-			((2*y == (int)2*y)? dpq_stirlerr(y) : lgammacor(y)));
+			((2*y == (int)2*y)? dpq_stirlerr(y, stirl_ver) : lgammacor(y)));
 	}
 	if (x > 0)
 	    return value;
@@ -301,7 +301,7 @@ double gammafn_ver(double x, int version, int trace_lev)
 	return -M_PI / (y * sinpiy * value);
     }
 
-  } else { // version == 5 (latest for now)
+  } else { // version == 5 (latest for now; was in my R-devel for a while; no longer; e.g. LDOUBLE "not there" on M1
 
 	int i, n = (int) x;
 
@@ -375,7 +375,8 @@ double gammafn_ver(double x, int version, int trace_lev)
     } // version >= 5
 }
 
-SEXP R_gamma_ver(SEXP x_, SEXP version_, SEXP trace_)
+
+SEXP R_gamma_ver(SEXP x_, SEXP version_, SEXP trace_, SEXP stirlerr_v)
 {
     PROTECT(x_ = isReal(x_) ? x_ : coerceVector(x_, REALSXP));
     R_xlen_t i, n = XLENGTH(x_);
@@ -383,8 +384,10 @@ SEXP R_gamma_ver(SEXP x_, SEXP version_, SEXP trace_)
 	i_trace = asInteger(trace_);
     SEXP ans = PROTECT(allocVector(REALSXP, n));
     double *x = REAL(x_), *r = REAL(ans);
+    stirlerr_version_t stirl_ver = (stirlerr_version_t) asInteger(stirlerr_v);
+
     for(i=0; i < n; i++) {
-	r[i] = gammafn_ver(x[i], i_ver, i_trace);
+	r[i] = gammafn_ver(x[i], i_ver, i_trace, stirl_ver);
     }
     UNPROTECT(2);
     return ans;
