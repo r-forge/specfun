@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-9 (2024-01-18, svn r298)}{
+\section{Version 0.5-9 (2024-01-19, svn r ???)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{dbinom_raw()} gets a new more accurate
@@ -14,6 +14,13 @@
       \item \code{stirlerr()} gets argument \code{lgamma1p}, the function
       to compute \code{lgamma(n+1)} which was suboptimal for the very
       rarely used \eqn{n < 1/2} case.
+
+      \item \code{stirlerr()} gets argument \code{order} allowing currently
+      up to order 13 terms in Stirling's series (and \emph{not} using
+      \code{cutoffs} or direct formula).
+
+      \item New \code{stirlerrC()} interfacing to C code which should
+      \dQuote{parallelize} R's own C level \code{stirlerr()}.
 
       More documentation and tests; experiments added in
       \file{../Misc/stirlerr-trms.R}.

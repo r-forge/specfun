@@ -123,8 +123,8 @@ double dpq_stirlerr(double n, stirlerr_version_t version)
     double nn;
 
   switch(version) { // stirlerr_version_t  <--> ./DPQpkg.h
-  case R_3:   // "R<-3"
-  case R_3_1: // "R4..1"
+  case R_3:   // "R<=3"
+  case R_3_1: // "R4..1" : using lgamma1p()
     if (n <= 15.0) {
 	nn = n + n;
 	if (nn == (int)nn) return sferr_halves[(int)nn];
@@ -162,3 +162,18 @@ double dpq_stirlerr(double n, stirlerr_version_t version)
   default: error(_("switch() logic programming errors in '%s()'"), "dpq_stirlerr");
   } // switch()
 }
+
+SEXP R_dpq_stirlerr(SEXP x_, SEXP stirlerr_v) {
+    PROTECT(x_ = isReal(x_) ? x_ : coerceVector(x_, REALSXP));
+    R_xlen_t i, n = XLENGTH(x_);
+    SEXP ans = PROTECT(allocVector(REALSXP, n));
+    double *x = REAL(x_), *r = REAL(ans);
+    stirlerr_version_t version = (stirlerr_version_t) asInteger(stirlerr_v);
+
+    for(i=0; i < n; i++) {
+	r[i] = dpq_stirlerr(x[i], version);
+    }
+    UNPROTECT(2);
+    return ans;
+}
+

@@ -6,7 +6,7 @@
   (\eqn{\Gamma}) function.
 }
 \usage{% >>> ../R/qgamma-fn.R  ----  ../src/gamma-variants.c <<<------
-gammaVer(x, version, stirlerrV = c("R<=3", "R4..1", "R4.4_0"), traceLev = 0L)
+gammaVer(x, version, stirlerrV = c("R3", "R4..1", "R4.4_0"), traceLev = 0L)
 }
 \arguments{
   \item{x}{numeric vector of absissa value for the Gamma function.}
@@ -33,7 +33,7 @@ gammaVer(x, version, stirlerrV = c("R<=3", "R4..1", "R4.4_0"), traceLev = 0L)
   The \code{stirlerrV} must be a string specifying the version of
   \code{\link{stirlerr}()} to be used:
   \describe{
-    \item{\code{"R<=3"}:}{the historical version}
+    \item{\code{"R3"}:}{the historical version, used in all \R version up to \R 4.3.z.}
     \item{\code{"R4..1"}:}{only started using \code{lgamma1p(n)} instead of
       \code{lgamma(n + 1.)} in \code{\link{stirlerr}(n)} for \eqn{n \le
 	15}, in the direct formula.}

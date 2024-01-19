@@ -32,6 +32,7 @@ importFrom("methods", as, is, new
 
 importFrom("utils"
          , globalVariables
+         , head, tail
          , str
            )
 
@@ -142,7 +143,7 @@ export(
   , dpois_simpl
   , dpois_simpl0 # << "experimental" respectively purely didactical
   , bd0, bd0C
-  , stirlerr, stirlerr_simpl
+  , stirlerr, stirlerr_simpl, stirlerrC
   , bd0_p1l1d1, bd0_p1l1d, bd0_l1pm
   , ebd0, ebd0C
   , p1l1, p1l1., p1l1p, p1l1ser ## NB: p1l1p() via log1pmx()  is *very* good!

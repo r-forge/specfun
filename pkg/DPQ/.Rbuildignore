@@ -24,7 +24,8 @@ vignettes/.*[:~]
 vignettes/DPQ_.*\.tar\.gz$
 vignettes/.*\.(pdf|aux|out|tex)$
 vignettes/.*-woven
-vignettes/.*JSS
+vignettes/.*JSS.*
+vignettes/.*_save?$
 inst/doc/.*woven
 tests/.*\.pdf
 tests/.*\.Rout[-_]?

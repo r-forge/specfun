@@ -286,6 +286,7 @@ SEXP     R_lgammacor(SEXP x_, SEXP nalgm_, SEXP xbig_);
 // gamma-variants.c : --------------------------------------------------------
 double gammafn_ver(double x, int version, int trace_lev, stirlerr_version_t stirl_ver);
 SEXP R_gamma_ver(SEXP x_, SEXP version_, SEXP trace_, SEXP stirlerr_v_);
+SEXP R_dpq_stirlerr(SEXP x_, SEXP stirlerr_v);
 
 // stirlerr.c : --------------------------------------------------------------
 double dpq_stirlerr(double n, stirlerr_version_t version);
