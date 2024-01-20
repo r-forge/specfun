@@ -242,7 +242,7 @@ if(do.pdf) { dev.off(); pdf("stirlerr-relErr_6-fin-3.pdf") }
 
 
 ##-- April 20: have more terms up to S10 in stirlerr() --> can use more cutoffs
-n <- lseq(1/64, 5000, length=4096)
+n <- n5m <- lseq(1/64, 5000, length=4096)
 nM <- mpfr(n, 2048) # a *lot* accuracy for stirlerr(nM,*)
 ct10.1 <- c(            5.4, 7.5, 8.5, 10.625, 12.125, 20, 26, 60, 200, 3300)# till 2024-01-19
 ct10.2 <- c(            5.4, 7.9, 8.75,10.5  , 13,     20, 26, 60, 200, 3300)
@@ -346,6 +346,7 @@ lines(nc, pmax(asNumeric(stirlerrD2(nc)/stncM - 1), 1e-19), lwd=3, col=adjustcol
 
 if(do.pdf) { dev.off(); pdf("stirlerr-tst_others.pdf") }
 
+n <- n5m # (1/64 ... 5000) -- goes with st.nM
 p.stirlerrDev(n=n, stnM=st.nM, cex=1/4, type="o", cutoffs = cuts, abs=TRUE)
 axis(1,at= 2:6, col=NA, col.axis=(cola <- "lightblue"), line=-3/4)
 abline(v = 2:6, lty=3, col=cola)
