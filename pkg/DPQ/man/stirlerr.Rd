@@ -24,7 +24,7 @@
 stirlerr(n, scheme = c("R3", "R4.4_0"),
          cutoffs = switch(scheme
                         , R3     = c(15, 35, 80, 500)
-                        , R4.4_0 = c(5.4, 7.5, 8.5, 10.625, 12.125, 20, 26, 60, 200, 3300)
+                        , R4.4_0 = c(5.22, 6.5, 7.0, 7.9, 8.75, 10.5, 13, 20, 26, 60, 200, 3300)
                           ),
          use.halves = missing(cutoffs),
          lgamma1p = lgamma1pC,

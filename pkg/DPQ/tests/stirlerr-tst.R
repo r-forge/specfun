@@ -244,9 +244,10 @@ if(do.pdf) { dev.off(); pdf("stirlerr-relErr_6-fin-3.pdf") }
 ##-- April 20: have more terms up to S10 in stirlerr() --> can use more cutoffs
 n <- lseq(1/64, 5000, length=4096)
 nM <- mpfr(n, 2048) # a *lot* accuracy for stirlerr(nM,*)
-cuts <- c(            5.4, 7.5, 8.5, 10.625, 12.125, 20, 26, 60, 200, 3300)# till 2024-01-19
-cuts <- c(            5.4, 7.9, 8.75,10.5  , 13,     20, 26, 60, 200, 3300)
-cuts <- c(5.22, 6.5,  7.0, 7.9, 8.75,10.5  , 13,     20, 26, 60, 200, 3300)
+ct10.1 <- c(            5.4, 7.5, 8.5, 10.625, 12.125, 20, 26, 60, 200, 3300)# till 2024-01-19
+ct10.2 <- c(            5.4, 7.9, 8.75,10.5  , 13,     20, 26, 60, 200, 3300)
+cuts <-
+ct12.1 <- c(5.22, 6.5,  7.0, 7.9, 8.75,10.5  , 13,     20, 26, 60, 200, 3300)
 ##        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## 5.25 is "too small" but the direct formula is already really bad there, ...
 st.nM <- roundMpfr(stirlerr(nM, use.halves=FALSE, ## << on purpose;
@@ -270,11 +271,78 @@ print(cbind(n       = format(n, drop0trailing = TRUE),
 
 showProc.time()
 
+## ========== Try a slightly better direct formula ======================================================
+if(do.pdf) { dev.off(); pdf("stirlerr-tst_order_k.pdf") }
+
+## order = k = 1:13  terms in series approx:
+k <- 1:13
+n <- 2^seq(1, 28, by=1/16)
+nM <- mpfr(n, 1024)
+stnM <- stirlerr(nM) # the "true" values
+
+stirlOrd <- sapply(k, function(k) stirlerr(n, order = k))
+relE <- asNumeric(stirlOrd/stnM -1) # "true" relativ error
+
+## use a "smooth" but well visible polette :
+palROBG <- colorRampPalette(c("red", "darkorange2", "blue", "seagreen"), space = "Lab")
+palette(adjustcolor(palROBG(13), 3/4))
+
+matplot(n, relE, type = "b", cex=2/3, ylim = c(-1,1)*1e-13, col=k,
+        log = "x", xaxt="n", main = "stirlerr(n, order=k) rel.error, k = 1..13")
+eaxis(1, nintLog = 20)
+
+## zoom in (ylim)
+matplot(n, relE, type = "b", cex=2/3, ylim = c(-1,1)*5e-15, col=k,
+        log = "x", xaxt="n", main = "stirlerr(n, order=k) rel.error, k = 1..13")
+eaxis(1, nintLog = 20); abline(h = (-2:2)*2^-53, lty=3, lwd=1/2)
+
+## log-log  |rel.Err|  -- "linear"
+matplot(n, pmax(abs(relE), 1e-19), type = "b", cex=2/3, col=k, ylim = c(8e-17, 1e-3),
+        log = "xy", main = "| stirlerr(n, order=k) error |")
+mtext(paste("k =", deparse(k))) ; abline(h = 2^-(53:51), lty=3, lwd=1/2)
+
+palette("default")
+
+
+## zoom into the critical n region
+nc <- seq(3, 12, by=1/32)
+ncM <- mpfr(nc, 1024)
+stncM <- stirlerr(ncM) # the "true" values
+stirlO.c <- sapply(k, function(k) stirlerr(nc, order = k))
+relEc <- asNumeric(stirlO.c/stncM -1) # "true" relativ error
+
+## log-log  |rel.Err|  -- "linear"
+matplot(nc, pmax(abs(relEc), 1e-19), type = "b", cex=2/3, col=k, ylim = c(2e-17, 1e-8),
+        log = "xy", xlab = quote(n), main = quote(abs(relErr(stirlerr(n, order==k)))))
+mtext(paste("k =", deparse(k))) ; abline(h = 2^-(53:51), lty=3, lwd=1/2)
+lines(nc, pmax(asNumeric(stirlerr_simpl(nc)/stncM - 1), 1e-19), lwd=3, col=adjustcolor(2, 2/3))
+legend(10^par("usr")[1], 1e-9, legend=paste0("k=", k), bty="n", lwd=2,
+       col=k, lty=1:5, pch= c(1L:9L, 0L, letters)[seq_along(k)])
+
+nc <- seq(5, 7, by=1/256)
+ncM <- mpfr(nc, 1024)
+stncM <- stirlerr(ncM) # the "true" values
+stirlO.c <- sapply(k, function(k) stirlerr(nc, order = k))
+relEc <- asNumeric(stirlO.c/stncM -1) # "true" relativ error
+
+## log  |rel.Err|  -- "linear"
+matplot(nc, pmax(abs(relEc), 1e-19), type = "b", cex=2/3, col=k, ylim = c(2e-17, 1e-11),
+        log = "y", xlab = quote(n), main = quote(abs(relErr(stirlerr(n, order==k)))))
+mtext(paste("k =", deparse(k))) ; abline(h = 2^-(53:51), lty=3, lwd=1/2)
+lines(nc, pmax(asNumeric(stirlerr_simpl(nc)/stncM - 1), 1e-19), lwd=3, col=adjustcolor(2, 2/3))
+k. <- k[k >= 6]
+legend("topleft", legend=paste0("k=", k.), bty="n", lwd=2,
+       col=k., lty=1:5, pch= c(1L:9L, 0L, letters)[k.])
+
 
 ## ========== Try a slightly better direct formula ======================================================
 
 ## after some trial error:  gamma(n+1) = n*gamma(n) ==> lgamma(n+1) = lgamma(n) + log(n)
 stirlerrD2 <- function(n) lgamma(n) + n*(1-(l.n <- log(n))) + (l.n - log(2*pi))/2
+
+## the above plot
+lines(nc, pmax(asNumeric(stirlerrD2(nc)/stncM - 1), 1e-19), lwd=3, col=adjustcolor(4, 2/3))
+
 
 if(do.pdf) { dev.off(); pdf("stirlerr-tst_others.pdf") }
 
