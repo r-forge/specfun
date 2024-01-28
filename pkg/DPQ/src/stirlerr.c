@@ -50,7 +50,8 @@
 
 /* NB 2 --- in DPQ's R code, we have much improved and versatile stirlerr() ==> ../R/dgamma.R
  * --       This is *really* only for reproducibility of R's C level (non-API!) stirlerr()
-_________ CURRENTLY *NOT* directly called from R, only used in gammafn_ver() ==> ./gamma-variants.c
+ * _________ Now callable from R via R_dpq_stirlerr() below
+ * also only used in gammafn_ver() ==> ./gamma-variants.c
 
 _________ TODO:  add  'int version'  or 'order' or   double* cutoffs ________________
  */
@@ -68,6 +69,12 @@ double dpq_stirlerr(double n, stirlerr_version_t version)
 #define  S8   0.17964437236883057316493850   // 43867/244188
 #define  S9   1.3924322169059011164274315    // 174611/125400
 #define S10  13.402864044168391994478957     // 77683/5796
+#define S11 156.84828462600201730636509     // 236364091/1506960
+#define S12 2193.1033333333333333333333     // 657931/300
+#define S13 36108.771253724989357173269     // 3392780147/93960
+#define S14 691472.26885131306710839498     // 1723168255201/2492028
+#define S15 15238221.539407416192283370     // 7709321041217/505920
+#define S16 382900751.39141414141414141     // 151628697551/396
 
 /*
   exact values for 0, 0.5, 1.0, 1.5, ..., 14.5, 15.0.
@@ -106,21 +113,29 @@ double dpq_stirlerr(double n, stirlerr_version_t version)
 	0.005554733551962801371038690  /* 15.0 */
     };
 
-#define nC 10
+#define nC 16
     const static double cutoffs[nC] = {
+	5.0, // nC-16
+	5.3,
 	5.4,
-	7.5,
-	8.5,
-	10.625,
-	12.125,
-	20,
-	26,  //  15
-	60,  //  35
-	200, //  80
-	3300 // 500
+	6.1,
+	6.5,
+	7.0, // nC-11
+	7.9,
+	8.75,
+	10.5,
+	13,
+	//-- do *not* change '20' here (see below)
+	20,  // nC-6; was
+	26,  // nC-5;  15
+	60,  // nC-4;  35
+	200, // nC-3;  80
+	3300,// nC-2; 500
+      17.4e6 // nC-1;  -
     };
 
     double nn;
+    int k;
 
   switch(version) { // stirlerr_version_t  <--> ./DPQpkg.h
   case R_3:   // "R<=3"
@@ -139,25 +154,37 @@ double dpq_stirlerr(double n, stirlerr_version_t version)
     return((S0-(S1-(S2-(S3-S4/nn)/nn)/nn)/nn)/n);
 
   case R_4_4: // "R4.4_0"  --- see R code in ../R/dgamma.R  <<<<<<
+    k = nC-6;
+    if (n <= cutoffs[k]) {// == 20
       nn = n + n;
       if (n <= 15. && (nn == (int)nn)) return sferr_halves[(int)nn];
       // else:
-      if (n <= cutoffs[0])
+      if (n <= cutoffs[0]) // FIXME use MM's slightly better formula lgamma1p(n) = lgamma(n) + log(n)
 	  return lgamma1p(n) - (n + 0.5)*log(n) + n - M_LN_SQRT_2PI;
-      // else n > cutoffs[0] == 5.4
+      // else 5... == cutoffs[0] < n <= cutoffs[nC-6] == 20
       nn = n*n;
-      int k = nC;
-      if (n > cutoffs[--k]) return (S0 -S1/nn)/n;
-      if (n > cutoffs[--k]) return (S0-(S1 -S2/nn)/nn)/n;
-      if (n > cutoffs[--k]) return (S0-(S1-(S2 -S3/nn)/nn)/nn)/n;
-      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3 -S4/nn)/nn)/nn)/nn)/n;
-      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4 -S5/nn)/nn)/nn)/nn)/nn)/n;
       if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5 -S6/nn)/nn)/nn)/nn)/nn)/nn)/n;
       if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6 -S7/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
       if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7 -S8/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
       if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8 -S9/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
-      /* else if (n > cutoffs[--k])*/
-			    return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-S10/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-S10/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-S11/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-S12/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-S13/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-S14/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-S15/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
+      /* if (n > cutoffs[--k])*/ return
+	                           (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-S16/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
+    } else { // n > cutoffs[nC-5] == 20
+	nn = n*n;
+	k = nC;
+	if (n > cutoffs[--k])    return S0/n;
+	if (n > cutoffs[--k])    return (S0 -S1/nn)/n;
+	if (n > cutoffs[--k])    return (S0-(S1 -S2/nn)/nn)/n;
+	if (n > cutoffs[--k])    return (S0-(S1-(S2 -S3/nn)/nn)/nn)/n;
+	if (n > cutoffs[--k])    return (S0-(S1-(S2-(S3 -S4/nn)/nn)/nn)/nn)/n;
+     /* if (n > cutoffs[--k]) */ return (S0-(S1-(S2-(S3-(S4 -S5/nn)/nn)/nn)/nn)/nn)/n;
+    }
 
   default: error(_("switch() logic programming errors in '%s()'"), "dpq_stirlerr");
   } // switch()

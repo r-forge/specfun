@@ -24,16 +24,17 @@
 stirlerr(n, scheme = c("R3", "R4.4_0"),
          cutoffs = switch(scheme
                         , R3     = c(15, 35, 80, 500)
-                        , R4.4_0 = c(5.22, 6.5, 7.0, 7.9, 8.75, 10.5, 13, 20, 26, 60, 200, 3300)
+                        , R4.4_0 = c(5, 5.3, 5.4, 5.7, 6.1, 6.5, 7, 7.9, 8.75, 10.5, 13,
+                                     20, 26, 60, 200, 3300, 17.4e6)
                           ),
          use.halves = missing(cutoffs),
-         lgamma1p = lgamma1pC,
+         direct.ver = c("R3", "lgamma1p", "MM2", "n0"),
          order = NA,
          verbose = FALSE)
 
 stirlerrC(n, version = c("R3", "R4..1", "R4.4_0"))
 
-stirlerr_simpl(n, minPrec = 128L)
+stirlerr_simpl(n, minPrec = 128L, version = c("R3", "lgamma1p", "MM2", "n0"))
 
 lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
 }
@@ -42,7 +43,7 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
   \item{verbose}{logical indicating if some information about the
     computations are to be printed.}
   \item{version}{a \code{\link{character}} string specifying the version of
-    \code{stirlerrC()}.}
+    \code{stirlerr_simpl()} or \code{stirlerrC()}.}
   \item{scheme}{a \code{\link{character}} string specifying the
     \code{cutoffs} scheme for \code{stirlerr()}.}
   \item{cutoffs}{an increasing numeric vector, required to start with
@@ -59,15 +60,19 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
     Turn this off to judge the underlying approximation accuracy by
     comparison with MPFR.   However, keep the default \code{TRUE} for
     back-compatibility.}
-  \item{lgamma1p}{a \code{\link{function}} used for computing
-    \code{\link{lgamma}(n+1)} whenever \code{n < cutoff[1]}.  Originally
-    hard wired to \code{function(n) lgamma(n + 1)} which was suboptimal for
-    \eqn{0 < |n| < 1/2}.}
-  \item{order}{approximation order, \code{1 <= order <= 13} or \code{NA}
+  %% \item{lgamma1p}{a \code{\link{function}} used for computing
+  %%   \code{\link{lgamma}(n+1)} whenever \code{n < cutoff[1]}.  Originally
+  %%   hard wired to \code{function(n) lgamma(n + 1)} which was suboptimal for
+  %%   \eqn{0 < |n| < 1/2}.}
+  \item{direct.ver}{a \code{\link{character}} string specifying the version of
+    \code{stirlerr_simpl()} to be used for the \dQuote{direct} case in
+    \code{stirlerr(n)}.
+  }
+  \item{order}{approximation order, \code{1 <= order <= 17} or \code{NA}
     for \code{stirlerr()}.  If not \code{NA}, it specifies the number of
     terms to be used in the Stirling series which will be used for all
     \code{n}, i.e., \code{scheme}, \code{cutoffs}, \code{use.halves}, and
-    \code{lgamma1p} are irrelevant.}
+    \code{direct.ver} are irrelevant.}
   \item{minPrec}{a positive integer; for \code{stirlerr_simpl} the minimal
     accuracy or precision in bits when \code{\link[Rmpfr]{mpfr}} numbers
     are used.}
@@ -87,15 +92,16 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
       \eqn{\delta(n)} has asymptotic (\eqn{n \to\infty}{n -> Inf}) expansion
       \deqn{\delta(n) = \frac 1{12 n} - \frac 1{360 n^3} + \frac 1{1260 n^5} \pm O(n^{-7}),}{%
 	delta(n) = 1/(12 n) - 1/(360 n^3) + 1/(1260 n^5) +/- O(n^{-7}),}
-      and this expansion is used up to remainder \eqn{O(n^{-23})} in \code{stirlerr(n)};
+      and this expansion is used up to remainder \eqn{O(n^{-35})} % == 2*max(k) + 1
+      in current (package \pkg{DPQ}) \code{stirlerr(n)};
       different numbers of terms between different cutoffs for \eqn{n}, and
       using the direct formula for \eqn{n <= c_1}, where \eqn{c_1} is the first
       cutoff, \code{cutoff[1]}.
 
       Note that (new in 2024-01) \code{stirlerr(n, order = k)} will
-      \emph{not} use \code{cutoffs} nor the direct formula (with
-      \code{lgamma1p}), and allows \eqn{k \le 14}{k <= 14}, higher than
-      with the currently maximal 10 cutoffs.
+      \emph{not} use \code{cutoffs} nor the direct formula (with its
+      \code{direct.ver}), nor halves (\code{use.halves=TRUE}),
+      and allows \eqn{k \le 17}{k <= 17}.
     }% stirlerr
   }% describe
 }
@@ -128,18 +134,18 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
 n <- seq(1, 50, by=1/4)
 st.n <- stirlerr(n) # now vectorized
 stopifnot(identical(st.n, sapply(n, stirlerr)))
-st3. <- stirlerr(n, "R3", lgamma1p = \(x) lgamma(x+1)) # previous default
-st3  <- stirlerr(n, "R3", lgamma1p = lgamma1p)         # current default
+st3. <- stirlerr(n, "R3", direct.ver = "R3") # previous default
+st3  <- stirlerr(n, "R3", direct.ver = "lgamma1p") # new? default
 ## for these n, there is *NO* difference:
 stopifnot(st3 == st3.)
 plot(n, st.n, type = "b", log="xy", ylab = "stirlerr(n)")
 st4 <- stirlerr(n, "R4.4_0", verbose = TRUE) # verbose: give info on cases
-## order = k = 1:13  terms in series approx:
-k <- 1:13
+## order = k = 1:17  terms in series approx:
+k <- 1:17
 stirlOrd <- sapply(k, function(k) stirlerr(n, order = k))
 matlines(n, stirlOrd)
 matplot(n, stirlOrd - st.n, type = "b", cex=1/2, ylim = c(-1,1)/10, log = "x",
-        main = "stirlerr(n, order=k) error, k = 1..13")
+        main = substitute(list(stirlerr(n, order=k) ~~"error", k == 1:mK),  list(mK = max(k))))
 
 matplot(n, abs(stirlOrd - st.n), type = "b", cex=1/2, log = "xy",
         main = "| stirlerr(n, order=k) error |")

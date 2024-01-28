@@ -166,7 +166,7 @@ stirlerrM <- function(n, minPrec = 128L) {
 
 ##' Few term *asymptotic approximation of stirlerr() -- such it works with bigz, bigq, mpfr
 stirlerrSer <- function(n, k) {
-    stopifnot(1 <= (k <- as.integer(k)), k <= 11)
+    stopifnot(1 <= (k <- as.integer(k)), k <= 17)
     useBig <- (!is.numeric(n) &&
                (inherits(n, "mpfr") || inherits(n, "bigz") || inherits(n, "bigq")))
     if(useBig) {
@@ -187,9 +187,16 @@ stirlerrSer <- function(n, k) {
     S6 <- one/156           # 0.00641025641025641025636
     S7 <- frac(3617,122400) # 0.02955065359477124183007
     S8 <- frac(43867,244188)# 0.17964437236883057316493850
-    S9 <- frac(174611,125400) #  1.3924322169059011164274315
-    S10<- frac(77683, 5796)   # 13.402864044168391994478957
-    ## keep in sync with pkg DPQ's  ~/R/Pkgs/DPQ/R/dgamma.R <<<
+    S9 <- frac(174611,125400)	#      1.3924322169059011164274315
+    S10<- frac(77683, 5796)	#     13.402864044168391994478957
+    S11<- frac(236364091, 1506960)#  156.84828462600201730636509
+    S12<- frac(657931, 300)       # 2193.1033333333333333333333
+    S13<- frac(3392780147, 93960)	# 36108.771253724989357173269
+    S14<- frac(1723168255201, 2492028)	# 691472.26885131306710839498
+    S15<- frac(7709321041217, 505920)	# 15238221.539407416192283370
+    S16<- frac(151628697551, 396)	# 382900751.39141414141414141
+
+    ## keep in sync with pkg DPQ's  ~/R/Pkgs/DPQ/R/dgamma.R (and ~/R/Pkgs/DPQ/src/stirlerr.c )
     if(is.integer(n))
         n <- as.double(n) # such that  n*n  does not overflow
     n2  <- n*n
@@ -205,6 +212,12 @@ stirlerrSer <- function(n, k) {
         , (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-S8/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n # 9
         , (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-S9/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n # 10
         , (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-S10/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n # 11
+        , (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-S11/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n # 12
+        , (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-S12/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n # 13
+        , (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-S13/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n # 14
+        , (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-S14/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n # 15
+        , (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-S15/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n # 16
+        , (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-S16/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n # 17
         )
 }
 

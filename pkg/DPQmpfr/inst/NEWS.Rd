@@ -4,7 +4,12 @@
 \title{DPQmpfr News}
 \encoding{UTF-8}
 
-\section{Version 0.3-3 (2024-01-05, svn r282)}{
+\section{Version 0.3-3 (2024-01-26, svn r302)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item \code{stirlerrSer(n, k)} now allows \code{k <= 17}.
+    }
+  }
   \subsection{Misc}{
     \itemize{
       \item internal \code{dpoisEr()}, gets arg \code{log2.min}, back to previous (2020)

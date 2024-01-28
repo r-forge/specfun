@@ -4,20 +4,28 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-9 (2024-01-20, svn r300)}{
+\section{Version 0.5-9 (2024-01-27, svn r302)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{dbinom_raw()} gets a new more accurate
       \code{version = "R4.4"}, using the new \code{pow1p()} function, from
       R-devel, i.e., \R 4.4.0 and newer.
 
-      \item \code{stirlerr()} gets argument \code{lgamma1p}, the function
-      to compute \code{lgamma(n+1)} which was suboptimal for the very
-      rarely used \eqn{n < 1/2} case.
+      \item \code{stirlerr_simpl()} gets argument \code{version}, a string specifying
+      the exact function to be used, currently with options \code{("R3",
+      "lgamma1p", "MM2", "n0")}.  The first being the direct formula
+      hardwired in \R up to versions 4.3.z, \code{"lgamma1p"} is to use
+      \code{lgamma1p(n)} instead of \code{lgamma(n+1)}, whereas
+      \code{"MM2"} is a version using \code{lgamma(n)} and slightly more
+      accurate for \eqn{n \in [1, 5]}, approximately.
+
+      \code{stirlerr()} correspondingly gets argument \code{direct.ver} to
+      be passed to \code{stirlerr_simpl(., version=*)} in the
+      \dQuote{direct} formula case, when \code{n < cutoffs[1]}.
 
       \item \code{stirlerr()} gets argument \code{order} allowing currently
-      up to order 13 terms in Stirling's series (and \emph{not} using
-      \code{cutoffs} or direct formula).
+      up to order 17 terms (constants \code{S0}..\code{S16}) in Stirling's
+      series (and \emph{not} using \code{cutoffs} or direct formula).
 
       \item New \code{stirlerrC()} interfacing to C code which should
       \dQuote{parallelize} R's own C level \code{stirlerr()}.

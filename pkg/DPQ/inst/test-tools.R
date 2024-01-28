@@ -71,3 +71,19 @@ readRDS_ <- function(file, do.time=TRUE, verbose=TRUE, ...) {
 ##' load a named list `L` into environment `envir`
 loadList <- function(L, envir = .GlobalEnv)
     invisible(lapply(names(L), function(nm) assign(nm, L[[nm]], envir=envir)))
+
+## matplot(*, type = "b", ...)  but "smartly": not too many pch
+matplotB <- function(x, y, type = "b", npts = 50L, ...) {
+    stopifnot(type %in% c("p","o","b"), # the ones considered in matplot();  + "c" ?
+              !is.null(dim(y)), length(npts) == 1L, is.numeric(npts), npts == as.integer(npts), npts >= 2L)
+    x1 <- is.null(dx <- dim(x))
+    n <- max(if(x1) length(x) else dx[1L], nrow(y)) # simple; other cases not covered
+    if(n > npts) {
+        matplot  (x, y, type="l", ...)
+        i <- seq.int(1, n, length.out = npts)
+        matpoints(if(x1) x[i] else x[i,], y[i,], type="p", ...)
+    } else { # just
+        matplot(x, y, type=type, ...)
+    }
+}
+

@@ -142,8 +142,10 @@ qbetaD94sim <- function(p = 0.95, # p = 1 - alpha
 if(interactive()) ## try it out small
     rdummy <- qbetaD94sim(a=1, b=1:2, saveDir = tempdir())
 
+## IGNORE_RDIFF_BEGIN
 if(has.sdir || doExtras)
     r.95 <- qbetaD94sim(p = 0.95, saveDir = if(has.sdir) sdir else tempdir())
+## IGNORE_RDIFF_END
 str(r.95)
 ## $ aa
 ## $ bb
