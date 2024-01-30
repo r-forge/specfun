@@ -17,7 +17,7 @@ stirlerrSer(n, k)
   \item{n}{numeric or \dQuote{numeric-alike} vector, typically
     \dQuote{large} positive integer or half integer valued, here typically an
     \code{"mpfr"}-number vector.}
-  \item{k}{integer \emph{scalar}, now in \code{1:17}.}
+  \item{k}{integer \emph{scalar}, now in \code{1:22}.}
   \item{minPrec}{minimal precision (in bits) to be used when coercing
     number-alikes, say, biginteger (\code{\link[gmp]{bigz}}) to \code{"mpfr"}.}
 }
@@ -68,7 +68,7 @@ n <- n. <- c(1:10, 15, 20, 30, 50*(1:6), 100*(4:9), 10^(3:12))
 require(graphics)
 plot(stirlerrM(n) ~ n, log = "x", type = "b", xaxt="n") # --> *negative for large n!
 sfsmisc::eaxis(1, sub10=3) ; abline(h = 0, lty=3, col=adjustcolor(1, 1/2))
-oMax <- 17 # was 8 originally
+oMax <- 22 # was 8 originally
 str(stirSer <- sapply(setNames(1:oMax, paste0("k=",1:oMax)),
                       function(k) stirlerrSer(n, k)))
 cols <- 1:(oMax+1)

@@ -4,10 +4,10 @@
 \title{DPQmpfr News}
 \encoding{UTF-8}
 
-\section{Version 0.3-3 (2024-01-26, svn r302)}{
+\section{Version 0.3-3 (2024-01-29, svn r303)}{
   \subsection{NEW FEATURES}{
     \itemize{
-      \item \code{stirlerrSer(n, k)} now allows \code{k <= 17}.
+      \item \code{stirlerrSer(n, k)} now allows \code{k <= 22}.
     }
   }
   \subsection{Misc}{
