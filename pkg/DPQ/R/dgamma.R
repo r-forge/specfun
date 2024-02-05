@@ -720,7 +720,7 @@ ebd0 <- function(x, M, verbose = getOption("verbose"), ...) {
 "
 
 ##' [D]irect formula for stirlerr(), notably adapted to mpfr-numbers
-stirlerr_simpl <- function(n, minPrec = 128L, version = c("R3", "lgamma1p", "MM2", "n0")) {
+stirlerr_simpl <- function(n, version = c("R3", "lgamma1p", "MM2", "n0"), minPrec = 128L) {
     if(notNum <- !is.numeric(n)) {
         precB <- if(isM <- inherits(n, "mpfr"))
                      max(minPrec, Rmpfr::.getPrec(n))
@@ -780,7 +780,8 @@ gammaVer <- function(x, version, stirlerrV = c("R3", "R4..1", "R4.4_0"),
 stirlerr <- function(n, scheme = c("R3", "R4.4_0"),
                      cutoffs = switch(scheme
                                     , R3   = c(15, 35, 80, 500)
-                                    , R4.4_0 = c(5.0, 5.3, 5.4, 5.7, 6.1, 6.5, 7.0, 7.9, 8.75, 10.5, 13,
+                                    , R4.4_0 = c(4.9, 5.0, 5.1, 5.2, 5.4, 5.7,
+                                                 6.1, 6.5, 7,  7.9, 8.75, 10.5, 13,
                                                  20, 26, 60, 200, 3300, 17.4e6)
                                       )
                     , use.halves = missing(cutoffs)
@@ -804,7 +805,7 @@ stirlerr <- function(n, scheme = c("R3", "R4.4_0"),
             stop("Need CRAN package 'DPQmpfr' (>= 0.3-1) with its stirlerrM()")
     }
     else {
-        ## Derivation: require(Rmpfr); require(gmp); n <- 2*(1:17)
+        ## Derivation: require(Rmpfr); require(gmp); n <- 2*(1:20)
         ##             Sn <- abs(BernoulliQ(n)) / (n*(n-1)) # == |B_n| / (n(n-1))  for n = 2,4,6,...
         ##             noquote(cbind(k = n/2-1, format(mpfr(Sn, 80)), format(Sn)))
         ## -------------> ../Misc/stirlerr-trms.R <-----
@@ -826,7 +827,10 @@ stirlerr <- function(n, scheme = c("R3", "R4.4_0"),
         S14<- 691472.26885131306710839498     ## 1723168255201/2492028
         S15<- 15238221.539407416192283370     ## 7709321041217/505920
         S16<- 382900751.39141414141414141     ## 151628697551/396
-        oMax <- 17L # number of S<j> above
+        S17<- 10882266035.784391089015145     ## 26315271553053477373/2418179400
+        S18<- 347320283765.00225225225225     ## 154210205991661/444
+        S19<- 12369602142269.274454251718     ## 261082718496449122051/21106800
+        oMax <- 20L # number of S<j> above
 
         stopifnot(length(order) == 1L,
                   is.na(order) || (order == (oi <- as.integer(order)) && 1L <= (order <- oi) && oi <= oMax))
@@ -856,6 +860,9 @@ stirlerr <- function(n, scheme = c("R3", "R4.4_0"),
             (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-S14/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n, # 15
             (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-S15/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n, # 16
             (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-S16/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n, # 17
+            (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-(S16-S17/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n, # 18
+            (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-(S16-(S17-S18/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n, # 19
+            (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-(S16-(S17-(S18-S19/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n, # 20
             stop("invalid 'order': ", order)))
         }
         ## --- else use cutoffs[]  --------------------------------------------------------------------
@@ -942,7 +949,6 @@ stirlerr <- function(n, scheme = c("R3", "R4.4_0"),
             if(i.c >= 10 && length(i <- which(rf & cutoffs[-8+i.c] >= n & n > cutoffs[-9+i.c]))) { # k = 15   . < n <= . :
                 n2 <- nn[i]
                 r[i] <- (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-S14/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n[i] # 15
-
             }
             if(i.c >= 11 && length(i <- which(rf & cutoffs[-9+i.c] >= n & n > cutoffs[-10+i.c]))) { # k = 16   . < n <= . :
                 n2 <- nn[i]
@@ -951,6 +957,18 @@ stirlerr <- function(n, scheme = c("R3", "R4.4_0"),
             if(i.c >= 12 && length(i <- which(rf & cutoffs[-10+i.c] >= n & n > cutoffs[-11+i.c]))) { # k = 17   . < n <= . :
                 n2 <- nn[i]
                 r[i] <- (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-S16/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n[i] # 17
+            }
+            if(i.c >= 13 && length(i <- which(rf & cutoffs[-11+i.c] >= n & n > cutoffs[-12+i.c]))) { # k = 18   . < n <= . :
+                n2 <- nn[i]
+                r[i] <- (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-(S16-S17/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n[i] # 18
+            }
+            if(i.c >= 14 && length(i <- which(rf & cutoffs[-12+i.c] >= n & n > cutoffs[-13+i.c]))) { # k = 19   . < n <= . :
+                n2 <- nn[i]
+                r[i] <- (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-(S16-(S17-S18/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n[i] # 19
+            }
+            if(i.c >= 15 && length(i <- which(rf & cutoffs[-13+i.c] >= n & n > cutoffs[-14+i.c]))) { # k = 20   . < n <= . :
+                n2 <- nn[i]
+                r[i] <- (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-(S16-(S17-(S18-S19/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n2)/n[i] # 20
             }
         }
         ## return

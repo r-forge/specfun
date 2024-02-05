@@ -75,7 +75,9 @@ double dpq_stirlerr(double n, stirlerr_version_t version)
 #define S14 691472.26885131306710839498     // 1723168255201/2492028
 #define S15 15238221.539407416192283370     // 7709321041217/505920
 #define S16 382900751.39141414141414141     // 151628697551/396
-
+#define S17 10882266035.784391089015145     // 26315271553053477373/2418179400
+#define S18 347320283765.00225225225225     // 154210205991661/444
+#define S19 12369602142269.274454251718     // 261082718496449122051/21106800
 /*
   exact values for 0, 0.5, 1.0, 1.5, ..., 14.5, 15.0.
 */
@@ -113,11 +115,14 @@ double dpq_stirlerr(double n, stirlerr_version_t version)
 	0.005554733551962801371038690  /* 15.0 */
     };
 
-#define nC 16
+#define nC 19
     const static double cutoffs[nC] = {
-	5.0, // nC-16
-	5.3,
+	4.9, // nC-19
+	5.0,
+	5.1,
+	5.2, // nC-16
 	5.4,
+	5.7, // nC-14
 	6.1,
 	6.5,
 	7.0, // nC-11
@@ -126,7 +131,7 @@ double dpq_stirlerr(double n, stirlerr_version_t version)
 	10.5,
 	13,
 	//-- do *not* change '20' here (see below)
-	20,  // nC-6; was
+	20,  // nC-6;  was
 	26,  // nC-5;  15
 	60,  // nC-4;  35
 	200, // nC-3;  80
@@ -173,9 +178,11 @@ double dpq_stirlerr(double n, stirlerr_version_t version)
       if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-S13/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
       if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-S14/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
       if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-S15/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
-      /* if (n > cutoffs[--k])*/ return
-	                           (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-S16/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
-    } else { // n > cutoffs[nC-5] == 20
+      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-S16/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-(S16-S17/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-(S16-(S17-S18/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
+ /* if (n > cutoffs[--k])*/ return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-(S16-(S17-(S18-S19/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
+     } else { // n > cutoffs[nC-6] == 20
 	nn = n*n;
 	k = nC;
 	if (n > cutoffs[--k])    return S0/n;

@@ -40,6 +40,24 @@ drawEps.h <- function(p2 = -(53:51), negative=FALSE, side = 4, lty = 3, lwd = 2,
          col.axis = col, col=NA, col.ticks=NA)
 }
 
+##=== Really, dpois_raw()  and  dbinom_raw()  *both* use stirlerr(x)  for "all"  'x > 0'
+##            ~~~~~~~~~~~       ~~~~~~~~~~~~             ===========              ===== !
+
+## below, 6 "it's okay, but *far* from perfect:" ===>  need more terms in stirlerr() [
+## April 20: MM added more terms up to S10; 2024-01: up to S12 ..helps a little only
+x <- lseq(1/16, 6, length=2048)
+system.time(stM <- DPQmpfr::stirlerrM(Rmpfr::mpfr(x,2048))) # 1.7 sec elapsed
+plot(x, stirlerr(x, use.halves=FALSE) - stM,      type="l", log="x", main="absolute Error")
+plot(x, stirlerr(x, use.halves=FALSE) / stM - 1,  type="l", log="x", main="relative Error")
+plot(x, abs(stirlerr(x, use.halves=FALSE) / stM - 1), type="l", log="xy",main="|relative Error|")
+abline(h=c(1,2,4)*.Machine$double.eps, lty=3)
+## lgammacor() does *NOT* help, as it is  *designed*  for  x >= 10!
+##
+## ==> Need another chebyshev() or rational-approx. for x in [.1, 7] or so !!
+
+##=============>  see also ../Misc/stirlerr-trms.R  <===============
+##                         ~~~~~~~~~~~~~~~~~~~~~~~
+
 cutoffs <- c(15,35,80,500) # cut points, n=*, in the stirlerr() "algorithm"
 ##
 n <- c(seq(1,15, by=1/4),seq(16, 25, by=1/2), 26:30, seq(32,50, by=2), seq(55,1000, by=5),
@@ -238,7 +256,8 @@ p.stirlerrDev <- function(n, precBits = if(doExtras) 2048L else 512L,
                           scheme = c("R3", "R4.4_0"),
                           cutoffs = switch(match.arg(scheme)
                                          , R3   = c(15, 35, 80, 500)
-                                         , R4.4_0 = c(5.0, 5.3, 5.4, 5.7, 6.1, 6.5, 7.0, 7.9, 8.75, 10.5, 13,
+                                         , R4.4_0 = c(4.9, 5.0, 5.1, 5.2, 5.3, 5.4, 5.7,
+                                                      6.1, 6.5, 7,  7.9, 8.75, 10.5, 13,
                                                       20, 26, 60, 200, 3300, 17.4e6)
                                            ## {FIXME: need to sync} <==> ../man/stirlerr.Rd <==> ../R/dgamma.R
                                            ),
@@ -384,10 +403,10 @@ showProc.time()
     eval(do.call(substitute, list(formals(stirlerr)$cutoffs, list(scheme = scheme))))
 drawCuts <- function(scheme, axis=NA, lty = 3, col = "skyblue", ...) {
     abline(v = (ct <- .stirl.cutoffs(scheme)), lty=lty, col=col, ...)
-    if(is.finite(axis)) axis(axis, at = ct, col=col)
+    if(is.finite(axis)) axisCuts(side = axis, at = ct, col=col, ...)
 }
-axisCuts <- function(scheme, side = 4, col = "skyblue", ...)
-    axis(side, at = .stirl.cutoffs(scheme), col.axis = col, col=NA, col.ticks=NA, ...)
+axisCuts <- function(scheme, side = 3, at = .stirl.cutoffs(scheme), col = "skyblue", line = -3/4, ...)
+    axis(side, at=at, labels=formatC(at), col.axis = col, col=NA, col.ticks=NA, line=line, ...)
 mtextCuts <- function(cutoffs, scheme, ...) {
     if(!missing(scheme)) cutoffs <- .stirl.cutoffs(scheme)
     mtext(paste("cutoffs =", deparse1(cutoffs)), ...)
@@ -396,7 +415,7 @@ mtextCuts <- function(cutoffs, scheme, ...) {
 
 if(do.pdf) { dev.off(); pdf("stirlerr-tst_order_k.pdf") }
 
-mK <- 17L # := max(k)
+mK <- 20L # := max(k)
 ## order = k = 1:mK  terms in series approx:
 k <- 1:mK
 n <- 2^seq(1, 28, by=1/16)
@@ -422,16 +441,16 @@ drawCuts("R4.4_0")
 matplotB(n, relE, cex=2/3, ylim = c(-1,1)*5e-15, col=k,
         log = "x", xaxt="n", main = tit.k)
 eaxis(1, nintLog = 20); abline(h = (-2:2)*2^-53, lty=3, lwd=1/2)
-drawCuts("R4.4_0")
+drawCuts("R4.4_0", axis = 3)
 
 ## log-log  |rel.Err|  -- "linear"
 matplotB(n, abs19(relE), cex=2/3, col=k, ylim = c(8e-17, 1e-3), log = "xy", main=tit.kA)
 mtext(paste("k =", deparse(k))) ; abline(h = 2^-(53:51), lty=3, lwd=1/2)
-drawCuts("R4.4_0")
+drawCuts("R4.4_0", axis = 3)
 
 ## zoom into the critical n region
-nc <- seq(3, 12, by=1/32)
-ncM <- mpfr(nc, 1024)
+nc <- seq(3.5, 11, by=1/128)
+ncM <- mpfr(nc, 256)
 stncM <- stirlerr(ncM) # the "true" values
 stirlO.c <- sapply(k, function(k) stirlerr(nc, order = k))
 relEc <- asNumeric(stirlO.c/stncM -1) # "true" relativ error
@@ -440,10 +459,25 @@ relEc <- asNumeric(stirlO.c/stncM -1) # "true" relativ error
 matplotB(nc, abs19(relEc), cex=2/3, col=k, ylim = c(2e-17, 1e-8),
         log = "xy", xlab = quote(n), main = quote(abs(relErr(stirlerr(n, order==k)))))
 mtext(paste("k =", deparse(k))) ; abline(h = 2^-(53:51), lty=3, lwd=1/2)
-lines(nc, abs19(asNumeric(stirlerr_simpl(nc)/stncM - 1)), lwd=3, col=adjustcolor(2, 2/3))
+lines(nc, abs19(asNumeric(stirlerr_simpl(nc, "R3" )/stncM - 1)), lwd=1.5, col=adjustcolor("thistle", .6))
+lines(nc, abs19(asNumeric(stirlerr_simpl(nc, "MM2")/stncM - 1)), lwd=4,   col=adjustcolor(20, .4))
+## lines(nc, abs19(asNumeric(stirlerr_simpl(nc,"MM2")/stncM - 1)), lwd=3, col=adjustcolor("purple", 2/3))
 legend(10^par("usr")[1], 1e-9, legend=paste0("k=", k), bty="n", lwd=2,
        col=k, lty=1:5, pch= c(1L:9L, 0L, letters)[seq_along(k)])
 drawCuts("R4.4_0")
+
+## Zoom-in [only]
+matplotB(nc, abs19(relEc), cex=2/3, col=k, ylim = c(2e-17, 1e-10), xlim = c(4.8, 6.5),
+        log = "xy", xlab = quote(n), main = quote(abs(relErr(stirlerr(n, order==k)))))
+mtext(paste("k =", deparse(k))) ; abline(h = 2^-(53:51), lty=3, lwd=1/2)
+lines(nc, abs19(asNumeric(stirlerr_simpl(nc, "R3" )/stncM - 1)), lwd=1.5, col=adjustcolor("thistle", .6))
+lines(nc, abs19(asNumeric(stirlerr_simpl(nc, "MM2")/stncM - 1)), lwd=4,   col=adjustcolor(20, .4))
+
+k. <- k[-(1:5)]
+legend(10^par("usr")[1], 1e-10, legend=paste0("k=", k.), bty="n", lwd=2,
+       col=k., lty=1:5, pch= c(1L:9L, 0L, letters)[k.])
+drawCuts("R4.4_0")
+
 
 ##--- Accuracy of "R4.4_0" -------------------------------------------------------
 
@@ -471,13 +505,18 @@ if(TRUE) { # but just so ...
 addOrd <- TRUE
 addOrd <- FALSE
 if(addOrd) {
-    i <- (15 <= nc & nc <= 85)
-    ni <- nc[i]
-    for(k in 7:17) lines(ni, abs19(asNumeric(relErrV(stncM[i], stirlerr(ni, order=k)))), col=k)
+    if(max(nc) >= 100) {
+        i <- (15 <= nc & nc <= 85) # (no-op in [4.75, 7] !)
+        ni <- nc[i]
+    } else { i <- TRUE; ni <- nc }
+    for(k in 7:max(k)) lines(ni, abs19(asNumeric(relErrV(stncM[i], stirlerr(ni, order=k)))), col=adjustcolor(k, 1/3))
 }
+lines(nc, abs19(relE440))# *re* draw!
+
+
 
 ## ------ stirlerr(. order = *)      [again? -- keep?]
-nc <- seq(4.75, 7, by=1/1024)
+nc <- seq(4.75, 7.2, by=1/1024)
 ncM <- mpfr(nc, 1024)
 stncM <- stirlerr(ncM) # the "true" values
 stirlO.c <- sapply(k, function(k) stirlerr(nc, order = k))
@@ -574,22 +613,4 @@ summary(reSpl <- relErrV(target = y, current = yp$y))
 
 
 
-
-##=== Really, dpois_raw()  and  dbinom_raw()  *both* use stirlerr(x)  for "all"  'x > 0'
-##            ~~~~~~~~~~~       ~~~~~~~~~~~~             ===========              ===== !
-
-## below, 6 "it's okay, but *far* from perfect:" ===>  need more terms in stirlerr() [
-## April 20: MM added more terms up to S10; 2024-01: up to S12 ..helps a little only
-x <- lseq(1/16, 6, length=2048)
-system.time(stM <- DPQmpfr::stirlerrM(Rmpfr::mpfr(x,2048))) # 1.7 sec elapsed
-plot(x, stirlerr(x, use.halves=FALSE) - stM,      type="l", log="x", main="absolute Error")
-plot(x, stirlerr(x, use.halves=FALSE) / stM - 1,  type="l", log="x", main="relative Error")
-plot(x, abs(stirlerr(x, use.halves=FALSE) / stM - 1), type="l", log="xy",main="|relative Error|")
-abline(h=c(1,2,4)*.Machine$double.eps, lty=3)
-## lgammacor() does *NOT* help, as it is  *designed*  for  x >= 10!
-##
-## ==> Need another chebyshev() or rational-approx. for x in [.1, 7] or so !!
-
-##=============> For now, see ../Misc/stirlerr-trms.R  <===============
-##                            ~~~~~~~~~~~~~~~~~~~~~~~
 showProc.time()

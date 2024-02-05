@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-9 (2024-01-27, svn r302)}{
+\section{Version 0.5-9 (2024-02-05, svn r304)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{dbinom_raw()} gets a new more accurate
@@ -24,7 +24,7 @@
       \dQuote{direct} formula case, when \code{n < cutoffs[1]}.
 
       \item \code{stirlerr()} gets argument \code{order} allowing currently
-      up to order 17 terms (constants \code{S0}..\code{S16}) in Stirling's
+      up to order 20 terms (constants \code{S0}..\code{S19}) in Stirling's
       series (and \emph{not} using \code{cutoffs} or direct formula).
 
       \item New \code{stirlerrC()} interfacing to C code which should

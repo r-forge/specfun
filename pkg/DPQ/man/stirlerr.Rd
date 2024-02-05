@@ -24,7 +24,8 @@
 stirlerr(n, scheme = c("R3", "R4.4_0"),
          cutoffs = switch(scheme
                         , R3     = c(15, 35, 80, 500)
-                        , R4.4_0 = c(5, 5.3, 5.4, 5.7, 6.1, 6.5, 7, 7.9, 8.75, 10.5, 13,
+                        , R4.4_0 = c(4.9, 5.0, 5.1, 5.2, 5.4, 5.7,
+                                     6.1, 6.5, 7,  7.9, 8.75, 10.5, 13,
                                      20, 26, 60, 200, 3300, 17.4e6)
                           ),
          use.halves = missing(cutoffs),
@@ -34,7 +35,7 @@ stirlerr(n, scheme = c("R3", "R4.4_0"),
 
 stirlerrC(n, version = c("R3", "R4..1", "R4.4_0"))
 
-stirlerr_simpl(n, minPrec = 128L, version = c("R3", "lgamma1p", "MM2", "n0"))
+stirlerr_simpl(n, version = c("R3", "lgamma1p", "MM2", "n0"), minPrec = 128L)
 
 lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
 }
@@ -68,7 +69,7 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
     \code{stirlerr_simpl()} to be used for the \dQuote{direct} case in
     \code{stirlerr(n)}.
   }
-  \item{order}{approximation order, \code{1 <= order <= 17} or \code{NA}
+  \item{order}{approximation order, \code{1 <= order <= 20} or \code{NA}
     for \code{stirlerr()}.  If not \code{NA}, it specifies the number of
     terms to be used in the Stirling series which will be used for all
     \code{n}, i.e., \code{scheme}, \code{cutoffs}, \code{use.halves}, and
@@ -101,7 +102,7 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
       Note that (new in 2024-01) \code{stirlerr(n, order = k)} will
       \emph{not} use \code{cutoffs} nor the direct formula (with its
       \code{direct.ver}), nor halves (\code{use.halves=TRUE}),
-      and allows \eqn{k \le 17}{k <= 17}.
+      and allows \eqn{k \le 20}{k <= 20}.
     }% stirlerr
   }% describe
 }
@@ -140,8 +141,8 @@ st3  <- stirlerr(n, "R3", direct.ver = "lgamma1p") # new? default
 stopifnot(st3 == st3.)
 plot(n, st.n, type = "b", log="xy", ylab = "stirlerr(n)")
 st4 <- stirlerr(n, "R4.4_0", verbose = TRUE) # verbose: give info on cases
-## order = k = 1:17  terms in series approx:
-k <- 1:17
+## order = k = 1:20  terms in series approx:
+k <- 1:20
 stirlOrd <- sapply(k, function(k) stirlerr(n, order = k))
 matlines(n, stirlOrd)
 matplot(n, stirlOrd - st.n, type = "b", cex=1/2, ylim = c(-1,1)/10, log = "x",
