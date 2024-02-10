@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-9 (2024-02-05, svn r304)}{
+\section{Version 0.5-9 (2024-02-10, svn r306)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{dbinom_raw()} gets a new more accurate
@@ -31,7 +31,7 @@
       \dQuote{parallelize} R's own C level \code{stirlerr()}.
 
       More documentation and tests; experiments added in
-      \file{../Misc/stirlerr-trms.R}.
+      \file{../Misc/stirlerr-trms.R}; nice explorations to \file{../tests/stirlerr-tst.R}
 
       \item New functions \code{pow(x,y)} and \code{pow_di(x,y)} computing
       \eqn{x^y} as in \R's C API \file{Rmathlib}.

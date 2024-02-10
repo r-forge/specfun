@@ -103,13 +103,31 @@ relE.lgam1 <-  function(n, precBits = if(doExtras) 1024 else 320) {
 n <- 2^-seq.int(1022, 1, by = -1/4)
 relEx <- relE.lgam1(n)
 
-## Is *equivalent* to 'new' stirlerr_simpl(n version = *):
-stir.allS <- function(n) sapply(eval(formals(stirlerr_simpl)$version),
-                                function(v) stirlerr_simpl(n, version=v))
-stirS <- stir.allS(n)
-releS <- asNumeric(relErrV(stirlerr(mpfr(n,  256)), stirS)) # prec = 256 should suffice!
-all.equal(relEx, releS, tolerance = 0) # see TRUE on Linux
+## Is *equivalent* to 'new' stirlerr_simpl(n version = *)   [not for <mpfr> though, see 'relEmat']:
+simpVer <- eval(formals(stirlerr_simpl)$version)
+stir.allS <- function(n) sapply(simpVer, function(v) stirlerr_simpl(n, version=v))
+stirS <- stir.allS(n) # matrix
+nM <- mpfr(n, 256)  # "high" precision = 256 should suffice!
+stirM  <- stirlerr(nM)
+releS <- asNumeric(relErrV(stirM, stirS))
+          all.equal(relEx, releS, tolerance = 0) # see TRUE on Linux
 stopifnot(all.equal(relEx, releS, tolerance = 1e-15))
+simpVer3 <- simpVer[simpVer != "lgamma1p"] # have no mpfr-ified lgamma1p()!
+## stirlerr_simpl(<mpfr>, *) :
+stirM2 <- sapplyMpfr(simpVer3, function(v) stirlerr_simpl(nM, version=v))
+
+## TODO ?:
+## apply(stirM2, 2, function(v) all.equal(v, stirS, check.class=FALSE))
+## releS2 <- asNumeric(relErrV(stirM2, stirS))
+##           all.equal(relEx, releS, tolerance = 0) # see TRUE on Linux
+## stopifnot(all.equal(relEx, releS, tolerance = 1e-15))
+relEmat <- matrix(NA, ncol(stirM2), ncol(stirS),
+                 dimnames = list(simpVer3, colnames(stirS)))
+for(j in seq_len(ncol(stirM2)))
+    for(k in seq_len(ncol(stirS)))
+        relEmat[j,k] <- asNumeric(relErr(stirM2[,j], stirS[,k]))
+relEmat
+round(-log10(relEmat), 2) # well .. {why? / expected ?}
 
 cols <- c("gray30", adjustcolor(c(2,3,4), 1/2));  lwd <- c(1, 3,3,3)
 stopifnot((k <- length(cols)) == ncol(relEx), k == length(lwd))
@@ -189,6 +207,7 @@ lines(n3, smooth.spline(abs(relEx3)[,3], df=12)$y, lwd=4, col=adjustcolor(cols[3
 plot(n, asNumeric(relErrV(log(mpfr(n, 256)), log(n))), ylim = c(-1,1)*2^-53,
      log="x", type="l", xaxt="n") ## ===> indeed --- log(n) approximation pattern !!
 eaxis(1) ; drawEps.h(negative=TRUE)
+showProc.time()
 
 ## =========== "R3"  vs  "lgamma1p" -------------------------- which is better?
 
@@ -243,6 +262,7 @@ for(j in 1:3) {
 ## ==> lgamma1p(.) very slightly in n ~ 10^-4 -- 10^-2 --- but not where it matters: n ~ 0.1 -- 1 !!
 ##     "MM2"  gets best from  n >~ 1 !
 abline(v=1, lty=3, col = adjustcolor(1, 3/4))
+showProc.time()
 
 
 ###  2. relErr( stirlerr(.) ) ============================================================
@@ -364,6 +384,7 @@ p.stirlerrDev(n=n, stnM=st.nM, cex=1/4, type="o", ylim = 2e-15*c(-1,1),
               cutoffs = cuts)## old default cutoffs = c(15,35, 80, 500)
 
 if(do.pdf) { dev.off(); pdf("stirlerr-relErr_6-fin-3.pdf") }
+showProc.time()
 
 
 ##-- April 20: have more terms up to S10 in stirlerr() --> can use more cutoffs
@@ -422,8 +443,8 @@ n <- 2^seq(1, 28, by=1/16)
 nM <- mpfr(n, 1024)
 stnM <- stirlerr(nM) # the "true" values
 
-stirlOrd <- sapply(k, function(k) stirlerr(n, order = k))
-relE <- asNumeric(stirlOrd/stnM -1) # "true" relativ error
+stirlOrd <- sapply(k, function(k.) stirlerr(n, order = k.))
+relE <- asNumeric(stirlOrd/stnM -1) # "true" relative error
 
 ## use a "smooth" but well visible polette :
 palROBG <- colorRampPalette(c("red", "darkorange2", "blue", "seagreen"), space = "Lab")
@@ -444,16 +465,35 @@ eaxis(1, nintLog = 20); abline(h = (-2:2)*2^-53, lty=3, lwd=1/2)
 drawCuts("R4.4_0", axis = 3)
 
 ## log-log  |rel.Err|  -- "linear"
-matplotB(n, abs19(relE), cex=2/3, col=k, ylim = c(8e-17, 1e-3), log = "xy", main=tit.kA)
+matplotB(n, abs19(relE), cex=2/3, col=k, ylim = c(8e-17, 1e-7), log = "xy", main=tit.kA)
 mtext(paste("k =", deparse(k))) ; abline(h = 2^-(53:51), lty=3, lwd=1/2)
 drawCuts("R4.4_0", axis = 3)
+
+## zoom in -- still "large"
+(n2c <- 2^seq(2, 8, by=1/256))
+nMc <- mpfr(n2c, 1024)
+stnMc <- stirlerr(nMc) # the "true" values
+stirlOrc <- sapply(k, function(k.) stirlerr(n2c, order = k.))
+relEc <- asNumeric(stirlOrc/stnMc -1) # "true" relative error
+
+matplotB(n2c, relEc, cex=2/3, ylim = c(-1,1)*1e-13, col=k,
+         log = "x", xaxt="n", main = tit.k)
+eaxis(1, sub10 = 2)
+drawCuts("R4.4_0", axis=3)
+
+## log-log  |rel.Err|  -- "linear"
+matplotB(n2c, abs19(relEc), cex=2/3, col=k, ylim = c(8e-17, 1e-3), log = "xy", main=tit.kA)
+mtext(paste("k =", deparse(k))) ; abline(h = 2^-(53:51), lty=3, lwd=1/2)
+drawCuts("R4.4_0", axis = 3)
+
 
 ## zoom into the critical n region
 nc <- seq(3.5, 11, by=1/128)
 ncM <- mpfr(nc, 256)
 stncM <- stirlerr(ncM) # the "true" values
 stirlO.c <- sapply(k, function(k) stirlerr(nc, order = k))
-relEc <- asNumeric(stirlO.c/stncM -1) # "true" relativ error
+relEc <- asNumeric(stirlO.c/stncM -1) # "true" relative error
+
 
 ## log-log  |rel.Err|  -- "linear"
 matplotB(nc, abs19(relEc), cex=2/3, col=k, ylim = c(2e-17, 1e-8),
@@ -464,83 +504,244 @@ lines(nc, abs19(asNumeric(stirlerr_simpl(nc, "MM2")/stncM - 1)), lwd=4,   col=ad
 ## lines(nc, abs19(asNumeric(stirlerr_simpl(nc,"MM2")/stncM - 1)), lwd=3, col=adjustcolor("purple", 2/3))
 legend(10^par("usr")[1], 1e-9, legend=paste0("k=", k), bty="n", lwd=2,
        col=k, lty=1:5, pch= c(1L:9L, 0L, letters)[seq_along(k)])
-drawCuts("R4.4_0")
+drawCuts("R4.4_0", axis=3)
 
 ## Zoom-in [only]
-matplotB(nc, abs19(relEc), cex=2/3, col=k, ylim = c(2e-17, 1e-10), xlim = c(4.8, 6.5),
+matplotB(nc, abs19(relEc), cex=2/3, col=k, ylim = c(4e-17, 1e-11), xlim = c(4.8, 6.5),
         log = "xy", xlab = quote(n), main = quote(abs(relErr(stirlerr(n, order==k)))))
 mtext(paste("k =", deparse(k))) ; abline(h = 2^-(53:51), lty=3, lwd=1/2)
 lines(nc, abs19(asNumeric(stirlerr_simpl(nc, "R3" )/stncM - 1)), lwd=1.5, col=adjustcolor("thistle", .6))
 lines(nc, abs19(asNumeric(stirlerr_simpl(nc, "MM2")/stncM - 1)), lwd=4,   col=adjustcolor(20, .4))
 
-k. <- k[-(1:5)]
-legend(10^par("usr")[1], 1e-10, legend=paste0("k=", k.), bty="n", lwd=2,
+k. <- k[-(1:6)]
+legend("bottomleft", legend=paste0("k=", k.), bty="n", lwd=2,
        col=k., lty=1:5, pch= c(1L:9L, 0L, letters)[k.])
-drawCuts("R4.4_0")
+drawCuts("R4.4_0", axis=3)
 
+showProc.time()
 
 ##--- Accuracy of "R4.4_0" -------------------------------------------------------
 
-nc <- seq(5, 200, by=1/256) # for a bigger pix
-nc <- seq(4.75, 7, by=1/1024)
-ncM <- mpfr(nc, 1024)
-stncM <- stirlerr(ncM) # the "true" values
-stirl.440 <- stirlerr(nc, scheme = "R4.4_0")
-stirl.3   <- stirlerr(nc, scheme = "R3")
-relE440 <- asNumeric(relErrV(stncM, stirl.440))
-relE3   <- asNumeric(relErrV(stncM, stirl.3  ))
+for(nc in list(seq(4.75, 28, by=1/512), # for a bigger pix
+               seq(4.75,  9, by=1/1024)))
+{
+  ncM <- mpfr(nc, 1024)
+  stncM <- stirlerr(ncM) # the "true" values
+  stirl.440 <- stirlerr(nc, scheme = "R4.4_0")
+  stirl.3   <- stirlerr(nc, scheme = "R3")
+  relE440 <- asNumeric(relErrV(stncM, stirl.440))
+  relE3   <- asNumeric(relErrV(stncM, stirl.3  ))
+  ##
+  plot(nc, abs19(relE440), xlab=quote(n), main = quote(abs(relErr(stirlerr(n, '"R4.4_0"')))),
+       type = "l", log = "xy", ylim = c(4e-17, 1e-13))
+  mtextCuts(scheme="R4.4_0", cex=4/5)
+  drawCuts("R4.4_0", lty=2, lwd=2, axis=4)
+  drawEps.h()
+  if(max(nc) <= 10) abline(v = 5+(0:20)/10, lty=3, col=adjustcolor(4, 1/2))
+  if(TRUE) { # but just so ...
+      c3 <- adjustcolor("royalblue", 1/2)
+      lines(nc, pmax(abs(relE3), 1e-18), col=c3)
+      title(quote(abs(relErr(stirlerr(n, '"R3"')))), adj=1, col.main = c3)
+      drawCuts("R3", lty=4, col=c3); mtextCuts(scheme="R3", adj=1, col=c3)
+  }
+  addOrd <- TRUE
+  addOrd <- dev.interactive(orNone=TRUE)
+  if(addOrd) {
+      if(max(nc) >= 100) {
+          i <- (15 <= nc & nc <= 85) # (no-op in [4.75, 7] !)
+          ni <- nc[i]
+      } else { i <- TRUE; ni <- nc }
+      for(k in 8:17) lines(ni, abs19(asNumeric(relErrV(stncM[i], stirlerr(ni, order=k)))), col=adjustcolor(k, 1/3))
+  }
+} ## for(nc ..)
 
-plot(nc, abs19(relE440), xlab=quote(n), main = quote(abs(relErr(stirlerr(n, '"R4.4_0"')))),
-     type = "l", log = "xy", ylim = c(4e-17, 1e-13))
-mtextCuts(scheme="R4.4_0")
-drawCuts("R4.4_0", lty=2, lwd=2, axis=4)
-drawEps.h()
-if(max(nc) <= 10) abline(v = 5+(0:20)/10, lty=3, col=adjustcolor(4, 1/2))
-if(TRUE) { # but just so ...
-    c3 <- adjustcolor("royalblue", 1/2)
-    lines(nc, pmax(abs(relE3), 1e-18), col=c3)
-    title(quote(abs(relErr(stirlerr(n, '"R3"')))), adj=1, col.main = c3)
-    drawCuts("R3", lty=4, col=c3); mtextCuts(scheme="R3", adj=1, col=c3)
-}
-addOrd <- TRUE
-addOrd <- FALSE
-if(addOrd) {
-    if(max(nc) >= 100) {
-        i <- (15 <= nc & nc <= 85) # (no-op in [4.75, 7] !)
-        ni <- nc[i]
-    } else { i <- TRUE; ni <- nc }
-    for(k in 7:max(k)) lines(ni, abs19(asNumeric(relErrV(stncM[i], stirlerr(ni, order=k)))), col=adjustcolor(k, 1/3))
-}
+if(FALSE)
 lines(nc, abs19(relE440))# *re* draw!
 
+showProc.time()
 
 
-## ------ stirlerr(. order = *)      [again? -- keep?]
-nc <- seq(4.75, 7.2, by=1/1024)
-ncM <- mpfr(nc, 1024)
-stncM <- stirlerr(ncM) # the "true" values
-stirlO.c <- sapply(k, function(k) stirlerr(nc, order = k))
-relEc <- asNumeric(stirlO.c/stncM -1) # "true" relativ error
+palette("Tableau")
 
-## log  |rel.Err|  -- "linear"
-matplotB(nc, pmax(abs(relEc), 1e-19), col=k, cex = 2/3, ylim = c(2e-17, 1e-11),
-        log = "y", xlab = quote(n), main = quote(abs(relErr(stirlerr(n, order==k)))))
-mtext(paste("k =", deparse(k))) ; abline(h = 2^-(53:51), lty=3, lwd=1/2)
-lines(nc, pmax(asNumeric(stirlerr_simpl(nc)/stncM - 1), 1e-19), lwd=1.5, col=adjustcolor(2, 0.4))
-k. <- k[k >= 6]
-legend("bottomleft", legend=paste0("k=", k.), bty="n", lwd=2,
-       col=k., lty=1:5, pch= c(1L:9L, 0L, letters)[k.])
-abline(v = 5+(0:20)/10, lty=3, col=adjustcolor(10, 1/2))
-drawCuts("R4.4_0")
+## Focus more:
+stirlerrPlot <- function(nc, k, res=NULL, legend.xy = "left", full=TRUE, precB = 1024,
+                         ylim = c(3e-17, 2e-13), cex = 5/4) {
+    stopifnot(require("Rmpfr"), require("graphics"))
+    if(is.list(res) && all(c("nc", "k", "relEc","splarelE") %in% names(res))) { ## do *not* recompute
+        list2env(res, envir = environment())
+    } else { ## compute
+        stopifnot(is.finite(nc), nc > 0, length(nc) >= 100, k == as.integer(k), 0 <= k, k <= 20)
+        ncM <- mpfr(nc, precB)
+        stncM <- stirlerr(ncM) # the "true" values
+        stirlO.c <- sapply(k, function(k) stirlerr(nc, order = k))
+        relEc <- asNumeric(stirlO.c/stncM -1) # "true" relative error
+        ## log  |rel.Err|  -- "linear"
+        ## smooth() on log-scale {and transform back}:
+        splarelE <- apply(log(abs19(relEc)), 2, function(y) exp(smooth.spline(y, df=4)$y))
+        ## the direct formulas (default "R3", "MM2"):
+        arelEs0 <- abs(asNumeric(stirlerr_simpl(nc       )/stncM - 1))
+        arelEs2 <- abs(asNumeric(stirlerr_simpl(nc, "MM2")/stncM - 1))
+    }
+    pch. <- c(1L:9L, 0L, letters)[k]
+    if(full)
+        matplotB(nc, abs19(relEc), col=k, pch = pch., cex=cex, ylim=ylim, log = "y",
+                 xlab = quote(n), main = quote(abs(relErr(stirlerr(n, order==k)))))
+    else ## smooth only
+        matplotB(nc, splarelE, col=adjustcolor(k,2/3), pch=pch., lwd=2, cex=cex, ylim=ylim, log = "y",
+                 xlab = quote(n), main = quote(abs(relErr(stirlerr(n, order==k)))))
+    mtext(paste("k =", deparse(k))) ; abline(h = 2^-(53:51), lty=3, lwd=1/2)
+    legend(legend.xy, legend=paste0("k=", k), bty="n", lwd=2, col=k, lty=1:5, pch = pch.)
+    abline(v = 5+(0:20)/10, lty=3, col=adjustcolor(10, 1/2))
+    drawCuts("R4.4_0", axis=3)
+    if(full) {
+        matlines(nc, splarelE, col=adjustcolor(k,2/3), lwd=4)
+        lines(nc, pmax(arelEs0, 1e-19), lwd=1.5, col=adjustcolor( 2, 0.2))
+        lines(nc, pmax(arelEs2, 1e-19), lwd=1,   col=adjustcolor(10, 0.2))
+    }
+    lines(nc, smooth.spline(arelEs0, df=12)$y, lwd=3, col= adjustcolor( 2, 1/2))
+    lines(nc, smooth.spline(arelEs2, df=12)$y, lwd=3, col= adjustcolor(10, 1/2))
+    invisible(list(nc=nc, k=k, relEc = relEc, splarelE = splarelE, arelEs0=arelEs0, arelEs2=arelEs2))
+}
 
+rr1 <- stirlerrPlot(nc = seq(4.75, 9.0, by=1/1024),
+                    k = 7:20)
+stirlerrPlot(res = rr1, full=FALSE, ylim = c(8e-17, 1e-13))
+if(interactive())
+stirlerrPlot(res = rr1)
 
+rr <- stirlerrPlot(nc = seq(5, 6.25, by=1/2048), k = 9:18)
+stirlerrPlot(res = rr, full=FALSE, ylim = c(8e-17, 1e-13))
+
+invisible()
+showProc.time()
+
+
+##' Find 'cuts', i.e.,  a region  c(k) +/- s(k) i.e. intervals [c(k) - s(k), c(k) + s(k)]
+##' where c(k) is such that relE(n=c(k), k) ~= eps)
+
+##' 1. Find the c1(k)  such that |relE(n, k)| ~= c1(k) * n^{-2k}
+findC1 <- function(n, ks, e1 = 1e-15, e2 = 1e-5, res=NULL, precBits = 1024, do.plot = TRUE, ...)
+{
+    if(is.list(res) && all(c("n", "ks", "arelE") %in% names(res))) { ## do *not* recompute
+        list2env(res, envir = environment())
+    } else { ## compute
+        stopifnot(require("Rmpfr"),
+                  is.numeric(ks), ks == (k. <- as.integer(ks)), length(ks <- k.) >= 1,
+                  length(e1) == 1L, length(e2) == 1L, is.finite(c(e1,e2)), e1 >= 0, e2 >= e1,
+                  0 <= ks, ks <= 20, is.numeric(n), n > 0, is.finite(n), length(n) >= 100)
+        nM <- mpfr(n, precBits)
+        stirM <- stirlerr(nM) # the "true" values
+        stirlOrd <- sapply(ks, function(k) stirlerr(n, order = k))
+        arelE <- abs(asNumeric(stirlOrd/stirM -1)) # "true" relative error
+    }
+    arelE19 <- pmax(arelE, 1e-19)
+    ## log  |rel.Err|  -- "linear"
+    ## on log-scale {and transform back; for linear fit, only use values inside [e1, e2]
+    if(do.plot) # experi
+        matplotB(n, arelE19, log="xy", ...)
+    ##  matplot(n, arelE19, type="l", log="xy", xlim = c(min(n), 20))
+
+    ## re-compute these, as they *also* depend  on (e1, e2)
+    c1 <- vapply(seq_along(ks), function(i) {
+        k <- ks[i]
+        y <- arelE19[,i]
+        iUse <- e1 <= y & y <= e2
+        if(sum(iUse) < 10) stop("only", sum(iUse), "values in [e1,e2]")
+            ## .lm.fit(cbind(1, log(n[iUse])), log(y[iUse]))$coefficients
+        ## rather, we *know* the error is  c* n^{-2k} , i.e.,
+        ##      log |relE| = log(c) - 2k * log(n)
+        ## <==> c = exp( log|relE| + 2k * log(n))
+        exp(mean(log(y[iUse]) + 2*k * log(n[iUse])))
+    }, numeric(1))
+    if(do.plot)
+        for(i in seq_along(ks))
+            lines(n, c1[i] * n^(-2*ks[i]), col=adjustcolor(i, 1/3), lwd = 4, lty = 2)
+    invisible(list(n=n, ks=ks, arelE = arelE, c1 = c1))
+} ## findC1()
+
+c1.Res <- findC1(n = 2^seq(2, 26, by=1/128), ks = 1:18)
+## the same, zoomed in:
+findC1(res = c1.Res, xlim = c(4, 40), ylim = c(2e-17, 1e-12)); drawEps.h(); eaxis(1, sub10=2)
+ks <- c1.Res$ks; pch. <- c(1L:9L, 0L, letters)[ks]
+legend("left", legend=paste0("k=", ks), bty="n", lwd=2, col=ks, lty=1:5, pch = pch.)
+
+## smaller set : larger e1 :
+c1.r2 <- findC1(res = c1.Res, xlim = c(4, 30), ylim = c(4e-17, 1e-13), e1 = 4e-15)
+drawEps.h(); legend("left", legend=paste0("k=", ks), bty="n", lwd=2, col=ks, lty=1:5, pch = pch.)
+
+print(digits = 4,
+      cbind(ks, c1. = c1.Res$c1, c1.2 = c1.r2$c1,
+            relD = round(relErrV(c1.r2$c1, c1.Res$c1), 4)))
+
+## 2. Now, find the n(k) +/- se.n(k)  intervals
+## Use these c1
+n.ep <- function(eps, c1Res, ks = c1Res$ks, c1 = c1Res$c1, ...) {
+    stopifnot(is.finite(eps), length(eps) == 1L, eps > 0,
+              length(ks) == length(c1), is.numeric(c1), is.integer(ks), ks >= 1)
+    ## n: given k, the location where the  |relE(n,k)| line {in log-log} cuts  y = eps
+    ##     |relE(n,k)  ~= c1 * n^{-2k}          <==>
+    ##  log|relE(n,k)| ~= log(c1) - 2k* log(n)  <==>
+    ## c := mean{  exp( log|relE(n,k)| + 2k* log(n) ) }  ------- see findC1()
+    ## now,  solve for  n :
+    ##     c1 * n^{-2k}      == eps
+    ## log(c1) - 2k* log(n)  == log(eps)
+    ##      log(n)  ==     (log(eps) - log(c1)) / (-2k)	<==>
+    ##        n     ==  exp((log(c1) - log(eps)) / 2k)
+    exp((log(c1) - log(eps))/(2*ks))
+}
+ne2 <- n.ep(2^-51, c1Res = c1.r2) ## ok
+ne1 <- n.ep(2^-52, c1Res = c1.r2)
+ne. <- n.ep(2^-53, c1Res = c1.r2)
+
+form <- function(n) format(signif(n, 3), scientific=FALSE)
+data.frame(k = ks, ne2 = form(ne2), ne1 = form(ne1), ne. = form(ne.),
+           cutoffs = form(rev(.stirl.cutoffs("R4.4_0")[-1])))
+
+##    ------- Linux F 36/38 x86_64 (nb-mm5|v-lynne)
+##  k        ne2         ne1         ne.     cutoffs
+##  1 8660000.00 12200000.00 17300000.00 17400000.00
+##  2    2150.00     2560.00     3040.00     3700.00
+##  3     159.00      178.00      200.00      200.00
+##  4      46.60       50.80       55.40       81.00
+##  5      23.40       25.10       26.90       36.00
+##  6      15.20       16.10       17.10       25.00
+##  7      11.50       12.10       12.70       19.00
+##  8       9.43        9.85       10.30       14.00
+##  9       8.20        8.53        8.86       11.00
+## 10       7.42        7.68        7.95        9.50
+## 11       6.89        7.11        7.34        8.80
+## 12       6.53        6.72        6.92        8.25
+## 13       6.27        6.44        6.62        7.60
+## 14       6.10        6.25        6.41        7.10
+## 15       5.98        6.12        6.26        6.50 * (not used)
+## 16       5.90        6.03        6.16        6.50 *   "   "
+## 17       5.85        5.97        6.10        6.50 *   "   "
+## 18       5.83        5.95        6.06        6.50 << used all the way down to 5.25
+
+## ok --- correct orrder of magnitude ! --- good!
+
+"------------- TODO ----------------"
+
+## 2b.  found *interval* around the  'n(eps)' values
+
+## 3. Then for each of the intervals, compare  order  k  vs k+1
+## --  ==> optimal cutoff  { how much platform dependency ?? }
+
+check1ord <- function(n, k, precBits = 1024,
+                      nM = mpfr(n, precBits), stnM = stirlerr(nM),
+                      stirlOrd = sapply(k, function(.k.) stirlerr(n, order = .k.)),
+                      relE = asNumeric(stirlOrd/stnM -1), # "true" relative error
+                      relEkk1 = relE[,k+(0:1)]) {
+    ## check  relErrV( stirlerr(n, order=k )  vs
+    ##                 stirlerr(n, order=k+1)
+}
+
+
 ## ========== Try a slightly better direct formula ======================================================
 
 ## after some trial error:  gamma(n+1) = n*gamma(n) ==> lgamma(n+1) = lgamma(n) + log(n)
 ## stirlerrD2 <- function(n) lgamma(n) + n*(1-(l.n <- log(n))) + (l.n - log(2*pi))/2
 
-## the above plot
-lines(nc, pmax(asNumeric(stirlerr_simpl(nc, "MM2")/stncM - 1), 1e-19), lwd=1, col=adjustcolor(10, 0.4))
 
 palette("default")
 
@@ -568,7 +769,7 @@ signif(apply(abs(relE), 2, summary), 4)
 ## Max.    1.284e-13 9.382e-14
 
 c2 <- adjustcolor(1:2, 0.6)
-matplotB(n, pmax(abs(relE), 1e-19), type="o", cex=3/4, log="y", ylim = c(8e-17, 1.3e-13), yaxt="n", col=c2)
+matplotB(n, abs19(relE), type="o", cex=3/4, log="y", ylim = c(8e-17, 1.3e-13), yaxt="n", col=c2)
 eaxis(2)
 abline(h = 2^-53, lty=1, col="gray")
 smrelE <- apply(abs(relE), 2, \(y) lowess(n, y, f = 0.1)$y)

@@ -24,9 +24,12 @@
 stirlerr(n, scheme = c("R3", "R4.4_0"),
          cutoffs = switch(scheme
                         , R3     = c(15, 35, 80, 500)
-                        , R4.4_0 = c(4.9, 5.0, 5.1, 5.2, 5.4, 5.7,
-                                     6.1, 6.5, 7,  7.9, 8.75, 10.5, 13,
-                                     20, 26, 60, 200, 3300, 17.4e6)
+                        , R4.4_0 = c(5.25, rep(6.5, 4), 7.1, 7.6, 8.25, 8.8, 9.5, 11, 14, 19,
+                                                 25, 36, 81, 200, 3700, 17.4e6)
+                        %% was Dec'23--Jan'24, unreleased:
+                        %% , R4.4_0 = c(4.9, 5.0, 5.1, 5.2, 5.4, 5.7,
+                        %%              6.1, 6.5, 7,  7.9, 8.75, 10.5, 13,
+                        %%              20, 26, 60, 200, 3300, 17.4e6)
                           ),
          use.halves = missing(cutoffs),
          direct.ver = c("R3", "lgamma1p", "MM2", "n0"),
@@ -103,6 +106,8 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
       \emph{not} use \code{cutoffs} nor the direct formula (with its
       \code{direct.ver}), nor halves (\code{use.halves=TRUE}),
       and allows \eqn{k \le 20}{k <= 20}.
+      Tests seem to indicate that for current double precision arithmetic,
+      only \eqn{k \le 17} seem to make sense. % see ../tests/stirlerr-tst.R
     }% stirlerr
   }% describe
 }

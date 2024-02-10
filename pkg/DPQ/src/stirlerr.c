@@ -43,7 +43,7 @@
  * see also lgammacor() in ./lgammacor.c  which computes almost the same!
  *
  * NB: stirlerr(n/2) & stirlerr((n+1)/2) are called from dt(x,n) for all real n > 0 ;
- *     stirlerr(n/2) from gamma(n/2) when n is integer and 10 < |n|/2 <= 50
+ *     stirlerr(x) from gammafn(x) when |x| > 10,  2|x| is integer, but |x| is *not* in {11:50}
  *     stirlerr(x)   from dpois_raw(x, lam) for any  x > 0; --> ./dpois.c [dpois_raw() called by many]
  *     stirlerr(n), stirlerr(x), stirlerr(n-x) from binom_raw(x, n, ..) for all possible 0 < x < n
  */
@@ -78,6 +78,7 @@ double dpq_stirlerr(double n, stirlerr_version_t version)
 #define S17 10882266035.784391089015145     // 26315271553053477373/2418179400
 #define S18 347320283765.00225225225225     // 154210205991661/444
 #define S19 12369602142269.274454251718     // 261082718496449122051/21106800
+
 /*
   exact values for 0, 0.5, 1.0, 1.5, ..., 14.5, 15.0.
 */

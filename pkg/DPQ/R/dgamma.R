@@ -729,11 +729,11 @@ stirlerr_simpl <- function(n, version = c("R3", "lgamma1p", "MM2", "n0"), minPre
                  else
                      minPrec
         pi <- Rmpfr::Const("pi", precB)
-        M_LN2PI       <- log(2*pi)
-        M_LN_SQRT_2PI <- M_LN2PI/2
+        M_LN_2PI      <- log(2*pi)
+        M_LN_SQRT_2PI <- M_LN_2PI/2
     } else { ## numeric
-        M_LN2PI <- 1.837877066409345483 # ~ log(2*Const("pi",60)); very slightly more accurate than log(2*pi):
-        ## 1 - log(2*pi)/M_LN2PI # 1.110223e-16 = 2^-53  is "fine" (but not zero)
+        M_LN_2PI <- 1.837877066409345483 # ~ log(2*Const("pi",60)); very slightly more accurate than log(2*pi):
+        ## 1 - log(2*pi)/M_LN_2PI # 1.110223e-16 = 2^-53  is "fine" (but not zero)
         ## R's src/nmath/ had log(sqrt(2*Pi)) == log(2*Pi)/2
         M_LN_SQRT_2PI <- 0.91893853320467274153 # and again 1 - (log(2*pi)/2)/M_LN_SQRT_2PI |--> 1.11022e-16
     }
@@ -749,9 +749,9 @@ stirlerr_simpl <- function(n, version = c("R3", "lgamma1p", "MM2", "n0"), minPre
            "lgamma1p" = lgamma1p(n) - (n + 0.5)*log(n) + n - M_LN_SQRT_2PI,
            "MM2"    = { ## a few bits better for  n in [1, 5] :
                         l.n <- log(n)
-                        lgamma(n) + n*(1 - l.n) + (l.n - M_LN2PI)/2
+                        lgamma(n) + n*(1 - l.n) + (l.n - M_LN_2PI)/2
            },
-           "n0" = -(log(n) + M_LN2PI)/2,
+           "n0" = -(log(n) + M_LN_2PI)/2,
            stop("invalid 'version': ", match.arg(version)))
 }
 
@@ -780,9 +780,8 @@ gammaVer <- function(x, version, stirlerrV = c("R3", "R4..1", "R4.4_0"),
 stirlerr <- function(n, scheme = c("R3", "R4.4_0"),
                      cutoffs = switch(scheme
                                     , R3   = c(15, 35, 80, 500)
-                                    , R4.4_0 = c(4.9, 5.0, 5.1, 5.2, 5.4, 5.7,
-                                                 6.1, 6.5, 7,  7.9, 8.75, 10.5, 13,
-                                                 20, 26, 60, 200, 3300, 17.4e6)
+                                    , R4.4_0 = c(5.25, rep(6.5, 4), 7.1, 7.6, 8.25, 8.8, 9.5, 11, 14, 19,
+                                                 25, 36, 81, 200, 3700, 17.4e6)
                                       )
                     , use.halves = missing(cutoffs)
                      ## had  lgamma1p = lgamma1pC # was "hard wired"  \(x) lgamma(x+1)
@@ -896,7 +895,7 @@ stirlerr <- function(n, scheme = c("R3", "R4.4_0"),
             if(verbose) {
                 cat(" case II (n > ",format(cutoffs[1]),"), ",nC, " cutoffs: (",
                     paste(cutoffs, collapse=", "),"):  n in cutoff intervals:")
-                print(table(cut(n[n > cutoffs[1]], c(cutoffs,Inf))))
+                print(table(cut(n[n > cutoffs[1]], unique(c(cutoffs,Inf)))))
             }
 
             if(scheme != "R3" && length(i <- which(n > cutoffs[5+i.c])))        # k = 1 term:  n > c_[nC] = 1.7e7
