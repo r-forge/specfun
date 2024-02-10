@@ -780,8 +780,8 @@ gammaVer <- function(x, version, stirlerrV = c("R3", "R4..1", "R4.4_0"),
 stirlerr <- function(n, scheme = c("R3", "R4.4_0"),
                      cutoffs = switch(scheme
                                     , R3   = c(15, 35, 80, 500)
-                                    , R4.4_0 = c(5.25, rep(6.5, 4), 7.1, 7.6, 8.25, 8.8, 9.5, 11, 14, 19,
-                                                 25, 36, 81, 200, 3700, 17.4e6)
+                                    , R4.4_0 = c(5.25, rep(6.5, 4), 7.1, 7.6, 8.25, 8.8, 9.5, 11,
+                                                 14, 19,   25, 36, 81, 200, 3700, 17.4e6)
                                       )
                     , use.halves = missing(cutoffs)
                      ## had  lgamma1p = lgamma1pC # was "hard wired"  \(x) lgamma(x+1)
