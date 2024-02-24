@@ -1,7 +1,7 @@
 Package: DPQ
 Title: Density, Probability, Quantile ('DPQ') Computations
 Version: 0.5-9
-Date: 2024-02-10
+Date: 2024-02-25
 VersionNote: Last CRAN: 0.5-8 on 2023-11-30
 Authors@R: c(person("Martin","Maechler", role=c("aut","cre"),
                     email="maechler@stat.math.ethz.ch", comment = c(ORCID = "0000-0002-8685-9910"))
@@ -27,8 +27,8 @@ Description: Computations for approximations and alternatives for the 'DPQ'
   R pbeta(), qgamma(), ..., etc: {'"dpq"'-functions}.
 Depends: R (>= 4.0.0)
 Imports: stats, graphics, methods, utils, sfsmisc (>= 1.1-14)
-Suggests: Rmpfr, DPQmpfr (>= 0.3-1), gmp, MASS, mgcv, scatterplot3d, interp
-SuggestsNote: MASS::fractions() in ex | mgcv, scatt.., interp: some tests/
+Suggests: Rmpfr, DPQmpfr (>= 0.3-1), gmp, MASS, mgcv, scatterplot3d, interp, cobs
+SuggestsNote: MASS::fractions() in ex | mgcv, scatt.., .., cobs: some tests/
 License: GPL (>= 2)
 Encoding: UTF-8
 URL: https://specfun.r-forge.r-project.org/,

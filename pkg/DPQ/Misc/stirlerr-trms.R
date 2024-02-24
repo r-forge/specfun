@@ -1,6 +1,8 @@
 ### <---> ../R/dgamma.R  stirlerr() definition
 ###       ~~~~~~~~~~~~~  ==========
 
+##===> see gmp :: BernoulliQ() -- below !!
+
 ## From Maple asympt(ln(GAMMA(x+1)), x, 23);
 ##>> ~/maple/gamma-asympt.mw
 ##>> ~/maple/gamma-asympt-3.tex <<
@@ -26,15 +28,16 @@ as.bigq(77683, 5796),	## 77683/5796
 NULL)
 
 ## Actually, since ~ 2021, with BernoulliQ() in {gmp}, you can directly get e.g. 16 terms :
-n <- 2*(1:16)
+while(!require("gmp")) install.packages("gmp")
+n <- 2*(1:20)
 (Sq <- abs(BernoulliQ(n))/(n*(n-1))) # == |B_n| / (n(n-1))  for n = 2,4,6,...
 ##
-##  [1] 1/12                  1/360                 1/1260
-##  [4] 1/1680                1/1188                691/360360
-##  [7] 1/156                 3617/122400           43867/244188
-## [10] 174611/125400         77683/5796            236364091/1506960
-## [13] 657931/300            3392780147/93960      1723168255201/2492028
-## [16] 7709321041217/505920
+##  [1] 1/12                  1/360                 1/1260                 1/1680               
+##  [5] 1/1188                691/360360            1/156                  3617/122400          
+##  [9] 43867/244188          174611/125400         77683/5796             236364091/1506960    
+## [13] 657931/300            3392780147/93960      1723168255201/2492028  7709321041217/505920 
+## [17] 151628697551/396      26315271553053477373/2418179400
+## [19] 154210205991661/444   261082718496449122051/21106800 
 
 require(Rmpfr)
 cbind(mpfr(Sq, 80))
@@ -53,24 +56,16 @@ cbind(mpfr(Sq, 80))
 ## [12,]     156.84828462600201730636509
 ## [13,]     2193.1033333333333333333318
 ## [14,]     36108.771253724989357173269
-## [15,]     691472.26885131306710839498
-## [16,]     15238221.539407416192283370
-
+## .......
 
 S0 <-    0.083333333333333333333333368
 S1 <-   0.0027777777777777777777777776
 S2 <-  0.00079365079365079365079365075 ## 1/1260
 S3 <-  0.00059523809523809523809523806 ## 1/1680
 S4 <-  0.00084175084175084175084175104 ## 1/1188
-S5 <-   0.0019175269175269175269175262 ## 691/360360
-S6 <-   0.0064102564102564102564102561 ## 1/156
-S7 <-    0.029550653594771241830065352 ## 3617/122400
-S8 <-     0.17964437236883057316493850 ## 43867/244188
-S9 <-      1.3924322169059011164274315 ## 174611/125400
-S10 <      13.402864044168391994478957 ## 77683/5796
-S11 <-     156.84828462600201730636509 ## 236364091/1506960
-S12 <-     2193.1033333333333333333333 ## 657931/300
-
+##......
+## ===> ~/R/Pkgs/DPQ/R/dgamma.R  and ../src/stirlerr.c
+##      ~~~~~~~~~~~~~~~~~~~~~~~      ~~~~~~~~~~~~~~~~~
 
 ##=======================================================================================================
 
@@ -87,8 +82,7 @@ Series[LogGamma[z+1] - (z+1/2)*Log[z] + z - Log[2 Pi]/2, {z, 0, 12}]
 -1/2 log(2 π z) + z (-log(z) - gamma + 1) + (π^2 z^2)/12 + (z^3 polygamma(2, 1))/6 + (π^4 z^4)/360 + (z^5 polygamma(4, 1))/120 + (π^6 z^6)/5670 + (z^7 polygamma(6, 1))/5040 + (π^8 z^8)/75600 + (z^9 polygamma(8, 1))/362880 + (π^10 z^10)/935550 + (z^11 polygamma(10, 1))/39916800 + (691 π^12 z^12)/7662154500 + O(z^13)
 ## (generalized Puiseux series)
 
-
-## MM: R code
+## MM: *towards* R code
 -1/2 log(2 π z) + z (-log(z) - gamma + 1) + (π^2 z^2)/12 + (z^3 psigamma(1, 2))/6 + (π^4 z^4)/360 + (z^5 psigamma(1, 4))/120 + (π^6 z^6)/5670 + (z^7 psigamma(1, 6))/5040 + (π^8 z^8)/75600 + (z^9 psigamma(1, 8))/362880 + (π^10 z^10)/935550 + (z^11 polygamma(10, 1))/39916800 + (691 π^12 z^12)/7662154500 ## + O(z^13)
 ## (generalized Puiseux series)
 
@@ -186,6 +180,7 @@ psigamma(5, deriv=6) # -0.0133163
 '40320 (5170139875/5159780352 - ζ(9))' #-0.026121932577157847256668711028032780542422983569899521811529705...
 40320*(BZ(5170139875)/5159780352 - Rmpfr::zeta(9))
 psigamma(5, deriv=8) #  -0.02612193
+
 
 ##===========================================================================
 ##----------------- R code -------------------------
@@ -198,12 +193,12 @@ Const("pi",    128)
 ## no Rmpfr here, for now:
 gamma <- 0.5772156649015328606065120900824024310432
 π     <- 3.141592653589793238462643383279502884195
-## z = 0:
+## z = 0: ---------------------------------------------------
 f0. <- function(z)
 -1/2*log(2*π*z) + z*(-log(z) - gamma + 1) + (π^2 * z^2)/12 + (z^3* psigamma(1, 2))/6 + (π^4 * z^4)/360 + (z^5* psigamma(1, 4))/120 + (π^6 * z^6)/5670 + (z^7* psigamma(1, 6))/5040 + (π^8 * z^8)/75600 + (z^9* psigamma(1, 8))/362880 + (π^10 * z^10)/935550 + (z^11 * psigamma(1, 10))/39916800 + (691 * π^12 * z^12)/7662154500 ## + O(z^13)
 ##==> see f0() further below, after f00()
 
-## z = 4:
+## z = 4: ---------------------------------------------------
 f4. <- function(z)
 (4 - 9*log(2) + log(24) - 1/2*log(2*π)) + (z - 4) * (47/24 - gamma - log(4)) + 1/576*(48*π^2 - 473) * (z - 4)^2 + (z - 4)^3*(1/128 + psigamma(5, 2)/6) + (π^4/360 - 44873/165888) * (z - 4)^4 + ((z - 4)^5*(3 + 256* psigamma(5, 4)))/30720 + (π^6/5670 - 30376837/179159040) * (z - 4)^6 + (z - 4)^7*(1/688128 + psigamma(5, 6)/5040) + (π^8/75600 - 6044274287/48157949952) * (z - 4)^8 + ((z - 4)^9* psigamma(5, 8))/362880 ## + O((z - 4)^10)
 ## improve:
@@ -215,17 +210,7 @@ Gamma <- Const("gamma", 128)
 gamma <- asNumeric(Gamma)
 BZ <- gmp::as.bigz
 
-## really too crude approximation
-f000 <- function(z) -log(z)/2
-x <- 10^-(308:80)
-relE000 <- asNumeric(relErrV(stirlerrM(mpfr(x, 256)), f000(x)))
-summary(relE000)
-##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
-## 0.002598 0.003190 0.004131 0.004752 0.005860 0.010078
-##
-#  ===> far away from accurate ... forget about it !
-
-## This is good however for small z :
+## This is good however for small z ~= 0:
 C0 <- asNumeric(c0) # log(2*Pi)/2 ~= 0.9189
 f00 <- function(z) -(log(z)/2 + C0)
 
@@ -246,7 +231,6 @@ abline(h=c(-2:2)*2^-53, lty=3, col="gray")
 
 plot(x,  abs(relE00), type="l", log="xy",
      main = "|relative Error|  of  -(log(x)/2 + C0)  approx. to  stirlerr(x)")
-lines(x, abs(relE000), col = adjustcolor(4, 1/2), lwd=2)
 lines(lowess(x, abs(relE00), f=.1), col=2, lwd=2)
 abline(h=c(1:2,4)*2^-53, lty=3, col="gray")
 p2 <- -(57:54)
@@ -281,7 +265,7 @@ c06  <- asNumeric(Pi^10/935550)
 c0z5 <- asNumeric(-zeta(11)/11) # == psigamma(1, 10)/39916800
 c07  <- asNumeric(691 * Pi^12/7662154500)
 
-## f0. <- function(z)
+## see above: f0. <- function(z)
 ## -1/2*log(2*π*z) + z*(-log(z) - gamma + 1) + (π^2 * z^2)/12 + (z^3* psigamma(1, 2))/6 + (π^4 * z^4)/360 + (z^5* psigamma(1, 4))/120 + (π^6 * z^6)/5670 + (z^7* psigamma(1, 6))/5040 + (π^8 * z^8)/75600 + (z^9* psigamma(1, 8))/362880 ## + O(z^10)
 
 ## FYI   f00 <- function(z) -(log(z)/2 + C0)
@@ -332,6 +316,7 @@ f0_ <- function(z, order) {
 
 psigamma(5, 6) # see above
 720*(BZ(36130315)/35831808 - Rmpfr::zeta(7))
+## derive --- how to compute   z4.* -----------------
 ## z4.7:
 (1/688128 + psigamma(5, 6)/5040) # -1.1889e-6
 ## == (N(1/BZ(688128)) + psigamma(5, 6)/5040)
@@ -351,12 +336,11 @@ psigamma(5, 8) / 362880 #  -7.198504e-08
 (mpfr(BZ(5170139875)/BZ(46438023168),  256) - Rmpfr::zeta(mpfr(9, 256))/9) #
 ## -7.198504347761752440660469308871467301152718135444092209967401253877220923287034e-8
 
-1/BZ(688128) + ..........)
+## 1/BZ(688128) + ..........)
+##  .......... / 362880) # psigamma(5, 8)/362880
 
- .......... / 362880) # psigamma(5, 8)/362880
 
-
-## (4 - 9*log(2) + log(24) - 1/2*log(2*π)) - accurately
+## (4 - 9*log(2) + log(24) - 1/2*log(2*π)) - accurately == c4.0 :
 c4.0 <- asNumeric(4 - 6*L2 + L3 - c0)
 c4.1 <- asNumeric(BZ(47)/24 - gamma - 2*L2) # 47/24 - gamma - log(4)
 c4.2 <- asNumeric((48*Pi^2 - 473)/576) # (48*π^2 - 473)/576  = 0.00128647..
@@ -392,7 +376,7 @@ f4 <- function(z) {
                           z_4 *(c4.4 +
                                 z_4 *(c4.5 +
                                       z_4 *(c4.6 +
-                                            z_4 *((1/688128 + psigamma(5, 6)/5040) +
+                                            z_4 *(c4.7 +
                                                   z_4 *(c4.8 +
                                                         z_4 * c4.9)))))))) ## + O((z - 4)^10)
 }
@@ -406,7 +390,8 @@ f5 <- function(z)
 ## try/test  them ===============================================================
 1
 ## 1.  z = 0 :
-f0xy <- curve(f0, 0, 1.1, n = 1001)
+f0xy  <- curve(f0,  0, 1.1, n = 1001)
+require(DPQ)
 lines(stirlerr(x) ~ x, data=f0xy,  lwd = 3, col = adjustcolor(2, 1/2))
                                         # "looks good" ...
                                         # but how large is the error?
@@ -438,10 +423,12 @@ xM <- mpfr(x, 512)
 system.time( ## takes time
 relEall <- vapply(0:f0.ord.max,
                   function(io) asNumeric(f0_(x, io) / stirlerrM(xM) - 1), x)
-) # ~ 6.55 sec (7 sec on lynne) elapsed
+) # ~ 6.55 sec (7.2 sec on lynne) elapsed
 
 matplot(x, relEall, type="l", log="x", ylim = c(-1,1)*1e-13, axes=FALSE)
 eaxis(1, nintLog=20); eaxis(2) #                      ^^^^^    ==> zoom in 100 x :
+
+###=== two nicer plots :
 
 ## 13:1 : plot in reverse order
 cols <- adjustcolor(13:1, 3/4)
@@ -467,7 +454,11 @@ abline(h = c(1,2,4)*2^-53, lty=3, col=adjustcolor("gray20", 1/2))
 legend("topleft", legend=paste("order", 0:12, sep=" = "), ncol = 5,
        col=rev(cols), lty=rev(ltys), bty="n")
 
+" ===> 'nice' to get fast accurate approximations
+ *BUT* only for |n| <~ 0.1;  ( *not* up to n ~= 1 or even 2) ===> z=4 etc below
+"
 ##====================================================
+
 
 ## 2.  z = 4 :
 ## -----------
@@ -478,14 +469,19 @@ lines(stirlerr(x) ~ x, data=f4xy,  lwd = 3, col = adjustcolor(2, 1/2))
 ##
 x <- seq(3.5, 4.5, by = 2^-10)
 xM <- mpfr(x, 256)
-plot (x, abs(asNumeric(f4(x)/stirlerrM(xM) -1)), type = "l", lwd=2, log="y")
-lines(x, abs(asNumeric(f4.2(x)/stirlerrM(xM) -1)), col=2)
-lines(x, abs(asNumeric(f4. (x)/stirlerrM(xM) -1)), col=3)
+plot (x, abs(asNumeric(f4(x) / stirlerrM(xM) -1)), type = "l", lwd=2, log="y")
+lines(x, abs(asNumeric(f4.2(x)/stirlerrM(xM) -1)), col=2) # the "same"
+lines(x, abs(asNumeric(f4. (x)/stirlerrM(xM) -1)), col=3) # *much* worse
 abline(h = 2^-53*1:4, lty=3)
-## good enough (53-bit) in ca [3.9, 4.1].....
-
-################## Use Chebyshev - Approximation ###############
+## good enough (53-bit) only in ~ [3.9, 4.1].....
+##                                 ........
 
+all.equal(f4(x), f4.2(x), tol=0)  # "Mean relative difference: 3.781247e-16"
+all.equal(f4(x), f4.2(x), tol=0, countEQ = TRUE)# "Mean rel... 1.895187e-16"
+
+
+
+################## Use Chebyshev - Approximation *instead* ###############
 
 ## 1. -- the full relevant interval, say [1/16, 8]
 
@@ -499,11 +495,11 @@ Pi <- Const("pi", 256)
 C0 <- log(2*Pi)/2
 
 ## nicer function: "subtract" the main term (close x=0) of stirlerr
-str(stirle1 <- stirle + log(2 * Pi * xM)/2)
+str(stirl1 <- stirle + log(2 * Pi * xM)/2)
 ## Class 'mpfr' [package "Rmpfr"] of length 2000 and precision 256
 ##  0.202829694846 0.203177914207 ...
 
-plot(x, asNumeric(stirle1), type="l", log="x")
+plot(x, asNumeric(stirl1), type="l", log="x")
 ## does look "simple" nice (in  log(x) - scale !!)
 
 require(pracma)
@@ -536,22 +532,23 @@ require(pracma)
 
 chebApprox # defines the polynomial cP and coefficients for fun;
            # then evaluates these at x:
-function (x, fun, a, b, n)
-{
-    cP <- chebPoly(n)
-    cC <- chebCoeff(fun, a, b, n)
-    p <- drop(cC %*% cP)
-    c0 <- cC[1]
-    xx <- (2 * x - (b + a))/(b - a)
-    yy <- polyval(p, xx) - c0/2
-    return(yy)
-}
+## function (x, fun, a, b, n)
+## {
+##     cP <- chebPoly(n)
+##     cC <- chebCoeff(fun, a, b, n)
+##     p <- drop(cC %*% cP)
+##     c0 <- cC[1]
+##     xx <- (2 * x - (b + a))/(b - a)
+##     yy <- polyval(p, xx) - c0/2
+##     return(yy)
+## }
 
 ## on log2-scale  {x, a, b} ;
 ## 2^a = 2^-4 = 1/16
 ## 2^b = 2^3  =  8
 l2x <- seq(-4, 3, length=1000) # log2(x)
 
+## ?chebApprox still has TODO
 ya50 <- chebApprox(x = l2x, fun = \(lx) stirle1(2^lx),
                    a= -4, b = 3,
                    n = 50)
@@ -566,11 +563,16 @@ plot(2^l2x,     relE50,  log="x", type="l")
 plot(2^l2x, abs(relE50), log="xy", type="l")
 abline(h = 2^-53*1:4, lty=3) # too large
 
-## 100 chebychev coefficients {500: really all "beyond" -- because it did *not* to 'TODO"/
+## 100 chebychev coefficients {500: really all "beyond" -- because it did *not* do the 'TODO' !?}"/
 ya100 <- chebApprox(x = l2x, fun = \(lx) stirle1(2^lx),
                    a= -4, b = 3,
                    n = 100)
-## completely diverges at boundaries !  --->  pracma's TODO ???
+## completely diverges at boundaries !  --->  pracma :: chebApprox()'s TODO (in help file):
+"
+TODO: Evaluate the Chebyshev approximative polynomial by using the
+Clenshaw recurrence formula.  (Not yet vectorized, that's why we
+still use the Horner scheme.)"
+
 
 str(relE100 <- relErrV(stirle1(2^l2x), ya100))
 summary(relE100)
@@ -582,3 +584,6 @@ abline(h = 2^-53*1:4, lty=3) # too large
 ## NB: our DPQ  chebyshevEval() *does* use Rmathlib's C code *with* the Clenshaw algo
 ## NB2: we *should be able to write  chebApprox()
 ## ---  learning from pracma's  chebCoeff() and using our DPQ
+
+##==> ../R/utils.R
+##    ../man/chebyshevPoly.Rd

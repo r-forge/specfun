@@ -40,6 +40,9 @@ drawEps.h <- function(p2 = -(53:51), negative=FALSE, side = 4, lty = 3, lwd = 2,
          col.axis = col, col=NA, col.ticks=NA)
 }
 
+
+
+
 ##=== Really, dpois_raw()  and  dbinom_raw()  *both* use stirlerr(x)  for "all"  'x > 0'
 ##            ~~~~~~~~~~~       ~~~~~~~~~~~~             ===========              ===== !
 
@@ -418,6 +421,7 @@ print(cbind(n       = format(n, drop0trailing = TRUE),
 
 showProc.time()
 
+
 ## ========== where should the cutoffs be ? ===================================================
 
 .stirl.cutoffs <- function(scheme)
@@ -616,13 +620,17 @@ invisible()
 showProc.time()
 
 
+palette("default")
+
+if(do.pdf) { dev.off(); pdf("stirlerr-tst_order_k-vs-k+1.pdf") }
+
 ##' Find 'cuts', i.e.,  a region  c(k) +/- s(k) i.e. intervals [c(k) - s(k), c(k) + s(k)]
 ##' where c(k) is such that relE(n=c(k), k) ~= eps)
 
 ##' 1. Find the c1(k)  such that |relE(n, k)| ~= c1(k) * n^{-2k}
 findC1 <- function(n, ks, e1 = 1e-15, e2 = 1e-5, res=NULL, precBits = 1024, do.plot = TRUE, ...)
 {
-    if(is.list(res) && all(c("n", "ks", "arelE") %in% names(res))) { ## do *not* recompute
+    if(is.list(res) && all(c("n", "ks", "arelE") %in% names(res))) { ## do *not* recompute, take from 'res':
         list2env(res, envir = environment())
     } else { ## compute
         stopifnot(require("Rmpfr"),
@@ -653,28 +661,45 @@ findC1 <- function(n, ks, e1 = 1e-15, e2 = 1e-5, res=NULL, precBits = 1024, do.p
         ## <==> c = exp( log|relE| + 2k * log(n))
         exp(mean(log(y[iUse]) + 2*k * log(n[iUse])))
     }, numeric(1))
-    if(do.plot)
+    if(do.plot) {
+        drawEps.h()
         for(i in seq_along(ks))
             lines(n, c1[i] * n^(-2*ks[i]), col=adjustcolor(i, 1/3), lwd = 4, lty = 2)
+    }
     invisible(list(n=n, ks=ks, arelE = arelE, c1 = c1))
 } ## findC1()
 
 c1.Res <- findC1(n = 2^seq(2, 26, by=1/128), ks = 1:18)
+saveRDS(c1.Res, file = "stirlerr-c1Res.rds")
+
+
+if(!exists("c1.Res")) {
+    c1.Res <- readRDS("stirlerr-c1Res.rds")
+    ## re-do the "default" plot of findC1():
+    findC1(res = c1.Res, xaxt="n"); eaxis(1, sub10=2)
+}
+
 ## the same, zoomed in:
-findC1(res = c1.Res, xlim = c(4, 40), ylim = c(2e-17, 1e-12)); drawEps.h(); eaxis(1, sub10=2)
+findC1(res = c1.Res, xlim = c(4, 40), ylim = c(2e-17, 1e-12))
 ks <- c1.Res$ks; pch. <- c(1L:9L, 0L, letters)[ks]
 legend("left", legend=paste0("k=", ks), bty="n", lwd=2, col=ks, lty=1:5, pch = pch.)
 
 ## smaller set : larger e1 :
 c1.r2 <- findC1(res = c1.Res, xlim = c(4, 30), ylim = c(4e-17, 1e-13), e1 = 4e-15)
-drawEps.h(); legend("left", legend=paste0("k=", ks), bty="n", lwd=2, col=ks, lty=1:5, pch = pch.)
+legend("left", legend=paste0("k=", ks), bty="n", lwd=2, col=ks, lty=1:5, pch = pch.)
 
 print(digits = 4,
       cbind(ks, c1. = c1.Res$c1, c1.2 = c1.r2$c1,
             relD = round(relErrV(c1.r2$c1, c1.Res$c1), 4)))
 
+c1.. <- c1.r2[c("ks", "c1")] # just the smallest part is needed here:
+saveRDS(c1.., file = "stirlerr-c1.rds")
+
 ## 2. Now, find the n(k) +/- se.n(k)  intervals
-## Use these c1
+## Use these c1 from above
+
+##' Given c1-results relErr(n,k);  |relE(n,k)  ~= c1 * n^{-2k} , find  n such that
+##'  |relE(n,k)| line {in log-log scale} cuts  y = eps, i.e., n* such that |relE(n,k)| <= eps for all n >= n*
 n.ep <- function(eps, c1Res, ks = c1Res$ks, c1 = c1Res$c1, ...) {
     stopifnot(is.finite(eps), length(eps) == 1L, eps > 0,
               length(ks) == length(c1), is.numeric(c1), is.integer(ks), ks >= 1)
@@ -689,9 +714,13 @@ n.ep <- function(eps, c1Res, ks = c1Res$ks, c1 = c1Res$c1, ...) {
     ##        n     ==  exp((log(c1) - log(eps)) / 2k)
     exp((log(c1) - log(eps))/(2*ks))
 }
-ne2 <- n.ep(2^-51, c1Res = c1.r2) ## ok
-ne1 <- n.ep(2^-52, c1Res = c1.r2)
-ne. <- n.ep(2^-53, c1Res = c1.r2)
+
+## get c1..
+if(!exists("c1..")) c1.. <- readRDS("stirlerr-c1.rds")
+
+ne2 <- n.ep(2^-51, c1Res = c1..) ## ok
+ne1 <- n.ep(2^-52, c1Res = c1..)
+ne. <- n.ep(2^-53, c1Res = c1..)
 
 form <- function(n) format(signif(n, 3), scientific=FALSE)
 data.frame(k = ks, ne2 = form(ne2), ne1 = form(ne1), ne. = form(ne.),
@@ -718,23 +747,207 @@ data.frame(k = ks, ne2 = form(ne2), ne1 = form(ne1), ne. = form(ne.),
 ## 17       5.85        5.97        6.10        6.50 *   "   "
 ## 18       5.83        5.95        6.06        6.50 << used all the way down to 5.25
 
-## ok --- correct orrder of magnitude ! --- good!
+## ok --- correct order of magnitude ! --- good!
 
-"------------- TODO ----------------"
 
-## 2b.  found *interval* around the  'n(eps)' values
+## 2b.  find *interval* around the  'n(eps)' values
+
+## -- Try simply
+d.k <- ne. - ne1
+## interval
+int.k <- cbind(ne1 - d.k,
+               ne1 + d.k)
+## look at e.g.
+data.frame(k=ks, `n(k)` = form(ne1), int = form(int.k))
+##   k        n.k.       int.1       int.2
+##   1 12200000.00  7180000.00 17300000.00
+##   2     2560.00     2070.00     3040.00
+##   3      178.00      156.00      200.00
+##   4       50.80       46.20       55.40
+##   5       25.10       23.30       26.90
+##   6       16.10       15.20       17.10
+##   7       12.10       11.40       12.70
+##   8        9.85        9.41       10.30
+##   9        8.53        8.19        8.86
+##  10        7.68        7.41        7.95
+##  11        7.11        6.88        7.34
+##  12        6.72        6.52        6.92
+##  13        6.44        6.27        6.62
+##  14        6.25        6.10        6.41
+##  15        6.12        5.98        6.26
+##  16        6.03        5.90        6.16
+##  17        5.97        5.85        6.10
+##  18        5.95        5.83        6.06
+
+##' as function {well, *not* computing c1.k from scratch
+nInt <- function(k, c1.k, ep12 = 2^-(52:53)) {
+    if(length(k) == 1L) { # special convention to call for *one* k, with c1.k vector
+        stopifnot(k == (k <- as.integer(k)), k >= 1, length(c1.k) >= k)
+        c1.k <- c1.k[k]
+    }
+
+    ## see n.ep() above
+    n_ <- function(eps, k, c1) {
+        stopifnot(is.finite(eps), length(eps) == 1L, eps > 0,
+                  length(k) == length(c1), is.numeric(c1), is.integer(k), k >= 1)
+        exp((log(c1) - log(eps))/(2*k))
+    }
+
+    ne1 <- n_(ep12[1], k, c1.k)
+    ne. <- n_(ep12[2], k, c1.k)
+    d.k <- ne. - ne1
+    stopifnot(d.k > 0)
+    ## interval: {"fudge" 0.5 / 2.5} from
+    cbind(ne1 -  .5 * d.k,
+          ne1 + ifelse(k %% 2 == 0, 8, 2.5) * d.k)
+}
+
+nInt(k= 1, c1..$c1)
+nInt(k= 2, c1..$c1)
+nInt(k=18, c1..$c1)
+
+nints.k <- nInt(ks, c1..$c1)
+## for printing
+form(as.data.frame( nints.k ))
+
+## (-.5 , +2.5)             ## originally ( -1, +1)
+## 1  9710000.00 24900000.00    # 7180000.00 17300000.00
+## 2     2320.00     3770.00    #    2070.00     3040.00
+## 3      167.00      232.00    #     156.00      200.00
+## 4       48.50       62.30    #      46.20       55.40
+## 5       24.20       29.60    #      23.30       26.90
+## 6       15.70       18.50    #      15.20       17.10
+## 7       11.70       13.60    #      11.40       12.70
+## 8        9.63       10.90    #       9.41       10.30
+## 9        8.36        9.36    #       8.19        8.86
+## 10       7.54        8.36    #       7.41        7.95
+## 11       7.00        7.68    #       6.88        7.34
+## 12       6.62        7.21    #       6.52        6.92
+## 13       6.36        6.88    #       6.27        6.62
+## 14       6.17        6.64    #       6.10        6.41
+## 15       6.05        6.48    #       5.98        6.26
+## 16       5.96        6.36    #       5.90        6.16
+## 17       5.91        6.28    #       5.85        6.10
+## 18       5.89        6.24    #       5.83        6.06
 
 ## 3. Then for each of the intervals, compare  order  k  vs k+1
 ## --  ==> optimal cutoff  { how much platform dependency ?? }
 
-check1ord <- function(n, k, precBits = 1024,
-                      nM = mpfr(n, precBits), stnM = stirlerr(nM),
-                      stirlOrd = sapply(k, function(.k.) stirlerr(n, order = .k.)),
-                      relE = asNumeric(stirlOrd/stnM -1), # "true" relative error
-                      relEkk1 = relE[,k+(0:1)]) {
+check1ord <- function(k, c1,
+                      n = nInt(k, c1), # the *set* of n's  or the 'range'
+                      len.n = 1000,
+                      precBits = 1024, nM = mpfr(n, precBits),
+                      stnM = stirlerr(nM),
+                      stirlOrd = sapply(k+(0:1), function(.k.) stirlerr(n, order = .k.)),
+                      relE = asNumeric(stirlOrd/stnM -1), # "true" relative error for the {k, k+1}
+                      col = c(2,4), do.spl=TRUE, df.spline = 9, # df = 5 gives 2 cutpoints for k==1
+                      do.low=TRUE, f.lowess = 0.2,
+                      do.cobs = require("cobs", quietly=TRUE), tau = 0.90,
+                      ymin = max(min(y), 2e-17), ...)
+{
     ## check  relErrV( stirlerr(n, order=k )  vs
     ##                 stirlerr(n, order=k+1)
+    if(length(n) == 2L)
+        if(n[1] < n[2]) n <- seq(n[1], n[2], length.out = len.n)
+    force(relE)
+    y <- abs19(relE)
+    matplot(n, y, type = "l", log = "y", col=col, lwd=1/2, yaxt = "n", ylim = c(ymin, max(y, 5e-16)),
+            xlab = quote(n), ylab = quote(abs(relE(n))),
+            main = substitute({k == K} *";" ~~ n %in% group("[",list(N1,N2),"]"),
+                              list(K = k, N1=signif(min(n),3), N2=signif(max(n),3))),
+            ...)
+    eaxis(2)
+    drawEps.h()
+    ## NB: all smoothing --- as in stirlerrPlot() above -- should happen in log-space
+    ## (log(abs19(relEc)), 2, function(y) exp(smooth.spline(y, df=4)$y))
+    ly <- log(y) # == log(abs19(relE)) == log(max(|r|, 1e-19))
+    lines1 <- function(sy, ...) lines(n, sy, lwd=4, col=adjustcolor(col[1], 4/5), ...)
+    lines2 <- function(sy, ...) lines(n, sy, lwd=4, col=adjustcolor(col[2], 1/2), ...)
+    if(do.spl) {## add lines(smooth.spline())
+        lines1((s1 <- exp(smooth.spline(ly[,1], df=df.spline)$y)))
+        lines2((s2 <- exp(smooth.spline(ly[,2], df=df.spline)$y)))
+    }
+    if(do.low) { ## lowess
+        lines1((s1l <- exp(lowess(ly[,1], f=f.lowess)$y)), lty=2)
+        lines2((s2l <- exp(lowess(ly[,2], f=f.lowess)$y)), lty=2)
+    }
+    ## also use cobs() splines for the 90% quantile !!
+    if(do.cobs) { ## <==> require("cobs") # yes, this is in tests/
+        cobsF <- function(Y) cobs(n, Y, tau=tau, nknots = 6, lambda = -1, print.warn=FALSE, print.mesg=FALSE)
+        lines1((cs1 <- exp(cobsF(ly[,1])$fitted)), lty=3)
+        lines2((cs2 <- exp(cobsF(ly[,2])$fitted)), lty=3)
+    }
+    ## now which one should count -- for now, still spline
+    diffL <- list(spl = if(do.spl) s2-s1,
+                  low = if(do.low) s2l-s1l,
+                  cobs= if(do.cobs) cs2-cs1)
+    had.n <- FALSE
+    sapply(diffL, function(d) { # d <- diffL[[j]]
+        ## typically a (almost or completely) montone increasing function, crossing zero *once*
+        ## compute cutpoint:
+        i <- which(d >= 0)[1] # the first n[i] with d(n[i]) >= 0
+        i_ <- i - 1L  # ==> d(n[i_]) < 0
+        ## cutpoint must be in [n[i_], n[i]] --- do linear interpolation
+        n. <- n[i_] - (n[i] - n[i_])* d[i_] / (d[i] - d[i_])
+        if(length(n.) && is.finite(n.)) {
+            if(!had.n) { # draw axis label only once
+                had.n <<- TRUE
+                axis(3, at = signif(n.,3), col=col[1], line = -1)
+            }
+            abline(v = n., lty=2, lwd=3, col=adjustcolor(1, 1/2))
+        }
+        c(i=i, n.=n.)
+    }) -> n.L
+    ## also return "crossing lines" ?
+    invisible(list(k=k, n=n, relE = unname(relE), n. = n.L))
 }
+
+k. <- 1:15
+mult.fig(15, main = "stirlerr(n, order=k) vs order = k+1")$old.par -> opar
+resL   <- lapply(setNames(,k.), function(k) check1ord(k=k, c1=c1..$c1))
+## plus the "last" ones {also showing that k=15 is worse here anyway than k=17}
+str(r17 <- check1ord(k=17, n = seq(5.5, 6.5, length.out = 1500)))
+
+mult.fig(15, main = "stirlerr(n, order=k) vs order = k+1 -- tau = 0.8")
+resL.8 <- lapply(setNames(,k.), function(k) check1ord(k=k, c1=c1..$c1, tau = 0.80))
+str(r17 <- check1ord(k=17, n = seq(5.5, 6.5, length.out = 1500)))
+par(opar)
+
+n.mn  <- sapply(resL,   `[[`, "n.", simplify = "array")
+n.mn8 <- sapply(resL.8, `[[`, "n.", simplify = "array")
+## of course, only the cobs part differs:
+
+form(data.frame(k = k., cutoffs = rev(.stirl.cutoffs("R4.4_0")[-1])[k.],
+                t(n.mn ["n.",,]), cobs.80 = n.mn8["n.", "cobs",]))
+##     k     cutoffs         spl         low        cobs     cobs.80
+## 1   1 17400000.00 15600000.00 15800000.00 15800000.00 15700000.00
+## 2   2     3700.00          NA          NA          NA          NA == from tau=0.90 I'd use ~ 5000
+## 3   3      200.00      200.00      201.00      206.00      205.00  205
+## 4   4       81.00          NA          NA       86.60       86.20   86
+## 5   5       36.00       27.20       27.10       27.00       27.10   27
+## 6   6       25.00       23.50          NA          NA          NA   23.5
+## 7   7       19.00       12.80       12.80       12.80       12.80   12.8
+## 8   8       14.00          NA          NA       12.30       12.80   12.3
+## 9   9       11.00        8.91        8.95        8.89        8.86    8.9
+## 10 10        9.50        9.69          NA        9.72          NA  --skip--
+## 11 11        8.80        7.26        7.31        7.32        7.29    7.3
+## 12 12        8.25        8.16          NA        8.10        7.76  --skip--
+## 13 13        7.60        6.51        6.53        6.51        6.52    6.52
+## 14 14        7.10        7.43          NA        7.47        7.43  --skip--
+## 15 15        6.50        6.10        6.10        6.08        6.09    6.10
+## 16                                                                 --skip--
+## 17                                                                   5.25 or something all the way down
+
+
+str(r1 <- check1ord(k=1, c1=c1..$c1))
+str(r3 <- check1ord(k=3, c1=c1..$c1)) # ok {crossing "to the right"}
+
+str(r2 <- check1ord(k=2, c1=c1..$c1)) # *no* crossing !! upper bound too small
+str(r4 <- check1ord(k=4, c1=c1..$c1)) # *no* crossing !! upper bound too small
+str(r5 <- check1ord(k=5, c1=c1..$c1)) # ok {crossing "to the right"}
+str(r6 <- check1ord(k=6, c1=c1..$c1)) # ok -- finally [large intervall]K *no* crossing !! upper bound too small
+str(r7 <- check1ord(k=7, c1=c1..$c1))
+str(r8  <- check1ord(k=8, c1=c1..$c1))
 
 
 ## ========== Try a slightly better direct formula ======================================================
