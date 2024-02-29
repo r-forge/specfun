@@ -18,7 +18,7 @@ do.pdf <- TRUE # (manually)
 do.pdf <- !dev.interactive(orNone = TRUE)
 do.pdf
 if(do.pdf) {
-    pdf.options(width = 8, height = 6) # for all pdf plots
+    pdf.options(width = 9, height = 6.5) # for all pdf plots {9/6.5 = 1.38 ; 4/3 < 1.38 < sqrt(2) [A4]
     pdf("stirlerr-tst.pdf")
 }
 
@@ -53,7 +53,7 @@ system.time(stM <- DPQmpfr::stirlerrM(Rmpfr::mpfr(x,2048))) # 1.7 sec elapsed
 plot(x, stirlerr(x, use.halves=FALSE) - stM,      type="l", log="x", main="absolute Error")
 plot(x, stirlerr(x, use.halves=FALSE) / stM - 1,  type="l", log="x", main="relative Error")
 plot(x, abs(stirlerr(x, use.halves=FALSE) / stM - 1), type="l", log="xy",main="|relative Error|")
-abline(h=c(1,2,4)*.Machine$double.eps, lty=3)
+drawEps.h(-(52:50))
 ## lgammacor() does *NOT* help, as it is  *designed*  for  x >= 10!
 ##
 ## ==> Need another chebyshev() or rational-approx. for x in [.1, 7] or so !!
@@ -105,9 +105,14 @@ relE.lgam1 <-  function(n, precBits = if(doExtras) 1024 else 320) {
 
 n <- 2^-seq.int(1022, 1, by = -1/4)
 relEx <- relE.lgam1(n)
+showProc.time()
 
 ## Is *equivalent* to 'new' stirlerr_simpl(n version = *)   [not for <mpfr> though, see 'relEmat']:
-simpVer <- eval(formals(stirlerr_simpl)$version)
+(simpVer <- eval(formals(stirlerr_simpl)$version))
+if(is.null(simpVer)) { warning("got wrong old version of package 'DPQ':")
+    print(packageDescription("DPQ"))
+    stop("invalid outdated version package 'DPQ'")
+}
 stir.allS <- function(n) sapply(simpVer, function(v) stirlerr_simpl(n, version=v))
 stirS <- stir.allS(n) # matrix
 nM <- mpfr(n, 256)  # "high" precision = 256 should suffice!
@@ -502,7 +507,7 @@ relEc <- asNumeric(stirlO.c/stncM -1) # "true" relative error
 ## log-log  |rel.Err|  -- "linear"
 matplotB(nc, abs19(relEc), cex=2/3, col=k, ylim = c(2e-17, 1e-8),
         log = "xy", xlab = quote(n), main = quote(abs(relErr(stirlerr(n, order==k)))))
-mtext(paste("k =", deparse(k))) ; abline(h = 2^-(53:51), lty=3, lwd=1/2)
+mtext(paste("k =", deparse(k))) ; drawEps.h(lwd = 1/2)
 lines(nc, abs19(asNumeric(stirlerr_simpl(nc, "R3" )/stncM - 1)), lwd=1.5, col=adjustcolor("thistle", .6))
 lines(nc, abs19(asNumeric(stirlerr_simpl(nc, "MM2")/stncM - 1)), lwd=4,   col=adjustcolor(20, .4))
 ## lines(nc, abs19(asNumeric(stirlerr_simpl(nc,"MM2")/stncM - 1)), lwd=3, col=adjustcolor("purple", 2/3))
@@ -513,7 +518,7 @@ drawCuts("R4.4_0", axis=3)
 ## Zoom-in [only]
 matplotB(nc, abs19(relEc), cex=2/3, col=k, ylim = c(4e-17, 1e-11), xlim = c(4.8, 6.5),
         log = "xy", xlab = quote(n), main = quote(abs(relErr(stirlerr(n, order==k)))))
-mtext(paste("k =", deparse(k))) ; abline(h = 2^-(53:51), lty=3, lwd=1/2)
+mtext(paste("k =", deparse(k))) ; drawEps.h(lwd = 1/2)
 lines(nc, abs19(asNumeric(stirlerr_simpl(nc, "R3" )/stncM - 1)), lwd=1.5, col=adjustcolor("thistle", .6))
 lines(nc, abs19(asNumeric(stirlerr_simpl(nc, "MM2")/stncM - 1)), lwd=4,   col=adjustcolor(20, .4))
 
@@ -556,7 +561,8 @@ for(nc in list(seq(4.75, 28, by=1/512), # for a bigger pix
           ni <- nc[i]
       } else { i <- TRUE; ni <- nc }
       for(k in 8:17) lines(ni, abs19(asNumeric(relErrV(stncM[i], stirlerr(ni, order=k)))), col=adjustcolor(k, 1/3))
-  }
+      title(sub = "stirlerr(*, order k = 8:17)")
+ }
 } ## for(nc ..)
 
 if(FALSE)
@@ -616,7 +622,6 @@ stirlerrPlot(res = rr1)
 rr <- stirlerrPlot(nc = seq(5, 6.25, by=1/2048), k = 9:18)
 stirlerrPlot(res = rr, full=FALSE, ylim = c(8e-17, 1e-13))
 
-invisible()
 showProc.time()
 
 
@@ -916,6 +921,11 @@ par(opar)
 n.mn  <- sapply(resL,   `[[`, "n.", simplify = "array")
 n.mn8 <- sapply(resL.8, `[[`, "n.", simplify = "array")
 ## of course, only the cobs part differs:
+##   ... when I later see errors here ... what's going on??
+str(n.mn)
+dim(n.mn["n.",,])
+str(n.mn8["n.", "cobs",])
+sessionInfo()
 
 form(data.frame(k = k., cutoffs = rev(.stirl.cutoffs("R4.4_0")[-1])[k.],
                 t(n.mn ["n.",,]), cobs.80 = n.mn8["n.", "cobs",]))
