@@ -24,8 +24,8 @@ if(do.pdf) {
 
 showProc.time()
 (doExtras <- DPQ:::doExtras())
-(noLdbl <- (.Machine$sizeof.longdouble <= 8)) ## TRUE when --disable-long-double
-options(width = 100, nwarnings = 1e5)
+(noLdbl <- (.Machine$sizeof.longdouble <= 8)) ## TRUE when --disable-long-double or 'M1mac' ..
+options(width = 100, nwarnings = 1e5, warnPartialMatchArgs = FALSE)
 
 abs19 <- function(r) pmax(abs(r), 1e-19) # cut  |err| to positive {for log-plots}
 
@@ -119,7 +119,7 @@ nM <- mpfr(n, 256)  # "high" precision = 256 should suffice!
 stirM  <- stirlerr(nM)
 releS <- asNumeric(relErrV(stirM, stirS))
           all.equal(relEx, releS, tolerance = 0) # see TRUE on Linux
-stopifnot(all.equal(relEx, releS, tolerance = 1e-15))
+stopifnot(all.equal(relEx, releS, tolerance = if(noLdbl) 2e-15 else 1e-15))
 simpVer3 <- simpVer[simpVer != "lgamma1p"] # have no mpfr-ified lgamma1p()!
 ## stirlerr_simpl(<mpfr>, *) :
 stirM2 <- sapplyMpfr(simpVer3, function(v) stirlerr_simpl(nM, version=v))
@@ -479,7 +479,7 @@ mtext(paste("k =", deparse(k))) ; abline(h = 2^-(53:51), lty=3, lwd=1/2)
 drawCuts("R4.4_0", axis = 3)
 
 ## zoom in -- still "large"
-(n2c <- 2^seq(2, 8, by=1/256))
+n2c <- 2^seq(2, 8, by=1/256)
 nMc <- mpfr(n2c, 1024)
 stnMc <- stirlerr(nMc) # the "true" values
 stirlOrc <- sapply(k, function(k.) stirlerr(n2c, order = k.))
@@ -627,7 +627,7 @@ showProc.time()
 
 palette("default")
 
-if(do.pdf) { dev.off(); pdf("stirlerr-tst_order_k-vs-k+1.pdf") }
+if(do.pdf) { dev.off(); pdf("stirlerr-tst_order_k-vs-k1.pdf") }
 
 ##' Find 'cuts', i.e.,  a region  c(k) +/- s(k) i.e. intervals [c(k) - s(k), c(k) + s(k)]
 ##' where c(k) is such that relE(n=c(k), k) ~= eps)
@@ -802,9 +802,10 @@ nInt <- function(k, c1.k, ep12 = 2^-(52:53)) {
     ne. <- n_(ep12[2], k, c1.k)
     d.k <- ne. - ne1
     stopifnot(d.k > 0)
-    ## interval: {"fudge" 0.5 / 2.5} from
-    cbind(ne1 -  .5 * d.k,
-          ne1 + ifelse(k %% 2 == 0, 8, 2.5) * d.k)
+    ## interval: {"fudge" 0.5 / 2.5} from results -- also 'noLdbl' gives *quite* different pic!:
+    odd <- k %% 2 == 1
+    cbind(ne1 - ifelse( odd & noLdbl, 1.5, 0.5) * d.k,
+          ne1 + ifelse(!odd         , 8, 2.5) * d.k)
 }
 
 nInt(k= 1, c1..$c1)
@@ -838,23 +839,84 @@ form(as.data.frame( nints.k ))
 ## 3. Then for each of the intervals, compare  order  k  vs k+1
 ## --  ==> optimal cutoff  { how much platform dependency ?? }
 
-check1ord <- function(k, c1,
+### Here, compute only
+find1cuts <- function(k, c1,
                       n = nInt(k, c1), # the *set* of n's  or the 'range'
                       len.n = 1000,
                       precBits = 1024, nM = mpfr(n, precBits),
                       stnM = stirlerr(nM),
                       stirlOrd = sapply(k+(0:1), function(.k.) stirlerr(n, order = .k.)),
                       relE = asNumeric(stirlOrd/stnM -1), # "true" relative error for the {k, k+1}
-                      col = c(2,4), do.spl=TRUE, df.spline = 9, # df = 5 gives 2 cutpoints for k==1
+                      do.spl=TRUE, df.spline = 9, # df = 5 gives 2 cutpoints for k==1
                       do.low=TRUE, f.lowess = 0.2,
-                      do.cobs = require("cobs", quietly=TRUE), tau = 0.90,
-                      ymin = max(min(y), 2e-17), ...)
+                      do.cobs = require("cobs", quietly=TRUE), tau = 0.90)
 {
     ## check  relErrV( stirlerr(n, order=k )  vs
     ##                 stirlerr(n, order=k+1)
     if(length(n) == 2L)
         if(n[1] < n[2]) n <- seq(n[1], n[2], length.out = len.n)
+        else stop("'n' must be *increasing")
     force(relE)
+    y <- abs19(relE)
+    ## NB: all smoothing --- as in stirlerrPlot() above -- should happen in log-space
+    ## (log(abs19(relEc)), 2, function(y) exp(smooth.spline(y, df=4)$y))
+    ly <- log(y) # == log(abs19(relE)) == log(max(|r|, 1e-19))
+    if(do.spl) {##
+        s1 <- exp(smooth.spline(ly[,1], df=df.spline)$y)
+        s2 <- exp(smooth.spline(ly[,2], df=df.spline)$y)
+    }
+    if(do.low) { ## lowess
+        s1l <- exp(lowess(ly[,1], f=f.lowess)$y)
+        s2l <- exp(lowess(ly[,2], f=f.lowess)$y)
+    }
+    ## also use cobs() splines for the 90% quantile !!
+    if(do.cobs) { ## <==> require("cobs") # yes, this is in tests/
+        cobsF <- function(Y) cobs(n, Y, tau=tau, nknots = 6, lambda = -1,
+                                  print.warn=FALSE, print.mesg=FALSE)
+        cs1 <- exp(cobsF(ly[,1])$fitted)
+        cs2 <- exp(cobsF(ly[,2])$fitted)
+    }
+    smooths <- list(spl = if(do.spl ) cbind(s1, s2 ),
+                    low = if(do.low ) cbind(s1l,s2l),
+                    cobs= if(do.cobs) cbind(cs1,cs2))
+    ## diffL <- list(spl = if(do.spl ) s2 -s1,
+    ##                   low = if(do.low ) s2l-s1l,
+    ##                   cobs= if(do.cobs) cs2-cs1)
+### FIXME: simplification does not always *work* -- (i, n.) are not always ok
+### ------ notably within R-devel-no-ldouble  {hence probably macOS M1 ... ..}
+    sapply(smooths, function(s12) { d <- s12[,2] - s12[,1]
+        ## typically a (almost or completely) montone increasing function, crossing zero *once*
+        ## compute cutpoint:
+        ## i := the first n[i] with d(n[i]) >= 0
+        i <- which(d >= 0)[1]
+        if(length(i) == 1L && !is.na(i) && i > 1L) {
+            i_ <- i - 1L  # ==> d(n[i_]) < 0
+            ## cutpoint must be in [n[i_], n[i]] --- do linear interpolation
+            n. <- n[i_] - (n[i] - n[i_])* d[i_] / (d[i] - d[i_])
+        } else {
+            if(length(i) != 1L) i <- -length(i)
+            n. <- NA_integer_
+        }
+        c(i=i, n.=n.)
+    }) -> n.L
+
+    list(k=k, n=n, relE = unname(relE), smooths=smooths, i.n = n.L)
+} ## find1cuts()
+
+plot1cuts <- function(res1c, # resulting from
+                      col = c(2,4),
+                      ymin = max(min(y), 2e-17), ...)
+{
+    rnms <- c("k", "n", "relE", "smooths", "i.n")
+    stopifnot(is.list(res1c), rnms %in% names(res1c))
+    list2env(res1c, envir = environment())
+    ## ---> { k, n, relE, smooths, i.n , ..} now exist in local environment
+    stopifnot(exprs = {
+        is.list(smooths)
+        (nS <- length(smooths)) >= 1L
+        sapply(smooths, dim) == rep(c(length(n), 2L), nS)
+        identical(dim(i.n), c(2L, nS))
+    })
     y <- abs19(relE)
     matplot(n, y, type = "l", log = "y", col=col, lwd=1/2, yaxt = "n", ylim = c(ymin, max(y, 5e-16)),
             xlab = quote(n), ylab = quote(abs(relE(n))),
@@ -868,32 +930,23 @@ check1ord <- function(k, c1,
     ly <- log(y) # == log(abs19(relE)) == log(max(|r|, 1e-19))
     lines1 <- function(sy, ...) lines(n, sy, lwd=4, col=adjustcolor(col[1], 4/5), ...)
     lines2 <- function(sy, ...) lines(n, sy, lwd=4, col=adjustcolor(col[2], 1/2), ...)
-    if(do.spl) {## add lines(smooth.spline())
-        lines1((s1 <- exp(smooth.spline(ly[,1], df=df.spline)$y)))
-        lines2((s2 <- exp(smooth.spline(ly[,2], df=df.spline)$y)))
+    if(do.spl <- is.matrix(m <- smooths$spl)) {## add lines(smooth.spline())
+        lines1(m[,"s1"])
+        lines2(m[,"s2"])
     }
-    if(do.low) { ## lowess
-        lines1((s1l <- exp(lowess(ly[,1], f=f.lowess)$y)), lty=2)
-        lines2((s2l <- exp(lowess(ly[,2], f=f.lowess)$y)), lty=2)
+    if(do.low <- is.matrix(m <- smooths$low)) { ## lowess
+        lines1(m[,"s1l"], lty=2)
+        lines2(m[,"s2l"], lty=2)
     }
     ## also use cobs() splines for the 90% quantile !!
-    if(do.cobs) { ## <==> require("cobs") # yes, this is in tests/
-        cobsF <- function(Y) cobs(n, Y, tau=tau, nknots = 6, lambda = -1, print.warn=FALSE, print.mesg=FALSE)
-        lines1((cs1 <- exp(cobsF(ly[,1])$fitted)), lty=3)
-        lines2((cs2 <- exp(cobsF(ly[,2])$fitted)), lty=3)
+    if(do.cobs <- is.matrix(m <- smooths$cobs)) { ## lowess
+        lines1(m[,"cs1"], lty=3)
+        lines2(m[,"cs2"], lty=3)
     }
-    ## now which one should count -- for now, still spline
-    diffL <- list(spl = if(do.spl) s2-s1,
-                  low = if(do.low) s2l-s1l,
-                  cobs= if(do.cobs) cs2-cs1)
     had.n <- FALSE
-    sapply(diffL, function(d) { # d <- diffL[[j]]
-        ## typically a (almost or completely) montone increasing function, crossing zero *once*
-        ## compute cutpoint:
-        i <- which(d >= 0)[1] # the first n[i] with d(n[i]) >= 0
-        i_ <- i - 1L  # ==> d(n[i_]) < 0
-        ## cutpoint must be in [n[i_], n[i]] --- do linear interpolation
-        n. <- n[i_] - (n[i] - n[i_])* d[i_] / (d[i] - d[i_])
+    for(j in seq_len(ncol(i.n))) {
+        ## i  <- i.n["i" ,j]  (unused)
+        n. <- i.n["n.",j]
         if(length(n.) && is.finite(n.)) {
             if(!had.n) { # draw axis label only once
                 had.n <<- TRUE
@@ -901,30 +954,48 @@ check1ord <- function(k, c1,
             }
             abline(v = n., lty=2, lwd=3, col=adjustcolor(1, 1/2))
         }
-        c(i=i, n.=n.)
-    }) -> n.L
-    ## also return "crossing lines" ?
-    invisible(list(k=k, n=n, relE = unname(relE), n. = n.L))
-}
+    }
+} ## plot1cuts()
+
 
 k. <- 1:15
-mult.fig(15, main = "stirlerr(n, order=k) vs order = k+1")$old.par -> opar
-resL   <- lapply(setNames(,k.), function(k) check1ord(k=k, c1=c1..$c1))
-## plus the "last" ones {also showing that k=15 is worse here anyway than k=17}
-str(r17 <- check1ord(k=17, n = seq(5.5, 6.5, length.out = 1500)))
+system.time(
+    resL   <- lapply(setNames(,k.), function(k) find1cuts(k=k, c1=c1..$c1))
+) ## -- warnings, notably from cobs() not converging
+## needs  12 sec (!!)  user  system elapsed
 
+if(FALSE) {
+## e.g.  in R-devel-no-ldouble:
+(r1 <- find1cuts(k=1, c1=c1..$c1))$i.n # list
+(r2 <- find1cuts(k=2, c1=c1..$c1))$i.n # "good"
+(r3 <- find1cuts(k=3, c1=c1..$c1))$i.n # 3-vector: only 3x  'i' == 1
+}
+
+mult.fig(15, main = "stirlerr(n, order=k) vs order = k+1")$old.par -> opar
+invisible(lapply(resL, plot1cuts))
+## plus the "last" ones {also showing that k=15 is worse here anyway than k=17}
+str(r17 <- find1cuts(k=17, n = seq(5.1, 6.5, length.out = 1500), c1=c1..$c1))
+plot1cuts(r17) # no-ldouble is *very* different than normal:  k *much better* than k+1
+
+## ditto  for tau = 0.8  {quantile for cobs()}:
+system.time(
+    resL.8 <- lapply(setNames(,k.), function(k) find1cuts(k=k, c1=c1..$c1, tau = 0.80))
+) # warnings from cobs  {again 12.1 sec}
 mult.fig(15, main = "stirlerr(n, order=k) vs order = k+1 -- tau = 0.8")
-resL.8 <- lapply(setNames(,k.), function(k) check1ord(k=k, c1=c1..$c1, tau = 0.80))
-str(r17 <- check1ord(k=17, n = seq(5.5, 6.5, length.out = 1500)))
+invisible(lapply(resL.8, plot1cuts))
+## plus "last" one
+str(r17.8 <- find1cuts(k=17, n = seq(5.1, 6.5, length.out = 1500), c1=c1..$c1, tau = 0.80))
+plot1cuts(r17.8)
 par(opar)
 
-n.mn  <- sapply(resL,   `[[`, "n.", simplify = "array")
-n.mn8 <- sapply(resL.8, `[[`, "n.", simplify = "array")
+n.mn  <- sapply(resL,   `[[`, "i.n", simplify = "array")
+n.mn8 <- sapply(resL.8, `[[`, "i.n", simplify = "array")
 ## of course, only the cobs part differs:
 ##   ... when I later see errors here ... what's going on??
-str(n.mn)
+str(n.mn) # all NULL  for "no-double" !!
 dim(n.mn["n.",,])
 str(n.mn8["n.", "cobs",])
+
 sessionInfo()
 
 form(data.frame(k = k., cutoffs = rev(.stirl.cutoffs("R4.4_0")[-1])[k.],
@@ -946,18 +1017,27 @@ form(data.frame(k = k., cutoffs = rev(.stirl.cutoffs("R4.4_0")[-1])[k.],
 ## 14 14        7.10        7.43          NA        7.47        7.43  --skip--
 ## 15 15        6.50        6.10        6.10        6.08        6.09    6.10
 ## 16                                                                 --skip--
-## 17                                                                   5.25 or something all the way down
+## 17                                                                   5.25 or something all the way dow
+
+##---- In the  no-ldouble case --- this is very different:
+##  k     cutoffs  spl  low       cobs cobs.80
+##  1 17400000.00   NA   NA 9750000.00      NA
+##  2     3700.00   NA   NA    5890.00 6180.00
+##  3      200.00   NA   NA         NA      NA
+##  4       81.00 87.1 87.1      84.80   86.00
+##  5       36.00   NA   NA         NA      NA
+##  6       25.00 23.7 23.7         NA      NA
+##  7       19.00   NA   NA         NA      NA
+##  8       14.00   NA   NA      12.90   13.00
+##  9       11.00   NA   NA         NA      NA
+## 10        9.50   NA   NA         NA    9.69
+## 11        8.80   NA   NA         NA      NA
+## 12        8.25   NA   NA       8.27    7.95
+## 13        7.60   NA   NA         NA      NA
+## 14        7.10   NA   NA       7.43    7.40
+## 15        6.50   NA   NA         NA      NA
 
 
-str(r1 <- check1ord(k=1, c1=c1..$c1))
-str(r3 <- check1ord(k=3, c1=c1..$c1)) # ok {crossing "to the right"}
-
-str(r2 <- check1ord(k=2, c1=c1..$c1)) # *no* crossing !! upper bound too small
-str(r4 <- check1ord(k=4, c1=c1..$c1)) # *no* crossing !! upper bound too small
-str(r5 <- check1ord(k=5, c1=c1..$c1)) # ok {crossing "to the right"}
-str(r6 <- check1ord(k=6, c1=c1..$c1)) # ok -- finally [large intervall]K *no* crossing !! upper bound too small
-str(r7 <- check1ord(k=7, c1=c1..$c1))
-str(r8  <- check1ord(k=8, c1=c1..$c1))
 
 
 ## ========== Try a slightly better direct formula ======================================================
