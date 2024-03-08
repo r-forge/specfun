@@ -13,6 +13,12 @@ source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
 ##_ options(conflicts.policy = list(depends.ok=TRUE, error=FALSE, warn=FALSE))
 require(sfsmisc) # masking  'list_' *and* gmp's factorize(), is.whole()
 ##_ options(conflicts.policy = NULL)
+myPlatform <- function(Rmin = 9L, osM = 12L)
+    paste(abbreviate(sfsmisc::shortRversion(date=FALSE, spaces=FALSE), Rmin), # "R-devel..." too long
+          .Platform$OS.type,
+          sub("_$","", gsub("[^[:alnum:]]", "_",
+                            abbreviate(osVersion, minlength=osM))),
+          sep='_')
 
 do.pdf <- TRUE # (manually)
 do.pdf <- !dev.interactive(orNone = TRUE)
@@ -675,11 +681,12 @@ findC1 <- function(n, ks, e1 = 1e-15, e2 = 1e-5, res=NULL, precBits = 1024, do.p
 } ## findC1()
 
 c1.Res <- findC1(n = 2^seq(2, 26, by=1/128), ks = 1:18)
-saveRDS(c1.Res, file = "stirlerr-c1Res.rds")
+(s.c1.fil <- paste0("stirlerr-c1Res-", myPlatform(), ".rds"))
+saveRDS(c1.Res, file = s.c1.fil)
 
 
 if(!exists("c1.Res")) {
-    c1.Res <- readRDS("stirlerr-c1Res.rds")
+    c1.Res <- readRDS(s.c1.fil)
     ## re-do the "default" plot of findC1():
     findC1(res = c1.Res, xaxt="n"); eaxis(1, sub10=2)
 }
@@ -698,7 +705,8 @@ print(digits = 4,
             relD = round(relErrV(c1.r2$c1, c1.Res$c1), 4)))
 
 c1.. <- c1.r2[c("ks", "c1")] # just the smallest part is needed here:
-saveRDS(c1.., file = "stirlerr-c1.rds")
+(s.c1.fil <- paste0("stirlerr-c1r2-", myPlatform(), ".rds"))
+saveRDS(c1.., file = s.c1.fil) # was "stirlerr-c1.rds"
 
 ## 2. Now, find the n(k) +/- se.n(k)  intervals
 ## Use these c1 from above
@@ -963,6 +971,9 @@ system.time(
     resL   <- lapply(setNames(,k.), function(k) find1cuts(k=k, c1=c1..$c1))
 ) ## -- warnings, notably from cobs() not converging
 ## needs  12 sec (!!)  user  system elapsed
+(s.find15.fil <- paste0("stirlerr-find1_1-15_", myPlatform(), ".rds"))
+saveRDS(resL, file = s.find15.fil) # was  "stirlerr-find1_1-15.rds"
+
 
 if(FALSE) {
 ## e.g.  in R-devel-no-ldouble:
@@ -976,6 +987,10 @@ invisible(lapply(resL, plot1cuts))
 ## plus the "last" ones {also showing that k=15 is worse here anyway than k=17}
 str(r17 <- find1cuts(k=17, n = seq(5.1, 6.5, length.out = 1500), c1=c1..$c1))
 plot1cuts(r17) # no-ldouble is *very* different than normal:  k *much better* than k+1
+
+(s.find17.fil <- paste0("stirlerr-find1_17_", myPlatform(), ".rds"))
+saveRDS(r17, file = s.find17.fil) # was  "stirlerr-find1_17.rds"
+
 
 ## ditto  for tau = 0.8  {quantile for cobs()}:
 system.time(
