@@ -124,9 +124,9 @@ According to \R{}'s reference documentation, \code{help(dbinom)},
 %% >>> ~/R/D/r-devel/R/src/library/stats/man/Binomial.Rd
 the binomial (point-mass) probabilities of the binomial distribution with
 \code{size} $= n$ and \code{prob} $= p$ has ``density'' (point probabilities)
-\begin{align*}
-  p(x) := p(x; n,p) := {n \choose x} {p}^{x} {(1-p)}^{n-x}
-\end{align*}
+\begin{align}\label{eq:pBin-def}
+  p(x) := p(x; n,p) := {n \choose x} {p}^{x} {(1-p)}^{n-x} \;,
+\end{align}
 for \(x = 0, \dots, n\), and these are (in \R function \code{dbinom()})
 computed via Loader's algorithm (\cite{LoaC2000}) which had improved accuracy
 considerably, also for R's internal \verb|dpois_raw()| function which is
@@ -194,7 +194,7 @@ probabilities, \code{dpois()} in R; see more below.
 
 \bigskip
 
-Evaluating of $p(x; n,p)$ in (\ref{eq:p-D}), in addition to
+Evaluating of $p(x; n,p)$ in (\ref{eq:pBin-def}) and (\ref{eq:p-D}), in addition to
 $D(x; n,p)$ in (\ref{eq:D-D0}) also needs
 $p(x; n, \frac{x}{n})$ where in turn, the Stirling De Moivre series is
 used:
@@ -211,11 +211,24 @@ computed and implemented in the C code of R, and can be improved.
 
 
 Note that for the binomial, $x$ is an integer in $\{0, 1, \dots, n\}$ and $M=n p \ge 0$,
-but the formulas (\ref{eq:D0-def}), (\ref{eq:D0-is}) for $D_0(x,M)$ apply and are needed, e.g., for \code{pgamma()} computations for general non-negative ($x, M >
-0$) where even $x = 0$ is well defined, see (\ref{eq:D0-x0}) above.
+but the formulas (\ref{eq:D0-def}), (\ref{eq:D0-is}) for $D_0(x,M)$ apply and are needed,
+e.g., for \code{pgamma()} computations for general non-negative ($x, M > 0$) where even
+the $x = 0$ case is well defined, see (\ref{eq:D0-x0}) above.
 
-Further, \citeauthor{LoaC2000} showed, such a saddle point approach is needed for Poisson
-probabilities, as well, where
+Summarizing, % from \citeauthor{LoaC2002},
+using (\ref{eq:pBin-def}), (\ref{eq:D0-def}), (\ref{eq:D0-is}),
+the binomial probabilities in \R{}, \code{dbinom(x, n,p)} have been computed as
+\begin{align}
+  p(x; n,p) &=  p(x; n, \frac{x}{n}) \cdot e^{-D(x;n,p)} = \\
+  \label{eq:pBin-form}
+            &= \sqrt{\frac{n}{2\pi x(n-x)}} e^{\delta(n) -\delta(x) - \delta(n-x)} ,
+\end{align}
+the second line being eq.~(5) of \citeauthor{LoaC2000} which is derived by using Stirling's
+(\ref{eq:Stirling}) three times, viz.\ for $n$, $x$, and $n-x$, and noticing that many
+$\log$ terms cancel and the three $\log(2\pi *) / 2$ terms simplify to
+$\log\bigl(\frac{n}{2\pi x(n-x)}\bigr)/2$.
+
+Further, \citeauthor{LoaC2000} showed that such a saddle point approach is needed for Poisson probabilities, as well, where
 \begin{align}
   \label{eq:Pois}
       p_\lambda(x) &= e^{-\lambda} \frac{\lambda^x}{x!} \\
