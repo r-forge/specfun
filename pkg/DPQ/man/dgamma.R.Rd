@@ -6,7 +6,8 @@
   level implementation \code{\link{dgamma}} (from package \pkg{stats}).
 }
 \usage{
-dgamma.R(x, shape, scale = 1, log)
+dgamma.R(x, shape, scale = 1, log,
+         dpois_r_args = list())
 }
 \arguments{
   \item{x}{non-negative numeric vector.}
@@ -14,6 +15,8 @@ dgamma.R(x, shape, scale = 1, log)
   \item{scale}{positive scale parameter; note we do not see the need to have
     a \code{rate} parameter as the standard \R function.}
   \item{log}{logical indicating if the result is desired on the log scale.}
+  \item{dpois_r_args}{a \code{\link{list}} of optional arguments for
+    \code{\link{dpois_raw}()}; not much checked, must be specified correctly.}
 }
 %% \details{
 %% }
@@ -31,7 +34,11 @@ dgamma.R(x, shape, scale = 1, log)
 }
 \examples{
 
-## TODO: ... regular case .. use all.equal() ...
+xy  <- curve(dgamma  (x, 12), 0,30) # R's dgamma()
+xyR <- curve(dgamma.R(x, 12, dpois_r_args = list(verbose=TRUE)), add=TRUE,
+             col = adjustcolor(2, 1/3), lwd=3)
+stopifnot(all.equal(xy, xyR, tolerance = 4e-15)) # seen 7.12e-16
+## TODO: check *vectorization* in x --> add tests/*.R				___ TODO ___
 
 
 ## From R's  <R>/tests/d-p-q-r-tst-2.R -- replacing dgamma() w/ dgamma.R()

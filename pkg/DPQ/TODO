@@ -23,6 +23,8 @@
 ** TODO extract functions (and "tests") from ~/R/MM/NUMERICS/dpq-functions/dt-ex.R
 ** TODO extract fns & tests   from ~/R/MM/NUMERICS/dpq-functions/pt-ex.R
 ** TODO extract fns & tests   from ~/R/MM/NUMERICS/dpq-functions/qt-ex.R
+* TODO add dgamma.R() vs dgamma() checks to tests/*.R
+  NB  >> ./man/dgamma.R.Rd
 
 ** TODO: Implement Chattamvelli, R. and Shanmugam, R. (1994) --> pntChShP94()
    ~/save/papers/Numerics/Chattamvelli+Sh_noncentr-t_1994.pdf

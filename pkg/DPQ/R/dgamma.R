@@ -6,33 +6,60 @@
 ## R_D__0 : <==>  (if(log) -Inf else 0)
 ## R_D__1 : <==>  (if(log) 0 else 1) <==>  !log
 
-dgamma.R <- function(x, shape, scale = 1, log)
+dgamma.R <- function(x, shape, scale = 1, log = FALSE, dpois_r_args = list())
 {
-    if (is.na(x) || is.na(shape) || is.na(scale))
+    ## vectorized in 'x' only
+    stopifnot(length(shape) == 1, length(scale) == 1, length(log) == 1)
+    if (is.na(shape) || is.na(scale))
         return (x + shape + scale)
     if (shape < 0 || scale <= 0)
-        stop("invalid 'shape' or 'scale'")
-    if (x < 0) {
-	if(log) -Inf else 0
-    } else if (shape == 0) { ##/* point mass at 0 */
-	if(x == 0) Inf else if(log) -Inf else 0
-    } else if (x == 0) {
-	if (shape < 1)
-            Inf
-        else if (shape > 1) {
-            if(log) -Inf else 0
-        } else
-            if(log) -log(scale) else 1 / scale
-    } else if (shape < 1) {
-	pr <- dpois_raw(shape, x/scale, log)
-        ## NB: currently *always*  shape/x > 0  if shape < 1:
-	## -- overflow to Inf happens, but underflow to 0 does NOT :
-	if(log) pr + (if(shape/x == Inf)log(shape)-log(x) else log(shape/x)) else pr*shape/x
+        stop("invalid 'shape < 0' or 'scale <= 0'")
+    r <- x # result
+    if (N <- anyNA(x))
+        r[N] <- x
+    ok <- !N
+    if (any(neg <- ok & (x < 0)))
+        r[neg] <- if(log) -Inf else 0
+    if (shape == 0) { ##/* point mass at 0 */
+	r[ok & x == 0] <- Inf
+	r[ok & x != 0] <- if(log) -Inf else 0
+        return(r)
     }
-    else {##  shape >= 1
-        pr  <- dpois_raw(shape-1, x/scale, log)
-        if(log) pr - log(scale) else pr/scale
+    ## else: scale, shape > 0
+    ## simplified --- "hoping" dpois_raw() would work ...
+    ## } else if (x == 0) {
+    ##     if (shape < 1)
+    ##         Inf
+    ##     else if (shape > 1) {
+    ##         if(log) -Inf else 0
+    ##     } else
+    ##         if(log) -log(scale) else 1 / scale
+    ## } else
+    if(length(iOk <- which(ok & !neg))) {
+        x <- x[iOk]
+        r[iOk] <-
+            if (shape < 1) {
+                pr <- if(length(dpois_r_args))
+                          do.call(dpois_raw, c(list(x = shape, lambda = x/scale, log = log),
+                                               dpois_r_args))
+                      else
+                          dpois_raw(shape, x/scale, log)
+                ## NB: currently *always*  shape/x > 0  if shape < 1:
+                ## -- overflow to Inf happens, but underflow to 0 does NOT :
+                if(log) pr + ifelse(shape/x == Inf, log(shape)-log(x), log(shape/x))
+                else pr*shape/x
+            }
+            else {##  shape >= 1
+                pr <- if(length(dpois_r_args))
+                          do.call(dpois_raw, c(list(x = shape-1, lambda = x/scale, log = log),
+                                               dpois_r_args))
+                      else
+                          dpois_raw(shape-1, x/scale, log)
+                if(log) pr - log(scale) else pr/scale
+            }
     }
+    ## return
+    r
 }
 
 ## not clear if we should *ever* use this {OTOH, factorial(x) can be 100% accurate, e.g., for MPFR

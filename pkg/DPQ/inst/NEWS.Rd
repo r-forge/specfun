@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-9 (2024-03-08, svn r310)}{
+\section{Version 0.5-9 (2024-03-24, svn r311)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{dbinom_raw()} gets a new more accurate
@@ -35,11 +35,16 @@
 
       \item New functions \code{pow(x,y)} and \code{pow_di(x,y)} computing
       \eqn{x^y} as in \R's C API \file{Rmathlib}.
+
+      \item \code{dgamma.R(x, *)} gets new optional argument \emph{dpois_r_args}. vectorize in \code{x},
     }
   }
   \subsection{BUG FIXES}{
     \itemize{
       \item \emph{fix} format fixes for when 'long != long long'.
+
+      \item \code{dgamma.R(x, ..)} now \emph{does} vectorize in \code{x},
+      as documented.
     }
   }
   \subsection{Misc}{

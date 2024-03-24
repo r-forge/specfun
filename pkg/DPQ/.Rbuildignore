@@ -1,5 +1,9 @@
+## NB: patterns are matched case insensitively
+
 [A-Za-z]\+$
 [A-Za-z]\+[A-Za-z0-9]
+# top level *.rds
+^[A-Za-z_0-9]*\.rds$
 DESCRIPTION_Author
 ^MM
 ^M1mac
@@ -31,6 +35,7 @@ tests/.*\.pdf
 tests/.*\.Rout[-_]?
 tests/.*\.Rout*[24]b
 tests/\.RData
+tests/.*[.]rds
 TODO-man
 TODO-merge-
 .*mail$

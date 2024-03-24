@@ -12,13 +12,11 @@ source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
 ## => showProc.time(), ...  list_() , loadList() ,  readRDS_() , save2RDS()
 ##_ options(conflicts.policy = list(depends.ok=TRUE, error=FALSE, warn=FALSE))
 require(sfsmisc) # masking  'list_' *and* gmp's factorize(), is.whole()
-##_ options(conflicts.policy = NULL)
-myPlatform <- function(Rmin = 9L, osM = 12L)
-    paste(abbreviate(sfsmisc::shortRversion(date=FALSE, spaces=FALSE), Rmin), # "R-devel..." too long
-          .Platform$OS.type,
-          sub("_$","", gsub("[^[:alnum:]]", "_",
-                            abbreviate(osVersion, minlength=osM))),
-          sep='_')
+##_ options(conflicts.policy = NULL)o
+
+## plot1cuts() , etc:  ---> ../inst/extraR/relErr-plots.R <<<<<<<
+##			    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+source(system.file(package="DPQ", "extraR", "relErr-plots.R", mustWork=TRUE))
 
 do.pdf <- TRUE # (manually)
 do.pdf <- !dev.interactive(orNone = TRUE)
@@ -31,21 +29,11 @@ if(do.pdf) {
 showProc.time()
 (doExtras <- DPQ:::doExtras())
 (noLdbl <- (.Machine$sizeof.longdouble <= 8)) ## TRUE when --disable-long-double or 'M1mac' ..
-options(width = 100, nwarnings = 1e5, warnPartialMatchArgs = FALSE)
+(M.mac <- grepl("aarch64-apple", R.version$platform)) # Mac with M1, M2, ... proc
 
 abs19 <- function(r) pmax(abs(r), 1e-19) # cut  |err| to positive {for log-plots}
 
-## to enhance  |rel.Err| plots:  {also in ./pow-tst.R and  ~/R/Pkgs/Rmpfr/tests/special-fun-ex.R }
-drawEps.h <- function(p2 = -(53:51), negative=FALSE, side = 4, lty = 3, lwd = 2, col = adjustcolor(2, 1/2)) {
-    twop <- if(negative) c(outer(2^p2, c(-1,1))) else 2^p2
-    labL <- lapply(p2, function(p) substitute(2^E, list(E=p)))
-    if(negative) labL <- c(lapply(p2, function(p) substitute(-2^E, list(E=p))), labL)
-    abline(h = twop, lty=lty, lwd=lwd, col=col)
-    if(negative) abline(h=0, col=adjustcolor("gray20", 1/2), lwd=max(1, lwd))# at least thick as others
-    axis(side, las=2, line=-1, at = twop, labels = as.expression(labL),
-         col.axis = col, col=NA, col.ticks=NA)
-}
-
+options(width = 100, nwarnings = 1e5, warnPartialMatchArgs = FALSE)
 
 
 
@@ -911,61 +899,6 @@ find1cuts <- function(k, c1,
     list(k=k, n=n, relE = unname(relE), smooths=smooths, i.n = n.L)
 } ## find1cuts()
 
-plot1cuts <- function(res1c, # resulting from
-                      col = c(2,4),
-                      ymin = max(min(y), 2e-17), ...)
-{
-    rnms <- c("k", "n", "relE", "smooths", "i.n")
-    stopifnot(is.list(res1c), rnms %in% names(res1c))
-    list2env(res1c, envir = environment())
-    ## ---> { k, n, relE, smooths, i.n , ..} now exist in local environment
-    stopifnot(exprs = {
-        is.list(smooths)
-        (nS <- length(smooths)) >= 1L
-        sapply(smooths, dim) == rep(c(length(n), 2L), nS)
-        identical(dim(i.n), c(2L, nS))
-    })
-    y <- abs19(relE)
-    matplot(n, y, type = "l", log = "y", col=col, lwd=1/2, yaxt = "n", ylim = c(ymin, max(y, 5e-16)),
-            xlab = quote(n), ylab = quote(abs(relE(n))),
-            main = substitute({k == K} *";" ~~ n %in% group("[",list(N1,N2),"]"),
-                              list(K = k, N1=signif(min(n),3), N2=signif(max(n),3))),
-            ...)
-    eaxis(2)
-    drawEps.h()
-    ## NB: all smoothing --- as in stirlerrPlot() above -- should happen in log-space
-    ## (log(abs19(relEc)), 2, function(y) exp(smooth.spline(y, df=4)$y))
-    ly <- log(y) # == log(abs19(relE)) == log(max(|r|, 1e-19))
-    lines1 <- function(sy, ...) lines(n, sy, lwd=4, col=adjustcolor(col[1], 4/5), ...)
-    lines2 <- function(sy, ...) lines(n, sy, lwd=4, col=adjustcolor(col[2], 1/2), ...)
-    if(do.spl <- is.matrix(m <- smooths$spl)) {## add lines(smooth.spline())
-        lines1(m[,"s1"])
-        lines2(m[,"s2"])
-    }
-    if(do.low <- is.matrix(m <- smooths$low)) { ## lowess
-        lines1(m[,"s1l"], lty=2)
-        lines2(m[,"s2l"], lty=2)
-    }
-    ## also use cobs() splines for the 90% quantile !!
-    if(do.cobs <- is.matrix(m <- smooths$cobs)) { ## lowess
-        lines1(m[,"cs1"], lty=3)
-        lines2(m[,"cs2"], lty=3)
-    }
-    had.n <- FALSE
-    for(j in seq_len(ncol(i.n))) {
-        ## i  <- i.n["i" ,j]  (unused)
-        n. <- i.n["n.",j]
-        if(length(n.) && is.finite(n.)) {
-            if(!had.n) { # draw axis label only once
-                had.n <<- TRUE
-                axis(3, at = signif(n.,3), col=col[1], line = -1)
-            }
-            abline(v = n., lty=2, lwd=3, col=adjustcolor(1, 1/2))
-        }
-    }
-} ## plot1cuts()
-
-
 k. <- 1:15
 system.time(
     resL   <- lapply(setNames(,k.), function(k) find1cuts(k=k, c1=c1..$c1))
@@ -1035,22 +968,42 @@ form(data.frame(k = k., cutoffs = rev(.stirl.cutoffs("R4.4_0")[-1])[k.],
 ## 17                                                                   5.25 or something all the way dow
 
 ##---- In the  no-ldouble case --- this is very different:
-##  k     cutoffs  spl  low       cobs cobs.80
-##  1 17400000.00   NA   NA 9750000.00      NA
-##  2     3700.00   NA   NA    5890.00 6180.00
-##  3      200.00   NA   NA         NA      NA
-##  4       81.00 87.1 87.1      84.80   86.00
-##  5       36.00   NA   NA         NA      NA
-##  6       25.00 23.7 23.7         NA      NA
-##  7       19.00   NA   NA         NA      NA
-##  8       14.00   NA   NA      12.90   13.00
-##  9       11.00   NA   NA         NA      NA
-## 10        9.50   NA   NA         NA    9.69
-## 11        8.80   NA   NA         NA      NA
-## 12        8.25   NA   NA       8.27    7.95
-## 13        7.60   NA   NA         NA      NA
-## 14        7.10   NA   NA       7.43    7.40
-## 15        6.50   NA   NA         NA      NA
+##  k     cutoffs        spl        low       cobs    cobs.80
+##  1 17400000.00 8580000.00 8580000.00 8370000.00 8370000.00
+##  2     3700.00         NA         NA    5890.00    6180.00
+##  3      200.00     159.00     159.00     160.00     159.00
+##  4       81.00      87.10      87.10      84.80      86.00
+##  5       36.00      23.50      23.50      23.50      23.50
+##  6       25.00      23.70      23.70         NA         NA
+##  7       19.00      11.50      11.50      11.50      11.50
+##  8       14.00         NA         NA      12.90      13.00
+##  9       11.00       8.20       8.20       8.21       8.21
+## 10        9.50         NA         NA         NA       9.69
+## 11        8.80       6.84       6.84       6.85       6.83
+## 12        8.25         NA         NA       8.27       7.95
+## 13        7.60         NA         NA         NA         NA
+## 14        7.10         NA         NA       7.43       7.40
+## 15        6.50         NA         NA         NA         NA
+
+
+## M1 macOS is similar to  no-ldouble : "=="  if equaln
+## M1 mac | aarch64-apple-darwin20 | macOS Ventura 13.3.1 | R-devel (2024-01-29 r85841) ; LAPACK version 3.12.0
+##     k     cutoffs        spl        low       cobs    cobs.80
+## 1   1 17400000.00 8580000.00 8580000.00 8370000.00 8370000.00  ==
+## 2   2     3700.00         NA         NA    5900.00         NA  ~=
+## 3   3      200.00     159.00     159.00     160.00     159.00  ==
+## 4   4       81.00      87.10      87.10      84.80      86.00  ==
+## 5   5       36.00      23.50      23.50      23.50      23.50
+## 6   6       25.00      23.70      23.70         NA         NA  ==
+## 7   7       19.00      11.50      11.50      11.50      11.50
+## 8   8       14.00         NA         NA      12.90      13.00  ==
+## 9   9       11.00       8.20       8.20       8.21       8.21
+## 10 10        9.50         NA         NA         NA       9.69  ==
+## 11 11        8.80       6.84       6.84       6.85       6.83
+## 12 12        8.25         NA         NA       8.27       7.95  ==
+## 13 13        7.60         NA         NA         NA         NA  ==
+## 14 14        7.10         NA         NA       7.43       7.40  ==
+## 15 15        6.50         NA         NA         NA         NA  ==
 
 
 

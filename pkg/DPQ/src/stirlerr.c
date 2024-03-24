@@ -57,6 +57,7 @@ _________ TODO:  add  'int version'  or 'order' or   double* cutoffs ___________
  */
 double dpq_stirlerr(double n, stirlerr_version_t version)
 {
+
 #define S0 0.083333333333333333333       /* 1/12 */
 #define S1 0.00277777777777777777778     /* 1/360 */
 #define S2 0.00079365079365079365079365  /* 1/1260 */
@@ -116,28 +117,31 @@ double dpq_stirlerr(double n, stirlerr_version_t version)
 	0.005554733551962801371038690  /* 15.0 */
     };
 
+// for version = R_4_4
+#define LARGE 1e99
 #define nC 19
     const static double cutoffs[nC] = {
-	4.9, // nC-19
-	5.0,
-	5.1,
-	5.2, // nC-16
-	5.4,
-	5.7, // nC-14
-	6.1,
-	6.5,
-	7.0, // nC-11
-	7.9,
-	8.75,
-	10.5,
-	13,
-	//-- do *not* change '20' here (see below)
-	20,  // nC-6;  was
-	26,  // nC-5;  15
-	60,  // nC-4;  35
-	200, // nC-3;  80
-	3300,// nC-2; 500
-      17.4e6 // nC-1;  -
+	5.25, //  (k=19 skipped, 4.9) but 5.25 == cutoffs[0] is crucially needed
+	LARGE, //   k=18 skipped, 5.0,
+	5.25, // k=17
+	LARGE, //   k=16 skipped, was 5.25
+	6.1,  // k=15
+	LARGE, //   k=14 skipped, was 5.7
+	6.6,
+	LARGE, //   k=12 skipped, was 6.5,
+	7.3,  // nC-11
+	LARGE, //   k=10 skipped was 7.9,
+	8.9,  // k = 9
+	12.3, // nC-8
+	12.8, // (was 13)  nC-7 <--> k=7
+	//-- the first cutoff to  "high" vs "low" branch
+	23.5, // nC-6;  was 20
+	////
+	27,  // nC-5;  15 (then   26)
+	86,  // nC-4;  35 (then   60)
+	205, // nC-3;  80 (then  200)
+	6180,// nC-2; 500 (then 3300)
+	15.7e6 // 8.37e6 for M1 mac; was 17.4e6 // nC-1;
     };
 
     double nn;
@@ -161,17 +165,23 @@ double dpq_stirlerr(double n, stirlerr_version_t version)
 
   case R_4_4: // "R4.4_0"  --- see R code in ../R/dgamma.R  <<<<<<
     k = nC-6;
-    if (n <= cutoffs[k]) {// == 20
+    if (n <= cutoffs[k]) {// == 23.5 (was 20)
       nn = n + n;
       if (n <= 15. && (nn == (int)nn)) return sferr_halves[(int)nn];
       // else:
-      if (n <= cutoffs[0]) // FIXME use MM's slightly better formula lgamma1p(n) = lgamma(n) + log(n)
-	  return lgamma1p(n) - (n + 0.5)*log(n) + n - M_LN_SQRT_2PI;
-      // else 5... == cutoffs[0] < n <= cutoffs[nC-6] == 20
+      if (n <= cutoffs[0]) {
+	  if(n >= 1.) { // "MM2"; slightly more accurate than direct form
+	      double l_n = log(n);	      // ldexp(u, -1) == u/2
+	      return lgamma(n) + n*(1 - l_n) + ldexp(l_n - M_LN_2PI, -1);
+	  }
+	  else // n < 1
+	      return lgamma1p(n) - (n + 0.5)*log(n) + n - M_LN_SQRT_2PI;
+      }
+      // else cutoffs[0] < n <= cutoffs[nC-6] == 23.5 :
       nn = n*n;
-      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5 -S6/nn)/nn)/nn)/nn)/nn)/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5 -S6/nn)/nn)/nn)/nn)/nn)/nn)/n; // k=7
       if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6 -S7/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
-      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7 -S8/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
+      if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7 -S8/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n; // k=9
       if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8 -S9/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
       if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-S10/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
       if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-S11/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
@@ -183,7 +193,8 @@ double dpq_stirlerr(double n, stirlerr_version_t version)
       if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-(S16-S17/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
       if (n > cutoffs[--k]) return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-(S16-(S17-S18/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
  /* if (n > cutoffs[--k])*/ return (S0-(S1-(S2-(S3-(S4-(S5-(S6-(S7-(S8-(S9-(S10-(S11-(S12-(S13-(S14-(S15-(S16-(S17-(S18-S19/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/nn)/n;
-     } else { // n > cutoffs[nC-6] == 20
+
+    } else { // n > cutoffs[nC-6] == 23.5
 	nn = n*n;
 	k = nC;
 	if (n > cutoffs[--k])    return S0/n;
