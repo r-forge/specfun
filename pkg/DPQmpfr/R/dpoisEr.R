@@ -1,6 +1,10 @@
 ### TODO:  export  and document (ESS : C-c C-o C-r	ess-roxy-preview-Rd )
 ### ----   ------      --------
 
+## NB: Currently explored (somewhat) in
+## ---->  ~/R/Pkgs/DPQ/tests/bd0-tst.R
+##          ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ##' @title Vector of interesting x-values for dpois(x, lambda)
 x4dpois <- function(lambda, f.max = 2) {
     if(lambda < 2000) 0:ceiling(max(f.max * lambda,

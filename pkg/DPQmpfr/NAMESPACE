@@ -79,7 +79,8 @@ export(dbetaD94, pbetaD94, qbetaD94)
 ## R/hyperDist.R :
 export(dhyperQ, phyperQ, phyperQall)# simple via chooseZ()
 ## R/t-nonc.R :
-export(dntJKBm)
+export(dntJKBm) # deprecated
+export(dtWVm)
 
 ## R/dnbinom-etc.R :
 ## Not needed, Rmpfr has the functionality!  export(dnbinomM, dnbinom.mu)
