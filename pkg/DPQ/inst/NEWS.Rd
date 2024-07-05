@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-9 (2024-03-24, svn r311)}{
+\section{Version 0.5-9 (2024-06-03, svn r313)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{dbinom_raw()} gets a new more accurate
@@ -36,7 +36,10 @@
       \item New functions \code{pow(x,y)} and \code{pow_di(x,y)} computing
       \eqn{x^y} as in \R's C API \file{Rmathlib}.
 
-      \item \code{dgamma.R(x, *)} gets new optional argument \emph{dpois_r_args}. vectorize in \code{x},
+      \item \code{dgamma.R(x, *)} gets new optional argument \emph{dpois_r_args}.
+
+      \item New function \code{expm1x()} providing \eqn{exp(x) - 1 - x}
+      numerically accurately also for small \eqn{|x|}.
     }
   }
   \subsection{BUG FIXES}{

@@ -23,6 +23,10 @@ importFrom("stats"
          , uniroot
 )
 
+## Plotting in our own functions, e.g. for   `plotIt = TRUE`
+
+importFrom("grDevices", adjustcolor)
+
 importFrom("graphics",
            curve, legend, lines, par, plot
            )
@@ -31,7 +35,6 @@ importFrom("methods", as, is, new
            )
 
 importFrom("utils"
-         , globalVariables
          , head, tail
          , str
            )
@@ -96,7 +99,7 @@ export(
   , lbeta_asy, lbetaI, lbetaM, lbetaMM
   ## , lbetaIhalf
   , algdiv # name as in TOMS 708 .. but really?
-  , bpser  # name as in TOMS 708
+  , bpser  # name as in TOMS 708 -- version of pbeta()
   , okLongDouble # as with valgrind, it does not work contrary to what .Machine says
 
   , dpsifn # R/psigamma-deriv.R
@@ -146,6 +149,7 @@ export(
   , stirlerr, stirlerr_simpl, stirlerrC
   , bd0_p1l1d1, bd0_p1l1d, bd0_l1pm
   , ebd0, ebd0C
+  , expm1x, expm1xTser # R/expm1x.R
   , p1l1, p1l1., p1l1p, p1l1ser ## NB: p1l1p() via log1pmx()  is *very* good!
   , .p1l1ser
 
