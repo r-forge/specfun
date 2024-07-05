@@ -158,6 +158,13 @@ pntGST23_1(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
     \item{\code{pntGST23_T6()}:}{(and \code{pntGST23_T6.1()} for
       informational purposes only) use the Gil et al.(2023)'s
       approximation of their Theorem 6.}
+
+    \item{\code{pntGST23_1()}:}{implements Gil et al.(2023)'s direct
+      \code{\link{pbeta}()} based formula (1), which is very close to
+      Lenth's algorithm.}
+
+    \item{\code{pntVW13()}:}{use MM's \R translation of Viktor
+      \enc{Witkowský}{Witkowsky} (2013)'s matlab implementation.}
   }
 }
 
@@ -282,12 +289,13 @@ str(r3 <- pntVW13(t = 1,    df = 2:20, ncp = 3:21, verbose=TRUE, keepS=TRUE))
 
 pt1.10.5_T <- 4.34725285650591657e-5 # Ex. 7 of Witkovsky(2013)
 pt1.10.5 <- pntVW13(1, 10, 5)
-all.equal(pt1.10.5_T, pt1.10.5, tol = 0)# TRUE! (Lnx Fedora 40; 2024-07-04)
+all.equal(pt1.10.5_T, pt1.10.5, tol = 0)# TRUE! (Lnx Fedora 40; 2024-07-04);
+			# 3.117e-16 (Macbuilder R 4.4.0, macOS Ventura 13.3.1)
 stopifnot(exprs = {
     identical(rr$cdf, r1 <- pntVW13(t = 1:19, df = 2, ncp = 3))
     identical(r1[1], pntVW13(1, 2, 3))
     identical(r1[7], pntVW13(7, 2, 3))
-    all.equal(pt1.10.5_T, pt1.10.5, tol = 3e-16)# NB even tol=0 (64 Lnx)
+    all.equal(pt1.10.5_T, pt1.10.5, tol = 9e-16)# NB even tol=0 (64 Lnx)
 })
 ## However, R' pt() is only equal for the very first
 cbind(t = 1:19, pntVW = r1, pt = pt(1:19, 2,3))

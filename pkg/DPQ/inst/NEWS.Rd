@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-9 (2024-07-05, svn r315)}{
+\section{Version 0.5-9 (2024-07-05, svn r316)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{dbinom_raw()} gets a new more accurate
@@ -53,6 +53,10 @@
 
       \item New function \code{pntVW13()} implementing Viktor Witkovský(2013)'s
       algorithm, from his published Matlab code.
+
+      \item Data set \code{pt_Witkovsky_Tab1} containing (the free software
+      subset of) Viktor \enc{Witkovský}{Witkovsky}(2013)'s \emph{Table 1} of
+      \code{pt(x, df=nu, ncp=delta)} examples.
     }
   }
   \subsection{BUG FIXES}{
