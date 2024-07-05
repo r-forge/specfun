@@ -19,6 +19,7 @@ stopifnot(exprs = {
     require(sfsmisc)
 })
 
+options(width = 100, nwarnings = 1e5)
 source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
 ## => showProc.time(), ...  list_() , loadList() ,  readRDS_() , save2RDS()
 relErrV <- sfsmisc::relErrV
@@ -51,6 +52,7 @@ d3 <- uniroot(pt.pos, q=.1, df=20, lower=30, upper= 40, tol=1e-10)$root
 d5 <- uniroot(pt.pos, q=.01,df= 2, lower=30, upper= 40, tol=1e-10)$root
 d6 <- uniroot(pt.pos, q=.01,df=20, lower=30, upper= 40, tol=1e-10)$root
 c(d3, d5, d6)
+## 37.62274 37.62189 37.62189
 ## unique(sort(c(d1,d2,d3,d4,d5,d6)))
 ##[1] 38.45745 38.46036 38.56226 38.57550
 
@@ -72,9 +74,10 @@ d <- 38.5;pt(d,d,d)#  6.91692e-323  (799)  s<0 => error-bound < 0  (!) wrong con
 pt(39,39,39)#   p = 0 ==> result=0 --- no longer
 
 ## FIXME:
+pt   (40,40, 38.5) # R's
 pntR1(40,40, 38.5, verbose=2) ## and then edit ---> gives the *.out file
 ##--------- FIXME --- work via sink() or capture.output -- to get  rr data.frame()
-if(FALSE) {
+ if(FALSE) {
 t.file <- "/u/maechler/R/MM/NUMERICS/dpq-functions/pnt-40-40-38.5.out"
 nr <- names(rr <- read.table(t.file, header= TRUE))
 summary(rr)
@@ -101,25 +104,26 @@ curve(dt(x, df=10,ncp=10000, log=TRUE), 1e3, 1e9, col=2, ylim = c(-30,-8),log="x
 ## ditto ?
 curve(dt(x, df=10,ncp= 1e7, log=TRUE), 1e5, 1e11, col=2, ylim = c(-35,-15),log="x")
 curve(dt(x, df=10,ncp= 1e7), 5e6, 3e7, col=2)
-integrate(function(x) dt(x, df=10,ncp= 1e7), 5e6, 3e7)
+integrate(function(x) dt(x, df=10,ncp= 1e7), 5e6, 3e7) # mathematically < 1, but
 ## 1.004937 with absolute error < 8e-08 hm... --> seems error in tails
 
 
 yl <- c(-80,0)
 curve(dt(x, df=10,ncp= 10, log=TRUE), 0, 600, col=2, n=5001, ylim=yl)
-curve(dt(x, df=10,ncp= 15, log=TRUE), 0, 800, col=2, n=5001, ylim=yl)
+curve(dt(x, df=10,ncp= 15, log=TRUE), 0, 900, col=2, n=5001, ylim=yl) -> dt10.15.L
 
 ## Log-log
 curve(exp(dt(x, df=10,ncp= 15, log=TRUE)), 1, 1e7, log="xy",
       col=2, n=5001, axes=FALSE, ylab = "",
-      main="dt(x, df=10,ncp= 15) -- Log-Log scale")
+      main="dt(x, df=10,ncp= 15) -- Log-Log scale") -> edtLog
 eaxis(1)
 op <- par(las=2)
 eaxis(2, at = 10^pretty(log10(axTicks(2, log=TRUE)), 10),
       at.small =FALSE)
 par(op)
 mtext(R.version.string, cex = .6, adj=1)
-## NB: Mathematica (e.g) ./pnt-ex.nb  -- shows linear {in log-log} tail
+## NB: Mathematica (e.g) ./pnt-ex.nb  -- shows __linear__ {in log-log} tail
+{}
 
 ## From: Jerry Lewis <jerry.lewis@biogenidec.com>
 ## To: Martin Maechler <maechler@stat.math.ethz.ch>
@@ -446,7 +450,7 @@ summary(warnings())
 ## In qt(1 - 10^(-4 + ncp), df = 35, ncp = ncp) :
 ##   full precision may not have been achieved in 'pnt{final}'
 
-## MM: better than "1 - <small" is to use 'lower.tail=FALSE':
+## MM: better than "1 - <small>" is to use 'lower.tail=FALSE':
 r1. <- vapply(nc1, function(ncp) qt(10^(-4+ncp), df=35, ncp=ncp, lower.tail=FALSE), 1.23)
 summary(warnings())
 matplot(nc1, cbind(r1,r1.), type="l")
@@ -455,7 +459,7 @@ i <- nc1 <= -10
 matplot(nc1[i], cbind(r1,r1.)[i,], type="l")
 
 ## Zoom in around -7
-r2 <- sapply(seq(-6.9, -7.9, -0.1), function(ncp) qt(1-1*(10^(-4+ncp)), 35, ncp))
+(r2 <- sapply(seq(-6.9, -7.9, -0.1), function(ncp) qt(1-1*(10^(-4+ncp)), 35, ncp)))
  ## [1] -0.2268386        Inf        Inf        Inf -0.4857400 -0.5497784
  ## [7] -0.6135402 -0.6770143 -0.7401974 -0.8030853 -0.8656810
 summary(warnings())

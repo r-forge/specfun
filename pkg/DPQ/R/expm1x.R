@@ -83,7 +83,6 @@ expm1xBnds <- function(ord, P = 52L, tol = 1e-7,
     stopifnot(length(ord) == 1L, ord == (ord <- as.integer(ord)), ord >= 2L,
               length(P) == 1L, (P <- as.integer(P)) >= 16L, length(interval) == 2L)
     C <- -log(2)*(P+1L)
-    lgam.ord <- lgamma(ord)
     Ckp <- (C + lgamma(ord))/(ord-1L)
     f0 <- function(lx) Ckp - lx # lx = log(abs(x))
     uniroot(f0, interval=interval, extendInt = "yes", tol = tol)

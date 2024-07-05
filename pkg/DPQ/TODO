@@ -4,6 +4,38 @@
 * DONE Provide R functions interfacing to the "applied math utilities" in ./src/DPQ-misc.c : ./R/utils.R
 * TODO pbeta() approximations notably for log scale where bpser underflows to -Inf <<<<<<<<<<<
 * TODO Compare pnchi1sq() with t1() function in tests/chisq-nonc-ex.R
+* TODO Computational Statistics paper ~/save/papers/Numerics/noncentral_gamma_deOliveira+Ferreira_ComputStat_2013.pdf
+   de Oliveira, I.R.C and Ferreir, D.F. (2013)
+   Computing the noncentral gamma distribution, its inverse and the noncentrality parameter
+   Comput Stat 28:1663–1680 -- \doi{10.1007/s00180-012-0371-8}
+  --> CRAN package `ncg` (non-central gamma) .. lived on CRAN only till 2012.
+  https://cran.r-project.org/src/contrib/Archive/ncg/
+  showing
+  	ncg_0.1.0.tar.gz	2012-06-19 08:43 	4.2K
+  	ncg_0.1.1.tar.gz	2012-07-05 15:40 	4.1K -- Maintainer Daniel Ferreir
+  --> add *some* of these functions to DPQ ? === R-code only -- *not*
+   sophisticated, but a valid "baseline". --> ~/R/Pkgs/ncg/ ||
+   Mlibrary(ncg) -- ~/R/Pkgs/ncg.Rcheck-64b/ncg
+   
+* TODO Newer (than de Oliveira & Ferreir (2015) paper on  gammaCHI Software
+       gives *better* approximations (at least in parts):
+  - Gil, Amparo; Segura, Javier; Temme, Nico M. (2021),
+     “GammaCHI: A package for the inversion and computation of the gamma and
+      chi-square cumulative distribution functions (central and noncentral).
+      New version announcement”,  [Computer Physics Communications 267 (2021) 108083]
+      https://doi.org/10.1016/j.cpc.2021.108083
+    CPC Library link to program files:
+      https://doi.org/10.17632/d2kwwvsyny.1 (see below)
+       == https://https://data.mendeley.com/datasets/d2kwwvsyny/1 --> GSTNVA2021.zip (85625 bytes)
+  - [First version of software with "original" good paper:]
+     Amparo Gil and Javier Segura and Nico M. Temme (2015)
+     GammaCHI: A package for the inversion and computation of the gamma and chi-square
+               cumulative distribution functions (central and noncentral)
+     Computer Physics Communications 191, 132–139
+     http://dx.doi.org/10.1016/j.cpc.2015.01.004
+    MM (nb-mm5): 1.  ~/src/GammaCHI/ --- the code is quite readable, maybe partly works with f2c ?
+                 2. our stirlerr() function is ~= (?) ~= their  stirling() function  !!
+
 * DONE in R >= 4.0.0, now .Machine has 10 "longdouble.*" components (when the configuration found long double)
   Note that from `#include <float.h>` we should just return the `LDBL_*` values.
 * TODO tests/chisq-nonc-ex.R : move "things" to a vignette -- DONE partly : vignettes/Noncentral-Chisq.Rnw

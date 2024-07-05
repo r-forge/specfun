@@ -248,15 +248,15 @@ c_pt <- function(nu)
 ## -------              --------------------------
 ## >>>> ../man/pnt.Rd <<<<<<<<<
 pntR1  <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
-                   use.pnorm = (df > 4e5 ||
-                                ncp^2 > 2*log(2)*(-.Machine$double.min.exp)),
+                   use.pnorm =
+                       (df > 4e5 ||
+                        ncp^2 > 2*log(2) * 1021), # .Machine$double.min.exp = 1022
                    ## /*-- 2nd part: if del > 37.6403, then p=0 below
                    ## FIXME: test should depend on `df`, `t` AND `ncp`
                    itrmax = 1000, errmax = 1e-12, verbose = TRUE)
 {
     ## Purpose: R version of the series used in pnt() in
     ##          ~/R/D/r-devel/R/src/nmath/pnt.c
-    ##
     ## ----------------------------------------------------------------------
     ## Arguments: same as  pt()
     ## Author: Martin Mächler, Date:  3 Apr 1999, 23:43
@@ -273,7 +273,7 @@ pntR1  <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
             getPrec <- Rmpfr::getPrec
 	    prec <- max(getPrec(t), getPrec(df), getPrec(ncp))
 	    pi <- Rmpfr::Const("pi", prec = max(64, prec))
-	}
+	} ##--
     }
 
     if (t >= 0) {
@@ -490,8 +490,8 @@ pnt3150.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE, M = 1000,
     ## hence now, t >= 0 :
     x <- df / (df + t^2)
     lambda <- 1/2 * ncp^2
-    ## Cheap and stupid -- and not ok for moderately large ncp !
     j <- 0:M
+    ## Cheap and stupid -- and not ok for moderately large ncp !
     ## terms <- (ncp/sqrt(2))^j / gamma(j/2 + 1) * pbeta(x, df/2, (j+1)/2)
     ## log(.):
     l.terms <- j*(log(ncp)- log(2)/2) - lgamma(j/2 + 1) + pbeta(x, df/2, (j+1)/2, log.p=TRUE)
@@ -575,8 +575,6 @@ pntP94.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
     ## x := df / (df + t^2)   <==>  (1-x) =: rxp = t^2 / (df + t^2)
     x   <- df/ (x + df) ## in (0, 1] :  x == 1 for very large t
     rxb <- x / (x + df) # == (1 - x)  in [0,1)
-    ## (1 - x) = df / (t^2 + df)
-
     Cat("pnt(t=",format(t),", df=",format(df),", delta=",format(ncp),") ==> x= ",
         format(x),":")
 
@@ -656,6 +654,704 @@ pntChShP94.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
 }
 
 pntChShP94 <- Vectorize(pntChShP94.1, c("t", "df", "ncp"))
+
+### ==== Gil et al. (2023) "New asymptotic representations of the noncentral t-distribution"
+###      ----------------  DOI 10.1111/sapm.12609 ==  https://doi.org/10.1111/sapm.12609
+##' Gil A., Segura J., and Temme N.M. (2023) -- DOI 10.1111/sapm.12609
+##' Theorem 6 -- asymptotic for zeta --> Inf;  zeta := \delta^2 y/2;  y = t^2/(df + t^2)
+pntGST23_T6.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
+                          y1.tol = 1e-8, # <- somewhat arbitrary for now
+                          Mterms = 20, # in the paper, they used Mterms = 11 for Table 1 (p.869)
+                          alt = FALSE, # << TODO: find out "automatically" which (T/F) is better
+                          verbose = TRUE)
+{
+    stopifnot(length(Mterms)==1L, Mterms >= 1, Mterms == (M <- as.integer(Mterms)),
+              length(y1.tol)==1L, y1.tol >= 0)
+
+    if(!lower.tail) { ## upper tail .. is *not* optimized for all cases
+        if(!log.p)
+            1 - pntGST23_T6.1(t, df, ncp, lower.tail=TRUE,
+                              y1.tol=y1.tol, Mterms=Mterms, verbose=verbose)
+        else { # log.p: log(1 - F(.))
+           if(alt) ## use log scale
+               ## alternatively, not equivalently -- see FIXME in log.p case below
+               log1mexp(pntGST23_T6.1(t, df, ncp, lower.tail=TRUE, log.p=TRUE,
+                                      y1.tol=y1.tol, Mterms=Mterms, verbose=verbose))
+           else log1p(- pntGST23_T6.1(t, df, ncp, lower.tail=TRUE,
+                                      y1.tol=y1.tol, Mterms=Mterms, verbose=verbose))
+        }
+    }
+    t2 <- t^2
+    t2df <- t2 + df
+    y <- t2/t2df # in [0,1]; (mathematically would be in [0,1), but numerically gets == 1)
+    l_y <- df/t2df # := 1-y  {but stable for df << t2  (when t2+df underflows to t2)}
+    del2.2 <- ncp^2/2
+    zeta <- del2.2 * y
+    if(l_y <= y1.tol) {
+        if(l_y == 0)
+            stop("l_y = 1-y (stable form) = 0; the theorem 6 approximation cannot work")
+        if(y == 1)
+            warning("y = 1 (numerically); the approximation maybe very bad")
+        else
+            warning(sprintf("y = t^2/(t^2 + df) is too(?) close to 1: 1-y=%g", l_y))
+    }
+    if(verbose) cat(sprintf("pntGST23_T6(): ...."))
+    ## a0 <- 1
+    n2 <- df/2 # used "everywhere" below
+    kk <- seq_len(M-1L) # 1,...
+    ak <- choose(n2-1/2, kk) # a_k = choose(n2-1/2, k) = (n2+1/2-k)/k * a_{k-1} for k >= 1  (45), p.868
+    ## The  c_k  and  f_k := (1 - n/2)_k {*rising* factorial [= *not* as I use Pochhammer in Rmpfr::pochMpfr]
+    ## are defined recursively, during the summation of the infinite \sum_k=0^{\infty} sum which
+    ## we approximate by the M terms sum k=0:M
+    sign <- 1
+    zet.k <- 1 # == zeta ^ k
+    ## f0 <- 1 - n2
+    nk <- -n2 # such that nk+1 = 1-n2 == f1
+    fk <- 1 # == (1 - n/2)_0
+    ck <- c0 <- 1/l_y
+    Sum <- sign* fk * ck / zet.k # = summand for k=0
+    if(verbose) cat(sprintf("k= 0: zeta=%13.9g, c0=%13.10g,   Sum= %-24.16g\n", zeta, c0, Sum))
+    for(k in kk) { # 1, 2, .., M-1
+        sign <- -sign
+        fk <- fk*(nk <- nk + 1) # (a)_n = *rising* factorial  (7)
+        ck <- (ak[k] + y * ck) / l_y  # (44)
+        zet.k <- zet.k * zeta
+        Sum <- Sum + sign* fk * ck / zet.k
+        if(verbose) cat(sprintf("k=%2d: new summand= %18.12g --> new Sum= %-24.16g\n",
+                                k, sign* fk * ck / zet.k, Sum))
+    }
+    if(verbose) cat("\n")
+
+    if(log.p) {
+        zeta - del2.2   +  log(y)/2  + n2*log(l_y) + (n2-1)*log(zeta) - lgamma(n2) + log(Sum)
+    } else { ## lower.tail = TRUE,  log.p == FALSE
+        if(alt) ## use log scale -- alternatively, not equivalently
+            exp(zeta - del2.2  + log(y)/2  + n2*log(l_y) + (n2-1)*log(zeta) - lgamma(n2) + log(Sum))
+        else
+            exp(zeta - del2.2) * sqrt(y)   * l_y^n2      *  zeta^(n2-1)     / gamma(n2)  * Sum
+    }
+}
+pntGST23_T6 <- Vectorize(pntGST23_T6.1, c("t", "df", "ncp"))
+
+
+## "Simple accurate" pbeta(), i.e., I_x(p,q) from Gil et al. (2023) -- notably Nico Temme
+##  *much* less sophisticated than R's TOMS 708 based pbeta(), *BUT* with potential to be used with Rmpfr
+## from Nico Temme's "Table 1" Maple code ------------------------
+##
+## Vectorized version of I_x(p,q) == pbeta(x, p,q)
+##                  vvv 1-x (with full accuracy)
+Ixpq <- function(x, l_x = 1/8 - x + 7/8, p, q, tol = 3e-16, it.max = 100L, plotIt=FALSE) {
+    stopifnot(is.numeric(tol), length(tol) == 1L, 0 < tol, tol < 1, it.max >= 4L)
+    oneMinus <- function(x) 1/8 - x + 7/8 # slightly less cancellation than 1-x (?)
+    if(missing(l_x))
+        l_x <- oneMinus(x)
+    else if(missing(x))
+        x <- oneMinus(l_x)
+    else
+        stopifnot(length(x) == length(l_x),
+                  "x and l_x do not add to 1" = abs(x + l_x - 1) <= 1e-15)
+    r <- x
+    r[N  <- (x <= 0)] <- 0
+    r[G1 <- (x >= 1) & l_x <= 0] <- 1
+    in01 <- !N & !G1 # inside (0,1)
+    if(any(swap <- x[in01] > p/(p+q)))
+        r[in01][swap] <- 1 - Ixpq(l_x[in01][swap], x[in01][swap], p = q, q = p,
+                                  tol=tol, it.max=it.max, plotIt=plotIt)
+    ## else: for indices which(in01)[!swap]
+    if(length(ii <- which(in01)[!swap])) {
+        x   <- x  [ii]
+        l_x <- l_x[ii]
+        pq <- p+q
+        f <- 1
+        fn1 <- 1; gn1 <- 1
+        fn2 <- 0; gn2 <- 1
+        p. <- p
+        m <- 0L
+        ## FIXME:  for *some* x, convergence is reached when others are still "far" away
+        for(it in 1:it.max) {
+            p. <- p. + 1 # p. == p+it
+            if(it %% 2 == 0L) { # type(it,even))
+                m <- m+1L
+                dn <- m*x*(q-m)/((p.-1)*p.)
+            } else {
+                dn <- -x*(p+m)*(pq+m)/((p.-1)*p.)
+            }
+            g <- f # previous
+            fn <- fn1 + dn*fn2
+            gn <- gn1 + dn*gn2
+            f <- fn/gn
+            if (it > 3L) {
+                err <- abs((f-g)/f)
+                if(any(f0 <- f == 0)) # absolute error for  f = 0
+                    err[f0] <- abs(g[f0])
+                if(plotIt) {
+                    if(it == 4) {
+                        plot(x, err, type="l", log="y", ylim = range(tol, err[err > 0]))
+                        legend("topleft", sprintf("Ixpq(x, p=%g, q=%g, tol=%g)", p,q, tol), bty="n")
+                        abline(h = (1:2)*2^-52, lty=3, col="thistle")
+                    } else
+                        lines(x, err, col=adjustcolor(2, 1/4), lwd=2)
+                }
+                if(all(err <= tol)) ## converged
+                    break
+            }
+            fn2 <- fn1; fn1 <- fn
+            gn2 <- gn1; gn1 <- gn
+        }
+        if(it >= it.max && any(err > tol))
+            warning(gettextf("continued fraction computation did not converge (tol=%g, it.max=%d)",
+                             tol, it.max), domain=NA)
+                                        # lprint(it)
+        if(plotIt)
+            legend("topleft", inset=1/20,
+                   sprintf("--> #iter = %d; range(f) = [%g, %g]", it, min(f), max(f)), bty="n")
+        r[ii] <- f * x^p * l_x^q / (p * beta(p,q))
+    }
+    r
+} ## Ixpq()  {vectorized  (too simply, for "production" use)}
+
+
+### ==== from Gil et al. (2023) ... eq. (1) .. but
+##' Using the pbeta sums -- similar to Lenth(1989) but *not* suffering from underflow for large ncp:
+##' ---- really based on the _Maple_ code Nico Temme sent to MM (May 2024) ----
+pntGST23_1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
+                       j0max = 1e4, # for now
+                       IxpqFUN  = Ixpq,
+                       ## y1.tol = 1e-8, # <- somewhat arbitrary for now
+                       alt = FALSE, # << TODO: find out "automatically" which (T/F) is better
+                       verbose = TRUE,
+                       ...  ## <-- further arguments passed to IxpqFUN
+                       )
+{
+    stopifnot("'ncp' must be of length 1 ((for now))" = length(ncp) == 1L,
+              length(j0max) == 1L,
+              "IxpqFUN() must be an incomplete beta function (x, l_x, p, q, ....)" =
+                  is.function(IxpqFUN) && length(formals(IxpqFUN)) >= 4 + ...length() &&
+                  all.equal(0.6177193984, IxpqFUN(.4, .6, 4,7), tolerance = 1e-14))
+
+    if(!lower.tail) { ## upper tail .. is *not* optimized for all cases
+        if(!log.p)
+            1 - pntGST23_1(t, df, ncp, lower.tail=TRUE,
+                           ## y1.tol=y1.tol, Mterms=Mterms,
+                           verbose=verbose)
+        else { # log.p: log(1 - F(.))
+           if(alt) ## use log scale
+               ## alternatively, not equivalently -- see FIXME in log.p case below
+               log1mexp(pntGST23_1(t, df, ncp, lower.tail=TRUE, log.p=TRUE,
+                                   ## y1.tol=y1.tol, Mterms=Mterms,
+                                   verbose=verbose))
+           else log1p(- pntGST23_1(t, df, ncp, lower.tail=TRUE,
+                                  ## y1.tol=y1.tol, Mterms=Mterms,
+                                  verbose=verbose))
+        }
+    }
+
+
+    ## was Fnxback() in  ../Misc/pnt-Gil_etal-2023/Giletal23_Ixpq.R
+    ##     ~~~~~~~~~     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    ## MM: derive the "j0" (number of terms, as function of ncp=delta) from  GST 2023 (101):
+    ## --  e^-z z^j  /  (e^-j j^j)        == eps            (101)  |  take log(.)
+    ## <==>  -z + j log(z) +j - j log(j)  == log(eps)
+    ## <==>  j0fn(j, z, eps) == 0  with j0fn(..) :=
+    j0fn <- function(j, z, tol = 1e-16) j-z+j*(log(z) - log(j)) - log(tol)
+    j0_solve1 <- function(z, tol, tolRoot)
+        uniroot(function(j) j0fn(j, z=z, tol=tol),
+                interval = c(z, max(30,2*z)), tol = tolRoot, extendInt = "down")
+
+    ## p <- Pnxbackwrec(df, t, ncp)
+    ## q <- Qnxbackwrec(df, t, ncp)
+    ## p+q + pnorm(-ncp)
+
+    ## pP <- Pnxbackwrec(df, t, ncp) -----------------------------------------
+    t2 <- t^2
+    t2df <- t2 + df
+    y   <- t2/t2df # in [0,1]; (mathematically would be in [0,1), but numerically gets == 1)
+    l_y <- df/t2df # := 1-y  {but stable for df << t2  (when t2+df underflows to t2)}
+    z <- ncp^2/2 # 'del2.2'
+    j0 <- ceiling(j0_solve1(z, tol = 1e-16, tolRoot = 1e-9)$root)
+    stopifnot(2 <= j0, j0 <= j0max)
+
+    p <- 1/2;  q <- df/2
+    Ijj <- IxpqFUN(y, l_y, p+j0, q, ...) # Ij[j]   j=j0
+    pj <- exp(-z+j0*log(z)-lgamma(j0+1))
+    s <- pj*Ijj
+    Ij1 <- IxpqFUN(y, l_y, p+j0-1, q, ...) # Ij[j-1]  j=j0
+    pj <- pj*j0/z
+    s <- s + pj*Ij1
+    for(j in (j0-1L):1) { ## while(j > 0)
+        ppj <- p+j; pjq.y <- (ppj+q-1)*y
+        Ij_1 <- ((ppj+pjq.y)*Ij1 - ppj*Ijj) / pjq.y
+        pj <- j*pj/z
+        s <- s+ pj*Ij_1
+        Ijj <- Ij1  # Ijj = Ij[<next j>  ] = Ij[j-1]
+        Ij1 <- Ij_1 # Ij1 = Ij[<next j>-1]
+    }
+    pP <- s/2
+
+    ## qQ <- Qnxbackwrec(df, t, ncp) -----------------------------------------
+    p <- 1
+    Ijj <- IxpqFUN(y, l_y, p+j0, q, ...) # Ij[j]   j=j0
+    qj <- exp(-z + j0*log(z) - lgamma(j0+3/2))
+    s <- qj*Ijj
+    Ij1 <- IxpqFUN(y, l_y, p+j0-1, q, ...) # Ij[j-1]  j=j0
+    qj <- qj*(j0+1/2)/z
+    s <- s + qj*Ij1
+    for(j in (j0-1L):1) { ## while(j > 0)
+        ppj <- p+j; pjq.y <- (ppj+q-1)*y
+        Ij_1 <- ((ppj+pjq.y)*Ij1 - ppj*Ijj) / pjq.y
+        qj <- (j+1/2)*qj/z
+        s <- s+ qj*Ij_1
+        Ijj <- Ij1  # Ijj = Ij[<next j>  ] = Ij[j-1]
+        Ij1 <- Ij_1 # Ij1 = Ij[<next j>-1]
+    }
+    qQ <- s * ncp/(2*sqrt(2))
+
+    if(log.p) {
+        log(pP+qQ + pnorm(-ncp))
+    } else {
+            pP+qQ + pnorm(-ncp)
+    }
+}
+## pntGST23_1 <- Vectorize(pntGST23_1.1, "ncp")
+
+
+
+
+
+##
+### ==== Gil et al. (2023) -- DOI 10.1111/sapm.12609 (see above)
+###      ----------------
+##' Lemma 2, p.861 + Numerics, p.880 (102) --- Integrate Phi(.) = pnorm(.) ==> "...Inorm"
+##'                            ...... ^^^^
+pntInorm.1 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
+                       integr = c("exp", # trafo e^s = t (102)
+                                  "direct"), #  (13)
+                       logA = log.p || df >= 286.032165, # ~ empirical boundary
+                       ..., # arguments passed to integrate()
+                       alt = FALSE,
+                       verbose = TRUE)
+{
+    stop("NOT YET implemented; see  ../Misc/pnt-Gil_etal-2023/ ")
+### ../Misc/pnt-Gil_etal-2023/Giletal23_Ixpq.R
+### ../Misc/pnt-Gil_etal-2023/Giletal23_FN.R
+### ../Misc/pnt-Gil_etal-2023/Giletal23_e102.R  # << for int(-inf, inf; .. e^s ds (102) implementation
+
+    if(!lower.tail) { ## upper tail .. is *not* optimized for all cases
+        if(!log.p)
+            1- pntInorm.1(t, df, ncp, lower.tail=TRUE,
+                          ..., verbose=verbose)
+        else { # log.p: log(1 - F(.))
+           if(alt) ## use log scale
+               ## alternatively, not equivalently -- see FIXME in log.p case below
+               log1mexp(pntInorm.1(t, df, ncp, lower.tail=TRUE, log.p=TRUE,
+                                   integr=integr, logA=logA, ..., verbose=verbose))
+           else log1p(- pntInorm.1(t, df, ncp, lower.tail=TRUE,
+                                   integr=integr, logA=logA, ..., verbose=verbose))
+        }
+    }
+
+    integr <- match.arg(integr)
+    n2 <- df/2 # used "everywhere" below
+    ## A_n from (13) .. must use log-scale as soon as n=df is "large"
+    if(logA)
+        lA <- n2*log(n2) - lgamma(n2)
+    else
+        An <- n2^n2 / gamma(n2)
+
+    switch(integr,
+           "exp" = { ## formula (102)
+               ## integrand <- function(....) ...... #_______________________________ FIXME _________________
+               ## I <- integrate(integrand, -Inf, Inf, ...)
+           },
+           "direct" = { ## formula (13)
+               ## integrand <- function(....) ......
+               ## I <- integrate(integrand, 0, Inf, ...)
+           },
+           stop("invalid integration method 'integr'=",integr))
+
+    if(verbose) { cat("Integration:\n"); str(I, digits.d = 10) }
+    if(log.p) {
+        lA + log(I$value)
+    } else { ## lower.tail = TRUE,  log.p == FALSE
+        if(logA) exp(lA + log(I$value))
+        else An  * I$value
+    }
+}
+pntInorm <- Vectorize(pntInorm.1, c("t", "df", "ncp"))
+
+## Author:  Viktor Witkovsky
+## Title:   A Note on Computing Extreme Tail Probabilities of the Noncentral $T$~Distribution with Large Noncentrality Parameter
+## Submitted: June 21, 2013.
+## Revised:   September 3, 2013
+
+##== Details; experiments ==>      ../Misc/pnt-Gil_etal-2023/Witkovsky_2013/
+##   ~~~~~~~  Paper (+ Boost URL): ../Misc/pnt-Gil_etal-2023/Witkovsky_2013/arXiv-1306.5294v2/
+##-- ------------------ R fun+tst  ../Misc/pnt-Gil_etal-2023/Witkovsky_2013/nctcdfVW.R  ("translated from Matlab")
+pntVW13 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
+                      keepS = FALSE, verbose = FALSE)
+{
+  # Check input lengths  -- MM FIXME -- allow recycling, notably for 2 scalars and 1 non-scalar
+  if ((n <- length(t)) != (nnu <- length(df)) | nnu != (nncp <- length(ncp))) {
+      n3 <- sort(c(n,nnu,nncp))
+      if(!(identical(n3[1:2], c(1L, 1L)) || (n3[1] == 1 && n3[2] == n3[3])))
+        stop("Input vectors t, df, and ncp must be of length 1 or the same length, but are",
+             n, ", ", nnu, ", ", nncp)
+      ## now ensure all three are recycled to full length(.) == n :
+      if(n != n3[3])
+          n <- length(t <- rep_len(t, n3[3]))
+      if(n != nnu ) df <- rep_len(df,  n)
+      if(n != nncp) ncp<- rep_len(ncp, n)
+  } # now   n == length(t) == length(df) == length(ncp)
+
+  if(verbose) {
+     op <- options(str = strOptions(digits.d = 12))# strict.width = "wrap"
+     on.exit(options(op))
+     mydisp <- function(x) {
+         if(n > 2)
+             print(x, digits = 16)
+         else
+             cat(switch(n,
+                        sprintf("%20.16g\n", x), # n == 1
+                        sprintf("%20.16g %20.16g\n", x), # n == 2
+                        ## otherwise.. should not happen!
+                        ))
+     }
+  }
+
+  chooseTail <- function(x, ncp, isLowerGamma, isLowerTail, neg) {
+    large <- (x >= ncp)
+    isLowerGamma[ large] <- TRUE
+    isLowerGamma[!large] <- FALSE
+    if (neg) {
+        isLowerTail[ large] <- TRUE
+        isLowerTail[!large] <- FALSE
+    } else {
+        isLowerTail[ large] <- FALSE
+        isLowerTail[!large] <- TRUE
+    }
+    return(list(isLowerGamma = isLowerGamma, isLowerTail = isLowerTail))
+  }
+
+  integrate <- function(x, df, ncp, isLowerGamma) {
+      ## Auxiliary Functions:  limits(), GKnodes(),
+      ##' called once from integrate():
+      limits <- function(x, df, ncp, NF) { # (x, df, ncp) : num. vector of length NF
+        const <- -1.612085713764618
+        logRelTolBnd <- -1.441746135564686e+02
+        A <- B <- MOD <- numeric(NF)
+        ## incpt <- c(1, 1, 1)
+        for (i in 1:NF) {
+          X <- x[i]
+          ##              explicit recycling (no longer needed):
+          NU  <- df [i] # [1L + (i-1L) %% length(df)]
+          NCP <- ncp[i] # [1L + (i-1L) %% length(ncp)]
+          X2 <- X*X
+          MOD[i] <- (X * sqrt(4*NU * max(1, NU - 2) + X2 * max(4, NCP*NCP + 4*NU - 8)) -
+                     NCP * (X2 + 2*NU)
+                    ) / (2 * (X2 + NU))
+          dZ <- min(0.5 * abs(MOD[i] + NCP), 0.01)
+          dMOD <- c(-dZ, 0, dZ) + MOD[i]
+          q. <- (dMOD + NCP)^2 / X2 # q. = q / NU ('q' previously)
+          dM.2 <- dMOD^2
+          fMOD <- const + 0.5 * (max(1, (NU - 2)) * log(q.) + NU - q.*NU - dM.2)
+          ## abc <- lm(fMOD ~ dMOD + I(dMOD * dMOD))$coefficients
+          ## ##     ^^     ^^^
+          ## abc <- rev(abc) ## chatGPT  got this wrong, too !
+          ## Faster than the above; via  "correct" (same matlab/octave code) order of X-columns:
+          abc <- .lm.fit(x = cbind(dM.2, dMOD, 1, deparse.level=0L), y = fMOD)$coefficients
+          if(verbose >= 2) { cat("inside limits(): abc[1:3] = \n"); print(abc) }
+
+          logAbsTol <- fMOD[2] + logRelTolBnd
+          ## Integration limits A and B | Solution to the quadratic EQN:
+          ## a*Z^2 + b*Z + c = logAbsTol  where Z ~ dMOD
+          D <- sqrt(abc[2] * abc[2] - 4 * abc[1] * (abc[3] - logAbsTol))
+          C <- 2 * abc[1]
+          if (!is.nan(D)) {
+            A[i] <- max(-NCP, -abc[2] / C + D / C)
+            B[i] <- max(A[i], -abc[2] / C - D / C)
+          } else {
+            A[i] <- max(-NCP, MOD[i])
+            B[i] <- A[i]
+          }
+        }
+
+        ## return
+        cbind(A = A, B = B, MOD = MOD)
+      } ## end  limits()
+
+      integrand <- function(z, x, nu, ncp, isLowerGamma) {
+        const <- 0.398942280401432677939946 ## == phi(0), in R dnorm(0) = 1/sqrt(2*pi)
+        FV <- array(0, dim = (d <- dim(z))) # chatGPT got this wrong !
+        n <- length(x)
+        stopifnot(identical(d[1], n), length(nu) == n, length(ncp) == n, length(isLowerGamma) == n)
+        ## NB dim(z) = (n, 240) = (n, 16*15);
+        if(verbose >= 3) {
+            cat("inside integrand(), before sweep():  str(z+ncp):\n"); str(z+ncp)
+            cat("str(x):\n"); str(x)
+        }
+        q <- sweep(z + ncp, 1L, x, FUN = "/")^2 * nu / (2 * x^2)
+        ##                  --- chatGPT wrongly had '2' here ...
+        ## df <- 0.5 * nu  -- use 'nu/2' below
+        z2 <- -0.5 * z^2
+
+        if (any(isL <- isLowerGamma)) {
+            FV[isL,] <- pgamma(q[isL,], shape = nu/2, lower.tail = TRUE) * exp(z2[isL,])
+        }
+
+        if (any(notL <- !isLowerGamma)) {
+            FV[notL,] <- pgamma(q[notL,], shape = nu/2, lower.tail = FALSE) * exp(z2[notL,])
+        }
+        ## return
+        const * FV
+      } ## integrand()
+
+      ## GETSUBS (Sub-division of the integration intervals)
+      ## -------- [SUBS,Z,M] = GetSubs(SUBS,XK,G,NK)
+
+      ## Sub-division of the integration intervals for adaptive Gauss-Kronod quadrature
+      GetSubs <- function(SUBS, XK, jG, simple=FALSE) {
+          ## first call:  SUBS is  2 x 2 matrix (after fixing ChatGPT4o's bug)
+        if(verbose && !simple) {
+            cat("GetSubs(): input SUBS = \n"); print(SUBS)
+        }
+        M <- 0.5 * (SUBS[2,] - SUBS[1,]) # length 2 {Matlab: 1 x 2}
+        C <- 0.5 * (SUBS[2,] + SUBS[1,]) #   "    2    "       "
+        ## Matlab:  Z = XK * M + ones(NK,1)*C;  {MM: 15 x 2 + 15 x 2} -->  15 x 2 matrix
+        ##  MM:        {15 x 1} * {1 x 2}
+        ## ChatGPT "Quatsch":  Z <- sweep(XK, 2, M, FUN = "*") + C
+        ## MM:
+        NK <- length(XK)
+        ## MM: correct is one of
+        ## Z <- XK %o% M + matrix(C, NK, 2, byrow=TRUE)
+        ## or
+        ## Z <- XK %o% M + rep(C, each = NK)
+        ## or
+        Z <- outer(XK, M) + rep(C, each = NK)
+        if(simple) {
+            list(M = M, Z = Z)
+        } else {   ## (on first call)   ;; if (nargout > 0) { <-- another GPT bug
+          ZjG <- Z[jG, ]
+          L <- rbind(SUBS[1,], ZjG)
+          U <- rbind(ZjG, SUBS[2,])
+          if(verbose) {
+              ## cat("GetSubs(*, simple=FALSE): L = \n"); print(L)
+              ## cat("           U = \n"); print(U)
+              cat("GetSubs(*, simple=FALSE): --> t(SUBS) = \n"); print(cbind(L = c(L), U = c(U)))
+          }
+          ## return SUBS =
+          rbind(c(L), c(U)) # row [1,] = L(ower)
+                           ## row [2,] = U(pper)
+        }
+      } ## end GetSubs() ---
+
+
+      ##  Begin { integrate() } -------------------------------------------------------
+
+      ## The (G7,K15)-Gauss-Kronod (non-adaptive) quadrature nodes & weights :
+      ## GKnodes <- function() {
+        nodes <- c(0.2077849550078984676006894, 0.4058451513773971669066064,
+                   0.5860872354676911302941448, 0.7415311855993944398638648,
+                   0.8648644233597690727897128, 0.9491079123427585245261897,
+                   0.9914553711208126392068547)
+        wt <- c(0.2044329400752988924141620, 0.1903505780647854099132564,
+                0.1690047266392679028265834, 0.1406532597155259187451896,
+                0.1047900103222501838398763, 0.0630920926299785532907007,
+                0.0229353220105292249637320)
+        wt7 <- c(0.3818300505051189449503698, 0.2797053914892766679014678,
+                 0.1294849661688696932706114)
+
+        XK <- c(-rev(nodes), 0, nodes)
+        WK <- c(rev(wt),  0.2094821410847278280129992, wt)
+        WG <- c(rev(wt7), 0.4179591836734693877551020, wt7)
+        jG <- seq(2, 15, by = 2) # = 2  4  6  8 10 12 14  -- was 'G' in Witkovsky's code
+
+      rm(nodes, wt, wt7)
+      ##   list(XK = XK, WK = WK, WG = WG, G = G)
+      ## }
+
+      ## Now the original begin of integrate() - - - - - - - - - - - - - - - - - - - - - -
+      stopifnot((NF <- length(x)) >= 1)
+      NSUB <- 16 # [N]umber of Gauss-K. [SUB]intervals
+      NK <- 15   # [N]umber of Gauss-Konrod [K]nots
+      NZ <- NSUB * NK # [N]umber of integrand evaluation points (for each x),  here 240
+      z     <- matrix(0, nrow = NF, ncol = NZ)
+      halfw <- matrix(0, nrow = NF, ncol = NSUB)
+      CDF <- numeric(NF)
+
+      lims <- limits(x, df, ncp, NF)
+      ##      ------
+      A <- lims[,"A"]
+      B <- lims[,"B"]
+      MOD <- lims[,"MOD"]
+      if(verbose >= 2) { cat("lims <- limits() { = (A, B, MOD)}:\n"); print(lims, digits = 15) }
+
+      ## First, evaluate CDF outside the integration limits [A,B], i.e.
+      ## CDF = NORMCDF(A) (for 'upper' gamma tail)
+      if (any(upG <- !isLowerGamma)) CDF[upG] <- pnorm(A[upG])
+      ## other CDF[.] remain = 0
+
+      ## Second, evaluate CDF inside the integration limits [A,B] by
+      ## (G7,K15)-Gauss-Kronod (non-adaptive) quadrature over NSUB=16 subintervals
+      ## GKs <- GKnodes()
+      ## XK <- GKs$XK # XK, WK are [1:NK]
+      ## WK <- GKs$WK
+      ## WG <- GKs$WG # WG, jG are [1:7] ((1:(NK/2)))
+      ## jG <- GKs$G
+      if(verbose >= 2) {
+          cat("GKnodes(): [XK WK] // [WG jG] :\n")
+          ## print(as.data.frame(GKs[c("XK", "WK")]))
+          ## print(as.data.frame(GKs[c("WG", "G" )]))
+          print(data.frame(XK, WK))
+          print(data.frame(WG, jG))
+      }
+
+      for (id in 1:NF) {
+          Subs <- GetSubs(rbind(c(  A[id], MOD[id]),
+                                c(MOD[id],   B[id])), XK, jG = jG) # 1st call (simple=FALSE)
+          SubsL <- GetSubs(Subs, XK, jG = jG, simple=TRUE)         # 2nd call  simple=TRUE
+          z    [id,] <- SubsL $ Z
+          halfw[id,] <- SubsL $ M
+      }
+      if(verbose >= 2 && (NF <= 2 || verbose >= 3)) {
+          cat("in integrate() after GetSubs():  z = \n"); mydisp(z) # str(z, vec.len = 20) # print(dim(z)); print(z)
+          cat(" ...........  halfw[] = M = \n"); mydisp(halfw)
+      }
+
+    FV <- integrand(z, x, df, ncp, isLowerGamma)
+          ##=======
+      if(verbose >= 2) {
+          cat(" .. FV <- integrand(): \n") # FV:  length(x) x 240  matrix
+          str(FV, vec.len = 20)
+          if(NF <= 3) mydisp(FV)
+          else { cat("FV[1:3, 1:6]:\n"); print(FV, digits= 10) }
+      }
+
+    Q1 <- matrix(0, nrow = NF, ncol = NSUB)
+    Q2 <- matrix(0, nrow = NF, ncol = NSUB)
+
+    for (id in 1:NF) {
+      F <- matrix(FV[id,], nrow = NK, ncol = NSUB)
+      if(verbose) { cat("F ~ FV[id,]:\n"); str(F); cat("F[1:3, 1:6] :"); print(F[1:3, 1:6]) }
+      Q1[id,] <- halfw[id,] * colSums(WK * F)
+      Q2[id,] <- halfw[id,] * colSums(WG * F[jG, , drop=FALSE]) # <-- drop=FALSE !
+      ## FIXME (faster)? Q2[id,] <- halfw[id,] *     sum(WG * F[jG,])
+    }
+    if(verbose) {
+        cat(" .. after summation:  Q1, Q2 :\n")
+        cat("Q1: "); mydisp(Q1)
+        cat("Q2: "); if(NF==1) print(Q2) else str(Q2)
+    }
+
+    CDF <- CDF + rowSums(Q1)
+    ErrBnd <- rowSums(abs(Q1 - Q2))
+
+    list(CDF = CDF, ErrBnd = ErrBnd, A = A, B = B, Z = z, F = FV)
+  } ## end integrate()
+
+    ## Begin {body of} nctcdfVW(...) : ------------------------------------------------
+
+    ## Initialize outputs
+    cdfLower <- cdfUpper <- cdf <- numeric(n)
+
+    isLowerTail <- isLowerGamma <- todo <- rep(TRUE, length(t))
+
+    ## specialcases <- function(x, df, ncp, cdf, isLowerTail, todo) {
+    nuneg <- df <= 0
+    if (any(nuneg)) {
+        cdf[nuneg] <- NA
+        isLowerTail[nuneg] <- TRUE
+        todo[nuneg] <- FALSE
+    }
+
+    if (any(idx <- (t == Inf & !nuneg))) {
+        cdf[idx] <- 1
+        isLowerTail[idx] <- FALSE
+        todo[idx] <- FALSE
+    }
+
+    if (any(idx <- (t == -Inf & !nuneg))) {
+        cdf[idx] <- 0
+        isLowerTail[idx] <- TRUE
+        todo[idx] <- FALSE
+    }
+
+    xzero <- (t == 0)
+    ncppos <- (ncp >= 0)
+    if (any(idx <- (xzero & !nuneg & ncppos))) { # t = 0  &  df > 0  &  ncp >= 0
+        cdf[idx] <- pnorm(-ncp[idx])
+        isLowerTail[idx] <- TRUE
+        todo[idx] <- FALSE
+    }
+
+    if (any(idx <-(xzero & !nuneg & !ncppos))) { # t = 0  &  df > 0  &  ncp < 0
+        cdf[idx] <- pnorm(ncp[idx])
+        isLowerTail[idx] <- FALSE
+        todo[idx] <- FALSE
+    }
+    ## end  { special cases }
+
+    if (any(todo)) {
+        neg <- (todo & (t < 0))
+        pos <- (todo & (t >= 0))
+
+        if (any(neg)) { ## modify {t, ncp, isLowerGamma, isLowerTail} [neg] :
+            t  [neg] <- -t  [neg]
+            ncp[neg] <- -ncp[neg]
+            choose_result <- chooseTail(t[neg], ncp[neg],
+                                        isLowerGamma[neg], isLowerTail[neg], TRUE)
+            isLowerGamma[neg] <- choose_result$isLowerGamma
+            isLowerTail [neg] <- choose_result$isLowerTail
+        }
+
+        if (any(pos)) { ## modify {t, ncp, isLowerGamma, isLowerTail} [pos] :
+            choose_result <- chooseTail(t[pos], ncp[pos],
+                                        isLowerGamma[pos], isLowerTail[pos], FALSE)
+            isLowerGamma[pos] <- choose_result$isLowerGamma
+            isLowerTail [pos] <- choose_result$isLowerTail
+        }
+
+    integrate_result <- integrate(t[todo], df[todo], ncp[todo], isLowerGamma[todo])
+    ##                  ^^^^^^^^^
+    cdf[todo] <- integrate_result$CDF
+    ErrBnd <- integrate_result$ErrBnd
+    A <- integrate_result$A
+    B <- integrate_result$B
+    Z <- integrate_result$Z
+    F <- integrate_result$F
+  } ## any(todo)
+
+  if(keepS)
+    details <- list(t = t, df = df, ncp = ncp,
+                    cdf_computed = cdf,
+                    tail_computed = isLowerTail,
+                    error_upperBound = ErrBnd,
+                    integrand_values   = cbind(Z, F), # to be plotted (*where* plotted in V.W.'s Matlab code)
+                    integration_limits = cbind(A, B))
+
+  if(log.p) {
+      cdfLower[ isLowerTail] <-     log(cdf[ isLowerTail])
+      cdfLower[!isLowerTail] <- log1p(- cdf[!isLowerTail])
+      cdfUpper[!isLowerTail] <-     log(cdf[!isLowerTail])
+      cdfUpper[ isLowerTail] <- log1p(- cdf[ isLowerTail])
+  } else {
+      ## MM: I think the following is "inherently doubtful": '1 - cdf[..]' almost always loses some accuracy
+      cdfLower[ isLowerTail] <-     cdf[ isLowerTail]
+      cdfLower[!isLowerTail] <- 1 - cdf[!isLowerTail]
+      cdfUpper[!isLowerTail] <-     cdf[!isLowerTail]
+      cdfUpper[ isLowerTail] <- 1 - cdf[ isLowerTail]
+  }
+  ## MM: (read above) ==> only returning cdf  is "sub optimal"
+  cdf <- if(lower.tail) cdfLower else cdfUpper
+  ## return (possibly with details):
+  if(keepS) {
+      details$cdf_lowerTail <- cdfLower
+      details$cdf_upperTail <- cdfUpper
+      list(cdf = cdf, details = details)
+  } else
+      cdf
+} ## end pntVW13
+
 
 
 ###--- dnt() --- for the non-central *density*

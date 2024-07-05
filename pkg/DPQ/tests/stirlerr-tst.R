@@ -866,9 +866,22 @@ find1cuts <- function(k, c1,
         s2l <- exp(lowess(ly[,2], f=f.lowess)$y)
     }
     ## also use cobs() splines for the 90% quantile !!
+    EE <- environment() # so can  set do.cobs to FALSE in case of error
     if(do.cobs) { ## <==> require("cobs") # yes, this is in tests/
         cobsF <- function(Y) cobs(n, Y, tau=tau, nknots = 6, lambda = -1,
                                   print.warn=FALSE, print.mesg=FALSE)
+        ## sparseM::chol(<matrix.csr>) now gives error when it gave warning {about singularity}
+        cobsF <- function(Y) {
+            r <- tryCatch(cobs(n, Y, tau=tau, nknots = 6, lambda = -1,
+                               print.warn=FALSE, print.mesg=FALSE),
+                          error = identity)
+            if(inherits(r, "error")) {
+                assign("do.cobs", FALSE, envir = EE) # and return
+                list(fitted = FALSE)
+            }
+            else
+                r
+        }
         cs1 <- exp(cobsF(ly[,1])$fitted)
         cs2 <- exp(cobsF(ly[,2])$fitted)
     }
@@ -901,36 +914,71 @@ find1cuts <- function(k, c1,
 
 k. <- 1:15
 system.time(
-    resL   <- lapply(setNames(,k.), function(k) find1cuts(k=k, c1=c1..$c1))
+    ## Failed on lynne [2024-06-04, R 4.4.1 beta]  with
+    ## Error in .local(x, ...) : insufficient space  ---> SparseM :: chol(<..>)
+    ## ==> now we catch this inside find1cuts():
+    resL  <- lapply(setNames(,k.), function(k) find1cuts(k=k, c1=c1..$c1))
 ) ## -- warnings, notably from cobs() not converging
-## needs  12 sec (!!)  user  system elapsed
+## needs  12 sec (!!)  user  system elapsed =
 (s.find15.fil <- paste0("stirlerr-find1_1-15_", myPlatform(), ".rds"))
+## now we catch cobs() errors {from SparseM::chol},
+## okCuts <- !inherits(resL, "error")
+## if(okCuts) {
 saveRDS(resL, file = s.find15.fil) # was  "stirlerr-find1_1-15.rds"
+## } else  traceback()
+## 11: stop(mess)
+## 10: .local(x, ...)
+## 9: chol(e, tmpmax = tmpmax, nsubmax = nsubmax, nnzlmax = nnzlmax)
+## 8: chol(e, tmpmax = tmpmax, nsubmax = nsubmax, nnzlmax = nnzlmax)
+## 7: rq.fit.sfnc(Xeq, Yeq, Xieq, Yieq, tau = tau, rhs = rhs, control = rqCtrl)
+## 6: drqssbc2(x, y, w, pw = pw, knots = knots, degree = degree, Tlambda = if (select.lambda) lambdaSet else lambda,
+##        constraint = constraint, ptConstr = ptConstr, maxiter = maxiter,
+##        trace = trace - 1, nrq, nl1, neqc, niqc, nvar, tau = tau,
+##        select.lambda = select.lambda, give.pseudo.x = keep.x.ps,
+##        rq.tol = rq.tol, tol.0res = tol.0res, print.warn = print.warn)
+## 5: cobs(n, Y, tau = tau, nknots = 6, lambda = -1, print.warn = FALSE,
+##        print.mesg = FALSE) at stirlerr-tst.R!udBzpT#32
+## 4: cobsF(ly[, 1]) at stirlerr-tst.R!udBzpT#34
+## 3: find1cuts(k = k, c1 = c1..$c1) at #1
+## 2: FUN(X[[i]], ...)
+## 1: lapply(setNames(, k.), function(k) find1cuts(k = k, c1 = c1..$c1))
+
+ok1cutsLst <- function(res) {
+    stopifnot(is.list(res), sapply(res, is.list)) # must be list of lists
+    cobsL <- lapply(lapply(res, `[[`, "smooths"), `[[`, "cobs")
+    vapply(cobsL, is.array, NA)
+}
+(resLok <- ok1cutsLst(resL))
+##     1     2     3     4     5     6  ......    15
+## FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  ......  TRUE
 
 
 if(FALSE) {
 ## e.g.  in R-devel-no-ldouble:
-(r1 <- find1cuts(k=1, c1=c1..$c1))$i.n # list
+(r1 <- find1cuts(k=1, c1=c1..$c1))$i.n # list --- no longer ok {SparseM::chol -> insufficient space}
 (r2 <- find1cuts(k=2, c1=c1..$c1))$i.n # "good"
 (r3 <- find1cuts(k=3, c1=c1..$c1))$i.n # 3-vector: only 3x  'i' == 1
 }
 
+## if(okCuts) {
 mult.fig(15, main = "stirlerr(n, order=k) vs order = k+1")$old.par -> opar
-invisible(lapply(resL, plot1cuts))
+invisible(lapply(resL[resLok], plot1cuts))
 ## plus the "last" ones {also showing that k=15 is worse here anyway than k=17}
 str(r17 <- find1cuts(k=17, n = seq(5.1, 6.5, length.out = 1500), c1=c1..$c1))
 plot1cuts(r17) # no-ldouble is *very* different than normal:  k *much better* than k+1
 
 (s.find17.fil <- paste0("stirlerr-find1_17_", myPlatform(), ".rds"))
 saveRDS(r17, file = s.find17.fil) # was  "stirlerr-find1_17.rds"
-
+## }
 
 ## ditto  for tau = 0.8  {quantile for cobs()}:
 system.time(
     resL.8 <- lapply(setNames(,k.), function(k) find1cuts(k=k, c1=c1..$c1, tau = 0.80))
 ) # warnings from cobs  {again 12.1 sec}
+(resL8ok <- ok1cutsLst(resL.8))
+
 mult.fig(15, main = "stirlerr(n, order=k) vs order = k+1 -- tau = 0.8")
-invisible(lapply(resL.8, plot1cuts))
+invisible(lapply(resL.8[resL8ok], plot1cuts))
 ## plus "last" one
 str(r17.8 <- find1cuts(k=17, n = seq(5.1, 6.5, length.out = 1500), c1=c1..$c1, tau = 0.80))
 plot1cuts(r17.8)

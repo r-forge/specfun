@@ -36,7 +36,9 @@ bpser(a, b, x, log.p = FALSE, eps = 1e-15, verbose = FALSE, warn = TRUE)
 }
 \author{Martin Maechler, ported to \pkg{DPQ}; R-Core team for the code in \R.}
 \seealso{
-  \code{\link{pbeta}}.
+  \R's \code{\link{pbeta}};
+  \pkg{DPQ}'s \code{\link{pbetaRv1}()}, and \code{\link{Ixpq}()};
+  \CRANpkg{Rmpfr}'s \code{\link[Rmpfr]{pbetaI}}
 }
 \examples{
 with(bpser(100000, 11, (0:64)/64), # all 0 {last one "wrongly"}

@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-9 (2024-06-03, svn r313)}{
+\section{Version 0.5-9 (2024-07-05, svn r315)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{dbinom_raw()} gets a new more accurate
@@ -40,6 +40,19 @@
 
       \item New function \code{expm1x()} providing \eqn{exp(x) - 1 - x}
       numerically accurately also for small \eqn{|x|}.
+
+      \item New function \code{pntGST23_T6()} implementing Gil et al.(2023)'s
+      first asymptotic formula (Theorem 6).
+
+      \item New experimental \code{Ixpq()} implementing Gil et al.(2023)'s
+      direct incomplete Beta function, i.e., \code{pbeta()} version.
+
+      \item New function \code{pntGST23_T6()} and \code{pntGST23_1()}
+      implementing Gil et al.(2023)'s first asymptotic formula (Theorem 6),
+      and based on Temme's Maple code for their direct computation (1).
+
+      \item New function \code{pntVW13()} implementing Viktor Witkovský(2013)'s
+      algorithm, from his published Matlab code.
     }
   }
   \subsection{BUG FIXES}{
@@ -48,6 +61,8 @@
 
       \item \code{dgamma.R(x, ..)} now \emph{does} vectorize in \code{x},
       as documented.
+
+      \item minor adjustment of \code{pntR()}'s default \code{use.pnorm}.
     }
   }
   \subsection{Misc}{

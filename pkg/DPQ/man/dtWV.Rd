@@ -1,10 +1,12 @@
 \name{dtWV}
 \alias{dtWV}
-\title{Noncentral t Distribution Density by Viechtbauer}
+\title{Asymptotic Noncentral t Distribution Density by Viechtbauer}
 \description{
   Compute the density function \eqn{f(x)} of the t distribution with
   \code{df} degrees of freedom and non-centrality parameter \code{ncp},
   according to Wolfgang Viechtbauer's proposal in 2002.
+  This is an asymptotic formula for \dQuote{large} \code{df}\eqn{ = \nu},
+  or mathematically \eqn{\nu \to \infty}{df -> oo}.
 }
 \usage{%--> ../R/t-nonc-fn.R  + ?dt at ~/R/D/r-devel/R/src/library/stats/man/TDist.Rd
 dtWV(x, df, ncp = 0, log = FALSE)
@@ -44,6 +46,7 @@ dtWV(x, df, ncp = 0, log = FALSE)
 \seealso{
  \code{\link{dt}}, \R's (C level) implementation of the (non-central) t density;
  \code{\link{dntJKBf}}, for Johnson et al.'s summation formula approximation.
+ % >>>  ./dnt.Rd
 }
 \examples{
 tt <- seq(0, 10, len = 21)
@@ -74,7 +77,6 @@ dtt1 <- "      dt"; dtt2 <- "(x, df=22, ncp=100"; dttL <- paste0(dtt2,", log=TRU
 legend("right", c(paste0(dtt1,dtt2,")"), paste0(c(dtt1,"dtWV"), dttL)),
        lty=1, lwd=c(1,1,3), col=c("black", cc), bty = "n")
 par(opa) # reset
-
 }
 \keyword{distribution}
 \keyword{math}

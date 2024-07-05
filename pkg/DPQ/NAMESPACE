@@ -20,6 +20,9 @@ importFrom("stats"
          , dhyper, phyper
          , dt, pt, qt
          , dpois, ppois, qpois
+           # ---------------
+         , integrate
+         , .lm.fit
          , uniroot
 )
 
@@ -28,6 +31,7 @@ importFrom("stats"
 importFrom("grDevices", adjustcolor)
 
 importFrom("graphics",
+           abline,
            curve, legend, lines, par, plot
            )
 
@@ -36,7 +40,7 @@ importFrom("methods", as, is, new
 
 importFrom("utils"
          , head, tail
-         , str
+         , str, strOptions
            )
 
 ### ----------------------- Exporting ----------------------------
@@ -126,12 +130,16 @@ export(
   , pnchisqBolKuz
   , qnchisqBolKuz
 
-  ## Naming -fixme?
+  ## Naming --- NB: export the *.1 versions (non-vectorized) mostly for *didactical* reasons
   , pnt3150, pnt3150.1
   , pntChShP94, pntChShP94.1
   , pntJW39, pntJW39.0
   , pntLrg
   , pntP94, pntP94.1
+  , pntVW13
+  , pntGST23_T6, pntGST23_T6.1
+  , pntGST23_1 # , pntGST23_1.1
+  , Ixpq # for now, __experimental__
   , pntR, pntR1
 
   , pow1p

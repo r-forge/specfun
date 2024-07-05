@@ -43,12 +43,14 @@ dntJKBf (x, df, ncp, log = FALSE, M = 1000)
     when \code{check} is true.}
 }
 \details{
-  How to choose \code{M} optimally has not been investigated yet.
+  How to choose \code{M} optimally has not been investigated yet and
+  is probably also a function of the precision of the first three arguments (see
+  %% \code{\link[Rmpfr]{getPrec}}. -- logically correct, but ...
+  \code{\link[Rmpfr]{getPrec}} from \CRANpkg{Rmpfr}).
 
-  Note that relatedly,
-
+  Note that relatedly, %\cr
   \R's source code \file{R/src/nmath/dnt.c} has claimed from 2003 till 2014
-  but \bold{wrongly} that the noncentral t density \eqn{f(x, *)} is \preformatted{
+  but \bold{wrongly} that the noncentral t density \eqn{f(x, *)} was \preformatted{
     f(x, df, ncp) =
  	df^(df/2) * exp(-.5*ncp^2) /
  	(sqrt(pi)*gamma(df/2)*(df+x^2)^((df+1)/2)) *
@@ -73,8 +75,8 @@ dntJKBf (x, df, ncp, log = FALSE, M = 1000)
   (an improved version of) Viechtbauer's proposal: \code{\link{dtWV}}.
 }
 \examples{
-tt <- seq(0, 10, len = 21)
-ncp <- seq(0, 6, len = 31)
+tt <-  seq(0, 10, length.out = 21)
+ncp <- seq(0,  6, length.out = 31)
 dt3R   <- outer(tt, ncp, dt,     df = 3)
 dt3JKB <- outer(tt, ncp, dntJKBf, df = 3)
 all.equal(dt3R, dt3JKB) # Lnx(64-b): 51 NA's in dt3R
@@ -101,10 +103,26 @@ matplot(x, dtm, type="l", log = "x", xaxt="n",
 sfsmisc::eaxis(1)
 legend("right", legend=c("", paste0("ncp = df",c("/2","","*2"))),
        lty=1:4, col=1:4, bty="n")
+
+(ncp <- seq(0, 12, by = 3/4))
+names(ncp) <- nnMs <- paste0("ncp=", ncp)
+tt  <- seq(0, 5, by =  1)
+dt3R <- outer(tt, ncp, dt,   df = 3)
+if(requireNamespace("Rmpfr")) withAutoprint({
+   mt  <- Rmpfr::mpfr(tt , 128)
+   mcp <- Rmpfr::mpfr(ncp, 128)
+   system.time(
+     dt3M <- outer(mt, mcp, dntJKBf, df = 3, M = 1024)) # 3.7--3.9 sec -- now 7 sec
+   relE <- Rmpfr::asNumeric(sfsmisc::relErrV(dt3M, dt3R))
+   relE[tt != 0, ncp != 0]
+})
+
+## all.equal(dt3R, dt3V, tol=0) # 1.2e-12
+
 \donttest{ # ---- using MPFR high accuracy arithmetic (too slow for routine testing) ---
 ## no such kink here:
 x. <- if(requireNamespace("Rmpfr")) Rmpfr::mpfr(x, 256) else x
-system.time(dtJKB <- dntJKBf(x., df=df, ncp=df, log=TRUE)) # 21s (!) was only 7s ???
+system.time(dtJKB <- dntJKBf(x., df=df, ncp=df, log=TRUE)) # 43s, was 21s and only 7s ???
 lines(x, dtJKB, col=adjustcolor(3, 1/2), lwd=3)
 options(op) # reset to prev.
 

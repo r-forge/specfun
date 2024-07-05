@@ -47,7 +47,7 @@ chebyshevEval(x, coef,
 }
 \author{R Core team, notably Ross Ihaka; Martin Maechler provided the \R interface.}
 \seealso{
-  \code{\link{polyn.eval}()} from CRAN package \CRANpkg{sfsmisc}; as one
+  \code{\link[sfsmisc]{polyn.eval}()} from CRAN package \CRANpkg{sfsmisc}; as one
   example of many more.
 }
 \examples{
@@ -74,4 +74,4 @@ stopifnot(exprs = {
 })
 
 }
-\keyword{arithmetic}
+\keyword{arith}

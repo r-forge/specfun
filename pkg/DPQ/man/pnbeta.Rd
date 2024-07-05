@@ -38,12 +38,16 @@ pnbetaAS310(x, a, b, ncp = 0, lower.tail = TRUE, log.p = FALSE,
   a numeric vector of (log) probabilities of the same length as \code{x}.
 }
 \references{
+  -- not yet implemented --\cr
+  Gil, A., Segura, J., and Temme, N. M. (2019)
+  On the computation and inversion of the cumulative noncentral beta distribution function.
+  \emph{Applied Mathematics and Computation} \bold{361}, 74--86; \doi{10.1016/j.amc.2019.05.014} .
   Chattamvelli, R., and Shanmugam, R. (1997)
   Algorithm AS 310: Computing the Non-Central Beta Distribution Function.
   \emph{Journal of the Royal Statistical Society. Series C (Applied Statistics)}
   \bold{46}(1), 146--156, for \dQuote{approximation 2} notably p.154;
   % not ok in CRAN/winb checks:  \url{https://www.jstor.org/stable/2986212}  or
-  \doi{10.1111/1467-9876.00055}.
+  \doi{10.1111/1467-9876.00055} .
 
   Lenth, R. V. (1987) Algorithm AS 226, \dots,
   Frick, H. (1990)'s AS R84, \dots, and

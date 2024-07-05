@@ -93,4 +93,4 @@ all.equal(fRR, f.R, tol = 0) # 64bit Lnx (F 30): 1.723897e-16
 stopifnot(all.equal(fRR, f.R, tol = 4e-15))
 }
 \keyword{math}
-\keyword{distribution}
+\keyword{arith}

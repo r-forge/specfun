@@ -34,7 +34,9 @@ mtextVersion <- function(adj = 1, col = 1) {
     mtext(sfsmisc::shortRversion(spaces=FALSE), col=col, adj=adj)
 }
 
-
+## Currently only used in >>>>>>>>>>>> ../../tests/stirlerr-tst.R  <<<<<<<<<<<<<<<<<<<<<<<
+##                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~
+##                    lapply(setNames(,k.), function(k) find1cuts(k=k, c1=c1..$c1))
 plot1cuts <- function(res1c, # resulting from
                       col = c(2,4),
                       ymin = max(min(y), 2e-17), ...)
