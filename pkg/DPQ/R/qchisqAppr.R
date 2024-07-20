@@ -215,11 +215,11 @@ lgamma1p. <- function(a, cutoff.a = 1e-6, k = 3) {
 ### then ~/maple/gamma-asympt.R  ==> lgamma1p_series() here in ./beta-fns.R
 ###
 
-    ## Taylor-expansion:  Gamma(1+u) = 1 + u*(-gammaE + a_0*u + a_1*u^2 + O(u^3))
+    ## Taylor-expansion:  Gamma(1+u) = 1 + u*(-gammaE + a_0* u + a_1* u^2 + a_2* u^3) + O(u^5)
     ## psi(1) = digamma(1) = -(Euler's) gamma = -Const("gamma",200)
     gammaE <- 0.57721566490153286060651209008240243104215933593992359880576723
     ## psi'(1) = trigamma(1) = pi^2/6
-    ## a_0 = (psi'(1) + psi(1)^2)/2 = (pi^2/6 + gamma^2)/2 =
+    ## a_0 = (psi'(1) + psi(1)^2)/2  = (pi^2/6 + gamma^2)/2 =
     ## require("Rmpfr");
     a0 <- 0.98905599532797255539539565150063470793918352072821409044319567
     ## a_1 = (psi''(1) + 3*psi(1)*psi'(1) + psi(1)^3)/6,

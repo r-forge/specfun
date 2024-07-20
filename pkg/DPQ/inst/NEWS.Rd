@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-9 (2024-07-05, svn r317)}{
+\section{Version 0.5-9 (2024-07-20, svn r318)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{dbinom_raw()} gets a new more accurate
@@ -46,6 +46,7 @@
 
       \item New experimental \code{Ixpq()} implementing Gil et al.(2023)'s
       direct incomplete Beta function, i.e., \code{pbeta()} version.
+      \bold{TODO}: make it work with \code{mpfr()} !
 
       \item New function \code{pntGST23_T6()} and \code{pntGST23_1()}
       implementing Gil et al.(2023)'s first asymptotic formula (Theorem 6),
@@ -57,6 +58,10 @@
       \item Data set \code{pt_Witkovsky_Tab1} containing (the free software
       subset of) Viktor \enc{Witkovský}{Witkovsky}(2013)'s \emph{Table 1} of
       \code{pt(x, df=nu, ncp=delta)} examples.
+
+      \item \code{lgamma1p_series(x, k)}, the Taylor series approximations
+      for \code{lgamma1p(x)}\eqn{ := \log \Gamma(1+x)} are now available up
+      to \eqn{k = 15}, also for \code{mpfr()} numbers \code{x}.
     }
   }
   \subsection{BUG FIXES}{

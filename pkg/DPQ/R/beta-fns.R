@@ -7,9 +7,9 @@
 logQab_asy <- function(a,b, k.max = 5, give.all = FALSE)
 {
   ## Purpose:  log(Q(a,b)) asymptotically when max(a,b) -> Inf  &  a^2/b -> C
-  ## -------------------------------------------------------------------------
-  ## Arguments: a,b: as for  lbeta(.)
-  ## -------------------------------------------------------------------------
+  ## --------------------------------------------------------------------------------
+  ## Arguments: a,b: as for  lbeta(.)  and/or  Qab := Q(a,b) := Gamma(a+b) / Gamma(b)
+  ## --------------------------------------------------------------------------------
   ## Author: Martin Maechler, Date:  8 Jun 97, 17:28
 
   if(any(a<=0) || any(b<=0)) stop("a & b must be > 0")
@@ -67,9 +67,8 @@ lbeta_asy <- function(a,b, k.max = 5, give.all = FALSE)
   ## Arguments: a,b: as for  lbeta(.)
   ##  log(B(a,b)) = log(G(a) G(b) / G(a+b)) =
   ##              = log(G(a)) - log( G(a+b)/G(b) ) = log(G(a)) - log(Q(a,b))
-  lgamma(a) - logQab_asy(a,b, give.all = give.all)
+  lgamma(a) - logQab_asy(a, b, k.max=k.max, give.all=give.all)
 }
-
 
 ### FIXME ==> ../tests/qbeta-dist.R
 ##            -------- ~~~~~~~~~~~~ at the end has already *several* such approximations !!! <<< FIXME
@@ -103,7 +102,6 @@ laBeta <- function(a,b, nT) {
 ##       =========~~~~~~~~~~~~ at the end has already *several* such approximations !!! <<< FIXME
 
 }
-
 
 ## MM: this is unused (why ??) -- should be "uniformly better" than lbeta_asy() above
 lbetaMM <- function(a,b, cutAsy = 1e-2, verbose = FALSE)
@@ -433,8 +431,9 @@ logcfR. <- function (x, i, d, eps, # ~ relative tolerance
 logcfR <- function (x, i, d, eps, # ~ relative tolerance
                     maxit = 10000L, trace = FALSE)
 {
-    ## Continued fraction for calculation of  sum_{k=0}^Inf x^k/(i+k*d) =
-    ##		1/i + x/(i+d) + x^2/(i+2*d) + x^3/(i+3*d) + ...
+    ## Continued fraction for calculation of
+    ## sum_{k=0}^Inf x^k/(i+k*d) =
+    ##               1/i + x/(i+d) + x^2/(i+2*d) + x^3/(i+3*d) + ...
     ##
     ## auxiliary in log1pmx() and lgamma1p()
     stopifnot (i > 0, d >= 0, eps > 0,
@@ -532,7 +531,7 @@ log1pmx <- function(x, tol_logcf = 1e-14,
         r[c1] <- log1p(x[c1]) - x[c1]
     ## else { ## ##/* expand in [x/(2+x)]^2 */
     if(any(c2 <- !c1)) {
-        x <- x[c2]
+	x <- x[c2]
 	term <- x / (2 + x)
 	y <- term * term
         r[c2] <- term * { ## not using ifelse(), rather what works with "mpfr"
@@ -636,8 +635,9 @@ lgamma1p <- function(a, tol_logcf = 1e-14, f.tol = 1., ...)
 
 
 lgamma1p_series <- function(x, k) {
-    stopifnot(k == as.integer(k), 1 <= k, k <= 11)
-    ## From Maple : ~/maple/gamma-asympt.txt
+    stopifnot(k == as.integer(k), 1 <= k, k <= 15)
+
+    ##-- Recomputed upto 16 ====> at end of  ~/maple/gamma-asympt.txt
 
     ##  lG := series(ln(GAMMA(x+1)), x, 11);
     ##                   1    2  2   1          3    1    4  4
@@ -662,7 +662,7 @@ lgamma1p_series <- function(x, k) {
     ##       (Pi*Pi*Pi*Pi*Pi*Pi/5670+
     ##        (-Zeta(7)/7+
     ##         (Pi*Pi*Pi*Pi*Pi*Pi*Pi*Pi/75600+
-    ##          (-Zeta(9)/9 +
+    ##          (-Zeta(9)/9+
     ##           Pi^10/935550 * x) * x) * x) * x) * x) * x) * x) * x) * x) * x
 
     useM <- (inherits(x, "mpfr"))
@@ -685,35 +685,56 @@ lgamma1p_series <- function(x, k) {
             if(k >= 5) {
                 z5 <- if(useM) zeta(mpfr(5, prec)) else 1.036927755143369927
                 if(k >= 6) {
-                    I <- if(useM) mpfr(1, prec) else 1 # use I/3 = 1/3 in high precision
                     if(k >= 7) {
-                        z7 <- if(useM) zeta(mpfr(7, prec)) else 1.008349277381922827
-                        ## if(k >= 9) {
-                        ##     z9 <- if(useM) zeta(mpfr(9, prec)) else 1.002008392826082214
-                        ##     if(k >= 11) {
-                        ##         z11 <- if(useM) zeta(mpfr(11, prec)) else 1.000494188604119464
-                        ##     }
-                        ## }
-
+                        z7 <- if(useM) zeta(mpfr(7, prec)) else 1.0083492773819228268397975498497967596
+                        if(k >= 9) {#                             2 4 6 8 0 2 4 6 8 0 2 4 6 8 0 2 4 6 8
+                            z9 <- if(useM) zeta(mpfr(9, prec)) else 1.00200839282608221441785276923241206
+                            if(k >= 11) {#                            2 4 6 8 0 2 4 6 8 0 2 4 6 8 0 2 4 6
+                                z11 <- if(useM) zeta(mpfr(11, prec)) else 1.00049418860411946455870228252647
+                                if(k >= 13) { #                             2 4 6 8 0 2 4 6 8 0 2 4 6 8 0 2
+                                    z13 <- if(useM) zeta(mpfr(13, prec)) else 1.00012271334757848914675
+                                    if(k >= 15) { #                             2 4 6 8 0 2 4 6 8 0 2 4
+                                        z15 <- if(useM) zeta(mpfr(15, prec)) else 1.00003058823630702049355
+                                    } #                                             2 4 6 8 0 2 4 6 8 0 2 4
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
-   ## return
+    ## return
     switch(k,
            -gamma * x,
-           -gamma * x + px4/3,    # k = 2
-           -gamma * x + px4/3 - x*x2/3*z3,    # k = 3
-           -gamma * x - x*x2*(z3/3) + px4/3*(1 + px4/7.5),    # k = 4
-           ##   pi^4/360 = (pi^2/4)^2 / 3 / 7.5  (3 * 16 * 7.5 == 360)
-           ## k = 5 :
-           -gamma * x - x*x2*(z3/3 + x2*(z5/5)) + px4/3*(1 + px4/7.5),
-           ## k = 6 : (fractions: multiple of 2^-k are exact also in double prec)
-           ##         360/16 = 22.5   5670/16 = 354.375
-           -gamma * x - x*x2*(z3/3 + x2*(z5/5))            + px4*(1/3 + px4*(I/22.5 + px/354.375)),
-           -gamma * x - x*x2*(z3/3 + x2*(z5/5+ x2*(z7/7))) + px4*(1/3 + px4*(I/22.5 + px/354.375)), # k = 7
-           stop("Currently, only k <= 7  is implemented, but k=",k))
+           -gamma * x +  px4/3,    # k = 2
+           -gamma * x + (px4 - x*x2*z3)/3,    # k = 3
+           ## k = 4:  + x^4*pi^4/360 ; (pi^2/4)^2 / 3 / 7.5  (3 * 16 * 7.5 == 360)
+           -gamma * x + (    - x*x2*z3 +        px4*(1 + px4/7.5))/3, # k = 4
+           -x*(gamma + x2*(z3/3 + x2*(z5/5))) + px4*(1 + px4/7.5)/3, # k = 5
+           ## k = 6:  + x^6*pi^6/5670 (fractions: multiple of 2^-k are exact also in double prec)
+           ##      360/16/ 3 = 7.5   5670/64/3 = 945/32 = 29.53125 =  7.5 * 3.9375;  (3.9375 = 63/16 )
+           -x*(gamma + x2*(z3/3 + x2*(z5/5)))              + px4*(1 + px4*(1 + px4/3.9375)/7.5)/3, # k = 6
+           -x*(gamma + x2*(z3/3 + x2*(z5/5+ x2*(z7/7))))   + px4*(1 + px4*(1 + px4/3.9375)/7.5)/3, # k = 7
+           ## k = 8:  + x^8*pi^8 / 75600;  75600/256/3 = 1575/16;  1575/16 / (945/32) = 10/3
+           -x*(gamma + x2*(z3/3 + x2*(z5/5+ x2*(z7/7))))   +          px4*(1 + px4*(1 + px4*(1 + px4/10*3)/3.9375)/7.5)/3, # k = 8
+           -x*(gamma + x2*(z3/3 + x2*(z5/5+ x2*(z7/7+ x2*(z9/9))))) + px4*(1 + px4*(1 + px4*(1 + px4/10*3)/3.9375)/7.5)/3, # k = 9
+           ## k = 10:  + x^10*pi^10 / 935550 ; 935550/1024/3 = 155925/512; (155925/512) / (10/3 * 3.9375 * 7.5 =: D10) = 99/32 = 3.09375;  NB. D10 = 3.9375 * 25 = 98.4375
+           -x*(gamma + x2*(z3/3 + x2*(z5/5+ x2*(z7/7+ x2*(z9/9))))) +               px4*(1 + px4*(1 + px4*(1 + px4*(1 + px4/(99/32))/10*3)/3.9375)/7.5)/3, # k = 10
+           -x*(gamma + x2*(z3/3 + x2*(z5/5+ x2*(z7/7+ x2*(z9/9 + x2*(z11/11)))))) + px4*(1 + px4*(1 + px4*(1 + px4*(1 + px4/(99/32))/10*3)/3.9375)/7.5)/3, # k = 11
+           ## k = 12:  + x^12* pi^12 * 691/7662154500 ; (7662154500/691)/4096/3 = 638512875/707584 =: D;  D / (99/32 * D10) = 4095/1382
+           -x*(gamma + x2*(z3/3 + x2*(z5/5+ x2*(z7/7+ x2*(z9/9 + x2*(z11/11)))))) +               px4*(1 + px4*(1 + px4*(1 + px4*(1 + px4*(1+ px4/4095*1382)/(99/32))/10*3)/3.9375)/7.5)/3, # k = 12
+           -x*(gamma + x2*(z3/3 + x2*(z5/5+ x2*(z7/7+ x2*(z9/9 + x2*(z11/11 + x2*(z13/13))))))) + px4*(1 + px4*(1 + px4*(1 + px4*(1 + px4*(1+ px4/4095*1382)/(99/32))/10*3)/3.9375)/7.5)/3, # k = 13
+           ## k = 14:  + x^14* pi^14 / 127702575 ; 127702575 / 2^14 / 3 = 42567525/16384 =: D; D/ (4095/1382 * 99/32 * D10) = 691/240
+           -x*(gamma + x2*(z3/3 + x2*(z5/5+ x2*(z7/7+ x2*(z9/9 + x2*(z11/11 + x2*(z13/13))))))) +
+              px4*(1 + px4*(1 + px4*(1 + px4*(1 + px4*(1+ px4*(1 +  px4/691*240)/4095*1382)/(99/32))/10*3)/3.9375)/7.5)/3, # k = 14
+           -x*(gamma + x2*(z3/3 + x2*(z5/5+ x2*(z7/7+ x2*(z9/9 + x2*(z11/11 + x2*(z13/13+ x2*(z15/15)))))))) +
+              px4*(1 + px4*(1 + px4*(1 + px4*(1 + px4*(1+ px4*(1 +  px4/691*240)/4095*1382)/(99/32))/10*3)/3.9375)/7.5)/3, # k = 15
+           ## k = 16 : + (x*pi)^16 /5210265060000; 5210265060000 / 2^16/ 3 = 54273594375/2048 =: D; D / (691/240 * 4095/1382 * 99/32 * D10)
+           ##                                     = 66129731028401520640 / 6483306963568777 ... well
+           ## -x*(gamma + x2*(z3/3 + x2*(z5/5+ x2*(z7/7+ x2*(z9/9 + x2*(z11/11 + x2*(z13/13+ x2*(z15/15)))))))) +
+           ##    px4*(1 + px4*(1 + px4*(1 + px4*(1 + px4*(1+ px4*(1 +  px4*(1+ px4/....)/691*240)/4095*1382)/(99/32))/10*3)/3.9375)/7.5)/3, # k = 16
+           stop("Currently, only k <= 15  is implemented, but k=",k))
 }
 
 algdiv <- function(a,b) .Call(C_R_algdiv, as.double(a), as.double(b))
@@ -941,10 +962,10 @@ qbetaAppr <- function(a, p, q, lower.tail=TRUE, log.p=FALSE,
 
 ## Hmm, this is (sometimes!) not quite equivalent to C's :
 ## ex.  qbeta.R(0.5078, .01, 5) -> 2.77558e-15 but qbeta() now correctly gives 4.651e-31
-qbeta.R	 <-  function(alpha, p, q,
+qbeta.R  <-  function(alpha, p, q,
                       lower.tail = TRUE, log.p = FALSE,
-		      logbeta = lbeta(p,q),
-		      low.bnd = 3e-308, up.bnd = 1-2.22e-16,
+                      logbeta = lbeta(p,q),
+                      low.bnd = 3e-308, up.bnd = 1-2.22e-16,
                       method = c("AS109", "Newton-log"),
                       tol.outer = 1e-15,
                       ## FIXME: (a,p,q) : and then uses (a, pp) .. hmm
@@ -958,18 +979,18 @@ qbeta.R	 <-  function(alpha, p, q,
 {
 ### ----- following the C code in  ~/R/D/r-devel/R/src/nmath/qbeta.c
 ###
-### ----------> make use of 'log.p' in	qnormUappr(* , log.p)	as well!
+### ----------> make use of 'log.p' in  qnormUappr(* , log.p)   as well!
 
-    ## Purpose:	 qbeta(.) in R -- edited;  verbose output
+    ## Purpose:  qbeta(.) in R -- edited;  verbose output
     ## -------------------------------------------------------------------------
     ## Arguments: alpha: percentage;  (p,q) Beta parameter
-    ##	  low.bnd, up.bnd: algorithm parameter
-    ##	acu, fpu:	accuracy;     .Machine$ double.xmin = 2.22e-308 for IEEE
-    ##		SAE below is the most negative decimal exponent which does not
-    ##		cause an underflow; a value of -308 or thereabouts will often be
-    ##		OK in double precision.
-    ##		sae <- -37 ;  fpu <- 10 ^ sae
-    ##	  qnormU.fun(p) ~= qnorm(1 - p) = qnorm(p, ..., lower.tail=FALSE)
+    ##    low.bnd, up.bnd: algorithm parameter
+    ##  acu, fpu:       accuracy;     .Machine$ double.xmin = 2.22e-308 for IEEE
+    ##          SAE below is the most negative decimal exponent which does not
+    ##          cause an underflow; a value of -308 or thereabouts will often be
+    ##          OK in double precision.
+    ##          sae <- -37 ;  fpu <- 10 ^ sae
+    ##    qnormU.fun(p) ~= qnorm(1 - p) = qnorm(p, ..., lower.tail=FALSE)
     ## -------------------------------------------------------------------------
     ## Author: Martin Maechler, Date: 30 Apr 1997, 12:55
     ## ------ edited C-code  qbeta.c  into  R-code
@@ -977,7 +998,7 @@ qbeta.R	 <-  function(alpha, p, q,
     if(length(alpha)>1) stop("only works for length(1) 'alpha'")
 
     if (low.bnd >= up.bnd || low.bnd < 0 || up.bnd > 1)
-	stop("MUST  0 <= low.bnd < up.bnd <= 1")
+        stop("MUST  0 <= low.bnd < up.bnd <= 1")
 
     ## Test for admissibility of parameters
     if (p < 0 || q < 0 || alpha < 0. || alpha > 1.) stop("DOMAIN_ERROR")
@@ -994,7 +1015,7 @@ qbeta.R	 <-  function(alpha, p, q,
 
     if(R.pre.2014) {
         if(log.p && (p. == 0. || p. == 1.))
-	return(p.) ## better than NaN or infinite loop;
+        return(p.) ## better than NaN or infinite loop;
 
     } else { ## can and *must* do better:
         if(log.p && (p. == 0. || p. == 1.))
@@ -1005,15 +1026,15 @@ qbeta.R	 <-  function(alpha, p, q,
     ## x.ip <- (p-1) / (p+q -2)
     ## y.ip <- pbeta(x.ip, p, q)
 
-    ## change tail if necessary, such that  beta(a,p,q)	 with  0 = a <= 1/2
+    ## change tail if necessary, such that  beta(a,p,q)  with  0 = a <= 1/2
     ## la := log(a), but without numerical cancellation:
     if (alpha <= 1/2) {
-	a <- p.
-	la <- if(lower.tail) .D_log(alpha, log.p) else .D_LExp(alpha, log.p)
+        a <- p.
+        la <- if(lower.tail) .D_log(alpha, log.p) else .D_LExp(alpha, log.p)
         pp <- p; qq <- q; swap.tail <- FALSE
     } else {
-	a <- .DT_CIv(alpha, lower.tail, log.p)
-	la <- if(lower.tail) .D_LExp(alpha, log.p) else .D_log(alpha, log.p)
+        a <- .DT_CIv(alpha, lower.tail, log.p)
+        la <- if(lower.tail) .D_LExp(alpha, log.p) else .D_log(alpha, log.p)
         pp <- q; qq <- p; swap.tail <- TRUE
     }
     if(verbose) cat(if(swap.tail)"SWAP tail" else "no swap", "\n")
@@ -1024,7 +1045,7 @@ qbeta.R	 <-  function(alpha, p, q,
     if(acu <= 0 || acu > .1) acu   <- 1.0e-32 # 32: 15 digits accu.
 
     if(verbose) cat("logbeta=", formatC(logbeta,digits=19),
-		    "; acu=",formatC(acu, digits=6) ,"\n")
+                    "; acu=",formatC(acu, digits=6) ,"\n")
 
     ## calculate the initial approximation 'xinbta' [FIXME: never designed for log.p=TRUE]
     xinbta <- qbetaAppr(a, pp,qq, y = qnormU.fun(u=a, lu=la), logbeta=logbeta,
@@ -1032,7 +1053,7 @@ qbeta.R	 <-  function(alpha, p, q,
     xinbta0 <- xinbta # in case we want get back to it
     if(verbose) cat("initial 'xinbta' =", formatC(xinbta0, digits=18))
     if(!is.finite(xinbta)) {
-	warning("** qbeta.R(): qbetaAppr() was not finite!   xinbta := 0.5")
+        warning("** qbeta.R(): qbetaAppr() was not finite!   xinbta := 0.5")
         xinbta <- 0.5
     }
 
@@ -1048,8 +1069,8 @@ qbeta.R	 <-  function(alpha, p, q,
     if (xinbta >  up.bnd) { xinbta <- 0.5; if(verbose)cat(" -- up.bnd   -> xi= 0.5\n") } else
     if(verbose) cat("\n")
 
-    ##-- for single precision -- from CORRECTED	 AS 109:
-    ##R	 iex <- as.integer( max(-5/pp^2 - 1/a^2 - 13, sae))
+    ##-- for single precision -- from CORRECTED  AS 109:
+    ##R  iex <- as.integer( max(-5/pp^2 - 1/a^2 - 13, sae))
     ##NN acu <- max(fpu, 10 ^ (-5/pp^2 - 1/a^2 - 13))
 
     finish <- FALSE
@@ -1059,101 +1080,101 @@ qbeta.R	 <-  function(alpha, p, q,
     switch(method,
            "AS109" =
     while(!finish) { ##-- Outer Loop
-	y <- pbeta(xinbta, pp, qq)
-	if(verbose) cat("y=pbeta(x..)=", formatC(y, digits=15, width=18, flag='-'))
-	if(!is.finite(y)) {
+        y <- pbeta(xinbta, pp, qq)
+        if(verbose) cat("y=pbeta(x..)=", formatC(y, digits=15, width=18, flag='-'))
+        if(!is.finite(y)) {
             if(non.finite.report)
-	    cat("  y=pbeta(): not finite: 'DOMAIN_ERROR'\n",
-		"  xinbta =", format01prec(xinbta, digits=18),"\n")
-	    return(xinbta) ##browser()
-	}
-	y <- (y - a) * exp(logbeta + r * log(xinbta) + t * log1p(-xinbta))
-	if(verbose) cat(" y.n=(y-a)*e^..=", formatC(y))
-	if(!is.finite(y)) {
+            cat("  y=pbeta(): not finite: 'DOMAIN_ERROR'\n",
+                "  xinbta =", format01prec(xinbta, digits=18),"\n")
+            return(xinbta) ##browser()
+        }
+        y <- (y - a) * exp(logbeta + r * log(xinbta) + t * log1p(-xinbta))
+        if(verbose) cat(" y.n=(y-a)*e^..=", formatC(y))
+        if(!is.finite(y)) {
             if(non.finite.report)
-	    cat("  y = (y-a)*exp(...) not finite:\n",
-		"  xinbta =", format01prec(xinbta, digits=18),"\n")
- 	    return(xinbta) ##browser()
-	}
+            cat("  y = (y-a)*exp(...) not finite:\n",
+                "  xinbta =", format01prec(xinbta, digits=18),"\n")
+            return(xinbta) ##browser()
+        }
 
-	if (y * yprev <= 0) prev <- max(fpu, abs(adj))
-	g <- 1
-	in.it <- 0
-	if(verbose>=2) cat("\n	Inner loop: ")
-	for(in.it in 1:1000) {
-	    adj <- g * y
-	    if (abs(adj) < prev) { #-- current adjustment < last one which gave sign change
-		if(verbose>=2)cat("<")
-		tx <- xinbta - adj
-		if (0 <= tx && tx <= 1) {
-		    if (prev <= acu || abs(y) <= acu) { ## goto L_converged
-			finish <- TRUE; break
-		    }
-		    if (tx != 0 && tx != 1) break
-		}
-	    } else if(verbose>=2) cat(".")
-	    if(!finish) g <- g / 3
-	} ##-- end inner loop
-	if(verbose>=2) cat(if(in.it>10) "\n" else " ")
-	if(verbose) cat(" ", in.it,"it --> adj=g*y=", formatC(adj),"\n")
-	if (abs(tx - xinbta) <= tol.outer * xinbta) break # goto L_converged;
-	if(verbose >= 2)
+        if (y * yprev <= 0) prev <- max(fpu, abs(adj))
+        g <- 1
+        in.it <- 0
+        if(verbose>=2) cat("\n  Inner loop: ")
+        for(in.it in 1:1000) {
+            adj <- g * y
+            if (abs(adj) < prev) { #-- current adjustment < last one which gave sign change
+                if(verbose>=2)cat("<")
+                tx <- xinbta - adj
+                if (0 <= tx && tx <= 1) {
+                    if (prev <= acu || abs(y) <= acu) { ## goto L_converged
+                        finish <- TRUE; break
+                    }
+                    if (tx != 0 && tx != 1) break
+                }
+            } else if(verbose>=2) cat(".")
+            if(!finish) g <- g / 3
+        } ##-- end inner loop
+        if(verbose>=2) cat(if(in.it>10) "\n" else " ")
+        if(verbose) cat(" ", in.it,"it --> adj=g*y=", formatC(adj),"\n")
+        if (abs(tx - xinbta) <= tol.outer * xinbta) break # goto L_converged;
+        if(verbose >= 2)
             cat("--Outer Loop: |tx - xinbta| > eps; tx=",formatC(tx, digits=18),
                 " tx-xinbta =", formatC(tx-xinbta),"\n")
-	xinbta <- tx
-	yprev <- y
-	o.it <- o.it + 1
+        xinbta <- tx
+        yprev <- y
+        o.it <- o.it + 1
     }, ##- end outer loop {method "AS109"}
 
     "Newton-log" = #--------------------------------- new --------
         ## but really, I want  Newton on   log-*log* scale --
     while(!finish) { ##-- Outer Loop
-	y <- pbeta(xinbta, pp, qq, log.p = TRUE)
-	if(verbose) cat("y=pbeta(xi,*, log.p=TRUE)=",
+        y <- pbeta(xinbta, pp, qq, log.p = TRUE)
+        if(verbose) cat("y=pbeta(xi,*, log.p=TRUE)=",
                         formatC(y, digits=15, width=18, flag='-'))
-	if(!is.finite(y)) {
-	    cat("  y=pbeta(): not finite: 'DOMAIN_ERROR'\n",
-		"  xinbta =",formatC(xinbta,digits=18),"\n")
-	    return(xinbta) ##browser()
-	}
+        if(!is.finite(y)) {
+            cat("  y=pbeta(): not finite: 'DOMAIN_ERROR'\n",
+                "  xinbta =",formatC(xinbta,digits=18),"\n")
+            return(xinbta) ##browser()
+        }
         ## y := g(xinbta) / g'(xinbta)  where g(x) =  log(alpha) - log pbeta(x, ..)
         ##                              ==>  g'(x) = - dbeta(x,.) / pbeta(x,.)
-	y <- (y - la) * exp(y + (logbeta + r * log(xinbta) + t * log1p(-xinbta)))
-	if(verbose) cat(" y.n=(y-a)*e^..=", formatC(y))
-	if(!is.finite(y)) {
-	    cat("  y = (y-a)*exp(...) not finite:\n",
-		"  xinbta =",formatC(xinbta,digits=18),"\n")
- 	    return(xinbta) ##browser()
-	}
+        y <- (y - la) * exp(y + (logbeta + r * log(xinbta) + t * log1p(-xinbta)))
+        if(verbose) cat(" y.n=(y-a)*e^..=", formatC(y))
+        if(!is.finite(y)) {
+            cat("  y = (y-a)*exp(...) not finite:\n",
+                "  xinbta =",formatC(xinbta,digits=18),"\n")
+            return(xinbta) ##browser()
+        }
 
-## 	if (y * yprev <= 0) prev <- max(fpu, abs(adj))
-## 	g <- 1
-## 	in.it <- 0
-## 	if(verbose>=2) cat("\n	Inner loop: ")
-## 	for(in.it in 1:1000) {
-## 	    adj <- g * y
-## 	    if (abs(adj) < prev) { #-- current adjustment < last one which gave sign change
-## 		if(verbose>=2)cat("<")
-## 		tx <- xinbta - adj
-## 		if (0 <= tx && tx <= 1) {
-## 		    if (prev <= acu || abs(y) <= acu) { ## goto L_converged
-## 			finish <- TRUE; break
-## 		    }
-## 		    if (tx != 0 && tx != 1) break
-## 		}
-## 	    } else if(verbose>=2) cat(".")
-## 	    if(!finish) g <- g / 3
-## 	} ##-- end inner loop
-## 	if(verbose>=2) cat(if(in.it>10)"\n" else " ")
-## 	if(verbose) cat(" ",in.it,"it --> adj=g*y=",formatC(adj),"\n")
- 	if(verbose) cat("\n")
+##      if (y * yprev <= 0) prev <- max(fpu, abs(adj))
+##      g <- 1
+##      in.it <- 0
+##      if(verbose>=2) cat("\n  Inner loop: ")
+##      for(in.it in 1:1000) {
+##          adj <- g * y
+##          if (abs(adj) < prev) { #-- current adjustment < last one which gave sign change
+##              if(verbose>=2)cat("<")
+##              tx <- xinbta - adj
+##              if (0 <= tx && tx <= 1) {
+##                  if (prev <= acu || abs(y) <= acu) { ## goto L_converged
+##                      finish <- TRUE; break
+##                  }
+##                  if (tx != 0 && tx != 1) break
+##              }
+##          } else if(verbose>=2) cat(".")
+##          if(!finish) g <- g / 3
+##      } ##-- end inner loop
+##      if(verbose>=2) cat(if(in.it>10)"\n" else " ")
+##      if(verbose) cat(" ",in.it,"it --> adj=g*y=",formatC(adj),"\n")
+        if(verbose) cat("\n")
         tx <- xinbta - y
-	if (abs(tx - xinbta) < tol.outer * xinbta) break # goto L_converged;
-	if(verbose>=2) cat("--Outer Loop: |tx - xinbta| > eps; tx=",formatC(tx, digits=18),
+        if (abs(tx - xinbta) < tol.outer * xinbta) break # goto L_converged;
+        if(verbose>=2) cat("--Outer Loop: |tx - xinbta| > eps; tx=",formatC(tx, digits=18),
                            " tx-xinbta =", formatC(tx-xinbta),"\n")
-	xinbta <- tx
-## 	yprev <- y
-	o.it <- o.it + 1
+        xinbta <- tx
+##      yprev <- y
+        o.it <- o.it + 1
     }, ##- end outer loop, method = "Newton-log"
     ## otherwise:
     stop("unknown method ", dQuote(method)))
@@ -1162,4 +1183,3 @@ qbeta.R	 <-  function(alpha, p, q,
     if(verbose) cat(" ", o.it,"outer iterations\n")
     if (swap.tail) 1 - xinbta else xinbta
 }
-
