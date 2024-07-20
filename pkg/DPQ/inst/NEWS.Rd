@@ -57,7 +57,8 @@
 
       \item Data set \code{pt_Witkovsky_Tab1} containing (the free software
       subset of) Viktor \enc{Witkovský}{Witkovsky}(2013)'s \emph{Table 1} of
-      \code{pt(x, df=nu, ncp=delta)} examples.
+      \code{pt(x, df=nu, ncp=delta)} examples; updated with octave results
+      for both the original 2013 matlab code and the 2022 corrected one.
 
       \item \code{lgamma1p_series(x, k)}, the Taylor series approximations
       for \code{lgamma1p(x)}\eqn{ := \log \Gamma(1+x)} are now available up
