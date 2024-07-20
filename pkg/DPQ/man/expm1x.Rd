@@ -37,7 +37,7 @@ expm1xTser(x, k)
 \author{Martin Maechler}
 \seealso{
   \code{\link{expm1}(x)} for computing \eqn{e^x - 1} is much more widely
-  know, and part of the ISO C standards now.
+  known, and part of the ISO C standards now.
 }
 \examples{%% --- more, notably tests: see ../tests/expm1x-tst.R
 

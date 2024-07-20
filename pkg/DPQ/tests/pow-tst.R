@@ -1,6 +1,8 @@
 require("DPQ")
 require("Rmpfr")
 
+source(system.file(package="DPQ", "extraR", "relErr-plots.R", mustWork=TRUE))
+##-> drawEps.h() , mtextVersion(), ...
 (doExtras <- DPQ:::doExtras())
 (noLdbl <- (.Machine$sizeof.longdouble <= 8)) ## TRUE when --disable-long-double
 options(width = 100, nwarnings = 1e5)
@@ -79,18 +81,6 @@ plot(k1., re1.pdi, type="o", cex=1/4, log="x", ylim = c(-50, 2)*2^-53, xaxt="n",
 abline(h=(-2:2)*2^-53, lty=c(3,3,1), col=adjustcolor(1, 1/2)); eaxis(1, sub10=3)
 
 all.equal(p1^k1., pow(p1, k1., FALSE), tolerance=0) # TRUE (everywhere?)
-
-## to enhance  |rel.Err| plots:  {also in ~/R/Pkgs/Rmpfr/tests/special-fun-ex.R }
-drawEps.h <- function(p2 = -(53:51), side = 4, lty = 3, lwd = 2, col = adjustcolor(2, 1/2)) {
-    abline(h = 2^p2, lty=lty, lwd=lwd, col=col)
-    axis(side, las=2, line=-1, at = 2^p2,
-         labels = as.expression(lapply(p2, function(p) substitute(2^E, list(E=p)))),
-         col.axis = col, col=NA, col.ticks=NA)
-}
-mtextVersion <- function(adj = 1, col = 1) {
-    mtext(osVersion, line=1, col=col, adj=adj)
-    mtext(sfsmisc::shortRversion(spaces=FALSE), col=col, adj=adj)
-}
 
 ## comparison:  R's  x^y i.e. R_pow() is *much* better -- starting already at ca k >= 50 (for this x=p1):
 plot(k1., abs(re1.pdi), type="l", log="xy", yaxt="n", ylim = c(1e-17, max(abs(re1.pdi))),

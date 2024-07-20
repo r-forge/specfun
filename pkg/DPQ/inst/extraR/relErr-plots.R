@@ -3,7 +3,7 @@
 ## ../../tests/stirlerr-tst.R   *and*
 ## ../../Misc/stirlerr/stirlerr-eval-tst.R
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  both source(<this>), i.e.
-## source(system.file(package="DPQ", "extraR", "stirlerr-plots.R", mustWork=TRUE))
+## source(system.file(package="DPQ", "extraR", "relErr-plots.R", mustWork=TRUE))
 
 require("sfsmisc") # eaxis()
 

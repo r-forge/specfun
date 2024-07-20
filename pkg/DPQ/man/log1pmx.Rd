@@ -48,7 +48,7 @@ rlog1(x)
     when \code{is.numeric(x)} is true.}
 }
 \details{% ../R/beta-fns.R
-  In order to provide full accuracy,
+  In order to provide full (double precision) accuracy,
   the computations happens differently in three regions for \eqn{x},
   \deqn{m_l = \code{minL1} = -0.79149064} is the first cutpoint,
   \describe{
@@ -89,7 +89,10 @@ rlog1(x)
 }
 \seealso{
   \code{\link{logcf}}, the auxiliary function,
-  \code{\link{lgamma1p}} which calls \code{log1pmx}, \code{\link{log1p}}
+  \code{\link{lgamma1p}} which calls \code{log1pmx}, \code{\link{log1p}}; also
+  \code{\link{expm1x})()} which computes \code{\link{expm1}(x) - x}
+  accurately, whereas
+  \code{log1pmx(x)} computes \code{\link{log1p}(x) - x} accurately
 }
 \examples{
 (doExtras <- DPQ:::doExtras()) # TRUE e.g. if interactive()

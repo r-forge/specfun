@@ -379,7 +379,6 @@ xct <- as.numeric(xct.)
 stopifnot(exprs = {
     AllEq(xct., xc2., tol = 1e-45)
     AllEq(xct , xc2., tol = 1e-15)
-    ##
     all.equal(lgamma1p(x), lgamma1p(x, tol= 1e-16), tol=0)
     ## -> no difference; i.e., default tol = 1e-14 seems fine enough!
 })
@@ -424,7 +423,7 @@ abline(v = c(3e-6, 1e-4, 8e-4), col=4:6, lty=2, lwd=1/2)
     detach("package:Rmpfr")
 showProc.time()
 
-} ## if( MPFR ) ----------------------------------------------------------------
+} ## end if( MPFR ) ----------------------------------------------------------------
 
 
 ## ../R/qchisqAppr.R -- talks about the "small shape" qgamma() approximation

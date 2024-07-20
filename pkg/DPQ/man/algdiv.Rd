@@ -62,7 +62,7 @@ cbind(a = 2:3, b = 8:14, Qab) # recycling with a warning
 
 ## algdiv()  and my  logQab_asy()  give *very* similar results for largish b:
 all.equal( -   algdiv(3, 100),
-           logQab_asy(3, 100), tol=0) # 1.283e-16 !!
+           logQab_asy(3, 100), tolerance=0) # 1.283e-16 !!
 (lQab <- logQab_asy(3, 1e10))
 ## relative error
 1 + lQab/ algdiv(3, 1e10) # 0 (64b F 30 Linux; 2019-08-15)
@@ -81,6 +81,7 @@ mtext(paste0("a[1:",length(a.),"] = ",
         paste0(paste(head(paste0(formatC(a.*32), "/32")), collapse=", "), ", .., 1")))
 matlines(b., ad,   type = "l", lwd=4, lty=1, col=adjustcolor(1:6, 1/2))
 abline(v=1, lty=3, col="midnightblue")
+# The larger 'b', the more accurate the direct formula wrt algdiv()
 all.equal(ad[b. >= 1,], ad.d[b. >= 1,]       )# 1.5e-5
 all.equal(ad[b. >= 2,], ad.d[b. >= 2,], tol=0)# 3.9e-9
 all.equal(ad[b. >= 4,], ad.d[b. >= 4,], tol=0)# 4.6e-13

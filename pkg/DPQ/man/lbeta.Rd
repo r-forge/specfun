@@ -1,5 +1,5 @@
 \name{lbeta}
-\title{(Log) Beta Approximations}
+\title{(Log) Beta and Ratio of Gammas Approximations}
 \alias{lbetaM}
 \alias{lbeta_asy}
 \alias{lbetaMM}
@@ -8,7 +8,12 @@
 \alias{logQab_asy}
 \alias{Qab_terms}
 \description{
-  Compute \code{log(\link{beta}(a,b))} in a simple (fast) or asymptotic way.
+  Compute \code{log(\link{beta}(a,b))} in a simple (fast) or asymptotic
+  way.  The asymptotic case is based on the asymptotic \eqn{\Gamma}
+  (\code{\link{gamma}}) ratios, provided in \code{Qab_terms()} and
+  \code{logQab_asy()}.
+
+  \code{lbeta_asy(a,b, ..)} is simply \code{lgamma(a) - logQab_asy(a, b, ..)}.
 }
 \usage{%% in ../R/beta-fns.R <<<<<<<
 lbetaM   (a, b, k.max = 5, give.all = FALSE)
@@ -24,13 +29,14 @@ Qab_terms(a, k)
 \arguments{
   \item{a, b, n}{the Beta parameters, see \code{\link{beta}}; \code{n} must
   be a positive integer and \dQuote{small}.}
-  \item{k.max}{ .. }
-  \item{give.all}{\code{\link{logical}} .. }
+  \item{k.max, k}{for \code{lbeta*()} and \code{logQab_asy()}: the number
+    of terms to be used in the series expansion of \code{Qab_terms()},
+    currently must be in \eqn{{0, 1, .., 5}}.}
+  \item{give.all}{\code{\link{logical}} indicating if all terms should be
+    returned (as columns of a matrix) or just the result.}
   \item{cutAsy}{cutoff value from where to switch to asymptotic formula.}%% FIXME details
   \item{verbose}{logical (or integer) indicating if and how much monitoring
     information should be printed to the console.}
-  \item{k}{the number of terms in the series expansion of
-    \code{Qab_terms()}, currently must be in \eqn{{0, 1, .., 5}}.}
 }
 \details{
   All \code{lbeta*()} functions compute \code{log(\link{beta}(a,b))}.
@@ -86,7 +92,13 @@ Qab_terms(a, k)
   \R's \code{\link{beta}} function; \code{\link{algdiv}()}.
 }
 \examples{
-  ## TODO
+(r  <- logQab_asy(1, 50))
+(rF <- logQab_asy(1, 50, give.all=TRUE))
+r == rF # all TRUE:  here, even the first approx. is good!
+(r2  <- logQab_asy(5/4, 50))
+(r2F <- logQab_asy(5/4, 50, give.all=TRUE))
+r2 == r2F # TRUE only first entry "5"
+(r2F.3 <- logQab_asy(5/4, 50, k=3, give.all=TRUE))
 }
 \keyword{math}
 

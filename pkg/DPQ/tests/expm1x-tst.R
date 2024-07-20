@@ -16,6 +16,7 @@ require("Rmpfr")
 do.pdf <- TRUE
 do.pdf <- !dev.interactive(orNone = TRUE)
 do.pdf
+if(do.pdf) endPdf <- if(interactive()) sfsmisc::end.pdf else dev.off
 
 ## relErrV <- sfsmisc::relErrV
 ## eaxis   <- sfsmisc::eaxis
@@ -257,10 +258,8 @@ dBnd1024
 
 ## Much more relevant: rel.error:
 
-if(do.pdf && .Device == "pdf") {
-    dev.off(); pdf.do("expm1x_abs_relE_Taylor.pdf", paper = "a4r") # A4 rotated : horizontal
-}
-
+if(.Device == "pdf") dev.off()
+if(do.pdf) pdf.do("expm1x_abs_relErr_L.pdf", paper = "a4r") # A4 rotated : horizontal
 
 ## zoom in larger x  {after recomputing with more x there}
 ## above had  2^twoP; twoP <- seq(-0.75, 54, by = 1/8)
@@ -271,8 +270,6 @@ colnames(expm1xAllxL)[-(1:2)] <- paste0("k=",1:16)
 
 expm1x.relExL <- asNumeric(relErrV(expm1x.1(mpfr(xL, 1024)), expm1xAllxL))
 
-if(.Device == "pdf") pdf.end()
-if(do.pdf) pdf.do("expm1x_abs_relErr_L.pdf", paper = "a4r") # A4 rotated : horizontal
 
 pl.relEexpm1x(xL, abs(expm1x.relExL), log="xy", yaxt="n", leg.cex = .8) ; eaxis(2, nintLog = 20)
 abline(h = 2^-(52:51), lty=3, col=paste("gray",c(20,50)))
@@ -299,7 +296,7 @@ colnames(expm1xAllx1)[-(1:2)] <- paste0("k=",10:18)
 
 expm1x.relEx1 <- asNumeric(relErrV(expm1x.1(mpfr(x1, 1024)), expm1xAllx1))
 
-if(.Device == "pdf") pdf.end()
+if(.Device == "pdf") endPdf()
 if(do.pdf) pdf.do("expm1x_abs_relErr_x=1.pdf", paper = "a4r") # A4 rotated : horizontal
 
 pl.relEexpm1x(x1, abs(expm1x.relEx1), log="xy", yaxt="n", ylim = c(1e-17, 1e-9), leg.cex = .8) ; eaxis(2)
@@ -321,4 +318,4 @@ abl(v = 0.97) # k = 16
 abl(v = 1.12) # k = 17
 abl(v = 1.25) # k = 18
 
-if(.Device == "pdf") pdf.end()
+if(.Device == "pdf") endPdf()
