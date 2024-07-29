@@ -5,10 +5,8 @@ library(Bessel)
 
 all.eq <- function(x,y, tol=1e-15,...) all.equal(x, rep_len(y,length(x)), tol=tol, ...)
 
-if(getRversion() < "2.15.0")
-paste0 <- function(...) paste(..., sep="")
-
-(options(width=max(99, getOption("width"))))
+(op <- options(width=max(99, getOption("width")), warn = 0,
+               nwarnings = 999, warnPartialMatchArgs = FALSE)) # all.equal(*,*, tol = ..)
 
 isOSunix <- .Platform$OS.type == "unix"
 windows <- !isOSunix
@@ -583,5 +581,5 @@ xs. <- sort(xs[is.finite(xs)])
 
 
 
-
+options(op)
 cat('Time elapsed: ', proc.time(),'\n') # for ''statistical reasons''
