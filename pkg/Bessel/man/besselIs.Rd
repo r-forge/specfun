@@ -16,7 +16,7 @@ besselIs(x, nu, nterm = 800, expon.scaled = FALSE, log = FALSE,
 \arguments{
   \item{x}{numeric or complex vector, or of another \code{\link{class}}
     for which arithmetic methods are defined, notably
-    objects of class \code{\linkS4class{mpfr}} (package \CRANpkg{Rmpfr}).}
+    objects of class \code{\linkS4class[Rmpfr]{mpfr}} (package \CRANpkg{Rmpfr}).}
   \item{nu}{non-negative numeric (scalar).}
   \item{nterm}{integer indicating the number of terms to be used.
     Should be in the order of \code{abs(x)}, but can be smaller for
