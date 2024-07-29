@@ -15,7 +15,7 @@ besselJs(x, nu, nterm = 800, log = FALSE,
 \arguments{
   \item{x}{numeric or complex vector, or of another \code{\link{class}}
     for which arithmetic methods are defined, notably
-    objects of class \code{\linkS4class[Rmpfr]{mpfr}}.}
+    objects of class \code{\link[Rmpfr:mpfr-class]{mpfr}}.}
   \item{nu}{non-negative numeric (scalar).}
   \item{nterm}{integer indicating the number of terms to be used.
     Should be in the order of \code{abs(x)}, but can be smaller for
