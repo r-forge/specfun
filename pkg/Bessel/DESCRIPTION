@@ -2,7 +2,7 @@ Title: Computations and Approximations for Bessel Functions
 Package: Bessel
 Version: 0.6-1
 VersionNote: Last CRAN: 0.6-0, packaged 2019-04-25, published 2019-05-02
-Date: 2024-07-29
+Date: 2024-08-12
 Description: Computations for Bessel function for complex, real and partly
   'mpfr' (arbitrary precision) numbers; notably interfacing TOMS 644;
   approximations for large arguments, experiments, etc.

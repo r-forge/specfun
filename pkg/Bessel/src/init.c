@@ -12,7 +12,7 @@ static const R_CMethodDef CEntries[] = {
     {"zbesj", (DL_FUNC) zbesj,  9},
     {"zbesk", (DL_FUNC) zbesk,  9},
     {"zbesy", (DL_FUNC) zbesy, 11},
-    {"zbiry", (DL_FUNC) zbiry,  8},
+    {"zbiry", (DL_FUNC) zbiry,  7},
     {NULL, NULL, 0}
 };
 

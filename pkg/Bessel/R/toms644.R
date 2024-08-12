@@ -486,7 +486,6 @@ AiryB <- function(z, deriv = 0, expon.scaled = FALSE, verbose = 0)
 					# 1 or 2, exactly as desired
                  bir = double(1),
                  bii = double(1),
-                 nz   = integer(1),
                  ierr = as.integer(verbose))
 	if(ri$ierr) {
 	    f.x <- sprintf("'zairy(%g %s %gi, deriv=%d)'", zr[i],

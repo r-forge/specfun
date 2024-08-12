@@ -4,7 +4,7 @@
 \title{News for \R Package \pkg{Bessel}}
 \encoding{UTF-8}
 
-\section{Changes in version 0.6-1 (2024-07-29, svn r323)}{
+\section{Changes in version 0.6-1 (2024-08-12, svn r324)}{
   \subsection{New Features}{
     \itemize{
       \item Using \code{cospi(nu)} instead of \code{cos(pi*nu)}, for
@@ -16,6 +16,11 @@
     \itemize{
       \item Rd-crossrefs: replace \code{\\linkS4class\{mpfr\}} by
       \code{\\link[Rmpfr:mpfr-class]\{mpfr\}}.
+    }
+  }
+  \subsection{Misc}{
+    \itemize{
+      \item \code{.C(zbiry, ..)} correctly now, thanks to Alexios Galanos.
     }
   }
 }
