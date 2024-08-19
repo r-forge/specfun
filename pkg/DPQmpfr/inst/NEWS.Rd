@@ -5,10 +5,12 @@
 \encoding{UTF-8}
 
 % NB: svn revision numbering within all my R-forge `specfun` pkgs --- ..../R-forge/specfun/
-\section{Version 0.3-3 (2024-08-15, svn r326)}{
+\section{Version 0.3-3 (2024-08-19, svn r327)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{stirlerrSer(n, k)} now allows \code{k <= 22}.
+
+      \item add some \verb{\link[<pkg>]{..}} as now required.
 
       \item \code{dtWVm()} is an \dQuote{mpfr-ized} version of \CRANpkg{DPQ}'s
       \code{\link[DPQ]{dtWV}()}.
