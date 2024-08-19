@@ -4,13 +4,24 @@
 \title{DPQmpfr News}
 \encoding{UTF-8}
 
-\section{Version 0.3-3 (2024-04-30, svn r303)}{
+% NB: svn revision numbering within all my R-forge `specfun` pkgs --- ..../R-forge/specfun/
+\section{Version 0.3-3 (2024-08-15, svn r326)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{stirlerrSer(n, k)} now allows \code{k <= 22}.
 
       \item \code{dtWVm()} is an \dQuote{mpfr-ized} version of \CRANpkg{DPQ}'s
       \code{\link[DPQ]{dtWV}()}.
+
+      \item \code{gam1M()}, \code{lgamma1pM()}, and \code{algdivM()}
+      each generalize the corresponding function in package \CRANpkg{DPQ}
+      for the use with \CRANpkg{Rmpfr}'s \code{"mpfr"} numbers, notably
+      avoiding cancellation by adding additional precision bits.
+
+      \item New \code{pbeta_bpser()} using the 3 auxiliary functions for an
+      mpfr-ized version of \R's \code{pbeta()}.
+
+      \item More non-central t probability computations .. unfinished currently %% FIXME FIXME
     }
   }
   \subsection{Misc}{

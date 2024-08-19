@@ -11,7 +11,7 @@ pnormL_LD10(x, lower.tail = FALSE, log.p = FALSE)
 pnormU_S53 (x, lower.tail = FALSE, log.p = FALSE)
 }
 \arguments{
-  \item{x}{positive (at least non-negative) numeric \code{"\link{mpfr}"}
+  \item{x}{positive (at least non-negative) numeric \code{"\link[Rmpfr]{mpfr}"}
     vector (or \code{\link{array}}).}
   \item{lower.tail, log.p}{logical, see, e.g., \code{\link{pnorm}()}.}
 }

@@ -75,7 +75,7 @@ qbetaD94(p, shape1, shape2, ncp = 0, lower.tail = TRUE, log.p = FALSE,
 \author{Martin Maechler, notably \code{log_scale} was not part of Ding's
   proposals.}
 \seealso{
-  \code{\link{pbeta}}.  Package \CRANpkg{Rmpfr}'s \code{\link{pbetaI}()} needs
+  \code{\link{pbeta}}.  Package \CRANpkg{Rmpfr}'s \code{\link[Rmpfr]{pbetaI}()} needs
   both \code{shape1} and \code{shape2} to be integer but is typically more
   efficient than the current \code{pbetaD94()} implementation.
 }

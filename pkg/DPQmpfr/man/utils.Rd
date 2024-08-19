@@ -23,7 +23,7 @@ ldexp(f, E)
 }
 \value{
   % \code{ldexp()}:
-  either a numeric or a \code{"\link{mpfr}"}, depending on the type of
+  either a numeric or a \code{"\link[Rmpfr]{mpfr}"}, depending on the type of
   \code{f}, vector as (the recyled) combination of \code{f} and \code{E}.
 }
 \seealso{

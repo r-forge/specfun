@@ -1,6 +1,8 @@
 DESCRIPTION_Author
 ^Misc
+R/dnbinom-etc.R
 Rplots\.pdf
-slow\.Rout
 ^svn-
-\.grep$
+\.(grep|patch|diff|Rout)$
+tests/.*\.Rout.[^s]
+\.Rout\.save.+

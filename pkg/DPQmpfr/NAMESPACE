@@ -10,6 +10,10 @@ importFrom("DPQ"
          , .suppHyper              # DPQ 0.4-0
          , pnormL_LD10, pnormU_S53 # DPQ 0.4-2
          , pnormAsymp , qnormAsymp # DPQ 0.5-3
+## TODO  , DPQ__gam1    = gam1
+## TODO  , DPQ__algdiv  = algdiv
+## TODO  , DPQ__lgamma1p= lgamma1p
+## TODO  , DPQ__gamln1  = gamln1
 )
 
 importFrom("Rmpfr"
@@ -21,6 +25,7 @@ importFrom("Rmpfr"
          , dpois
          , log1mexp
          , .mpfr_erange
+         , roundMpfr
 )
 
 importFrom("gmp"
@@ -40,6 +45,7 @@ importFrom("sfsmisc"
 
 
 importFrom("stats"
+         , integrate
          , stats__dnorm = dnorm
          , stats__pnorm = pnorm
          , qnorm
@@ -90,6 +96,14 @@ export(dtWVm)
 # export(formatRng)
 # export(p.dpoisEr)
 # export(rE2mat)
+
+export(
+    lgamma1pM
+  , algdivM
+  , gam1M
+  , pbeta_ser
+)
+
 
 
 ## Re-export this R/dpq-mpfrized.R :

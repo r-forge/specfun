@@ -2,7 +2,7 @@
 \title{Non-central t-Distribution Density}
 \alias{dntJKBm}
 \alias{dtWVm}
-\note{Package \pkg{DPQ}'s \code{\link{dntJKBf}()} \bold{is} already fully
+\note{Package \pkg{DPQ}'s \code{\link[DPQ]{dntJKBf}()} \bold{is} already fully
   mpfr-ized, and hence \code{dntJKBm()} is redundant, and therefore deprecated.
 }
 \description{
@@ -31,11 +31,11 @@ dtWVm  (x, df, ncp, log = FALSE)
 \details{
   See \code{\link[DPQ]{dtWV}}'s details (package \CRANpkg{DPQ}).
 
-  As \pkg{DPQ}'s \code{\link{dntJKBf}()} \bold{is} already fully
+  As \pkg{DPQ}'s \code{\link[DPQ]{dntJKBf}()} \bold{is} already fully
   mpfr-ized, \code{dntJKBm()} is deprecated.
 }
 \value{
-  an \code{\linkS4class{mpfr}} vector of the same length as the maximum
+  an \code{\link[Rmpfr:mpfr-class]{mpfr}} vector of the same length as the maximum
   of the lengths of \code{x, df, ncp}.
 }
 \author{Martin Maechler}
