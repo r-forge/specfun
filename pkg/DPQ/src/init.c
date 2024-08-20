@@ -48,6 +48,8 @@ static const R_CMethodDef CEntries[] = {
 static R_CallMethodDef CallEntries[] = {
     CALLDEF(R_algdiv,   2), // <-- ./algdiv.c
     CALLDEF(R_bpser,    7), // <-- ./bpser.c
+    CALLDEF(R_gam1,   3), //		"
+    CALLDEF(R_gamln1, 2), //		"
 
     CALLDEF(chk_LDouble,3), // <-- ./ppois-direct.c
     CALLDEF(ppoisD,     4), // <-- ./ppois-direct.c

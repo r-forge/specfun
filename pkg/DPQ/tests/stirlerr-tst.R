@@ -48,7 +48,7 @@ plot(x, stirlerr(x, use.halves=FALSE) - stM,      type="l", log="x", main="absol
 plot(x, stirlerr(x, use.halves=FALSE) / stM - 1,  type="l", log="x", main="relative Error")
 plot(x, abs(stirlerr(x, use.halves=FALSE) / stM - 1), type="l", log="xy",main="|relative Error|")
 drawEps.h(-(52:50))
-## lgammacor() does *NOT* help, as it is  *designed*  for  x >= 10!
+## lgammacor() does *NOT* help, as it is  *designed* for x >= 10 ... (but is interesting there)
 ##
 ## ==> Need another chebyshev() or rational-approx. for x in [.1, 7] or so !!
 
@@ -345,7 +345,7 @@ abline(h = yl2, col=adjustcolor("tomato", 1/4), lwd=3, lty=2)
 
 if(do.pdf) { dev.off() ; pdf("stirlerr-relErr_1.pdf") }
 
-## drop n < 5:
+## drop n < 7:
 p.stirlerrDev(n=n, stnM=st.nM, xlim = c(7, max(n)), use.halves=FALSE) # default cutoffs= c(15, 40, 85, 600)
 abline(h = yl2, col=adjustcolor("tomato", 1/4), lwd=3, lty=2)
 
@@ -447,32 +447,38 @@ nM <- mpfr(n, 1024)
 stnM <- stirlerr(nM) # the "true" values
 
 stirlOrd <- sapply(k, function(k.) stirlerr(n, order = k.))
-relE <- asNumeric(stirlOrd/stnM -1) # "true" relative error
+stirlO_lgcor <- cbind(stirlOrd, sapply(5:6, function(nal) lgammacor(n, nalgm = nal)))
+relE <- asNumeric(stirlO_lgcor/stnM -1) # "true" relative error
 
 ## use a "smooth" but well visible polette :
 palROBG <- colorRampPalette(c("red", "darkorange2", "blue", "seagreen"), space = "Lab")
-palette(adjustcolor(palROBG(mK), 3/4))
+palette(adjustcolor(palROBG(mK+2), 3/4))
+##                            -- 2 lgamcor()'s
 
 (tit.k  <- substitute(list(    stirlerr(n, order=k) ~~"error",  k == 1:mK),  list(mK = mK)))
 (tit.kA <- substitute(list(abs(stirlerr(n, order=k) ~~"error"), k == 1:mK),  list(mK = mK)))
+lgammacorTit <- function(...) mtext("+ lgammacor(x, 5) [bad] + lgammacor(x, 6) [good]", col=1, ...)
 
 matplotB(n, relE, cex=2/3, ylim = c(-1,1)*1e-13, col=k,
-        log = "x", xaxt="n", main = tit.k)
+         log = "x", xaxt="n", main = tit.k)
+lgammacorTit()
 eaxis(1, nintLog = 20)
 drawCuts("R4.4_0")
 
 ## zoom in (ylim)
 matplotB(n, relE, cex=2/3, ylim = c(-1,1)*5e-15, col=k,
         log = "x", xaxt="n", main = tit.k)
+lgammacorTit()
 eaxis(1, nintLog = 20); abline(h = (-2:2)*2^-53, lty=3, lwd=1/2)
 drawCuts("R4.4_0", axis = 3)
 
 ## log-log  |rel.Err|  -- "linear"
 matplotB(n, abs19(relE), cex=2/3, col=k, ylim = c(8e-17, 1e-7), log = "xy", main=tit.kA)
 mtext(paste("k =", deparse(k))) ; abline(h = 2^-(53:51), lty=3, lwd=1/2)
+lgammacorTit(line=-1)
 drawCuts("R4.4_0", axis = 3)
 
-## zoom in -- still "large"
+## zoom in -- still "large" {no longer carry the  lgammacor() .. }:
 n2c <- 2^seq(2, 8, by=1/256)
 nMc <- mpfr(n2c, 1024)
 stnMc <- stirlerr(nMc) # the "true" values

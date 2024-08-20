@@ -737,6 +737,8 @@ pntGST23_T6 <- Vectorize(pntGST23_T6.1, c("t", "df", "ncp"))
 ## "Simple accurate" pbeta(), i.e., I_x(p,q) from Gil et al. (2023) -- notably Nico Temme
 ##  *much* less sophisticated than R's TOMS 708 based pbeta(), *BUT* with potential to be used with Rmpfr
 ## from Nico Temme's "Table 1" Maple code ------------------------
+## using R's beta() instead of their betaint() --> ../Misc/pnt-Gil_etal-2023/Giletal23_Ixpq.R
+## to see some evidence, beta() is better.
 ##
 ## Vectorized version of I_x(p,q) == pbeta(x, p,q)
 ##                  vvv 1-x (with full accuracy)
@@ -1081,6 +1083,16 @@ pntVW13 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
       } ## end  limits()
 
       integrand <- function(z, x, nu, ncp, isLowerGamma) {
+          ##    Z is assumed to be a row vector,
+          ##    X, NU, NCP are assumed to be column vectors of equal size
+          ##    isLowerGamma is logical vector (indicator of GAMMAINC tail)
+          ##    of equal size as X, NU, NCP.
+          ##
+          ##   In particular, FUNC evaluates the following function
+          ##         F = gammainc(Q/2, NU/2, tail) * exp(-0.5 * Z^2) / sqrt(2*pi),
+          ##   where
+          ##	     Q = NU * (Z + NCP)^2 / X^2.
+
         const <- 0.398942280401432677939946 ## == phi(0), in R dnorm(0) = 1/sqrt(2*pi)
         FV <- array(0, dim = (d <- dim(z))) # chatGPT got this wrong !
         n <- length(x)
@@ -1090,17 +1102,19 @@ pntVW13 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
             cat("inside integrand(), before sweep():  str(z+ncp):\n"); str(z+ncp)
             cat("str(x):\n"); str(x)
         }
-        q <- sweep(z + ncp, 1L, x, FUN = "/")^2 * nu / (2 * x^2)
+        nuH <- nu / 2
+        q <- sweep(z + ncp, 1L, x, FUN = "/")^2 * nuH
         ##                  --- chatGPT wrongly had '2' here ...
-        ## df <- 0.5 * nu  -- use 'nu/2' below
+        ## Matlab/octave :  q = bsxfun(@times, bsxfun(@plus,z,ncp).^2, nu./(2*x.*x));
+        ## df <- 0.5 * nu  -- use 'nuH = nu/2' below
         z2 <- -0.5 * z^2
 
         if (any(isL <- isLowerGamma)) {
-            FV[isL,] <- pgamma(q[isL,], shape = nu/2, lower.tail = TRUE) * exp(z2[isL,])
+            FV[isL,] <- pgamma(q[isL,], shape = nuH, lower.tail = TRUE) * exp(z2[isL,])
         }
 
         if (any(notL <- !isLowerGamma)) {
-            FV[notL,] <- pgamma(q[notL,], shape = nu/2, lower.tail = FALSE) * exp(z2[notL,])
+            FV[notL,] <- pgamma(q[notL,], shape = nuH, lower.tail = FALSE) * exp(z2[notL,])
         }
         ## return
         const * FV
@@ -1325,9 +1339,11 @@ pntVW13 <- function(t, df, ncp, lower.tail = TRUE, log.p = FALSE,
     details <- list(t = t, df = df, ncp = ncp,
                     cdf_computed = cdf,
                     tail_computed = isLowerTail,
+                    gamma_lower = isLowerGamma,
                     error_upperBound = ErrBnd,
-                    integrand_values   = cbind(Z, F), # to be plotted (*where* plotted in V.W.'s Matlab code)
-                    integration_limits = cbind(A, B))
+                    integration_limits = cbind(A, B),
+                    integrand_abscissa = Z, # F[i,]  vs  Z[i,] -- to be plotted
+                    integrand_values   = F) # (they *where* plotted in V.W.'s Matlab code)
 
   if(log.p) {
       cdfLower[ isLowerTail] <-     log(cdf[ isLowerTail])

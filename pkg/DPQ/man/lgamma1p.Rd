@@ -71,6 +71,9 @@ lgamma1pC(x)                        		% ../R/utils.R
 %% \note{
 %% }
 \seealso{
+  Yet another algorithm, fully double precision accurate in \eqn{[-0.2, 1.25]},
+  is provided by \code{\link{gamln1}()}.
+
   \code{\link{log1pmx}}, \code{\link{log1p}}, \code{\link{pbeta}}.
 }
 \examples{

@@ -213,7 +213,6 @@ lgamma1p. <- function(a, cutoff.a = 1e-6, k = 3) {
 ###  In maple,         series(log(Gamma(1+x)), x, 9);
 ###  gives more good terms --> ~/maple/gamma-asympt.tex and
 ### then ~/maple/gamma-asympt.R  ==> lgamma1p_series() here in ./beta-fns.R
-###
 
     ## Taylor-expansion:  Gamma(1+u) = 1 + u*(-gammaE + a_0* u + a_1* u^2 + a_2* u^3) + O(u^5)
     ## psi(1) = digamma(1) = -(Euler's) gamma = -Const("gamma",200)
@@ -236,7 +235,7 @@ lgamma1p. <- function(a, cutoff.a = 1e-6, k = 3) {
     a2 <- 0.97977257665513641646834022654634789065169603841314073131007745
     ## two terms u*(-g. + a_0*u) is "exact" once  a_1*u^2 < g. * eps
     ## i.e. u < sqrt( (g./a_1) * eps) = 3.47548562941137e-08
-    ## but, as we see empirically, cutting off earlier *is* better
+    ## but, as we found empirically, cutting off earlier *is* better
     ## sml <- a < 3.47548562941137e-08
     sml <- a < cutoff.a
     if(any(sml)) {
@@ -249,7 +248,7 @@ lgamma1p. <- function(a, cutoff.a = 1e-6, k = 3) {
 			       ))
     }
     if(any(ok <- !sml)) {
-        if(any(lrg <- a >= 1/2))
+        if(any(lrg <- a >= 1/2)) # ==> 1+a  does not cancel
             r[lrg] <- lgamma(1+ a[lrg])
         if(any(mid <- ok & !lrg)) { ## cutoff.a <= a < 1/2
             a <- a[mid]

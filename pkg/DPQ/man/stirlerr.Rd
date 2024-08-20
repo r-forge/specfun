@@ -19,6 +19,16 @@
 
   These \pkg{DPQ} versions typically have extra arguments with defaults
   that correspond to \R's Mathlib C code hardwired cutoffs and tolerances.
+
+  \code{lgammacor(x)} is \dQuote{the same} as \code{stirlerr(x)}, both
+  computing \eqn{delta(x)} accurately, however is only defined for \eqn{x
+    \ge 10}, and has been crucially used for \R's own \code{\link{lgamma}()}
+  and \code{\link{lbeta}()} computations.
+
+  Note that the example below suggests that R's hardwired default of
+  \code{nalgm = 5} is unnecessarily losing more than one digit accuracy,
+  \code{nalgm = 6} seems much better.
+
 }
 \usage{% >>> ../R/dgamma.R <<<
 stirlerr(n, scheme = c("R3", "R4.4_0"),
@@ -167,25 +177,37 @@ stC4 <- stirlerrC(n, version = "R4.4_0")
 
 ## lgammacor(n) : only defined for n >= 10
 lgcor <- lgammacor(n)
-all.equal(lgcor[n >= 10], st.n[n >= 10], tolerance=0)# .. rel.diff.: 4.79e-14
+lgcor6 <- lgammacor(n, nalgm = 6) # more accurate?
+
+all.equal(lgcor[n >= 10], st.n[n >= 10], tolerance=0)# .. rel.diff.: 4.687e-14
 stopifnot(identical(is.na(lgcor), n < 10),
           all.equal(lgcor[n >= 10],
                     st.n [n >= 10], tolerance = 1e-12))
 
 ## look at *relative* errors -- need "Rmpfr" for "truth" % Rmpfr / DPQmpfr in 'Suggests'
-if(requireNamespace("Rmpfr") && requireNamespace("DPQmpfr")) {
+if(requireNamespace("Rmpfr") & requireNamespace("DPQmpfr")) {
     ## stirlerr(n) uses DPQmpfr::stirlerrM()  automagically when n is <mpfr>
     relErrV <- sfsmisc::relErrV; eaxis <- sfsmisc::eaxis
     mpfr <- Rmpfr::mpfr;     asNumeric <- Rmpfr::asNumeric
     stM <- stirlerr(mpfr(n, 512))
-    relE <- asNumeric(relErrV(stM, cbind(st3, st4, stCn, stC4, lgcor, stirlOrd)))
+    relE <- asNumeric(relErrV(stM, cbind(st3, st4, stCn, stC4,
+                                         lgcor, lgcor6, stirlOrd)))
+
     matplot(n, pmax(abs(relE),1e-20), type="o", cex=1/2, log="xy", ylim =c(8e-17, 0.1),
             xaxt="n", yaxt="n", main = quote(abs(relErr(stirlerr(n)))))
+    ## mark "lgcor*" -- lgammacor() particularly !
+    col.lgc <- adjustcolor(c(2,4), 2/3)
+    matlines(n, abs(relE[,c("lgcor","lgcor6")]), col=col.lgc, lwd=3)
+    lines(n, abs(relE[,"lgcor6"]), col=adjustcolor(4, 2/3), lwd=3)
     eaxis(1, sub10=2); eaxis(2); abline(h = 2^-(53:51), lty=3, col=adjustcolor(1, 1/2))
-    axis(1, at=15, col=NA, line=-1); abline(v=15, lty=2, col=adjustcolor(1, 1/4))
+    axis(1, at=15, col=NA, line=-1); abline(v=c(10,15), lty=2, col=adjustcolor(1, 1/4))
     legend("topright", legend=colnames(relE), cex = 3/4,
            col=1:6, lty=1:5, pch= c(1L:9L, 0L, letters)[seq_len(ncol(relE))])
-}# Rmpfr
+    legend("topright", legend=colnames(relE)[1:6], cex = 3/4, lty=1:5, lwd=3,
+           col=c(rep(NA,4), col.lgc), bty="n")
+    ## Note that lgammacor(x) {default, n=5) is clearly inferior,
+    ## but lgammacor(x, 6) is really good {in [10, 50] at least}
+}# end if( <Rmpfr> )
 }
 \keyword{arith}
 \keyword{distribution}

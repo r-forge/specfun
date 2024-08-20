@@ -36,7 +36,7 @@ double bpser(double a, double b, double x, double eps, int *err_bp, int log_p, R
 	z = a * log(x) - lbeta(a, b);
 	ans = log_p ? z - log(a) : exp(z) / a;
     }
-    else {
+    else { /*  0 <= a0 < 1  */
 	double t, u, apb, b0 = max(a,b);
 	if (b0 < 8.) {
 
@@ -55,11 +55,11 @@ double bpser(double a, double b, double x, double eps, int *err_bp, int log_p, R
 		apb = a + b;
 		if (apb > 1.) {
 		    u = a + b - 1.;
-		    z = (gam1(u) + 1.) / apb;
+		    z = (gam1(u, TRUE, verbose >= 2) + 1.) / apb;
 		} else {
-		    z = gam1(apb) + 1.;
+		    z = gam1(apb, TRUE, verbose >= 2) + 1.;
 		}
-		c = (gam1(a) + 1.) * (gam1(b) + 1.) / z;
+		c = (gam1(a, TRUE, verbose >= 2) + 1.) * (gam1(b, TRUE, verbose >= 2) + 1.) / z;
 
 		if(log_p) /* FIXME ? -- improve quite a bit for c ~= 1 */
 		    ans += log(c * (b / apb));
@@ -68,7 +68,7 @@ double bpser(double a, double b, double x, double eps, int *err_bp, int log_p, R
 
 	    } else { /* 	------	a0 < 1 < b0 < 8	 ------ */
 
-		u = gamln1(a0);
+		u = gamln1(a0, TRUE);
 		int m = (int)(b0 - 1.);
 		if (m >= 1) {
 		    c = 1.;
@@ -84,20 +84,20 @@ double bpser(double a, double b, double x, double eps, int *err_bp, int log_p, R
 		apb = a0 + b0;
 		if (apb > 1.) {
 		    u = a0 + b0 - 1.;
-		    t = (gam1(u) + 1.) / apb;
+		    t = (gam1(u, TRUE, verbose >= 2) + 1.) / apb;
 		} else {
-		    t = gam1(apb) + 1.;
+		    t = gam1(apb, TRUE, verbose >= 2) + 1.;
 		}
 
 		if(log_p) /* FIXME? potential for improving log(t) */
-		    ans = z + log(a0 / a) + log1p(gam1(b0)) - log(t);
+		    ans = z + log(a0 / a) + log1p(gam1(b0, TRUE, verbose >= 2)) - log(t);
 		else
-		    ans = exp(z) * (a0 / a) * (gam1(b0) + 1.) / t;
+		    ans = exp(z) * (a0 / a) * (gam1(b0, TRUE, verbose >= 2) + 1.) / t;
 	    }
 
 	} else { /* 		------  a0 < 1 < 8 <= b0  ------ */
 
-	    u = gamln1(a0) + algdiv(a0, b0);
+	    u = gamln1(a0, TRUE) + algdiv(a0, b0);
 	    z = a * log(x) - u;
 
 	    if(log_p)
@@ -206,20 +206,22 @@ SEXP R_bpser(SEXP a_, SEXP b_, SEXP x_, SEXP eps_, SEXP log_p_, SEXP verbose_, S
 # define R_ifDEBUG_printf(...)
 #endif
 
+
+
 // == 1/gamma(a+1) - 1   {not clear why this is needed}
-double gam1(double a)
+double gam1(double a, Rboolean warn_if, Rboolean verbose)
 {
 /*     ------------------------------------------------------------------ */
 /*     COMPUTATION OF 1/GAMMA(A+1) - 1  FOR -0.5 <= A <= 1.5 */
 /*     ------------------------------------------------------------------ */
 
-    double d, t, w, bot, top;
-
-    t = a;
-    d = a - 0.5;
+    double t = a,
+	d = a - 0.5;
     // t := if(a > 1/2)  a-1  else  a
     if (d > 0.)
 	t = d - 0.5;
+
+    double w, bot, top;
     if (t < 0.) { /* L30: */
 	static double
 	    r[9] = { -.422784335098468,-.771330383816272,
@@ -233,7 +235,11 @@ double gam1(double a)
 		     ) * t + r[3]) * t + r[2]) * t + r[1]) * t + r[0];
 	bot = (s2 * t + s1) * t + 1.;
 	w = top / bot;
-	R_ifDEBUG_printf("  gam1(a = %.15g): t < 0: w=%.15g\n", a, w);
+	if(verbose) REprintf("  gam1(a = %.15g): t < 0: w=%.15g\n", a, w);
+	if(warn_if && a > 1.5)
+	    warning("gam1(a = %g) is used outside of documented boundaries, [-0.5, 1.5]\n",
+		    a);
+
 	if (d > 0.)
 	    return t * w / a;
 	else
@@ -254,8 +260,12 @@ double gam1(double a)
 		   ) * t + p[1]) * t + p[0];
 	bot = (((q[4] * t + q[3]) * t + q[2]) * t + q[1]) * t + 1.;
 	w = top / bot;
-	R_ifDEBUG_printf("  gam1(a = %.15g): t > 0: (is a < 1.5 ?)  w=%.15g\n",
-			 a, w);
+
+	if(verbose) REprintf("  gam1(a = %.15g): t > 0: (is a < 1.5 ?)  w=%.15g\n",
+			     a, w);
+	if(warn_if && a < -0.5)
+	    warning("gam1(a = %g) is used outside of documented boundaries, [-0.5, 1.5]\n",
+		    a);
 	if (d > 0.) /* L21: */
 	    return t / a * (w - 0.5 - 0.5);
 	else
@@ -263,8 +273,8 @@ double gam1(double a)
     }
 } /* gam1 */
 
-// == lgamma(a+1)    {not clear why this is needed; bpser() used it only for 0 <= a0 < 1
-double gamln1(double a)
+// == lgamma(a+1) --- bpser() used it only for 0 <= a0 < 1
+double gamln1(double a, Rboolean warn_if)
 {
 /* ----------------------------------------------------------------------- */
 /*     EVALUATION OF LN(GAMMA(1 + A)) FOR -0.2 <= A <= 1.25 */
@@ -272,6 +282,9 @@ double gamln1(double a)
 
     double w;
     if (a < 0.6) {
+	if(warn_if && a < -0.2)
+	    warning("gamln1(a = %g) is used outside of documented boundaries, [-0.2, 1.25]\n",
+		    a);
 	static double p0 = .577215664901533;
 	static double p1 = .844203922187225;
 	static double p2 = -.168860593646662;
@@ -290,6 +303,9 @@ double gamln1(double a)
 	return -(a) * w;
     }
     else { /* 0.6 <= a <= 1.25 */
+	if(warn_if && a > 1.25)
+	    warning("gamln1(a = %g) is used outside of documented boundaries, [-0.2, 1.25]\n",
+		    a);
 	static double r0 = .422784335098467;
 	static double r1 = .848044614534529;
 	static double r2 = .565221050691933;
@@ -307,3 +323,34 @@ double gamln1(double a)
 	return x * w;
     }
 } /* gamln1 */
+
+//------ gam1()  &  gamln1() ---- R interface --- to assess their accuracy, etc
+
+SEXP R_gam1 (SEXP a_, SEXP warn_if_, SEXP verbose_) {
+    PROTECT(a_ = isReal(a_) ? a_ : coerceVector(a_, REALSXP));
+    R_xlen_t i, n = XLENGTH(a_);
+    Rboolean
+	warn_if = asLogical(warn_if_),
+	verbose = asLogical(verbose_);
+    SEXP res = PROTECT(allocVector(REALSXP, n));
+    double *a = REAL(a_), *r = REAL(res);
+    for(i=0; i < n; i++) {
+	r[i] = gam1(a[i], warn_if, verbose);
+    }
+    UNPROTECT(2);
+    return res;
+}
+
+SEXP R_gamln1 (SEXP a_, SEXP warn_if_) {
+    PROTECT(a_ = isReal(a_) ? a_ : coerceVector(a_, REALSXP));
+    Rboolean warn_if = asLogical(warn_if_);
+    R_xlen_t i, n = XLENGTH(a_);
+    SEXP res = PROTECT(allocVector(REALSXP, n));
+    double *a = REAL(a_), *r = REAL(res);
+    for(i=0; i < n; i++) {
+	r[i] = gamln1(a[i], warn_if);
+    }
+    UNPROTECT(2);
+    return res;
+}
+

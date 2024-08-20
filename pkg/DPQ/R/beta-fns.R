@@ -6,19 +6,22 @@
 ##'             = lgamma(a)   - lbeta(a,b)
 logQab_asy <- function(a,b, k.max = 5, give.all = FALSE)
 {
-  ## Purpose:  log(Q(a,b)) asymptotically when max(a,b) -> Inf  &  a^2/b -> C
+  ## Purpose:  log(Q(a,b)) asymptotically when max(a,b) -> Inf  &  a^2/b -> C <== a ~ c' * sqrt(b)
+  ##                       i.e.,  a *also* goes to Inf (??)
   ## --------------------------------------------------------------------------------
   ## Arguments: a,b: as for  lbeta(.)  and/or  Qab := Q(a,b) := Gamma(a+b) / Gamma(b)
   ## --------------------------------------------------------------------------------
   ## Author: Martin Maechler, Date:  8 Jun 97, 17:28
 
-  if(any(a<=0) || any(b<=0)) stop("a & b must be > 0")
+  if(any(a <= 0) || any(b <= 0)) stop("a & b must be > 0")
+  stopifnot((k.max <- as.integer(k.max)) >= 0)
+  if(length(b) > 1) stop("this function only works for SCALAR b (> a)")
   if(all(a >= b)) { cc <- b; b <- a; a <- cc } #- Now: a <= b
   else if(any(a>b)) stop('Require a <= b  or  a > b   for  ALL vector elements')
-  if(length(b)>1) stop("this function only works for SCALAR b (> a)")
   na <- length(a)
-  pa <- rbind(Qab_terms(a, k.max)) ##  --> pa = matrix   na  x  (k.max+1)
-  ##          ~~~~~~~~~
+  pa <- rbind(Qab_terms(a, k.max)) ##  --> pa is  {na * k.max} matrix
+  ##	      ~~~~~~~~~
+  stopifnot(identical(c(na, k.max), dim(pa)))
   ki <- if(k.max >= 1) k.max:1 else numeric(0)
   if(give.all) {
     r <- matrix(0, nrow=na, ncol=k.max+1,
@@ -28,7 +31,8 @@ logQab_asy <- function(a,b, k.max = 5, give.all = FALSE)
     r <- numeric(na)
     for(k in ki) r <- pa[,k] + r*(a-k-1)/b
   }
-  a*log(b) + log(1 + a*(a-1)/b * r)
+    ## Qab ~=  b^a * (1 + a*(a-1)/b * r_{a,b})
+  a*log(b) + log1p(a*(a-1)/b * r)
 }
 
 Qab_terms <- function(a, k)
@@ -41,8 +45,22 @@ Qab_terms <- function(a, k)
   ## -------------------------------------------------------------------------
   ## Author: Martin Maechler, Date: 19 Jun 97, 11:08
 
+  ## ==> ~/maple/Qab_pochhammer.mpl  but even more what (I wrote there, too):
+  ## we *additionally* use  x = n  __integer__
+  ## and MM derived formulas when looking at asymptotic formulas for the
+  ## psi(a), psi'(a),...  a --> 0
+  ##======> see my "grünes Klarsicht-Mäppli (mit blauem Rand)"
+  ## "Asymptotic Formula for B(p,q) (p << q) or  Gamma(p+q)/Gamma(q) when p <<  q -> oo"
+  ## [Resultat- Zus.stellung] has
+  ## p_1(n) =  1/2
+  ## p_2(n) =  (n - 1/3)/8
+  ## p_3(n) =  n(n - 1) / 48
+  ## p_4(n) = (3 n^3 - 6n^2 +n + 2/5)/1152
+  ## p_5(n) = n/5760 (1 + n(2 + n(n - 5)))
+
   k <- as.integer(k)
-  if(!is.numeric(a)) a <- as.numeric(a) #- leave integers alone..
+  if(!(is.numeric(a) || inherits(a, "mpfr") || inherits(a, "bigz")|| inherits(a, "bigq")))
+    a <- as.numeric(a) #- leave integers alone..
   if(length(k) != 1 || k > 5 || k < 0)
     stop("'k' must be 1 number in { 0, 1,..,5 }")
   na <- length(a)
@@ -565,8 +583,8 @@ lgamma1p <- function(a, tol_logcf = 1e-14, f.tol = 1., ...)
     ##/* coeffs[i] holds (zeta(i+2)-1)/(i+2) , i = 0:(N-1), N = 40 : */
     N <- 40
     coeffs <-
-        c(0.3224670334241132182362075833230126e-0, ##/* = (zeta(2)-1)/2 */
-          0.6735230105319809513324605383715000e-1, ##/* = (zeta(3)-1)/3 */
+        c(0.3224670334241132182362075833230126e-0, ## = (zeta(2)-1)/2
+          0.6735230105319809513324605383715000e-1, ## = (zeta(3)-1)/3
           0.2058080842778454787900092413529198e-1,
           0.7385551028673985266273097291406834e-2,
           0.2890510330741523285752988298486755e-2,
@@ -743,6 +761,14 @@ bpser <- function(a,b, x, log.p=FALSE, eps = 1e-15, verbose=FALSE, warn=TRUE) { 
     .Call(C_R_bpser, a, b, x, eps, log.p, verbose, warn)
     ## return( list(r = r_, err = ier_) )
 }
+
+gam1 <- function(a, verbose=FALSE) { # ../src/bpser.c
+    .Call(C_R_gam1, a, verbose)
+}
+
+## _yet_ another lgamma1p() , name and C code from TOMS 708 (R/src/nmath/toms708.c
+gamln1 <- function(a) .Call(C_R_gamln1, a) # --> ../src/bpser.c
+
 
 
 
@@ -1183,3 +1209,7 @@ qbeta.R  <-  function(alpha, p, q,
     if(verbose) cat(" ", o.it,"outer iterations\n")
     if (swap.tail) 1 - xinbta else xinbta
 }
+
+## Local Variables:
+## ess-indent-offset: 2
+## End:

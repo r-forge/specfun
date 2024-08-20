@@ -241,24 +241,27 @@ int F77_NAME(noncechi)(int *variant,
 		       double *argument, double *noncentr, double *df, double *p,
 		       int *ifault);
 
-
 // algdiv.c: --------------------------------------------------------------------
 
 double algdiv(double a, double b);
 // .Call()ed :
-SEXP R_algdiv(SEXP a_, SEXP b_)
-    ;
+SEXP R_algdiv(SEXP a_, SEXP b_) ;
 
 // bpser.c: --------------------------------------------------------------------
 
-double gam1(double a); //  1/gamma(a+1) - 1    for -0.5 <= a <= 1.5
-double gamln1(double a);// log(gamma(1 + a))   for -0.2 <= a <= 1.25
+/**  1/gamma(a+1) - 1   for -0.5 <= a <= 1.5 ;  warn if a is outside */
+double gam1(double a, Rboolean warn_if, Rboolean verbose);
+
+/** log(gamma(1 + a))   for -0.2 <= a <= 1.25 ;  warn if a is outside */
+double gamln1(double a, Rboolean warn_if);
 
 double bpser(double a, double b, double x, double eps, int *err_bp, int log_p, Rboolean verbose);
+
 // .Call()ed :
 SEXP R_bpser(SEXP a_, SEXP b_, SEXP x_, SEXP eps_, SEXP log_p_, SEXP verbose_, SEXP warn_)
     ;
-
+SEXP R_gam1  (SEXP a_, SEXP warn_if_, SEXP verbose_);
+SEXP R_gamln1(SEXP a_, SEXP warn_if_);
 
 
 

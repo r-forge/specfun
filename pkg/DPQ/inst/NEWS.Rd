@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-9 (2024-07-20, svn r318)}{
+\section{Version 0.5-9 (2024-08-20, svn r328)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{dbinom_raw()} gets a new more accurate
@@ -73,6 +73,8 @@
       as documented.
 
       \item minor adjustment of \code{pntR()}'s default \code{use.pnorm}.
+
+      \item \file{src/bd0.c} needed one more \code{PROTECT()}.
     }
   }
   \subsection{Misc}{
