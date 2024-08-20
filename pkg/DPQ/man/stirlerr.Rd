@@ -185,7 +185,7 @@ stopifnot(identical(is.na(lgcor), n < 10),
                     st.n [n >= 10], tolerance = 1e-12))
 
 ## look at *relative* errors -- need "Rmpfr" for "truth" % Rmpfr / DPQmpfr in 'Suggests'
-if(requireNamespace("Rmpfr") & requireNamespace("DPQmpfr")) {
+if(requireNamespace("Rmpfr") && requireNamespace("DPQmpfr")) {
     ## stirlerr(n) uses DPQmpfr::stirlerrM()  automagically when n is <mpfr>
     relErrV <- sfsmisc::relErrV; eaxis <- sfsmisc::eaxis
     mpfr <- Rmpfr::mpfr;     asNumeric <- Rmpfr::asNumeric
@@ -205,7 +205,7 @@ if(requireNamespace("Rmpfr") & requireNamespace("DPQmpfr")) {
            col=1:6, lty=1:5, pch= c(1L:9L, 0L, letters)[seq_len(ncol(relE))])
     legend("topright", legend=colnames(relE)[1:6], cex = 3/4, lty=1:5, lwd=3,
            col=c(rep(NA,4), col.lgc), bty="n")
-    ## Note that lgammacor(x) {default, n=5) is clearly inferior,
+    ## Note that lgammacor(x) {default, n=5} is clearly inferior,
     ## but lgammacor(x, 6) is really good {in [10, 50] at least}
 }# end if( <Rmpfr> )
 }
