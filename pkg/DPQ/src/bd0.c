@@ -5,7 +5,7 @@
  * to provide compatibility to *previous* R (and DPQ) implementations.
  * These are
  *
- *	Copyright (C) 2021-2023 Martin Maechler,  maechler@stat.math.ethz.ch
+ *	Copyright (C) 2021-2024 Martin Maechler,  maechler@stat.math.ethz.ch
  *
  *
  *  AUTHORS
@@ -426,8 +426,8 @@ SEXP dpq_ebd0(SEXP x_, SEXP np_, SEXP trace_)
     * instead, do the 2 rows separately in a `list` which may have _long_ vectors  */
     SEXP r  = PROTECT(allocVector(VECSXP, 2)),
      rnames = PROTECT(allocVector(STRSXP, 2)),
-	yh_ = allocVector(REALSXP, n),
-        yl_ = allocVector(REALSXP, n); /* both protected inside r : */
+	yh_ = PROTECT(allocVector(REALSXP, n)),
+        yl_ = allocVector(REALSXP, n); /* protected inside r : */
     SET_VECTOR_ELT(r, 0, yh_);
     SET_VECTOR_ELT(r, 1, yl_);
     SET_STRING_ELT(rnames, 0, mkChar("yh"));
@@ -452,7 +452,7 @@ SEXP dpq_ebd0(SEXP x_, SEXP np_, SEXP trace_)
 	ebd0(x[i % n_x], np[i % n_np], yh+i, yl+i, trace);
     }
 
-    UNPROTECT(4);
+    UNPROTECT(5);
     return(r);
 }
 
