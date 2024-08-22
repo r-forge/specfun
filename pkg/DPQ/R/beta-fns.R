@@ -762,12 +762,12 @@ bpser <- function(a,b, x, log.p=FALSE, eps = 1e-15, verbose=FALSE, warn=TRUE) { 
     ## return( list(r = r_, err = ier_) )
 }
 
-gam1 <- function(a, verbose=FALSE) { # ../src/bpser.c
-    .Call(C_R_gam1, a, verbose)
+gam1d <- function(a, warnIf=TRUE, verbose=FALSE) { # ../src/bpser.c
+    .Call(C_R_gam1, a, warnIf, verbose)
 }
 
 ## _yet_ another lgamma1p() , name and C code from TOMS 708 (R/src/nmath/toms708.c
-gamln1 <- function(a) .Call(C_R_gamln1, a) # --> ../src/bpser.c
+gamln1 <- function(a, warnIf=TRUE) .Call(C_R_gamln1, a, warnIf) # --> ../src/bpser.c
 
 
 

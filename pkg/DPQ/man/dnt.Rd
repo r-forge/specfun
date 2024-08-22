@@ -132,7 +132,7 @@ plot(x, 1 - dtJKB / dtm[,3], type="l", log="x", xaxt="n", ylim=c(-1,1)*1e-3); sf
 plot(x, 1 - dtJKB / dtm[,3], type="l", log="x", xaxt="n", ylim=c(-1,1)*1e-7); sfsmisc::eaxis(1)
 plot(x, abs(1 - dtJKB / dtm[,3]), type="l", log="xy", axes=FALSE, main =
      "dt(*, 1/10, 1/10, log=TRUE) relative approx. error",
-     sub= paste("Copyright © 2019  Martin Mächler  --- ", R.version.string))
+     sub= paste("Copyright (C) 2019  Martin Maechler  --- ", R.version.string))
 for(j in 1:2) sfsmisc::eaxis(j)
 }% \donttest
 }

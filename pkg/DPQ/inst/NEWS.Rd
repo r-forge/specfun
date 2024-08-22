@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-9 (2024-08-20, svn r330)}{
+\section{Version 0.5-9 (2024-08-22, svn r331)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{dbinom_raw()} gets a new more accurate
@@ -63,6 +63,9 @@
       \item \code{lgamma1p_series(x, k)}, the Taylor series approximations
       for \code{lgamma1p(x)}\eqn{ := \log \Gamma(1+x)} are now available up
       to \eqn{k = 15}, also for \code{mpfr()} numbers \code{x}.
+
+      \item New \code{gam1d()} and \code{gamln1()} providing more TOMS 708
+      auxiliary routines.
     }
   }
   \subsection{BUG FIXES}{

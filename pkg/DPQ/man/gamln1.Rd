@@ -8,13 +8,14 @@
   approximations for  \eqn{-0.2 \le a \le 1.25}.
 }
 \usage{
-gamln1(a, useDbl = is.numeric(a))
+gamln1(a, warnIf = TRUE)
 }
 \arguments{
   \item{a}{a numeric or numeric-alike, typically inheriting from \code{class} \code{"mpfr"}.}
-  \item{useDbl}{logical determining if the double precision approximation
-    in \eqn{[-0.5, 1.5]} from TOMS 708 should be used.}
-  %% \item{verbose}{ ..}
+  \item{warnIf}{logical if a \code{\link{warning}} should be signalled when
+    \code{a} is not in the \dQuote{proper} range \eqn{[-0.2, 1.25]}.}
+  %% \item{useDbl}{logical determining if the double precision approximation
+  %%   in \eqn{[-0.2, 1.25]} from TOMS 708 should be used.}
 }
 \details{
   It uses \eqn{-a * p(a)/q(a)} for \eqn{a < 0.6}, where \eqn{p} and \eqn{q} are
@@ -40,37 +41,60 @@ gamln1(a, useDbl = is.numeric(a))
   a numeric-alike vector like \code{a}.
 }
 \references{
-  TODO
+  TOMS 708, see \code{\link{pbeta}}
 }
 \author{Martin Maechler building on C code of TOMS 708}
 %% \note{
 
 %% }
 \seealso{
-  \code{\link{lgamma1p}()} for different algorithms to compute \eqn{\log \Gamma(a+1)};
-  %% FIXME (in future): DPQmpfr's  lgamma1pM()
+  \code{\link{lgamma1p}()} for different algorithms to compute \eqn{\log \Gamma(a+1)},
+  notably when outside the interval \eqn{[-0.2, 1.35]}.
+  Package \CRANpkg{DPQmpfr}'s \code{\link[DPQmpfr]{lgamma1pM}()} provides
+  very precise such computations.
   \code{\link{lgamma}()} (and \code{gamma()} (same page)).
 }
 \examples{
 lg1 <- function(u) lgamma(u+1) # the simple direct form
-u <- seq(-.5, 1.5, by=1/16); set.seed(1); u <- sample(u) # permuted (to check logic)
-%% u <- seq(-.5, 1.5, by=1/4) ## for testing
+## The curve, zeros at  u=0 & u=1:
+curve(lg1, -.2, 1.25, col=2, lwd=2, n=999)
+title("lgamma(x + 1)"); abline(h=0, v=0:1, lty=3)
+
+u <- (-16:100)/80 ; set.seed(1); u <- sample(u) # permuted (to check logic)
 g11   <- vapply(u, gamln1, numeric(1))
 gamln1. <- gamln1(u)
-stopifnot( all.equal(lg1(u), g11) )
 stopifnot( identical(g11, gamln1.) )
+stopifnot( all.equal(lg1(u), g11) )
 
-## Comparison using Rmpfr; slightly extending the [-.5, 1.5] interval:
-u <- seq(-0.525, 1.525, length.out = 2001)
-lg1pM <- lgamma1p(mpfr(u, 128))
-relE <- asNumeric(relErrV(lg1pM, gamln1(u)))
+u <- (-160:1000)/800
+relE <- sfsmisc::relErrV(gamln1(u), lg1(u))
+plot(u, relE, type="l", main = expression("rel.diff." ~~ gamln1(u) \%~~\% lgamma(u+1)))%
+plot(u, abs(relE), type="l", log="y", yaxt="n",
+     main = expression("|rel.diff.|" ~~ gamln1(u) \%~~\% lgamma(u+1)))%
+sfsmisc::eaxis(2)
 
-plot(relE ~ u, type="l", ylim = c(-1,1) * 2.5e-15,
-     main = expression("relative error of " ~~ gamln1(u) == log( Gamma(u+1) )))
-grid(lty = 3); abline(v = c(-.5, 1.5), col = adjustcolor(4, 1/2), lty=2, lwd=2)
 
-## what about the direct formula -- how bad is it really ?
-relED <- asNumeric(relErrV(lg1pM, lg1(u)))
-lines(relED ~ u, col = adjustcolor(2, 1/2), lwd = 2)
+if(requireNamespace("DPQmpfr")) withAutoprint({
+  ## Comparison using Rmpfr; extending the [-.2, 1.25] interval a bit
+  u <- seq(-0.225, 1.31, length.out = 2000)
+  lg1pM <- DPQmpfr::lgamma1pM(Rmpfr::mpfr(u, 128))
+  relE <- Rmpfr::asNumeric(sfsmisc::relErrV(lg1pM, gamln1(u, warnIf=FALSE)))
+
+  plot(relE ~ u, type="l", ylim = c(-1,1) * 2.3e-15,
+       main = expression("relative error of " ~~ gamln1(u) == log( Gamma(u+1) )))
+  grid(lty = 3); abline(v = c(-.2, 1.25), col = adjustcolor(4, 1/2), lty=2, lwd=2)
+  ## well... TOMS 708 gamln1() is good (if "only" 14 digits required
+
+  ## what about the direct formula -- how bad is it really ?
+  relED <- Rmpfr::asNumeric(sfsmisc::relErrV(lg1pM, lg1(u)))
+  lines(relED ~ u, col = adjustcolor(2, 1/2))
+  ## amazingly, the direct formula is partly (around -0.2 and +0.4) even better than gamln1() !
+
+  plot(abs(relE) ~ u, type="l", log = "y", ylim = c(7e-17, 1e-14),
+       main = expression("|relative error| of " ~~ gamln1(u) == log( Gamma(u+1) )))
+  grid(lty = 3); abline(v = c(-.2, 1.25), col = adjustcolor(4, 1/2), lty=2, lwd=2)
+  relED <- Rmpfr::asNumeric(sfsmisc::relErrV(lg1pM, lg1(u)))
+  lines(abs(relED) ~ u, col = adjustcolor(2, 1/2))
+})
 }
 \keyword{math}

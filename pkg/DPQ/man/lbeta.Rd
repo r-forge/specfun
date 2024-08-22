@@ -120,11 +120,11 @@ stopifnot(exprs = {
     all.equal(lgamma(a)-lbeta(a, 2*b), logQab_asy(a, 2*b), tolerance =1e-10)# 1.4e-11
     all.equal(lgamma(a)-lbeta(a, b/2), logQab_asy(a, b/2), tolerance = 1e-7)# 1.2e-8
 })
-if(requireNamespace("Rmpfr")) {
+if(requireNamespace("Rmpfr")) withAutoprint({
   aM <- Rmpfr::mpfr(a, 512)
   bM <- Rmpfr::mpfr(b, 512)
   rT <- lgamma(aM+bM) - lgamma(bM) # "True" i.e. accurate values
-  relE <- asNumeric(relErrV(rT, cbind(rDlgg, rDlgb, ralgd, rQasy)))
+  relE <- Rmpfr::asNumeric(sfsmisc::relErrV(rT, cbind(rDlgg, rDlgb, ralgd, rQasy)))
   cbind(a, signif(relE,4))
   ##          a      rDlgg      rDlgb      ralgd      rQasy
   ##  0.0171875  4.802e-12  3.921e-16  4.145e-17 -4.260e-16
@@ -140,7 +140,7 @@ if(requireNamespace("Rmpfr")) {
   ## 17.6000000  2.222e-15  1.207e-16  3.974e-18 -6.972e-10
 
 ## ==>  logQab_asy() is very good _here_ as long as  a << b
-}
+})
 
 }%
 \keyword{math}
