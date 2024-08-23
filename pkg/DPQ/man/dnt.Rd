@@ -104,7 +104,8 @@ sfsmisc::eaxis(1)
 legend("right", legend=c("", paste0("ncp = df",c("/2","","*2"))),
        lty=1:4, col=1:4, bty="n")
 
-(ncp <- seq(0, 12, by = 3/4))
+(doExtras <- DPQ:::doExtras()) # TRUE e.g. if interactive()
+(ncp <- seq(0, 12, by = if(doExtras) 3/4 else 2))
 names(ncp) <- nnMs <- paste0("ncp=", ncp)
 tt  <- seq(0, 5, by =  1)
 dt3R <- outer(tt, ncp, dt,   df = 3)
@@ -112,7 +113,8 @@ if(requireNamespace("Rmpfr")) withAutoprint({
    mt  <- Rmpfr::mpfr(tt , 128)
    mcp <- Rmpfr::mpfr(ncp, 128)
    system.time(
-     dt3M <- outer(mt, mcp, dntJKBf, df = 3, M = 1024)) # 3.7--3.9 sec -- now 7 sec
+       dt3M <- outer(mt, mcp, dntJKBf, df = 3,
+                     M = if(doExtras) 1024 else 256)) # M=1024: 7 sec [10 sec on Winb]
    relE <- Rmpfr::asNumeric(sfsmisc::relErrV(dt3M, dt3R))
    relE[tt != 0, ncp != 0]
 })
