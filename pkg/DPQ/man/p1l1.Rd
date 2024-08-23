@@ -50,6 +50,8 @@
   \code{\link{dbinom}} the latter for the C.Loader(2000) reference.
 }
 \examples{
+(doExtras <- DPQ:::doExtras()) # TRUE e.g. if interactive()
+
 t <- seq(-1, 4, by=1/64)
 plot(t, p1l1ser(t, 1), type="l")
 lines(t, p1l1.(t), lwd=5, col=adjustcolor(1, 1/2)) # direct formula
@@ -191,7 +193,7 @@ signif(t(rr["t.0",,]),3) # ==> Should be boundaries for the hybrid p1l1()
 
 ###------------- Well,  p1l1p()  is really basically good enough ... with a small exception:
 rErr1k <- curve(asNumeric(p1l1p(x) / p1l1.(mpfr(x, 4096)) - 1), -.999, .999,
-                n = 4000, col=2, lwd=2)
+                n = if(doExtras) 4000 else 800, col=2, lwd=2)
 abline(h = c(-8,-4,-2:2,4,8)* 2^-52, lty=2, col=adjustcolor("gray20", 1/4))
 ## well, have a "spike" at around -0.8 -- why?
 
@@ -208,16 +210,14 @@ abline(v= -.791, lty=3, lwd=2, col="blue4") # -.789  from visual ..
 ##--> The "error" is in log1pmx() which has cutoff minLog1Value = -0.79149064
 ##--> which is clearly not optimal, at least not for computing p1l1p()
 
-d <- 1/2048; x <- seq(-1+d, 1, by=d)
-p1l1Xct <- p1l1.(mpfr(x, 4096))
+d <- if(doExtras) 1/2048 else 1/512; x <- seq(-1+d, 1, by=d)
+p1l1Xct <- p1l1.(mpfr(x, if(doExtras) 4096 else 512))
 rEx.5 <- asNumeric(p1l1p(x, minL1 = -0.5) / p1l1Xct - 1)
 lines(x, abs(rEx.5), lwd=2.5, col=adjustcolor(4, 1/2)); abline(v=-.5, lty=2,col=4)
 rEx.25 <- asNumeric(p1l1p(x, minL1 = -0.25) / p1l1Xct - 1)
 lines(x, abs(rEx.25), lwd=3.5, col=adjustcolor(6, 1/2)); abline(v=-.25, lty=2,col=6)
 lines(lowess(x, abs(rEx.5),  f=1/20), col=adjustcolor(4,offset=rep(1,4)/3), lwd=3)
-
-lines(lowess(x, abs(rEx.25), f=1/20), col=adjustcolor(6,offset=rep(1,4)/3), lwd=
-3)
+lines(lowess(x, abs(rEx.25), f=1/20), col=adjustcolor(6,offset=rep(1,4)/3), lwd=3)
 
 rEx.4 <- asNumeric(p1l1p(x, tol_logcf=1e-15, minL1 = -0.4) / p1l1Xct - 1)
 lines(x, abs(rEx.4), lwd=5.5, col=adjustcolor("brown", 1/2)); abline(v=-.25, lty=2,col="brown")
