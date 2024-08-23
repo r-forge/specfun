@@ -918,6 +918,10 @@ p.pBeta(0.0001,1e-6, 1e-1)
 summary(warnings())
 showProc.time()
 
+if(!require("Rmpfr")) quit("no")
+##--===============---====------------ Rmpfr needed from here -----------------------------
+
+
 p.err.pBeta <- function(q, p.min=1e-12, p.max=1e-6, n=1000,
                         kind = c("relErr", "absErr", "error"))
 {

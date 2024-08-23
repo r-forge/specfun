@@ -29,9 +29,9 @@ if(FALSE) { #					~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   ## and then used as
   mtext(myRversion, adj=1, cex=3/4)
 }
-mtextVersion <- function(adj = 1, col = 1) {
-    mtext(osVersion, line=1, col=col, adj=adj)
-    mtext(sfsmisc::shortRversion(spaces=FALSE), col=col, adj=adj)
+mtextVersion <- function(adj = 1, col = 1, cex = 1, ...) {
+    mtext(osVersion, line = 1,                  col=col, adj=adj, cex=cex, ...)
+    mtext(sfsmisc::shortRversion(spaces=FALSE), col=col, adj=adj, cex=cex, ...)
 }
 
 ## Currently only used in >>>>>>>>>>>> ../../tests/stirlerr-tst.R  <<<<<<<<<<<<<<<<<<<<<<<

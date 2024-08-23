@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-9 (2024-08-22, svn r331)}{
+\section{Version 0.5-9 (2024-08-23, svn r333)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{dbinom_raw()} gets a new more accurate

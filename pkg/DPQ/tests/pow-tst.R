@@ -33,7 +33,7 @@ k3 <- 11321012 + (1:1000)
 dput(p3^ k3, control = "digits17") ## last 2-3 digits printed *differ*
 dput(p3^ k3, control = "hex")
 
-require(sfsmisc) # for relErrV()
+require(sfsmisc) # for relErrV(), eaxis()
 ## relative error of  x ^ k  computation - comparing with truth = <x_mpfr_{precBits])
 relEP <- function(x, k, precBits, # see below about  precBits needed
                   mp = mpfr(x, precBits)^k,
@@ -42,7 +42,7 @@ relEP <- function(x, k, precBits, # see below about  precBits needed
     asNumeric(relErrV(mp, FN(x,k)))
 }
 
-osV <- abbreviate(sub("\\(.*", "", osVersion), 10)
+(osV <- abbreviate(gsub("[^[:alnum:]]", '', sub("\\(.*", '', osVersion)), 12))
 if(!dev.interactive(TRUE)) pdf(paste0("pow-tst_", osV, ".pdf"),
                                width = 9, height=5)
 

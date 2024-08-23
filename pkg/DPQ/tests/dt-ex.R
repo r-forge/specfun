@@ -441,7 +441,7 @@ cc <- curve(  dt(x, df= 3, ncp=0.001),  1e-8, 1e-5, log = "x", n=2^10)## ditto
 plot(x, dt(x, df=.03, ncp=1), type = "o", cex=.5, log = "x")
 
 ## MM: Check the new direct formula dtR() -- notably with Rmpfr
-require(Rmpfr)
+require(Rmpfr) || { warning("need package 'Rmpfr' from here on"); quit("no") }
 stopifnot(all.equal(dntJKBf(mpfr(0, 64),  5,10), ## gave NaN
                     3.66083172640611114864e-23, tolerance=1e-20))
 
@@ -595,9 +595,6 @@ lines(ncp, dt(-1e-5, df=   1, ncp= ncp), col=3)
 lines(ncp, dt( 1e-5, df= 0.1, ncp= ncp), col=4)
 
 
-
-
-1
 
 ##==> Explore pt(x, ) for small x a bit -- is there a simple "asymptotic" ( x --> 0 ) ?
 ##    ---------------
