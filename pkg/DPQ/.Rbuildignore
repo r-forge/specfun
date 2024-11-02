@@ -17,6 +17,7 @@ auto
 \.bbl$
 \.blg$
 \.grep$
+\.patch$
 log$
 .*/.*,v
 svn-

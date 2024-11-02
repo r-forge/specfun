@@ -2,7 +2,7 @@ require("DPQ")
 require("Rmpfr")
 
 source(system.file(package="DPQ", "extraR", "relErr-plots.R", mustWork=TRUE))
-##-> drawEps.h() , mtextVersion(), ...
+##-> drawEps.h() , mtextVersion(), myPlatform() ...
 (doExtras <- DPQ:::doExtras())
 (noLdbl <- (.Machine$sizeof.longdouble <= 8)) ## TRUE when --disable-long-double
 options(width = 100, nwarnings = 1e5)
@@ -42,8 +42,8 @@ relEP <- function(x, k, precBits, # see below about  precBits needed
     asNumeric(relErrV(mp, FN(x,k)))
 }
 
-(osV <- abbreviate(gsub("[^[:alnum:]]", '', sub("\\(.*", '', osVersion)), 12))
-if(!dev.interactive(TRUE)) pdf(paste0("pow-tst_", osV, ".pdf"),
+(myOS <- myPlatform())
+if(!dev.interactive(TRUE)) pdf(paste0("pow-tst_", myOS, ".pdf"),
                                width = 9, height=5)
 
 stopifnot(.Machine$double.xmin == 2^-1022) # will use  2^-1022

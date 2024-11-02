@@ -8,14 +8,18 @@
 require("sfsmisc") # eaxis()
 
 ##' my R platform/architecture -- to be usable as file name (part) etc
-myPlatform <- function(Rmin = 9L, osM = 12L)
+if(!exists("osVersion") || is.null(osVersion)) # not existing in R <= 3.5.3; NULL on "bizarre" platforms
+    osVersion <- paste(c("NA", Sys.info()[1:2]), collapse="_|_")
+## so it exists "reasonably" everywhere below:
+myPlatform <- function(Rmin = 9L, osM = 12L) {
     paste(abbreviate(sfsmisc::shortRversion(date=FALSE, spaces=FALSE), Rmin), # "R-devel..." too long
           .Platform$OS.type, # 'unix'
           sub("_$","", gsub("[^[:alnum:]]", "_",
-                            abbreviate(osVersion, minlength=osM))),
+                            abbreviate(osVersion, minlength = osM))),
           if(!capabilities("long.double") &&
              !grepl("aarch64-apple", R.version$platform)) "noLD",
           sep='_')
+}
 
 ## "FIXME" other versions of mtextVersion() --> ~/R/Pkgs/Rmpfr/tests/special-fun-dgamma.R
 if(FALSE) { #					~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -4,6 +4,15 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
+\section{Version 0.5-9-1 (2024-11-02, svn r..)}{
+  \subsection{MISC}{
+    \itemize{
+      \item \file{tests/pow-tst.R} also work on "bizarre" platforms where
+      \code{osVersion} is \code{NULL}.
+    }
+  }
+}
+
 \section{Version 0.5-9 (2024-08-23, svn r333)}{
   \subsection{NEW FEATURES}{
     \itemize{
