@@ -1,4 +1,4 @@
-## NB: patterns are matched case insensitively
+## -*-sh-*-  using reg.exp (==> no initial or final '.*'),  but case does *not* matter
 
 [A-Za-z]\+$
 [A-Za-z]\+[A-Za-z0-9]
@@ -19,7 +19,7 @@ auto
 \.grep$
 \.patch$
 log$
-.*/.*,v
+/.*,v
 svn-
 TAGS
 ^do-
@@ -29,7 +29,7 @@ vignettes/.*[:~]
 vignettes/DPQ_.*\.tar\.gz$
 vignettes/.*\.(pdf|aux|out|tex)$
 vignettes/.*-woven
-vignettes/.*JSS.*
+vignettes/.*JSS
 vignettes/.*_save?$
 inst/doc/.*woven
 tests/.*\.pdf
@@ -39,5 +39,5 @@ tests/\.RData
 tests/.*[.]rds
 TODO-man
 TODO-merge-
-.*mail$
+mail$
 

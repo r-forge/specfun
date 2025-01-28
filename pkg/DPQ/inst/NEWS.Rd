@@ -4,7 +4,12 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.5-9-1 (2024-11-02, svn r..)}{
+\section{Version 0.6-0 (2024-11-12, svn r336)}{
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item \command{rchk} \code{PROTECT} fix in \file{bd0.c}.
+    }
+  }
   \subsection{MISC}{
     \itemize{
       \item \file{tests/pow-tst.R} also work on "bizarre" platforms where

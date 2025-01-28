@@ -1,7 +1,7 @@
 Package: DPQ
 Title: Density, Probability, Quantile ('DPQ') Computations
-Version: 0.5-9-1
-Date: 2024-11-02
+Version: 0.6-0
+Date: 2024-11-12
 VersionNote: Last CRAN: 0.5-9 on 2024-08-23;  0.5-8 on 2023-11-30;  0.5-7 on 2023-11-03
 Authors@R: c(person("Martin","Maechler", role=c("aut","cre"),
                     email="maechler@stat.math.ethz.ch", comment = c(ORCID = "0000-0002-8685-9910"))

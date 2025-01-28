@@ -428,8 +428,8 @@ SEXP dpq_ebd0(SEXP x_, SEXP np_, SEXP trace_)
      rnames = PROTECT(allocVector(STRSXP, 2)),
 	yh_ = PROTECT(allocVector(REALSXP, n)),
         yl_ = allocVector(REALSXP, n); /* protected inside r : */
-    SET_VECTOR_ELT(r, 0, yh_);
     SET_VECTOR_ELT(r, 1, yl_);
+    SET_VECTOR_ELT(r, 0, yh_);
     SET_STRING_ELT(rnames, 0, mkChar("yh"));
     SET_STRING_ELT(rnames, 1, mkChar("yl"));
     setAttrib(r, R_NamesSymbol, rnames);
