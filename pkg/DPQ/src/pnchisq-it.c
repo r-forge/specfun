@@ -523,13 +523,13 @@ SEXP Pnchisq_R(SEXP x_, //	  q
     if(ISNAN(reltol) || reltol < 0) error("'reltol' must be numeric, >=0");
     if(ISNAN(epsS)   || epsS  <= 0) error("'epsS' must be numeric, > 0");
     if(ISNAN(cutoff_ncp) || cutoff_ncp < 0) error("'cutoff_ncp' must be numeric, >=0");
+    if(asLogical(lower_tail_) == NA_LOGICAL || asLogical(log_p_) == NA_LOGICAL)
+	error("'lower.tail' and 'log.p' must be TRUE or FALSE (not NA!)");
+    if(asLogical(no_2nd_call_) == NA_LOGICAL) error("'no2nd.call', must be TRUE or FALSE");
     Rboolean
 	no_2nd_call = asLogical(no_2nd_call_),
 	lower_tail = asLogical(lower_tail_),
 	log_p      = asLogical(log_p_);
-    if(lower_tail == NA_LOGICAL || log_p == NA_LOGICAL)
-	error("'lower.tail', and 'log.p' must be TRUE or FALSE (not NA!)");
-    if(no_2nd_call == NA_LOGICAL) error("'no2nd.call', must be TRUE or FALSE");
     int verbose   = asInteger(verbose_), // 0, 1, 2 ..
 	itrmax    = asInteger(itrmax_),
 	it_simple = asInteger(it_simple_);

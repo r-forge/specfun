@@ -4,10 +4,12 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.6-0 (2024-11-12, svn r336)}{
+\section{Version 0.6-0 (2025-02-01, svn r337)}{
   \subsection{BUG FIXES}{
     \itemize{
       \item \command{rchk} \code{PROTECT} fix in \file{bd0.c}.
+
+      \item Strictly \emph{not} comparing \code{Rboolean} with \code{NA_LOGICAL}.
     }
   }
   \subsection{MISC}{
