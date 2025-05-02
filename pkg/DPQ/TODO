@@ -2,6 +2,7 @@
 
 * DONE *Embarrassing*: both qnormUappr() & qnormUappr6() were *negative* (wrong sign), for lp in [-.69, 0)
 * DONE Provide R functions interfacing to the "applied math utilities" in ./src/DPQ-misc.c : ./R/utils.R
+* TODO Add pgamma_1006() using the 2020  TOMS Algorithm 1006 === ~/src/TOMS/1006-inc_gamma/
 * TODO pbeta() approximations notably for log scale where bpser underflows to -Inf <<<<<<<<<<<
 * TODO Compare pnchi1sq() with t1() function in tests/chisq-nonc-ex.R
 * TODO Computational Statistics paper ~/save/papers/Numerics/noncentral_gamma_deOliveira+Ferreira_ComputStat_2013.pdf

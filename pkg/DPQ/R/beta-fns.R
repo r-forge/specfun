@@ -1,3 +1,4 @@
+#### Now contains  pbeta()- and pgamma()- distribution related functionality
 
 ##' Qab := Q(a,b) := Gamma(a+b) / Gamma(b)  =  Gamma(a) / Beta(a,b)
 ##' <==>
@@ -768,6 +769,17 @@ gam1d <- function(a, warnIf=TRUE, verbose=FALSE) { # ../src/bpser.c
 
 ## _yet_ another lgamma1p() , name and C code from TOMS 708 (R/src/nmath/toms708.c
 gamln1 <- function(a, warnIf=TRUE) .Call(C_R_gamln1, a, warnIf) # --> ../src/bpser.c
+
+
+##  ../src/gamma_inc_T1006.c -- TOMS 1006 "fast and accurate eval of a generalized incomplete gamma function"
+dltgammaInc <- function(x,y, mu = 1, p) {
+   .Call(C_R_deltagammainc, x,y, mu, p)
+}
+lgammaP11 <- function(x) {
+  ## stopifnot(x > 0)
+   .Call(C_R_lgammaP11, x)
+}
+
 
 
 

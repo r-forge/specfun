@@ -74,6 +74,9 @@ static R_CallMethodDef CallEntries[] = {
     CALLDEF(R_dpsifn, 4),    // <--> dpsifn.c
     CALLDEF(R_gamma_ver, 4), // <--> gamma-variants.c
 
+    CALLDEF(R_deltagammainc, 4), // <--> ./gamma_inc_T1006.c
+    CALLDEF(R_lgammaP11, 1),     //  "     "
+
     {NULL, NULL, 0}
 };
 

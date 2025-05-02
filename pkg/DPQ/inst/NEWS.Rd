@@ -4,7 +4,13 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.6-0 (2025-02-01, svn r337)}{
+\section{Version 0.6-0 (2025-05-02, svn r338)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item added functions \code{dltgammaInc()} and \code{lgammaP11()},
+      both from TOMS Algorithm 1006 by Rémy Abergel and Lionel Moisan (2020).
+    }
+  }
   \subsection{BUG FIXES}{
     \itemize{
       \item \command{rchk} \code{PROTECT} fix in \file{bd0.c}.

@@ -291,6 +291,10 @@ double gammafn_ver(double x, int version, int trace_lev, stirlerr_version_t stir
 SEXP R_gamma_ver(SEXP x_, SEXP version_, SEXP trace_, SEXP stirlerr_v_);
 SEXP R_dpq_stirlerr(SEXP x_, SEXP stirlerr_v);
 
+// gamma_inc_T1006.c : ------------------------------------------------------
+SEXP R_lgammaP11(SEXP x_);
+SEXP R_deltagammainc(SEXP x_, SEXP y_, SEXP mu_, SEXP p_);
+
 // stirlerr.c : --------------------------------------------------------------
 double dpq_stirlerr(double n, stirlerr_version_t version);
 

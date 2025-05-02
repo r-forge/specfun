@@ -42,18 +42,18 @@ Kolm1.dist <- function(lam, eps) {
 ##- (This inexactness seems to hold for all lambda values greater than
 ##- about 900.)
 
-## MM:
+## MM: --- now all (we see here) is fine : Morten Welinder's pgamma() since ~ 2005:
 lam <- 977.8
 (p1 <- ppois(1001, lam))
 (p2 <- sum(dpois(0:1001, lam)))
-1 - p1/p2# 0, was -6.7e-6
+1 - p1/p2# -2.13e-14 , was -6.7e-6, then 0
 stopifnot(abs(1 - p1/p2) < 1e-12)
 
 ## new pgamma(alphalimit = 1300):
 lam <- 1274.487
 (p1 <- ppois(1301, lam))
 (p2 <- sum(dpois(0:1301, lam)))
-1 - p1/p2# -2.22e-16,  was -5.13e-6
+1 - p1/p2# -1.942e014,  was -5.13e-6, then -2.22e-16,
 stopifnot(abs(1 - p1/p2) < 1e-12)
 
 ## Also:
@@ -61,19 +61,9 @@ lam <- 1274.487
 x <- 1301
 ## This is by R's definition of  ppois() :
 stopifnot(
-    pgamma(lam, x+1, lower=FALSE) == print( ppois(x,lam) )
+    pgamma(lam, x+1, lower.tail=FALSE) == print( ppois(x,lam) )
 )
 
-
-##- BUT, summing about 1000 terms of exactness around 1e-16,
-##- we would expect an error of order 1e-13.
-
-##- We suspect algorithm AS 239 (pgamma) to cause that flaw.
-##- Do you think this could cause other problems apart from
-##- that admittedly extreme example?
-
-##- Thanks for your attention!
-##- Matthias
 
 ##--- More generally:
 library(DPQ)
