@@ -1,5 +1,8 @@
+
 /* --- this version, downloaded 2025-04-28  as  https://calgo.acm.org/1006.zip
 **********************************************************************************
+
+  Copyright (C) 2025 Martin Maechler --- for R | SEXP interface R_*() functions at end
 
   DELTAGAMMAINC Fast and Accurate Evaluation of a Generalized Incomplete Gamma
   Function.
@@ -115,6 +118,7 @@ Then, "really published" as
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdbool.h>
 
 #include "DPQpkg.h" // -> "dpq.h"  and more; instead of R's  #include "nmath.h"
 
