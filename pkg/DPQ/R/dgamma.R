@@ -74,10 +74,11 @@ dpois_simpl <- function(x, lambda, log=FALSE)
 ## ~/R/D/r-devel/R/src/nmath/dpois.c   --> dpois_raw()
 ## // called also from dgamma.c, pgamma.c, dnbeta.c, dnbinom.c, dnchisq.c :
 dpois_raw <- function(x, lambda, log=FALSE,
-                      ## for now:                            NB: ebd0_v1    R version *broken* \\\\\\\
-                      version = c("bd0_v1", "bd0_p1l1d", "bd0_p1l1d1", "bd0_l1pm", "ebd0_C1", "ebd0_v1"),
-                      small.x__lambda = .Machine$double.eps,
+                      version = c("bd0_v1", "bd0_p1l1d", "bd0_p1l1d1", "bd0_p1l1", "bd0_l1pm",
+                                  ## NB:      ebd0_v1 R version *broken*
+                                  "ebd0_C1", "ebd0_v1"),
                       ## future ?! version = c("ebd0_v1", "bd0_v1"),
+                      small.x__lambda = .Machine$double.eps,
                       bd0.delta = 0.1,
                       ## optional arguments of log1pmx() :
                       tol_logcf = 1e-14, eps2 = 0.01, minL1 = -0.79149064, trace.lcf = verbose,
@@ -89,27 +90,27 @@ dpois_raw <- function(x, lambda, log=FALSE,
     stopifnot(is.logical(log), length(log) == 1)
     R_D__0 <- if(log) -Inf else 0
     R_D__1 <- !log #  (if(log) 0 else 1)
-    M <- max(length(x), length(lambda))
+    if(!(nx <- length(x)) || !(nl <- length(lambda))) # 0-length result if one {x, lambda} is:
+        return(x[0])
+    M <- max(nx, nl)
     r <- rep_len(x+0*lambda, M) # result of same number class as 'x+lambda' (e.g. "mpfr")
 
     if(verbose) {
-        cat(sprintf("dpois_raw(): M = %d\n", M))
+        cat(sprintf("dpois_raw(): max length M = %d\n", M))
         inds <- function(i)
             if((n <- length(i)) <= 4)
                 paste(i, collapse=", ")
             else paste(paste(i[1:3], collapse=", "), "..", i[n])
     }
-    verb1 <- pmax(0L, verbose - 1L)
-
-
     if(M == 0) return(r)
-
     stopifnot(length(small.x__lambda) == 1, small.x__lambda >= DBL_MIN)
 
-    ## M >= 1 :
-    x      <- rep_len(x,      M)
-    lambda <- rep_len(lambda, M)
+    verb1 <- pmax(0L, verbose - 1L)
 
+    if(M > 1L) { # do recycle:
+        x      <- rep_len(x,      M)
+        lambda <- rep_len(lambda, M)
+    }
     if(any(B <- lambda == 0))
         r[B] <- ifelse(x[B] == 0, R_D__1, R_D__0)
     BB <- !B # BB is true "for remaining cases"
@@ -169,6 +170,9 @@ dpois_raw <- function(x, lambda, log=FALSE,
            "bd0_p1l1d1"= D_fE(x, del.x + bd0_p1l1d1(x, lambda, tol_logcf=tol_logcf, eps2=eps2,
                                                     minL1=minL1, trace.lcf=trace.lcf, logCF=logCF),
                               log),
+           "bd0_p1l1"  = D_fE(x, del.x + bd0_p1l1  (x, lambda, tol_logcf=tol_logcf, eps2=eps2,
+                                                    minL1=minL1, trace.lcf=trace.lcf, logCF=logCF),
+                              log),
            "bd0_l1pm"  = D_fE(x, del.x + bd0_l1pm  (x, lambda, tol_logcf=tol_logcf, eps2=eps2,
                                                     minL1=minL1, trace.lcf=trace.lcf, logCF=logCF),
                               log),
@@ -203,106 +207,137 @@ dpois_raw <- function(x, lambda, log=FALSE,
 ## /* Morten Welinder -- when providing ebd0() in 2014:
 ##  *
 ##  * Compute x * log (x / M) + (M - x)
-##  * aka -x * log1pmx ((M - x) / x)
+##  * aka    -x * log1pmx ((M - x) / x)
 ##  */
 ## double p1log1pm(double x) {
 ## }
 
 bd0_p1l1d1 <- function(x, M, tol_logcf = 1e-14, ...) {
     t <- (x-M)/M
-    M * (log1pmx(t, tol_logcf=tol_logcf, ...) + t*log1p(t)) ## p1l1p <- function(t, ...) ...
+    t <- M * (log1pmx(t, tol_logcf=tol_logcf, ...) + t*log1p(t))# == M * p1l1p(t, ...)
+    t[is.infinite(x) & is.finite(M)] <- Inf
+    t
 }
+
 bd0_p1l1d <- function(x, M, tol_logcf = 1e-14, ...) {
     d <- x-M
     t <- d/M
-    ## M * (log1pmx(t, tol_logcf=tol_logcf)  +  t*log1p(t))
+    fi <- is.finite(dlg1 <- d*log1p(t))
     ## slightly better(?) , *not* computing M*t = M*((x-M)/M) for 2nd term:
-    M * log1pmx(t, tol_logcf=tol_logcf, ...)  +  d*log1p(t)
+    d[ fi] <- (M *  log1pmx(t, tol_logcf=tol_logcf, ...))[fi] + dlg1[fi]
+    d[!fi] <- (M * (log1pmx(t, tol_logcf=tol_logcf, ...)  +  t*log1p(t)))[!fi]
+    d[is.infinite(x) & is.finite(M)] <- Inf
+    d
 }
 
-##' Version mentioned by Morten Welinder in PR#15628
+bd0_p1l1 <- function(x, M, ...) {
+    t <- (x-M)/M
+    t <- M * p1l1(t, ...) # dbl.prec "optimized" p1l1(t) == log1pmx(t) + t*log1p(t)  outside [-.07,.07]
+    ##       ------- see below
+    t[is.infinite(x) & is.finite(M)] <- Inf
+    t
+}
+
+
+##' Version mentioned by Morten Welinder in PR#15628  --- ?? (not really ?? somewhere else?
 bd0_l1pm <- function(x, M, tol_logcf = 1e-14, ...) {
     r <- s <- (M-x)/x
-    ## NB,  for x = 0,  s=Inf (or NaN) ==> use  M * D~(x/M) there
+    I <- is.infinite(x) & is.finite(M) # MM, 2025-05-14
+    r[I] <- s[I] <- -1
+    ## L: |s| is large  -- NB, for x = 0, s=Inf (or NaN) ==> use  M * D~(x/M) there
     L <- !is.na(s) & abs(s) > 1e10
     r[L] <- M*(1 + {a <- u <- (x/M)[L]; p <- u > 0; a[p] <- u[p] * (log(u[p]) - 1); a })
-    ok <- !L
-    r[ok]  <- - x[ok] * log1pmx(s[ok], tol_logcf=tol_logcf, ...)
+    ok <- !L   # vvvvv (recycling x)
+    r[ok]  <- - (x+0*M)[ok] * log1pmx(s[ok], tol_logcf=tol_logcf, ...)
     r
 }
 
 bd0 <- function(x, np,
-                delta = 0.1, maxit = as.integer(-1100 / log2(delta)),
+                delta = 0.1, maxit = max(1L, as.integer(-1100 / log2(delta))),
                 s0 = .Machine$double.xmin, # = DBL_MIN
                 verbose = getOption("verbose"))
 {
-    ## stopifnot(length(x) == 1) -- rather vectorize now:
-    stopifnot(0 <= delta, delta <= .99, maxit >= 1)
-    if((n <- length(x)) > (n2 <- length(np)))
+    stopifnot(0 <= delta, delta < 1, maxit >= 1L)
+    if(min(n <- length(x), n2 <- length(np)) == 0) # length 0 result
+        return(x[0])
+    if(n > n2)
         np <- rep_len(np, n)
     else if(n < n2)
         x <- rep_len(x, n2)
-    rm(n2)
-    N <- as.numeric # to be used in verbose / warning printing
+    N <- as.numeric # to be used in verbose / warning printing -- also for <mpfr> !
     if(useMpfr <- inherits(x, "mpfr") || inherits(np, "mpfr")) {
         if(!requireNamespace("Rmpfr"))
             stop("need to  install.packages(\"Rmpfr\") ")
+        ldexp <- function(f, E)
+            if(inherits(f, "mpfr")) Rmpfr::ldexpMpfr(f, E) else DPQ::ldexp(f, E)
     }
-    bd0.1 <- # (name it; easier when debugging)
-        function(x, np) {
-            if(!is.finite(x) || !is.finite(np) || np == 0.0) {
-                ## ML_ERR_return_NAN;
-                warning("invalid argument values in  (x, np)")
-                return(NaN)
+    bd0.1 <- function(x, np) {
+        if(!is.finite(x) || !is.finite(np) || np == 0.0) {
+            if((isTRUE(np < x) && x == Inf) || # << no NA/NaN in {np,x}
+               (isTRUE(x < np) && np== Inf))
+                return(Inf)
+            ## ML_ERR_return_NAN;
+            warning(sprintf("invalid argument(s) in x=%g, np=%g", x, np))
+            return(NaN)
+        }
+        d <- x-np
+        ##       ____
+        if(abs(d) <= delta * (x+np)) { #  '<='  was  '<' ;  '<=' allows to use delta=0
+            ##   ~~~~
+            v <- d/(x+np)
+            if(v == 0 && d != 0) { # had underflow --> do as  bd0C(.., version = "R_2025_0510")
+                if(verbose)
+                    cat(sprintf(
+                        "bd0(%g, %g): Initial v == 0 --> rescaling with F = %g\n",
+                        N(x), N(np), N(F)))
+                ## could do better: replace  v * N  with  sv * N * sv  where sv := sqrt(v)
+                x. <- ldexp(x, -2L)
+                n. <- ldexp(np,-2L)
+                v <- (x. - n.)/(x. + n.)
             }
-            ##          ____
-            if(abs(x-np) <= delta * (x+np)) { #  '<='  was  '<' ;  '<=' allows to use delta=0
-            ##          ~~~~
-                v <- (x-np)/(x+np)
-                if(v == 0 && x != np) { # had underflow
-                    F <- sqrt(x) * sqrt(np) # scaling factor --
-                    if(verbose)
-                        cat(sprintf(
-                              "bd0(%g, %g): Initial v == 0 --> rescaling with F = %g\n",
-                            N(x), N(np), N(F)))
-                    ## could do better: replace  v * N  with  sv * N * sv  where sv := sqrt(v)
-                    x. <- x/F
-                    n. <- np/F
-                    v <- (x. - n.)/(x. + n.)
-                }
-                s <- (x-np)*v
-                if(abs(s) < s0) {
-                    if(verbose)
-                        cat(sprintf(
-                              "bd0(%g, %g): Initial |s| = |%g| < s0=%g -> bd0:=s.\n",
-                              N(x), N(np), N(s), N(s0)))
-                    return(s)
-                }
-                ej  <- 2*x*v
-                v  <- v*v # // "v = v^2"
-                for (j in seq_len(maxit-1L)) { #/* Taylor series; 1000: no infinite loop
+            s <- d*v
+            if(abs(s) < s0) {
+                if(verbose)
+                    cat(sprintf(
+                        "bd0(%g, %g): Very small initial |s| = |%g| < s0=%g -> bd0:=s.\n", 
+                        N(x), N(np), N(s), N(s0)))
+                return(s)
+            }
+            s <- ldexp(s, -1L) # such that ej = v*x (instead of 2*v*x) does *not* overflow
+            ej <- x*v
+            v  <- v*v # // "v = v^2"
+            for (j in seq_len(maxit-1L)) { #/* Taylor series; 1000: no infinite loop
                                         # as |v| < .1,  v^2000 is "zero" */
-                    ej <- ej* v ##/ = 2 x v^(2j+1)
-                    s_ <- s
-                    s  <- s + ej/(2*j+1)
-                    if (s == s_) { ##/* last term was effectively 0 */
-                        if(verbose)
-                            cat(sprintf("bd0(%g, %g): T.series w/ %d terms -> bd0=%g\n",
-                                        N(x), N(np), j, N(s)))
-                        return(s)
-                    }
+                ej <- ej* v ##/ = x v^(2j+1)
+                s_ <- s
+                s  <- s + ej/(2*j+1)
+                if (s == s_) { ##/* last term was effectively 0 */
+                    if(verbose)
+                        cat(sprintf("bd0(%g, %g): T.series w/ %d terms -> bd0=%g\n",
+                                    N(x), N(np), j, N(ldexp(s, 1L))))
+                    return(ldexp(s, 1L))
                 }
-                warning(gettextf(
-                    "bd0(%g, %g): T.series failed to converge in %d it.; s=%g, ej/(2j+1)=%g\n",
-                    N(x), N(np), maxit, N(s), N(ej/(2*maxit+1))),
-                    domain=NA)
             }
-            ## else   |x - np|  is not too small (or the iterations failed !)
-            x*log(x/np) + np-x
-            ##================
-        } # {bd0.1}
+            warning(gettextf(
+                "bd0(%g, %g): T.series failed to converge in %d it.; s=%g, ej/(2j+1)=%g\n -- should *NOT* happen, please report!",
+                N(x), N(np), maxit, N(ldexp(s, 1L)), N(ej/(2*maxit+1))),
+                domain=NA)
+        }
+        ## else   |x - np|  is not too small (or the iterations failed !)
+        if(verbose) cat(sprintf("bd0(x=%g, np=%g): |x-np| not too \"small\" -> direct formula\n",
+                                N(x), N(np)))
+        l.x.n <-
+            if(x/np == Inf) # overflow
+                log(x) - log(np)
+            else log(x/np)
 
-    if(useMpfr)
+        if(x > np) x*(l.x.n -1.) + np
+        ##         ==================
+        else       x* l.x.n + np -x
+        ##         ================
+    } # {bd0.1}
+
+    if(useMpfr) # Vectorize(.) returns <mpfr1> (not "mpfr")
         Rmpfr::mpfr(Vectorize(bd0.1, c("x","np"))(x, np))
     else            Vectorize(bd0.1, c("x","np"))(x, np)
 } ## {bd0}
@@ -311,10 +346,10 @@ bd0 <- function(x, np,
 bd0C <- function(x, np,
                  delta = 0.1, maxit = 1000L,
                  ##s0 = .Machine$double.xmin, # = DBL_MIN
-                 version = "R4.0", # more versions to come ..
+                 version = c("R4.0", "R_2025_0510"),
                  verbose = getOption("verbose"))
 {
-    iVer <- pmatch(match.arg(version), eval(formals()$version)) # always 1L for now
+    iVer <- pmatch(match.arg(version), eval(formals()$version))
     .Call(C_dpq_bd0, x, np, delta, maxit, iVer, verbose)# >> ../src/bd0.c
 }
 
@@ -376,9 +411,9 @@ p1l1ser <- function(t, k, F = t^2/2) {
     }
 }
 
-p1l1 <- function(t, F = t^2/2)  {
+p1l1 <- function(t, F = t^2/2, ...)  {
     r <- t
-    if(!is.numeric(t)) warning("non-numeric 't' -- interval is determined for double precision")
+    if(!is.numeric(t)) warning("non-numeric 't' -- approximation intervals are for double precision numeric")
     for(i in seq_along(r)) { # (manual vectorization)
         t_ <- t[i] # with t_ := t[i], compute r[i] := F[i] * p1l1(t_) / (t_^2/2)  = p1l1(t_) {for default F[i]}
         r[i] <-
@@ -410,9 +445,9 @@ p1l1 <- function(t, F = t^2/2)  {
                     1 - t_*(1/3 - t_*(1/6 - t_*(1/10 - t_*(1/15 - t_*(1/21 - t_*(1/28 - t_*(1/36 - t_*(1/45 - t_*(1/55 - t_*(1/66 - t_/78)))))))))) # k = 12
               )
             else if(missing(F)) ## default F = t^2 / 2, i.e. "direct formula" directly
-                              log1pmx(t_) + t_ * log1p(t_)
+                              log1pmx(t_, ...) + t_ * log1p(t_)
             else # F not missing, relatively large |t_|
-                2*F[i]/t_^2 * log1pmx(t_) + t_ * log1p(t_)
+                2*F[i]/t_^2 * log1pmx(t_, ...) + t_ * log1p(t_)
         ## was:  (t_+1)*log1p(t_) - t_
     }
     r
@@ -668,7 +703,7 @@ ebd0.1 <- function(x, M, verbose, ...) # return  c(yh, yl)
         if(fg == 1) return(c(yh=yh, yl=yl))
 
 	for (j in 1:4) {
-	    ADD1(  x * logf_mat[j, i+1L])  # /* handles  x*log(fg*2^e) */
+	    ADD1(  x * logf_mat[j, i+1L])       # /* handles  x*log(fg*2^e) */
 	    ADD1((-x * logf_mat[j, 0+1L]) * e)  # /* handles  x*log(1/ 2^e)  -- *order* important
             if(!is.finite(yh)) return(c(yh=Inf, yl=0))
 	}

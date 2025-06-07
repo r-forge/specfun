@@ -15,7 +15,7 @@
 \definecolor{Red}{rgb}{0.5,0,0}
 \definecolor{Blue}{rgb}{0,0,0.5}
 %% From our \usepackage{texab} ----------------------------------------------
-\DeclareMathOperator{\where}{ where }
+\DeclareMathOperator{\where}{\mathrm{\ where \ }}
 \newcommand*{\Nat}{\mathbb{N}}% <-> amsfonts
 \newcommand*{\IR}{\mathbb{R}}% <-> amsfonts
 \newcommand{\Degr}{\relax\ensuremath{^\circ}}% \ifmmode^\circ\else$^\circ$\fi
@@ -28,10 +28,10 @@
 % \arraystretch: defined in latex.tex  (as {1}) ###### Tampering with latex ####
 %% At first:
 %\let\binom\vecII%%<< useful Synonym
-%- \abs{ab}  -->  | ab |   ``absolut Betrag''
-\newcommand{\abs}[1]    {\left| #1 \right|}
-%- \norm{ab}  -->  || ab ||
-\newcommand{\norm}[1]   {\left\| #1 \right\|}
+%- \abs{ab}  -->   | ab |
+%- \norm{ab} -->  || ab ||
+\newcommand{\abs}[1]  {\left|  #1 \right|}
+\newcommand{\norm}[1] {\left\| #1 \right\|}
  % the above sometimes give much too long  || -- then use the following:
 \newcommand{\normb}[1]  {\bigl\|{#1}\bigr\|}
 \newcommand{\normB}[1]  {\Bigl\|{#1}\Bigr\|}
@@ -77,7 +77,7 @@
 \bibliographystyle{apalike}
 \begin{document}
 
-\title{log1pmx(), bd0(), stirlerr() -- Computing Poisson, Binomial, Gamma Probabilities in \R}
+\title{\code{log1pmx()}, \code{bd0()}, \code{stirlerr()} -- Computing Poisson, Binomial, Gamma Probabilities in \R}
 \author{Martin M\"achler\\ Seminar f\"ur Statistik \\ ETH Zurich}
 \date{April 2021 ff {\footnotesize%\tiny
     (\LaTeX'ed \today)}}
@@ -85,17 +85,19 @@
 
 \begin{abstract} %maybe  \normalsize
   The auxiliary function $\logIpmx()$ (``log 1 \textbf{p}lus \textbf{m}inus x''),
-  had been introduced when R's \code{pgamma()} (incomplete $\Gamma$
-  function) had been numerically improved by Morten Welinder's contribution
-  to  % ~/R/D/r-devel/R/src/nmath/pgamma.c
-  \myHref{https://bugs.R-project.org/show\_bug.cgi?id=7307\#c6}{R's \PR{7307}, in Jan.\ 2005},
-  it is mathematically defined as $\logIpmx(x) := \log(1+x) - x$
+  had been introduced by Morten Welinder in his proposal to improve \R's \code{pgamma()} (incomplete $\Gamma$
+  function) numerically, in % ~/R/D/r-devel/R/src/nmath/pgamma.c
+  \myHref{https://bugs.R-project.org/show\_bug.cgi?id=7307\#c6}{R's \PR{7307}
+    comment \#6}\nocite{WelM2004}, in Jan.\ 2005.
+  \code{log1pmx()} has also been added to the \R's C API {Mathlib} (aka \code{libRmath},
+  \code{r-mathlib}, or \code{nmath}) library in March 2005.
+  It is defined as $\logIpmx(x) := \log(1+x) - x$
   and for numerical evaluation, suffers from two levels of cancellations for small $x$, i.e.,
   using $\mathrm{log1p(x)}$ for $\log(1+x)$ is not sufficient.
 
   In 2000 already, Catherine Loader's contributions for more accurate computation of
   binomial, Poisson and negative binomial probabilities, \cite{LoaC2000}, had introduced
-  auxiliary functions   \code{bd0()} and \code{stirlerr()}, see below.
+  auxiliary functions \code{bd0()} and \code{stirlerr()}, see below.
 
   Much later, in \myHref{https://bugs.r-project.org/show\_bug.cgi?id=15628}{%
     R's \PR{15628}, in Jan.\ 2014},
@@ -109,6 +111,9 @@
   Here, I address the problem of providing more accurate \code{bd0()} (and
   \code{stirlerr()} as well), applying Welinder's proposal to use
   $\logIpmx()$, but otherwise diverging from the proposal.
+
+  Notably, I noticed that \code{ebd0()} currently suffers from accuracy loss, when \code{bd0(x,M)} is large
+  and $x / M \approx 1$. % FIXME: not yet shown in text below ! <--> 15628-dpois_raw_accuracy.R and bd0-test.R
 \end{abstract}
 
 %% place holder, so emacs uses polymode+R
@@ -127,7 +132,7 @@ the binomial (point-mass) probabilities of the binomial distribution with
 \begin{align}\label{eq:pBin-def}
   p(x) := p(x; n,p) := {n \choose x} {p}^{x} {(1-p)}^{n-x} \;,
 \end{align}
-for \(x = 0, \dots, n\), and these are (in \R function \code{dbinom()})
+for \(x = 0, \dots, n\), and these are (in \R\ function \code{dbinom()})
 computed via Loader's algorithm (\cite{LoaC2000}) which had improved accuracy
 considerably, also for R's internal \verb|dpois_raw()| function which is
 used further directly in % ~/R/D/r-devel/R/src/nmath/dpois_raw.grep
@@ -160,28 +165,27 @@ namely -- correcting notation wrt the original -- using a
 \emph{two}-argument version $D_0()$:
 \begin{align}
   \label{eq:D-D0}
-  D(x;n,p) &= n p \tilde D_0\big(\frac{ x }{n p}\big) +
-               n q \tilde D_0\big(\frac{n-x}{n q}\big) \nonumber \\
+  D(x;n,p) &= n p d_0\big(\frac{ x }{n p}\big) +
+               n q d_0\big(\frac{n-x}{n q}\big) \nonumber \\
            &= D_0(x, n p) + D_0(n-x, n q),
 \end{align}
 where $q := 1-p$ and
 \begin{align}
-  \label{eq:tD0-def}
- \tilde D_0(r) &:= r\log(r) + 1-r \ \ \ \ \textrm{and} \\
-  D_0(x, M) &:= M \cdot \tilde D_0(x/M)   \label{eq:D0-def} \\
+     d_0(r) &:= r\log(r) + 1-r \ \ \ \ \textrm{and} \label{eq:d0-def} \\
+  D_0(x, M) &:= M \cdot d_0(x/M)                    \nonumber \\
             &= M \cdot \Big(\frac{x}{M}\log\big(\frac x M\big) + 1 - \frac x M\Big)
-             = x \log\big(\frac x M\big) + M - x \label{eq:D0-is}
+             = x \log\big(\frac x M\big) + M - x \label{eq:D0-def}
 \end{align}
 Note that since $\lim_{x \downarrow 0} x \log x = 0$, setting
 \begin{align}
   \label{eq:D0-x0}
-  \tilde D_0(0) &:= 1 \ \mathrm{and} \\
-    D_0(0, M)   & := M \tilde D_0(0) = M \cdot 1 = M \nonumber
+  d_0(0) &:= 1 \ \mathrm{and} \\
+    D_0(0, M)   & := M d_0(0) = M \cdot 1 = M \nonumber
 \end{align}
 defines $D_0(x,M)$ for all $x \ge 0$, $M > 0$.
 
 The careful C function implementation of $D_0(x, M)$ is called \code{bd0(x, np)}
-in Loader's C code and now R's Mathlib ((lib)Rmath) at
+in Loader's C code and now \R's Mathlib at
 \url{https://svn.r-project.org/R/trunk/src/nmath/bd0.c},
 mirrored, e.g., at
 \myHref{https://github.com/wch/r-source/blob/trunk/src/nmath/bd0.c}{Winston Chen's github mirror}.
@@ -190,7 +194,7 @@ In 2014, Morten Welinder suggested in
 that the current \code{bd0()} implementation is still inaccurate in some
 regions (mostly \emph{not} in the one it has been carefully implemented to
 be accurate, i.e., when $x \approx M$) notably for computing Poisson
-probabilities, \code{dpois()} in R; see more below.
+probabilities, \code{dpois()} in R; see more in \ref{A1:dpois} below.
 
 \bigskip
 
@@ -211,20 +215,21 @@ computed and implemented in the C code of R, and can be improved.
 
 
 Note that for the binomial, $x$ is an integer in $\{0, 1, \dots, n\}$ and $M=n p \ge 0$,
-but the formulas (\ref{eq:D0-def}), (\ref{eq:D0-is}) for $D_0(x,M)$ apply and are needed,
+but the formulas around (\ref{eq:D0-def}) for $D_0(x,M)$ apply and are needed,
 e.g., for \code{pgamma()} computations for general non-negative ($x, M > 0$) where even
 the $x = 0$ case is well defined, see (\ref{eq:D0-x0}) above.
 
 Summarizing, % from \citeauthor{LoaC2002},
-using (\ref{eq:pBin-def}), (\ref{eq:D0-def}), (\ref{eq:D0-is}),
+using (\ref{eq:pBin-def}) and (\ref{eq:D0-def}),
 the binomial probabilities in \R{}, \code{dbinom(x, n,p)} have been computed as
 \begin{align}
   p(x; n,p) &=  p(x; n, \frac{x}{n}) \cdot e^{-D(x;n,p)} = \\
   \label{eq:pBin-form}
-            &= \sqrt{\frac{n}{2\pi x(n-x)}} e^{\delta(n) -\delta(x) - \delta(n-x)} ,
+            &= \sqrt{\frac{n}{2\pi x(n-x)}} e^{\delta(n) -\delta(x) - \delta(n-x) - D(x;n,p)} ,
 \end{align}
-the second line being eq.~(5) of \citeauthor{LoaC2000} which is derived by using Stirling's
-(\ref{eq:Stirling}) three times, viz.\ for $n$, $x$, and $n-x$, and noticing that many
+the second line from replacing $p(x; n, \frac{x}{n})$ by eq.~(5) of \citeauthor{LoaC2000},
+derived by using Stirling's (\ref{eq:Stirling}) three times, viz.\ for $n$, $x$, and $n-x$,
+and noticing that many
 $\log$ terms cancel and the three $\log(2\pi *) / 2$ terms simplify to
 $\log\bigl(\frac{n}{2\pi x(n-x)}\bigr)/2$.
 
@@ -238,11 +243,9 @@ Further, \citeauthor{LoaC2000} showed that such a saddle point approach is neede
                   &= \log\frac{1}{\sqrt{2\pi x}} - x \log\frac{x}{\lambda} +
                     x - \lambda - \delta(x),
 \end{align}
-is re-expressed using $\delta(x)$ and from (\ref{eq:D0-is}) $D_0(x,\lambda)$ as
+is re-expressed using $\delta(x)$ and from (\ref{eq:D0-def}) $D_0(x,\lambda)$ as
 \begin{align}   \label{eq:Pois-D0}
-  p_\lambda(x) &= %\frac{1}{\sqrt{2\pi x}} e^{-\delta(x) - \lambda \tilde
-                % D_0(x/\lambda)} \nonumber \\
-               % &=
+  p_\lambda(x) &= %\frac{1}{\sqrt{2\pi x}} e^{-\delta(x) - \lambda d_0(x/\lambda)} \nonumber \\ &=
                  \frac{1}{\sqrt{2\pi x}} e^{-\delta(x) - D_0(x,\lambda)}
 \end{align}
 
@@ -261,27 +264,28 @@ but there have a direct approximations in package \pkg{DPQ}, currently functions
 
 \medskip
 
-\section{Loader's ``Binomial Deviance'' $D_0(x,M) = $ \code{bd0(x, M)}}\label{sec:bd0}
+\section[Loader's Binomial Deviance $D_0(x,M) =$ bd0(x, M)]{%
+  Loader's ``Binomial Deviance'' $D_0(x,M) = $ \code{bd0(x, M)}}\label{sec:bd0}
 %% originally got from here ----> ../man/dgamma-utils.Rd
 
 \citeauthor{LoaC2000}'s ``\emph{Binomial Deviance}'' function $D_0(x,M) = $ \code{bd0(x, M)}
 has been defined for \(x, M > 0\)
 where the limit \(x \to 0\) is allowed (even though not implemented in the original \code{bd0()}),
-here repeated from (\ref{eq:D0-def}) :
+here repeated from (\ref{eq:d0-def}), (\ref{eq:D0-def}) :
 \begin{align*} %\label{eq:bd0-def-2}
-  D_0(x,M)      &:= M \cdot \tilde D_0\bigl(\frac{x}{M}\bigr), \ \ \mathrm{where}\\
-  \tilde D_0(u) &:= u \log(u) + 1-u = u(\log(u) - 1) + 1.
+  D_0(x,M) &:= M \cdot d_0\bigl(\frac{x}{M}\bigr), \ \ \where \\
+  d_0(u)   &:= u \log(u) + 1-u = u(\log(u) - 1) + 1.
 \end{align*}
 
 \pagebreak[3]
-Note the graph of $\tilde D_0(u)$,
+Note the graph of $d_0(u)$ ($ = p_1l_1(u-1)$, see (\ref{eq:bd0-p1l1}) below),
 \setkeys{Gin}{width=0.5\textwidth}% set figure width
 \begin{center}% \begin{figure}[htb!] \centering\small
-<<plot_D0tilde, fig=TRUE, width=4.6, height=4.3, echo=FALSE>>=
+<<plot_d0, fig=TRUE, width=4.6, height=4.3, echo=FALSE>>=
 par(mar = 0.1 + c(2.5, 3, 0, 0), mgp = c(1.5, 0.6, 0), las=1)
 curve(x*log(x)+1-x, 1e-7, 6, n=1001, col=2, lwd=2,
       panel.first=grid(), xlab=quote(u), ylab="")
-mtext(quote(tilde(D[0])(u) == ~ u %.%~ log(u)+1-~u), line=-2, col=2)
+mtext(quote(d[0](u) == ~ u %.%~ log(u)+1-~u), line=-2, col=2)
 abline(a = 1-exp(1), b=1, col=adjustcolor(4, 3/4), lwd=1.5, lty=2)
 text(5, 2.5, quote(1%.%u - e+1), col=4)
 axis(1, at=exp(1), quote(e), tck=0.2, col=4, col.axis=4, lty=3)
@@ -290,7 +294,7 @@ axis(1, at=exp(1), quote(e), tck=0.2, col=4, col.axis=4, lty=3)
 \vspace*{-1.5ex}
 has a double zero at $u=1$, such that for large $M$ and $x \approx M$, i.e.,
 $\frac x M \approx 1$, the direct computation of
-$D_0(x,M) = M \cdot \tilde D_0\bigl(\frac{x}{M}\bigr)$ is numerically problematic.
+$D_0(x,M) = M \cdot d_0\bigl(\frac{x}{M}\bigr)$ is numerically problematic.
 Further,
 \begin{align}
   \label{eq:bd0-trafo}
@@ -302,49 +306,48 @@ We can rewrite this, originally by e-mail from Martyn Plummer, then
 also indirectly from Morten Welinder's mentioning of \code{log1pmx()} in his \PR{15628}
 notably for the important situation when \(\abs{x-M} \ll M\).
 Setting \(t := (x-M)/M\), i.e., \(\abs{t} \ll 1\) for that situation, or equivalently,
-\(\frac{x}{M} = 1+t\). Using $t$,
+\(\frac{x}{M} = 1+t\). % Using $t$,
 \begin{align}
-  \label{eq:def-t}
-  t &:= \frac{x-M}{M} \\
-  \label{eq:bd0-log1}
+  \mathrm{With\ } t &:= \frac{x-M}{M}   \label{eq:def-t} \\[1ex]
   D_0(x,M) % = M \cdot [(t+1)(\log(1+t) - 1) + 1]
            &= \overbrace{M\cdot(1+t)}^{x} \log(1+t) - \overbrace{t \cdot M}^{x-M} =
                M \cdot \big((t+1) \log(1+t) - t \big) =  \nonumber\\
-           &=  M \cdot p_1l_1(t),
-\end{align}
-where
+           &=  M \cdot p_1l_1(t) \stackrel{!}{=} M \cdot d_0(t+1) , \label{eq:bd0-p1l1}
+\end{align}\par\vspace*{-1.5ex}\par\noindent
+where \\[-6ex]
 \begin{align}
-  \label{eq:p1l1-def}
-  p_1l_1(t) &:= (t+1)\log(1+t) - t = \frac{t^2}{2} - \frac{t^3}{6} \pm \cdots,\\
+  p_1l_1(t) &:= (t+1)\log(1+t) - t = \frac{t^2}{2} - \frac{t^3}{6} \pm \cdots, \hspace{7em} \label{eq:p1l1-def}\\
            & = (\log(1+t) - t) + t \cdot \log(1+t) \nonumber \\
            & = \logIpmx(t) + t \cdot \mathrm{log1p}(t) \label{eq:p1l1-log1pmx}
-\end{align}
-where
+\end{align}\par\vspace*{-1.5ex}\par\noindent
+and \\[-5.5ex]
 \begin{align} \label{eq:log1pmx}
-  \logIpmx(x) := \log(1+x) - x \approx - x^2/2 + x^3/3 - x^4/4 \pm \ldots,
+  \logIpmx(t) := \log(1+t) - t \ \ \ \approx - t^2/2 + t^3/3 - t^4/4 \pm \ldots.
 \end{align}
-and the Taylor series expansions for $\logIpmx(t)$ and $p_1l_1(t)$ are useful for small $\abs{t}$,
+The Taylor series expansions for $\logIpmx(t)$ and $p_1l_1(t)$ are useful for small $\abs{t}$,
 \begin{align}
-  \label{eq:p1l1-Taylorseries}
   p_1l_1(t) &= \frac{t^2}{2} - \frac{t^3}{6} + \frac{t^4}{12} \pm \cdots =
               \sum_{n=2}^\infty  \frac{(-t)^n}{n(n-1)} =
               \frac{t^2}{2} \sum_{n=2}^\infty \frac{(-t)^{n-2}}{n(n-1)/2} =
-              \frac{t^2}{2} \sum_{n=0}^\infty \frac{(-t)^{n}}{{{n+2}\choose 2}} = \\
+              \frac{t^2}{2} \sum_{n=0}^\infty \frac{(-t)^{n}}{{{n+2}\choose 2}} = \nonumber \\
             &= \frac{t^2}{2}\bigl(1 - t\big(\frac 1 3 - t\big(\frac 1 6 - t\big(\frac{1}{10} -
                                  t\big(\frac{1}{15} - \cdots\big)\big)\big)\big)\bigr),
+              \label{eq:p1l1-Taylorseries}
 \end{align}
 which we provide in \pkg{DPQ} via function \code{p1l1ser(t, k)} getting the
-first $k$ terms, and the corresponding series approximation for
+first $k$ terms, and by (\ref{eq:bd0-p1l1}), the corresponding series approximation for
 \begin{align}
   \label{eq:D0-by-p1l1-series}
-  D_0(x,M) = \lim_{k \to \infty} \mathrm{p1l1ser}\big(\frac{x-M}{M},\ k,\ F = \frac{(x-M)^2}{M}\big) ,
+  p_1l_1(t) = \lim_{k \to \infty} \frac{t^2}{2} \sum_{n=0}^k \frac{(-t)^{n}}{{{n+2}\choose 2}} =: \mathrm{p1l1ser}\big(t, k \big) ,
+  \where t = \frac{x-M}{M}.
+% not showing the 'F = ..' here on purpose
+% D_0(x,M) = M \cdot \lim_{k \to \infty} \mathrm{p1l1ser}\big(\frac{x-M}{M},\ k,\ F = \frac{(x-M)^2}{M}\big) ,
 \end{align}
-where the approximation of course uses a finite $k$ instead of the limit
-\(k \to \infty\).
+% where the approximation of course uses a finite $k$ instead of the limit \(k \to \infty\).
 
 This Taylor series expansion is useful and nice, but  may not even be needed typically,
 as both utility functions $\logIpmx(t)$ and $\mathrm{log1p}(t)$
-are available implemented to be fully accurate for small $t$, $t \ll 1$, and
+are available, implemented to be fully accurate for small $t$, $t \ll 1$, and
 (\ref{eq:p1l1-log1pmx}), indeed, with $t = (x-M)/M$ the evaluation of
 \begin{align}
   \label{eq:D0-via-log1pmx}
@@ -363,7 +366,7 @@ p.p1l1 <- function(from, to, ylim=NULL, cS = adjustcolor(6, 1/2),
     cols <- palette()[c(2,4, 6, 3,5)]; cols[3] <- cS
     c1 <- curve(x*log1p(x), from=from, to=to, n=n,
                 col=2, ylab="", ylim=ylim,
-                panel.first = abline(h=0, v=0, lty=3, lwd=1/2))
+                panel.first = abline(h=0:1, v=-1:0, lty=3, lwd=1/2))
     c2 <- curve(log1pmx(x), add=TRUE, n=n, col=4)
     with(c1, {
         lines(x, y+c2$y, col=cS, lwd=3)
@@ -387,15 +390,15 @@ p.p1l1 <- function(from, to, ylim=NULL, cS = adjustcolor(6, 1/2),
 %% sfsmisc::mult.fig(mfcol=c(1,2)) # FAILS with Sweave setup ?!
 <<l1p1-curves, fig=TRUE, width=10>>=
 par(mfcol=1:2, mar = 0.1 + c(2.5, 3, 1, 2), mgp = c(1.5, 0.6, 0), las=1)
-p.p1l1(-7/8, 2, ylim = c(-1,2))
+p.p1l1( -1, 2, ylim = c(-1,2))
 zoomTo <- function(x,y=x, tx,ty){ arrows(x,-y, tx, ty)
-                                    text(x,-y, "zoom in", adj=c(1/3,9/8)) }
+                                  text  (x,-y, "zoom in", adj=c(1/3,9/8)) }
 zoomTo0 <- function(x,y=x) zoomTo(x,y, 0,0)
 zoomTo0(.3)
 p.p1l1(-1e-4, 1.5e-4, ylim=1e-8*c(-.6, 1), do.leg=FALSE)
 @
 \caption{\normalsize $p_1l_1(t) =$ \code{p1l1()} and its constituents,
-  $x*\logIp(x)$ and $\logIpmx() =$ \code{log1pmx()}, with \R functions from
+  $x*\logIp(x)$ and $\logIpmx() =$ \code{log1pmx()}, with \R\ functions from
   our \pkg{DPQ} package.
   On the right, zoomed in 4 and 8 orders of magnitude, where the Taylor
   approximations $x^2/2$ and $x^2/2 - x^3/6$ are visually already perfect.}
@@ -411,11 +414,14 @@ or 2 bits of precision.
 
 %% Also the  ebd0() proposal to improve bd0().
 
-%% NB: "page 2" of ../tests/stirlerr-tst.R  is *only* about bd0(), ebd0() .. !!
-%%                 =======================
+%% NB:  ../tests/bd0-tst.R
+%%      ==================
 
 %% ----> ../man/dgamma-utils.Rd : bd0(), stirlerr()
 %%       ======================
+Note that in Appendix~\ref{A1:dpois}, we show how using different versions of \code{bd0()} computations
+for computing Poisson density values, \code{dpois()}, i.e., our \pkg{DPQ} package's \code{dpois\_raw()}
+leads to differing accurate results.
 
 \appendix
 
@@ -445,14 +451,14 @@ lcurve(log1pmx, -.01, .01); rect(-.002,log1pmx(-.002), .002, 0); zoomTo0(2e-3,1e
 lcurve(function(x) -log1pmx(x), -.002, .002, log="y", yaxt="n") -> l1r
 sfsmisc::eaxis(2); abline(v=0, lty=3)
 d1r <- cbind(as.data.frame(l1r), y.naive = with(l1r, -(log(1+x)-x)))
+## --> d1r is data frame w/ ("x", "y", "y.naive")
 c4 <- adjustcolor(4, 1/3)
 lines(y.naive ~ x, data=d1r, col=c4, lwd=3, lty=2)
 legend("left", legend=expression(- log1pmx(x), -(log(1+x)-x)),
        col=c(palette()[2],c4), lwd=c(1,3), lty=1:2, bty="n")
 @
 
-The accuracy of our \code{log1pmx()} is already vastly better than
-the naive \(\log(1+x)-x\) computation:
+Even if you can't see it in the above 4th plot, the accuracy of our \code{log1pmx()} is already vastly better than the naive \(\log(1+x)-x\) computation:
 
 <<log1pmx-naive-error, fig=TRUE, width=10>>=
 par(mfrow=1:2, mar = 0.1 + c(2.5, 3, 1, 2), mgp = c(1.5, 0.6, 0), las=1)
@@ -468,8 +474,8 @@ plot(relE.naive ~ x, data=d1r, type="l", ylim = c(-1,1)*y2); abline(h=0,lty=3)
 % zoomTo(15e-4, 9*y2, 13e-4, -y2)
 % plot(relE.naive ~ x, data=l1r, type="l", ylim = c(-1,1)*y2)
 
-Now, we explore the accuracy achieved with \R's, i.e. Welinder's algorithm,
-which uses relatively few terms ao continued-fraction representation of the
+Now, we explore the accuracy achieved with \R's, i.e., Welinder's algorithm,
+which uses relatively few terms of a continued-fraction representation of the
 Taylor series of $\logIpmx(x)$,
 using package \CRANpkg{Rmpfr} and high precision arithmetic.
 %%
@@ -481,41 +487,55 @@ From there, it seems that the (hardcoded currently in R's \file{pgamma.c} as
 could or should (?) be changed to around -0.7 or e.g., -0.66.
 
 In \pkg{DPQ}'s  \code{log1pmx()} it is the argument \code{minL1 = -0.79149064},
-there' a switch constant eps2, (hardwired in current \R to \code{1e-2}, i.e., \code{eps2 = 0.02})
+there' a switch constant eps2, (hardwired in current \R\ to \code{1e-2}, i.e., \code{eps2 = 0.02})
 to switch from an explicit 5-term formula to the full \code{logcf()} based procedure.
 In \pkg{DPQ}, we already use \code{eps2 = 0.01} as default. %
 Note that this does \emph{not} influence the choice of \code{minL1} as
 long as \code{eps2} (order of 0.01) is far from the range in which we
 choose \code{minL1} ($[-0.85, -0.4]$).
 \\
-((MM: Still:  can we prove that 0.01 is ``uniformly'' better than  0.02  ?? ))
+((MM: Still:  can we prove that 0.01 is ``uniformly'' better than  0.02  ??
+  \verb|"../tests/dnbinom-tst.R"| rather suggests \code{eps2 = .00163} as optimal
+  \emph{for default \code{tol = 1e-14}} . ))
+%% TODO !!
 
-\subsection{Testing \code{dpois\_raw()} / \code{dpois()} Poisson probabilities}
+\subsection[Testing dpois\_raw() .. Poisson probabilities]{%
+    Testing \code{dpois\_raw()} / \code{dpois()} Poisson probabilities}\label{A1:dpois}
 Testing the Poisson probabilities (\sQuote{density})
-with several versions of bd0(), ebd0() and
-the direct formula where more appropriate (non-log case,
-%%  now (R-devel, March 2022) it does *NOT* use ebd0() nor bd0() anymore
-%% _iff_   x/lambda <= DBL_EPSILON = 2^-52
+with several versions of bd0(), ebd0() and  ...,
+we found that using Welinder's proposed \code{ebd0()} was advantageous indeed to get full accuracy,
+and indeed better than all versions of \code{bd0()} computations we made available in package \pkg{DPQ}.
+However, the direct formula was more appropriate than \code{ebd0()} and all \code{bd0()} version for
+the cases  where $x/M$  or $M/x$  were extremely small.
+% ------------------------------------------------------------------------
+% r80841 | maechler | 2021-09-01 10:19:52 +0200 (Wed, 01 Sep 2021) | 1 line
+% dpois() now uses new ebd0() tweaked from proposition in PR#15628; also fix dpois(x,x) for x=1e308
+% ------------------------------------------------------------------------
+Note: Since March 2022 MM has had another (private, uncommitted) tweak in \file{src/nmath/dpois.c} to
+\emph{NOT}* use \code{ebd0()} nor \code{bd0()} but a direct formula, when
+$2^{-1022} < \frac{x}{\lambda} \le 2^{-52}$, i.e.,
+% \code{2^-1022 =: DBL\_MIN  <  x/lambda  <=  DBL\_EPSILON  := 2^-52}.
+
 %%
 %% MM: Mention these already above !!
-Look at examples in \file{"../man/dgamma-utils.Rd"}  and then also
-\\ % from ../dpois.grep    ^^^^^^^^^^^^^^^^^^^^^^
+Look at examples in file \verb|"../man/dgamma-utils.Rd"|  and then also
+\\ % from ../dpois.grep    ^^^^^^^^^^^^^^^^^^^^^^ proves that ebd0() is the only "perfect" for dpois() !!
 %%        ~~~~~~~~~~~~~
 \verb|/u/maechler/R/MM/NUMERICS/dpq-functions/15628-dpois_raw_accuracy.R| .
 %     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^##########################
 
 
 % Appendix B:
-\section{Accuracy of $ p_1l_1(t)$ Computations}\label{B:p1l1}
+\section{Accuracy of $p_1l_1(t)$ Computations}\label{B:p1l1}
 
 Loader's ``Binomial Deviance'' $D_0(x,M) = $ \code{bd0(x, M)} function can also be re-expressed (mathematically)
 %% copy/paste from ../man/p1l1.Rd
-  as \(bd0(x,M) = M * p1l1((x-M)/M)\) where we look into providing
-  numerically stable formula for \(p1l1(t)\) as its mathematical formula
-  \(p1l1(t) = (t+1)\log(1+t) - t\) suffers from cancellation for small \eqn{|t|}, even when
+  as \code{bd0(x,M) :=}\(D_0(x,M) := M \cdot p_1l_1((x-M)/M)\) where we look into providing
+  numerically stable formula for \(p_1l_1(t)\), our \code{p1l1(t)}, as its mathematical formula
+  \(p_1l_1(t) = (t+1)\log(1+t) - t\) suffers from cancellation for small \eqn{|t|}, even when
   \code{\link{log1p}(t)} is used instead of \code{log(1+t)}; see the derivations
-  (\ref{eq:bd0-log1}),  (\ref{eq:p1l1-def}), and (\ref{eq:log1pmx}) above, and the Taylor series
-  expansion (\ref{eq:p1l1-Taylorseries}) which we provide in our \R functions \code{p1l1()}, and \code{p1l1ser},
+  (\ref{eq:bd0-p1l1}),  (\ref{eq:p1l1-def}), and (\ref{eq:log1pmx}) above, and the Taylor series
+  expansion (\ref{eq:p1l1-Taylorseries}) which we provide in our \R\ functions \code{p1l1}, and \code{p1l1ser},
   respectively.
 
   Using a hybrid implementation, \code{p1l1()} uses a direct formula, now
@@ -540,7 +560,8 @@ For now, look at the examples in \texttt{?p1l1}, or even run \code{example(p1l1)
 % -----------------------------
 
 % Appendix C:
-\section{Accuracy of \code{stirlerr(x)}$=\delta(x)$ Computations}\label{C:stirlerr}
+\section[Accuracy of stirlerr(x)=delta(x) Computations]{%
+  Accuracy of \code{stirlerr(x)}$=\delta(x)$ Computations}\label{C:stirlerr}
 
 Note that the ``Stirling error'', $\delta(x) \equiv$\code{stirlerr(x)},
 $\delta(x) := \log x! - \frac 1 2 \log(2\pi x) - x \log(x) + x$ by
@@ -550,8 +571,9 @@ $\delta(x) =  \frac 1{12 x} - \frac 1{360 x^3} + \frac 1{1260 x^5}
 see (\ref{eq:deltaStirling}).
 
 A C code implementation had been provided by
-\citeauthor{LoaC2000} and for years now in R's Mathlib at
-\url{https://svn.r-project.org/R/trunk/src/nmath/stirlerr.c}.
+\citeauthor{LoaC2000} and for years in \R's Mathlib, further improved by the
+author.  Current version in the R sources at
+\url{https://svn.r-project.org/R/trunk/src/nmath/stirlerr.c},
 mirrored, e.g., at \url{https://github.com/wch/r-source/blob/trunk/src/nmath/stirlerr.c}
 
 TODO:
@@ -560,6 +582,10 @@ Look at examples in \file{../tests/stirlerr-tst.R}  to show the small
 %%                        ~~~~~~~~~~~~~~~~~~~~~~~
 accuracy loss with Loader's defaults (for the cut offs of the number of
 terms used) and also how we explore improving these defaults to improve accuracy.
+
+Consequently, I have have committed the results to the R sources,
+svn rev~86191, in March 2024, % r86191 | maechler | 2024-03-25
+to be used from \R\ version 4.4.0 on.
 
 
 \bibliography{R-numerics}% ~/bib/R-numerics.bib  now link --> "here"

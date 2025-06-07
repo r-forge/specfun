@@ -6,26 +6,29 @@
 \alias{p1l1ser}
 \alias{.p1l1ser}
 \description{
-  The binomial deviance function \code{\link{bd0}(x,M)} can mathematically
-  be re-written as \eqn{bd0(x,M) = M * p1l1((x-M)/M)} where we look into providing
-  numerically stable formula for \eqn{p1l1(t)} as its mathematical formula
-  \eqn{p1l1(t) = (t+1)\log(1+t) - t}{p1l1(t) = (t+1)*log(1+t) - t}
+  The binomial deviance function \code{\link{bd0}(x,M) :=}
+  \eqn{D_0(x,M) := M \cdot d_0(x/M)}{D_0(x,M) := M * d_0(x/M)} (see \code{\link{bd0}})
+  can mathematically be re-written as
+  \eqn{D_0(x,M) = M \cdot p_1l_1\bigl(\frac{x-M}{M}\bigr)}{D_0(x,M) = M * p1l1((x-M)/M)}
+  where we look into providing numerically stable formulas for
+  \code{p1l1(t)}\eqn{ = p_1l_1(t)}{}, as its direct mathematical formula
+  \eqn{p_1l_1(t) = (t+1)\log(1+t) - t}{p1l1(t) = (t+1)*log(1+t) - t}
   suffers from cancellation for small \eqn{|t|}, even when
   \code{\link{log1p}(t)} is used instead of \code{log(1+t)}.
 
   Using a hybrid implementation, \code{p1l1()} uses a direct formula, now
-  the stable one in \code{p1l1p()}, for \eqn{\left| t \right| > c}{|t| > c}
-  and a series approximation for \eqn{\left|t\right| \le c}{|t| <= c} for
-  some \eqn{c}.
+  the stable one in \code{p1l1p(t) := log1pmx(t) + t*log1p(t)}, for \eqn{\left| t \right| > c}{|t| > c}
+  and a series approximation for basically \eqn{\left|t\right| \le c}{|t| <= c},
+  \eqn{c \approx 0.07}{c ~= 0.07}.
 
-  NB:  The re-expression \code{\link{log1pmx}()} is almost perfect; it
-  fixes the cancellation problem entirely (and exposes the fact that
-  \code{\link{log1pmx}()}'s internal cutoff seems sub optimal.
+  NB:  The re-expression via \code{\link{log1pmx}(x) := log(1+x) - x} is almost perfect; it
+  fixes the cancellation problem entirely (and analysis further suggests that
+  \code{\link{log1pmx}()}'s internal cutoff seems sub optimal).
 }
 \usage{% -->  ../R/dgamma.R <<<<<
  p1l1p  (t, ...)
  p1l1.  (t)
- p1l1   (t,    F = t^2/2)
+ p1l1   (t,    F = t^2/2, ...)
  p1l1ser(t, k, F = t^2/2)
 .p1l1ser(t, k, F = t^2/2)
 }
@@ -34,7 +37,7 @@
   \item{...}{optional (tuning) arguments, passed to \code{\link{log1pmx}()}.}
   \item{k}{small positive integer, the number of terms to use in the Taylor
     series approximation \code{p1l1ser(t,k)} of \code{p1l1(t)}.}
-  \item{F}{numeric vector of multiplication \bold{f}actor; \emph{must} be
+  \item{F}{(numeric vector) multiplication \bold{f}actor; \emph{must} be
     \code{t^2/2} for the \code{p1l1()} function, but can be modified,
     e.g. in more direct \code{bd0()} computations.}
 }
@@ -46,8 +49,10 @@
 }
 \author{Martin Maechler}
 \seealso{
-  \code{\link{bd0}}; our package vignette \emph{log1pmx, bd0, stirlerr - Probability Computations in R}.
-  \code{\link{dbinom}} the latter for the C.Loader(2000) reference.
+  Both \code{\link{log1pmx}()} and \code{\link{bd0}};   our package vignette
+ \emph{\code{log1pmx}, \code{bd0}, \code{stirlerr} - Probability
+  Computations in R}.%  ../vignettes/log1pmx-etc.Rnw
+  Further, \code{\link{dbinom}}, also for the C. Loader (2000) reference.
 }
 \examples{
 (doExtras <- DPQ:::doExtras()) # TRUE e.g. if interactive()
@@ -137,9 +142,9 @@ p.relEr <- function(i, ylim = c(11,17), type = "o",
     AX(1, at= tE, labels = as.expression(
                       lapply(tenE,
                              if(neg)
-                                 function(e) substitute(-10^{E}, list(E = e+0))
+                                 function(e) substitute(-10^{E}, list(E = e +0))
                              else
-                                 function(e) substitute( 10^{E}, list(E = e+0)))))
+                                 function(e) substitute( 10^{E}, list(E = e +0)))))
 }
 
 p.relEr(t > 0, ylim = c(1,17))

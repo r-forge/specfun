@@ -4,18 +4,53 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.6-0 (2025-05-02, svn r338)}{
+\section{Version 0.6-0 (2025-06-07, svn r339)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item added functions \code{dltgammaInc()} and \code{lgammaP11()},
-      both from TOMS Algorithm 1006 by Rémy Abergel and Lionel Moisan (2020).
+      both from TOMS Algorithm 1006 by Rémy Abergel and Lionel Moisan
+      (2020).
+
+      \item C-level \code{logcf()} now uses \code{long double}, i.e., \R's
+      \code{LDOUBLE}, to possibly improve for smallish \code{eps}.
+
+      \code{logcf()} also got an optional \code{maxit} argument. For the
+      pure-\R version, renamed the simplistic and slow one
+      from \code{logcfR()} to \code{logcfR_vec()} and the smarter faster
+      one from \code{logcfR.()} to \code{logcfR()}.  They have given
+      identical results in test cases, and \code{logcfR()} should really be
+      the one used practically.
+
+      \item \code{bd0C()} has new \code{version = "R_2025_0510"} where as
+      \code{bd0()} has just been updated to the latest version also in
+      R-devel svn revisions 88190,1,3 and 88208.
+
+      New \code{bd0_p1l1()}, also as \code{version} in \code{dpois_raw()};
+      \code{bd0()}, and the now four \code{bd0_<meth>()} functions work
+      with \code{x=Inf} and properly vectorize.
+
+      \item The log1pmx vignette % ../vignettes/log1pmx-etc.Rnw
+      now shows that for \code{dpois(x, 48)} at least, using the two parts of
+      \code{ebd0()} gives clearly the most accurate values (used in R since ca. 2022).
+
+      On the other hand, new evaluations at the end of
+      \file{tests/bd0-tst.R} indicate that increasing the (only in
+      \pkg{DPQ}) optional cutoff from \code{delta = 0.1} to about
+      \code{delta = 0.4} gets much more accurate \code{bd0(x, np)} values, notably
+      when \code{|x - np|} is smallish for relatively large \code{x} and \code{np} where
+      \code{ebd0()} is clearly less accurate.
     }
   }
   \subsection{BUG FIXES}{
     \itemize{
       \item \command{rchk} \code{PROTECT} fix in \file{bd0.c}.
 
-      \item Strictly \emph{not} comparing \code{Rboolean} with \code{NA_LOGICAL}.
+      \item Strictly \emph{not} comparing \code{Rboolean} with
+      \code{NA_LOGICAL}.
+
+      \item \code{log1pmx(Inf)} is correct (= \code{-Inf}) now.
+
+      \item \code{dpois_raw(1, {})} now works (returning \code{numeric(0)}).
     }
   }
   \subsection{MISC}{

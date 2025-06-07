@@ -154,6 +154,7 @@
 # define FABS fabsl
 # define LOG logl
 # define LOG1p log1pl
+# define LDEXP ldexpl
 // Rmpfr: log(mpfr(2, 130)) {130 bits is "more than enough": most long_double are just 80 bits!}
 # define M_LN2_ 0.6931471805599453094172321214581765680755L
 # define PR_g_ "Lg"
@@ -165,6 +166,7 @@
 # define FABS fabs
 # define LOG log
 # define LOG1p log1p
+# define LDEXP ldexp
 # define M_LN2_ M_LN2
 # define PR_g_ "g"
 
@@ -276,9 +278,7 @@ SEXP dpq_ebd0(SEXP x, SEXP np, SEXP trace);
 
 
 // logcf.c: --------------------------------------------------------------------
-SEXP R_logcf(SEXP x_, SEXP i_, SEXP d_, SEXP eps_, SEXP trace_);
-/*
- */
+SEXP R_logcf(SEXP x_, SEXP i_, SEXP d_, SEXP eps_, SEXP maxit_, SEXP trace_);
 
 
 // lgammacor.c : -------------------------------------------------------------

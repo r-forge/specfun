@@ -5,7 +5,7 @@
  * to provide compatibility to *previous* R (and DPQ) implementations.
  * These are
  *
- *	Copyright (C) 2021-2024 Martin Maechler,  maechler@stat.math.ethz.ch
+ *	Copyright (C) 2021-2025 Martin Maechler,  maechler@stat.math.ethz.ch
  *
  *
  *  AUTHORS
@@ -56,19 +56,21 @@
 
 #include "DPQpkg.h" /* -> "dpq.h"  and more */
 
+// MM __FIXME__ update "debug" from my  ~/R/D/r-devel/R/src/nmath/bd0.c
+
 double bd0(double x, double np, double delta, int maxit, int trace)
 {                             // in R, delta = 0.1 , maxit = 1000, trace = 0)
     if(!R_FINITE(x) || !R_FINITE(np) || np == 0.0) ML_WARN_return_NAN;
 
     if (fabs(x-np) < delta * (x+np)) { // delta = 0.1  was hard wired
-	double
-	    v = (x-np)/(x+np),  // might underflow to 0
-	    s = (x-np)*v;
+    	double d = x - np,
+	    v = d/(x+np); // might underflow to 0
+	double s = d*v;
 	if(fabs(s) < DBL_MIN) return s;
 	double ej = 2*x*v;
 	v *= v; // "v = v^2"
 	for (int j = 1; j < maxit; j++) { /* Taylor series; 1000: no infinite loop
-					as |v| < .1,  v^2000 is "zero" */
+					     as |v| < .1,  v^2000 is "zero" */
 	    ej *= v;// = 2 x v^(2j+1)
 	    double s_ = s;
 	    s += ej/((j<<1)+1);
@@ -79,12 +81,57 @@ double bd0(double x, double np, double delta, int maxit, int trace)
 	    }
 	}
 	MATHLIB_WARNING5("bd0(%g, %g): T.series failed to converge in %d it.; s=%g, ej/(2j+1)=%g\n",
-			 x, np, maxit, s, ej/((maxit<<1)+1));
+ 			 x, np, maxit, s, ej/((maxit<<1)+1));
     }
     /* else:  | x - np |  is not too small */
-    return(x*log(x/np)+np-x);
+    return (x*log(x/np)+np-x);
 }
 
+/* This is including the change of bd0() in  R itself,
+--------------------------------------------------------------------------------------------------
+r88190 | maechler | 2025-05-08 17:50:01 +0200 |
+improve bd0(<large>,<large>) notably for dnbinom(), dbinom() preventing over- and underflow
+--------------------------------------------------------------------------------------------------
+*
+* FIXME?  Much of this is copy+paste from above  bd0() */
+double bd0_2025_0510(double x, double np, double delta, int maxit, int trace)
+{
+    if(!R_FINITE(x) || !R_FINITE(np) || np == 0.0) ML_WARN_return_NAN;
+
+    if (fabs(x-np) < delta * (x+np)) { // delta = 0.1  was hard wired
+    	double d = x - np,
+	    v = d/(x+np);
+	if((d != 0.) && (v == 0.)) {  // v has underflown to 0 (as  x+np = inf)
+	    double
+		x_ = ldexp(x, -2),
+		n_ = ldexp(np,-2);
+	    v = (x_ - n_)/(x_ + n_);
+	}
+	double s = ldexp(d, -1) * v; // was d * v
+	if(fabs(ldexp(s, 1)) < DBL_MIN) return ldexp(s, 1);
+	double ej = x * v; // as 2*x*v could overflow:  v > 1/2  <==> ej = 2xv > x
+	v *= v; // "v = v^2"
+	for (int j = 1; j < maxit; j++) { /* Taylor series; 1000: no infinite loop
+					    as |v| < .1,  v^2000 is "zero" */
+	    ej *= v;// = x v^(2j+1)
+	    double s_ = s;
+	    s += ej/((j<<1)+1);
+	    if (s == s_) { /* last term was effectively 0 */
+		if(trace)
+		    REprintf("bd0(%g, %g): T.series w/ %d terms -> bd0=%g\n", x, np, j, ldexp(s, 1));
+		return ldexp(s, 1); // 2*s ; as we dropped '2 *' above
+	    }
+	}
+	/* ---- the following should _never_ happen ------------ */
+	MATHLIB_WARNING5("bd0(%g, %g): T.series failed to converge in %d it.; s=%g, ej/(2j+1)=%g\n",
+ 			 x, np, maxit, s, ej/((maxit<<1)+1));
+    }
+    /* else:  | x - np |  is not too small */
+#define lg_x_n (R_FINITE(x/np) ? log(x/np) : (log(x) - log(np)))
+    return (x > np) ? x*(lg_x_n -1.) + np
+	            : x* lg_x_n + np -x;
+#undef lg_x_n
+}
 
 // ebd0(): R Bugzilla PR#15628 -- proposed accuracy improvement by Morten Welinder
 
@@ -374,7 +421,7 @@ SEXP dpq_bd0(SEXP x_, SEXP np_, SEXP delta_,
 {
     R_xlen_t
 	n_x  = XLENGTH(x_),
-	n_np  = XLENGTH(np_),
+	n_np = XLENGTH(np_),
 	n = (n_x >= n_np ? n_x : n_np);
     if(!n_x || !n_np) return allocVector(REALSXP, 0); // length 0
     if(length(delta_) != 1)   error("'length(%s)' must be 1, but is %d", "delta",  length(delta_));
@@ -387,20 +434,28 @@ SEXP dpq_bd0(SEXP x_, SEXP np_, SEXP delta_,
     SEXP r_ = PROTECT(allocVector(REALSXP, n)); // result
     double *x = REAL(x_), *np = REAL(np_), *r = REAL(r_),
 	delta = asReal(delta_);
-    int
-	maxit   = asInteger(maxit_),
-//	version = asInteger(version_),
-	trace   = asInteger(trace_);
+    int maxit = asInteger(maxit_),
+	trace = asInteger(trace_);
+    typedef enum { R_4_0 = 1, d2025_0510 } version_BD0;
+    version_BD0 version = asInteger(version_);
 
     if(trace) {
-	REprintf("dpq_bd0(x[1:%lld], np[1:%lld], delta=%g, ... ):\n",
-		 (long long)n_x, (long long)n_np, delta);
+	REprintf("dpq_bd0(x[1:%lld], np[1:%lld], delta=%g, maxit=%d, version=%d, ... ):\n",
+		 (long long)n_x, (long long)n_np, delta, maxit, version);
     }
-//    version++; // currently unused
 
-    for(R_xlen_t i=0; i < n; i++) {
-	r[i] = bd0(x[i % n_x], np[i % n_np], delta, maxit, trace);
+    switch(version) {
+    case R_4_0:
+	for(R_xlen_t i=0; i < n; i++) {
+	    r[i] = bd0(x[i % n_x], np[i % n_np], delta, maxit, trace);
 	    // (double x, double np, double delta, int maxit, int trace) //
+	}
+	break;
+    case d2025_0510: // R-devel 2025-05-10 (svn r 88193)
+	for(R_xlen_t i=0; i < n; i++)
+	    r[i] = bd0_2025_0510(x[i % n_x], np[i % n_np], delta, maxit, trace);
+	break;
+    default: Rf_error("  wrong version = %d -- should not happen, please report!", version);
     }
     UNPROTECT(3);
     return(r_);

@@ -28,7 +28,7 @@ logspace.sub <- function(lx, ly) lx + log1mexp(lx - ly)
 ## Calling C in ../src/DPQ-misc.c :
 log1mexpC <- function(x) .Call(C_R_log1mexp, x)
 log1pexpC <- function(x) .Call(C_R_log1pexp, x)
-log1pmxC  <- function(x) .Call(C_R_log1pmx,  x)
+log1pmxC  <- function(x) .Call(C_R_log1pmx,  x) # < TODO: add tuning args, as in log1pmx()
 lgamma1pC <- function(x) .Call(C_R_lgamma1p, x)
 
 pow <- function(x, y, try.int.y = TRUE) {
@@ -42,8 +42,6 @@ pow <- function(x, y, try.int.y = TRUE) {
 .pow   <- function(x, y) .Call(C_dpq_pow, x, y)
 pow_di <- function(x, y) .Call(C_dpq_pow_di, x, y)
 
-logcf <- function (x, i, d, eps, trace = FALSE)
-    .Call(C_R_logcf, x, i, d, eps, trace)
 lgammacor <- function (x, nalgm = 5, xbig = 2^26.5)
     ## Hardwired in R's C code:  nalgm = 5, xbig = 2^26.5 = 94906265.62425156
     .Call(C_R_lgammacor, x, nalgm, xbig)
@@ -60,7 +58,7 @@ format01prec <- function(x, digits = getOption("digits"), width = digits + 2,
   ##            digits, width: number of digits, width to use with 'FUN'
   ##            eps:    Use '1-' iff  x in  (1-eps, 1] -- 1e-6 is OPTIMAL
   ## -------------------------------------------------------------------------
-  ## Author: Martin Maechler, Date: 14 May 97, 18:07
+  ## Author: Martin Maechler, Date: 14 May 1997
   if(as.integer(digits) < 4) stop('digits must be >= 4')
   if(eps < 0 || eps > .1) stop('eps must be in [0, .1]')
   i.swap <- 1-eps < x  &  x <= 1 #-- Use "1- ." if <~ 1,  normal 'FUN' otherwise

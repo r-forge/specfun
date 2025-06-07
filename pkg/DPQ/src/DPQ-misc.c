@@ -21,7 +21,7 @@ SEXP R_log1pmx(SEXP x_)
     const double *x = REAL(x_);
     double *r = REAL(r_);
     for(R_xlen_t i=0; i < n; i++)
-	r[i] = log1pmx(x[i]); // log1pmx() implemented in R's src/nmath/pgamma.c
+	r[i] = log1pmx(x[i]); // R API log1pmx() [in R's src/nmath/pgamma.c]
     UNPROTECT(1);
     return r_;
 }

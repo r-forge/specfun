@@ -12,14 +12,14 @@
 
   \code{rlog1(x)}, provided mostly for reference and reproducibility, is
   used in TOMS Algorithm 708, see e.g. the reference of \code{\link{lgamma1p}}.
-  and computes \emph{minus} log1pmx(x), i.e., \eqn{x - \log(1+x)}{x - log(1+x)},
+  and computes \emph{minus} \code{log1pmx(x)}, i.e., \eqn{x - \log(1+x)}{x - log(1+x)},
   using (argument reduction) and a rational approximation when
   \eqn{x \in [-0.39, 0.57)}{x in [-0.39, 0.57)}.
 }
 \usage{
 log1pmx (x, tol_logcf = 1e-14, eps2 = 0.01, minL1 = -0.79149064,
          trace.lcf = FALSE,
-         logCF = if(is.numeric(x)) logcf else logcfR.)
+         logCF = if(is.numeric(x)) logcf else logcfR)
 log1pmxC(x)  # TODO in future: arguments (minL1, eps2, tol_logcf),
              # possibly with *different* defaults (!)
 rlog1(x)
@@ -29,9 +29,9 @@ rlog1(x)
     number) vector with values \eqn{x > -1}.}
   \item{tol_logcf}{a non-negative number indicating the tolerance
     (maximal relative error) for the auxiliary \code{\link{logcf}()} function.}
-  \item{eps2}{non-negative cutoff where the algorithm switches from a few
+  \item{eps2}{non-negative cutoff \eqn{\epsilon_2} where the algorithm switches from a few
     terms, to using \code{\link{logcf}()} explicitly.  Note that for
-    more accurate mpfr-numbers the default \code{eps = .01} is too large,
+    more accurate mpfr-numbers the default \code{eps2 = .01} is too large,
     even more so when the tolerance is lowered (from \code{1e-14}).}
   \item{minL1}{negative cutoff, called \code{minLog1Value} in Morten
     Welinder's C code for \code{log1pmx()} in \file{R/src/nmath/pgamma.c},
@@ -56,15 +56,16 @@ rlog1(x)
     \item{\eqn{|x| < \epsilon_2}{|x| < eps2}:}{use
       \eqn{t((((2/9 * y + 2/7)y + 2/5)y + 2/3)y - x)},}
     \item{\eqn{x \in [ml,1]}, and \eqn{|x| \ge \epsilon_2}{|x| >= eps2}:}{use
-      \eqn{t(2y logcf(y, 3, 2) - x)},}
+      \eqn{t(2y \mathrm{logcf}(y, 3, 2) - x)}{t*(2y * logcf(y, 3,2) - x)},}
   }
   where \eqn{t := \frac{x}{2 + x}}{t := x/(2+x)}, and \eqn{y := t^2}.
 
   Note that the formulas based on \eqn{t} are based on the (fast
   converging) formula
-  \deqn{\log(1+x) = 2\left(r + \frac{r^3}{3}+ \frac{r^5}{5} + \ldots\right),}{%
-    log(1+x) = 2(r + r^3/3  + r^5/5 + ...),}
-  where \eqn{r := x/(x+2)}, see the reference.
+  \deqn{\log(1+x) = 2\left(r + \frac{r^3}{3}+ \frac{r^5}{5} +
+                                                \ldots\right), \mathrm{where}\ r := \frac{x}{x+2},}{%
+         log(1+x) = 2(r + r^3/3  + r^5/5 + ...), where r := x/(x+2),}
+  see the reference.
 
   \code{log1pmxC()} is an interface to \R C API (\file{Rmathlib}) function.
 }
@@ -77,15 +78,14 @@ rlog1(x)
   links to the full text which is in public domain.\cr
   Formula (4.1.29), p.68.
 
-  Martin \enc{Mächler}{Maechler} (2021).
+  Martin \enc{Mächler}{Maechler} (2021 ff)
   %log1pmx(), bd0(), stirlerr() -- Computing Poisson, Binomial, Gamma Probabilities in \R}
-  \emph{log1pmx, \dots Computing \dots Probabilities in \R}.
-  (\pkg{DPQ} package vignette)% ../vignettes/log1pmx-etc.Rnw
-  % FIXME -- not yet:
-  % \url{https://CRAN.R-project.org/package=DPQ/vignettes/log1pmx-etc.pdf}.
+  \emph{\code{log1pmx}, \dots Computing \dots Probabilities in \R}.
+  \CRANpkg{DPQ} package vignette % ../vignettes/log1pmx-etc.Rnw
+  \url{https://CRAN.R-project.org/package=DPQ/vignettes/log1pmx-etc.pdf}.
 }
 \author{A translation of Morten Welinder's C code of Jan 2005, see R's bug
-  issue \PR{7307}, parametrized and tuned by Martin Maechler.
+  issue \PR{7307} (comment #6), parametrized and tuned by Martin Maechler.
 }
 \seealso{
   \code{\link{logcf}}, the auxiliary function,

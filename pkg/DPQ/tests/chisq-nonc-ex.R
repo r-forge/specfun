@@ -26,10 +26,10 @@ sessionInfoX(c("DPQ","Rmpfr"))
 
 ## very large ncp gave "infinite" loop in R <= 3.6.1 :
 ## ==> need new enough "3.6.1 patched" or R{-devel} > 3.6.x
-(okR_Lrg <- (getRversion() >  "3.6.1" ||
-             getRversion() == "3.6.1" && R.version$`svn rev` >= 77145))
+## (okR_Lrg <- (getRversion() >  "3.6.1" ||
+##              getRversion() == "3.6.1" && R.version$`svn rev` >= 77145))
 
-(doExtras <- okR_Lrg && DPQ:::doExtras() && !grepl("valgrind", R.home()))
+(doExtras <- DPQ:::doExtras() && !grepl("valgrind", R.home()))
 
 ## save directory (to read from):
 (sdir <- system.file("safe", package="DPQ"))
@@ -1979,8 +1979,6 @@ pchiTit.n.d <- function(twoE, df, ncp) pchiTit(twoE, df, ncp=ncp/df, ncN="ncp/df
 
 ks <- c(-40, -20, -15, -10, -6:6, 10, 15, 20, 40)
 
-if(okR_Lrg) { ## R <= 3.6.1 gave an (almost ?) infinite loop here !!
-
 ncp <- 1e20; df <- 99
 twoExp <- -35
 ##        ===
@@ -2034,9 +2032,9 @@ Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
 print(Pn., digits=3) # pchisq = Pearson = Sanka_d  ~~ AbdelA, Patnaik
 matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)", main= pchiTit(twoExp,df,ncp))
 
-} # only if(.X.)
+} # only if(doEx..)
 
-} # only if(okR..)
+
 
 showProc.time()
 
@@ -2109,7 +2107,6 @@ abline(h=0, lty=3, col=adjustcolor(1, 1/4))
 legend("topright", colnames(Pn.)[-j.d2], lty=1:5, col=1:5, bty="n")
 showProc.time()
 
-if(okR_Lrg) { ## R <= 3.6.1 gave an (almost ?) infinite loop here !!
 ##     vvvv
 ncp <- 1e9; df <- 3 ; twoExp <- -17
 Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
@@ -2117,12 +2114,10 @@ print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong
 matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)",
         main = pchiTit(twoExp,df,ncp))
 showProc.time()
-} # only if(okR..)
 
 
 ##===  L 3.  BOTH large ncp, large df ====================
 
-if(okR_Lrg) { ## R <= 3.6.1 gave an (almost ?) infinite loop here !!
 
 df <- 1e9; ncp <- 1 * df ; twoExp <- -17
 Pn. <- mkPnch(ks, df=df, ncp=ncp, twoExp=twoExp)
@@ -2167,7 +2162,6 @@ print(Pn., digits=3) # ">>" pcPolKuz is *NOT* for this; R's pchisq is full wrong
 matplot(ks, Pn., type = "b", xlab = quote(k), ylab = "pchisq*(q, ..)",
         main = pchiTit.n.d(twoExp,df,ncp))
 
-} # only if(okR..)
 
 showProc.time()
 

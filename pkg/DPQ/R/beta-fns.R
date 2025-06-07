@@ -137,7 +137,7 @@ lbetaMM <- function(a,b, cutAsy = 1e-2, verbose = FALSE)
   if(a>b) { cc <- b; b <- a; a <- cc } #- Now: a <= b
   if(a*a < b*cutAsy) {
     if(verbose)
-      message("a=",formatC(a)," b=",formatC(b), " -- using asymptotic  lbeta(.)")
+      message("a=",format(a)," b=",format(b), " -- using asymptotic  lbeta(.)")
     lgamma(a) - logQab_asy(a,b)
   } else
     lgamma(a)+lgamma(b)-lgamma(a+b) ## was =: lbeta00(a, b)
@@ -259,8 +259,8 @@ rexpm1 <- function(x)
 rlog1 <- function(x)
 {
 ## /* -----------------------------------------------------------------------
-##  *             Evaluation of the function  x - ln(1 + x)
-##  *                                        ~=~ - log1pmx(x)  in ./pgamma.c
+##  *       Evaluation of the function  x - ln(1 + x)
+##  *                                  ~=~   - log1pmx(x)  in R's ./pgamma.c
 ##  * ----------------------------------------------------------------------- */
     ## Vectorize in 'x' -- and work with NaN/NA
     r <- x
@@ -313,6 +313,8 @@ rlog1 <- function(x)
 ## ---> lgamma1p() below
 
 scalefactor <- 2^256 # == 2^2^2^3 == double prec. exact{checking via Rmpfr and gmp::as.bigz(2)^256}
+## ==>  a * scalefactor == ldexp(a,  256)
+## ==>  a / scalefactor == ldexp(a, -256)
 
 ## smallest exponent E for which exp(E) is "above underflow" {exp(E) == .Machine$double.xmin}
 M_minExp <- log(2) * .Machine$double.min.exp # ~= -708.396
@@ -340,8 +342,9 @@ formatSummL <- function(x) {
 
 ## This is the "fast pure R" version that does iterations
 ## in parallel *where applicable*
-## The next one, logcfR(), will entirely vectorize, ==> iterations separately
-logcfR. <- function (x, i, d, eps, # ~ relative tolerance
+## The next one, logcfR_vec(), will trivially vectorize {via for()};
+## here we  are much faster by iterating "all" those where still necessary:
+logcfR <- function (x, i, d, eps, # ~ relative tolerance
                      maxit = 10000L, trace = FALSE)
 {
     ## Continued fraction for calculation of  sum_{k=0}^Inf x^k/(i+k*d) =
@@ -350,9 +353,8 @@ logcfR. <- function (x, i, d, eps, # ~ relative tolerance
     ## auxiliary in log1pmx() and lgamma1p()
     stopifnot (i > 0, d >= 0, eps > 0,
                length(i) == 1, length(d) == 1, length(eps) == 1
-               ## x < 1 for (i,d = 3,2) -- there x = -2 is fine, but in general?
-               ## |x| < 1 # otherwise it does not (always?) converge,
-               ##            ??
+               ## x < 1 for (i,d = 3,2) ... seems to be true for {i > 0, d >= 0}
+               ## x <= 1  # plus code to explicitly return logcf(1, *,*) := Inf
                )
     if(any_mpfr(x, i, d)) {
         stopifnot(requireNamespace("Rmpfr"))
@@ -364,6 +366,8 @@ logcfR. <- function (x, i, d, eps, # ~ relative tolerance
         if(!inherits(i, "mpfr")) i <- mpfr(i, prec)
         if(!inherits(d, "mpfr")) d <- mpfr(d, prec)
         asN <- Rmpfr::asNumeric
+        ldexp <- function(f, E)
+            if(inherits(f, "mpfr")) Rmpfr::ldexpMpfr(f, E) else DPQ::ldexp(f, E)
     } else asN <- as.numeric
 
     c1 <- 2 * d  # scalar
@@ -377,8 +381,11 @@ logcfR. <- function (x, i, d, eps, # ~ relative tolerance
     B2 <- c4 * b1 - i * r
 
     it <- 0L
-    if(trace) cat(sprintf("logcf(x[], i=%g, d=%g, eps=%g)", i, d, eps),
-                  "  iterations:\n")
+    if(trace) {
+      cat(sprintf("logcf(x[], i=%g, d=%g, eps=%g)", i, d, eps),
+          "  iterations:\n")
+      xori <- x
+    }
     n <- length(r <- x) # r[1:n] : the result (also good for 'mpfr' numbers)
     do.x <- rep(TRUE, n)
     while (any(needIt <- abs(A2 * b1 - a1 * B2) > abs(eps * b1 * B2))) {
@@ -394,17 +401,20 @@ logcfR. <- function (x, i, d, eps, # ~ relative tolerance
             do.x[iFi] <- FALSE
             ## and shorten the rest:
             iK <- which(needIt) # the indices to keep
-             x <-  x[iK]
+            x <-  x[iK]
             if(length(a1) == length(b1)) # (not when it = 1)
-            a1 <- a1[iK]
+              a1 <- a1[iK]
             b1 <- b1[iK]
             A2 <- A2[iK]
             B2 <- B2[iK]
         }
         ## else : all(needIt) --> no finished parts, no shortening
 
-        if(trace) cat(sprintf("length(x[<todo>])=%2d, ", sum(do.x)))
-
+        if(trace) cat(if((nd <- sum(do.x)) > 3)
+                        sprintf("length(x[<todo>])=%2d, ", nd)
+                      else
+                        sprintf("todo: x[%s]= c(%s), ", paste(which(do.x), collapse=","),
+                                paste(format(as.numeric(xori[do.x]), digits=3), collapse=", ")))
         c3 <- c2*c2 * x
 	c2 <- c2 + d
 	c4 <- c4 + d
@@ -418,25 +428,26 @@ logcfR. <- function (x, i, d, eps, # ~ relative tolerance
 	B2 <- c4 * b1 - c3 * B2
 
         m.B2 <- exp(mean(log(abs(B2))))
-        if(trace) cat(sprintf(" m.B2=%12g", asN(m.B2)))
+        if(trace) cat(sprintf(" m.B2=%10.3g", asN(m.B2)))
 	if (m.B2 > scalefactor) {
-            if(trace) cat(sprintf("  Lrg m.B2"))
-	    a1 <- a1 / scalefactor
-	    b1 <- b1 / scalefactor
-	    A2 <- A2 / scalefactor
-	    B2 <- B2 / scalefactor
+            if(trace) cat(sprintf(" Lrg"))
+	    a1 <- ldexp(a1, -256L)
+	    b1 <- ldexp(b1, -256L)
+	    A2 <- ldexp(A2, -256L)
+	    B2 <- ldexp(B2, -256L)
 	}
         else if (m.B2 < 1 / scalefactor) {
-            if(trace) cat(sprintf("  Sml m.B2"))
-	    a1 <- a1 * scalefactor
-	    b1 <- b1 * scalefactor
-	    A2 <- A2 * scalefactor
-	    B2 <- B2 * scalefactor
+            if(trace) cat(sprintf(" Sml"))
+	    a1 <- ldexp(a1, 256L)
+	    b1 <- ldexp(b1, 256L)
+	    A2 <- ldexp(A2, 256L)
+	    B2 <- ldexp(B2, 256L)
 	}
         if(trace) cat("\n")
         if(it > maxit) {
-            warning("non-convergence in logcf(), iter > ", maxit)
-            break
+          warning("non-convergence in logcf(), iter > ", maxit,
+                  " for x[", paste(which(do.x),collapse=", "),"]")
+          break
         }
     }
     if(trace && it <= maxit) cat("  logcf(*) end: after", it, "iterations.\n")
@@ -444,10 +455,10 @@ logcfR. <- function (x, i, d, eps, # ~ relative tolerance
     r[do.x] <- A2 / B2
     ## and return
     r
-} ## logcfR.()
+} ## logcfR()
 
-## This is the entirely vectorizing "pure R" version
-logcfR <- function (x, i, d, eps, # ~ relative tolerance
+## This is the entirely vectorizing "pure R" version -- now only for "testing"
+logcfR_vec <- function (x, i, d, eps, # ~ relative tolerance
                     maxit = 10000L, trace = FALSE)
 {
     ## Continued fraction for calculation of
@@ -470,6 +481,8 @@ logcfR <- function (x, i, d, eps, # ~ relative tolerance
         if(!inherits(i, "mpfr")) i <- mpfr(i, prec)
         if(!inherits(d, "mpfr")) d <- mpfr(d, prec)
         asN <- Rmpfr::asNumeric
+        ldexp <- function(f, E)
+            if(inherits(f, "mpfr")) Rmpfr::ldexpMpfr(f, E) else DPQ::ldexp(f, E)
     } else asN <- as.numeric
 
     r <- x
@@ -504,17 +517,17 @@ logcfR <- function (x, i, d, eps, # ~ relative tolerance
             if(trace >= 2) cat(sprintf("it=%2d: ==> B2=%13g", it, asN(B2)))
             if (abs(B2) > scalefactor) {
                 if(trace >= 2) cat(sprintf("  Lrg m.B2\n%27s", ""))
-                a1 <- a1 / scalefactor
-                b1 <- b1 / scalefactor
-                A2 <- A2 / scalefactor
-                B2 <- B2 / scalefactor
+                a1 <- ldexp(a1, -256L)
+                b1 <- ldexp(b1, -256L)
+                A2 <- ldexp(A2, -256L)
+                B2 <- ldexp(B2, -256L)
             }
             else if (abs(B2) < 1 / scalefactor) {
                 if(trace >= 2) cat(sprintf("  Sml m.B2\n%27s", ""))
-                a1 <- a1 * scalefactor
-                b1 <- b1 * scalefactor
-                A2 <- A2 * scalefactor
-                B2 <- B2 * scalefactor
+                a1 <- ldexp(a1, 256L)
+                b1 <- ldexp(b1, 256L)
+                A2 <- ldexp(A2, 256L)
+                B2 <- ldexp(B2, 256L)
             }
             if(trace >= 2) cat(sprintf(" --> crit. |A2*b1 - a1*B2|/|b1*B2| = %g\n",
                                   asN(abs(A2 * b1 - a1 * B2)/abs(b1 * B2))))
@@ -528,11 +541,11 @@ logcfR <- function (x, i, d, eps, # ~ relative tolerance
         ##       -------
     } ## end for(ii ..)
     r
-} ## logcfR() {"properly" vectorized}
+} ## logcfR_vec() = logcf() {"properly" vectorized}
 
 
-logcf <- function (x, i, d, eps, trace = FALSE) {
-    .Call(C_R_logcf, x, i, d, eps, trace)
+logcf <- function (x, i, d, eps, maxit = 10000L, trace = FALSE) {
+    .Call(C_R_logcf, x, i, d, eps, maxit, trace)
 }
 
 ## Accurate calculation of log(1+x)-x, particularly for small x.
@@ -542,14 +555,16 @@ log1pmx <- function(x, tol_logcf = 1e-14,
                     eps2 = 0.01,
                     minL1 = -0.79149064, ## << was hard-wired 'minLog1Value' in R's source of log1pmx()
                     trace.lcf = FALSE,
-                    logCF = if(is.numeric(x)) logcf else logcfR.)
+                    logCF = if(is.numeric(x)) logcf else logcfR)
 {
     stopifnot(is.numeric(eps2), eps2 >= 0, is.numeric(minL1), -1 <= minL1, minL1 < 0)# < -1/4 ?
     r <- x
-    if(any(c1 <- (x > 1 | x < minL1)))
+    if(any(cL <- x >= 2^59)) # incl for x = Inf
+        r[cL] <- - x[cL]
+    if(any(c1 <- !cL & (x > 1 | x < minL1)))
         r[c1] <- log1p(x[c1]) - x[c1]
     ## else { ## ##/* expand in [x/(2+x)]^2 */
-    if(any(c2 <- !c1)) {
+    if(any(c2 <- !(cL | c1))) {
 	x <- x[c2]
 	term <- x / (2 + x)
 	y <- term * term

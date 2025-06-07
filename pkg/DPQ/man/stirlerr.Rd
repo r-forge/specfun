@@ -24,11 +24,6 @@
   computing \eqn{delta(x)} accurately, however is only defined for \eqn{x
     \ge 10}, and has been crucially used for \R's own \code{\link{lgamma}()}
   and \code{\link{lbeta}()} computations.
-
-  Note that the example below suggests that R's hardwired default of
-  \code{nalgm = 5} is unnecessarily losing more than one digit accuracy,
-  \code{nalgm = 6} seems much better.
-
 }
 \usage{% >>> ../R/dgamma.R <<<
 stirlerr(n, scheme = c("R3", "R4.4_0"),
@@ -119,6 +114,16 @@ lgammacor(x, nalgm = 5, xbig = 2^26.5)% --> ../R/utils.R <-> ../src/lgammacor.c
       Tests seem to indicate that for current double precision arithmetic,
       only \eqn{k \le 17} seem to make sense. % see ../tests/stirlerr-tst.R
     }% stirlerr
+
+    \item{\code{lgammacor(x)}:}{The \dQuote{same} Stirling's error, but only
+      defined for \eqn{x \ge 10}{x >= 10}, returning \code{\link{NaN}} otherwise.
+      The example below suggests that \R's hardwired default of
+      \code{nalgm = 5} loses more than one digit accuracy, and \code{nalgm = 6}
+      seems much better.  OTOH, the use of \code{lgammacor()} in \R's
+      (Mathlib/\file{libRmath}) C code is always in conjunction with considerably
+      larger terms such that small inaccuracies in \code{lgammacor()} will not
+      become visible in the values of the functions using \code{lgammacor()}
+      internally, notably \code{\link{lbeta}()} and \code{\link{lgamma}()}.}
   }% describe
 }
 \value{
@@ -206,7 +211,22 @@ if(requireNamespace("Rmpfr") && requireNamespace("DPQmpfr")) {
     legend("topright", legend=colnames(relE)[1:6], cex = 3/4, lty=1:5, lwd=3,
            col=c(rep(NA,4), col.lgc), bty="n")
     ## Note that lgammacor(x) {default, n=5} is clearly inferior,
-    ## but lgammacor(x, 6) is really good {in [10, 50] at least}
+    ## but lgammacor(x, 6) is really good in [10, 50]
+
+    ## ===> Larger n's:
+    nL <- c(seq(50, 99, by = 1/2), 100*2^seq(0,8, by = 1/4))
+    stMl <- stirlerr(mpfr(nL, 512))
+    lgc5 <- lgammacor(nL, nalgm = 5)
+    lgc6 <- lgammacor(nL, nalgm = 6)
+    stir7 <- stirlerr(nL, order = 7)
+    relEl <- asNumeric(relErrV(stMl,
+               cbind(lgammacor.5 = lgc5, lgammacor.6 = lgc6, 'stirlerr_k=7' = stir7)))
+    matplot(nL, pmax(abs(relEl),2^-55), type="o", cex=2/3, log="xy",
+            ylim = c(2^-54.5, max(abs(relEl))), ylab = quote(abs(rE)),
+            xaxt="n", yaxt="n", main = quote(abs(relErr(stirlerr(n)))))
+    eaxis(1, sub10=2); eaxis(2, cex.axis=.8)
+    abline(h = 2^-(54:51), lty=3, col=adjustcolor(1, 1/2))
+    legend("center", legend=colnames(relEl), lwd=2, pch = paste(1:3), col=1:3, lty=1:3)
 }# end if( <Rmpfr> )
 }
 \keyword{arith}
