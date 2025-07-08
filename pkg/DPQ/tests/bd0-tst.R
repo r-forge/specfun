@@ -195,6 +195,17 @@ np_bd0 <- function(x, rnd.N = 256, ex2M = 2, n2ex = 256) {
 ##  is bd0(<mpfr>, *) really accurate --- (currently, it seems even precBits = 128 is fine)
 ##  it uses it's own convergent series approximation for |x-np| < .. ????
 
+##' Compute relative errors (wrt MPFR) for "many" bd0() versions
+##' @title
+##' @param x, np  main arguments for computing bd0*(x, np) =  D_0(x, np) == D_0(x, M)
+##' @param mpfrPrec positive integer, typically >= 64, `precBits` bit precision for mpfr-number arithmetic
+##' @param delta
+##' @param tol_logcf
+##' @param ...
+##' @param chkVerb  logical, TRUE by default, indicating if some checking + verbosity should happen
+##' @param keepMpfr logical, FALSE by default, indication if full precision mpfr result should be storted
+##' @return a \code{list()}, ..
+##' @author Martin Maechler
 bd0ver <- function(x, np = np_bd0(x), mpfrPrec, delta = 0.1, tol_logcf = 1e-14, ...,
                    chkVerb=TRUE, keepMpfr=FALSE) {                              ### passed to log1pmx()
     stopifnot(length(mpfrPrec <- as.integer(mpfrPrec)) == 1,
@@ -202,7 +213,8 @@ bd0ver <- function(x, np = np_bd0(x), mpfrPrec, delta = 0.1, tol_logcf = 1e-14, 
               x >= 0, np >= 0)
     yy   <-  cbind(bd0      = bd0       (x, np, delta = delta),
                    bd0.l    = bd0_l1pm  (x, np, tol_logcf=tol_logcf, ...),
-                   bd0.p1l  = bd0_p1l1d (x, np, tol_logcf=tol_logcf, ...),
+                   bd0.p1l1 = bd0_p1l1  (x, np, tol_logcf=tol_logcf, ...),
+                   bd0.p1.d = bd0_p1l1d (x, np, tol_logcf=tol_logcf, ...),
                    bd0.p1.d1= bd0_p1l1d1(x, np, tol_logcf=tol_logcf, ...))
     yhl  <- ebd0 (x, np)
     yhlC <- ebd0C(x, np)
@@ -245,6 +257,18 @@ stopifnot( all.equal(bd0v.7, bd0v.10, tol=0),
 rm(bd0v.10)
 showProc.time()
 
+##' Plot the result of bd0ver() -- i.e., relative errors for "many" bd0() versions
+##' @title
+##' @param bd0v result of  bd0ver()
+##' @param dFac
+##' @param log a string, "", "x", "y", or "xy"
+##' @param type plot `type`, typically "b" or "l"
+##' @param add logical
+##' @param col.add
+##' @param smooth
+##' @param f.lowsm lowess() smoothing parameter when adding smooths'
+##' @return
+##' @author Martin Maechler
 p.relE <- function(bd0v, dFac = if(max(np) >= 8e307) 1e10 else 1,
                    log = "x", type="b",
                    add = FALSE, col.add = adjustcolor(k+2, 2/3),
@@ -389,7 +413,7 @@ stopifnot(tail(mBM,1) == Inf)
 if(!doExtras) # gets too expensive
     quit("no") ## FIXME: do not quit: use less precision, etc
 
-options(digits = 6)
+options(digits = 6, width = 130) # width: for tables
 
 
 ## zoom in more:

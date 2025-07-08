@@ -97,7 +97,7 @@ relE.lgam1 <-  function(n, precBits = if(doExtras) 1024 else 320) {
           )
 }
 
-n <- 2^-seq.int(1022, 1, by = -1/4)
+n <- 2^-seq.int(1022, 1, by = -(if(doExtras) 1/4 else 9/4))
 relEx <- relE.lgam1(n)
 showProc.time()
 
@@ -142,7 +142,7 @@ drawEps.h(negative=TRUE) # abline(h= c(-4,-2:2, 4)*2^-53, lty=c(2,2,2, 1, 2,2,2)
 legend("topleft", legend = colnames(relEx), col=cols, lwd=3)
 
 ## zoomed in a bit:
-n. <- 2^-seq.int(400,2, by = -1/4)
+n. <- 2^-seq.int(400,2, by = -(if(doExtras) 1/4 else 9/4))
 relEx. <- relE.lgam1(n.)
 matplot(n., relEx., type = "l", log="x", col=cols, lwd=lwd, ylim = c(-1,1)*4.5e-16,
         main = "relative errors of direct (approx.) formula for stirlerr(n), small n")
@@ -156,7 +156,7 @@ drawEps.h(); legend("top", legend = colnames(relEx.), col=cols, lwd=3)
 lines(n., abs19(relEx.[,"n0"]), type = "o", cex=1/4, col=cols[4], lwd=2)
 
 ## more zooom-in
-n.2 <- 2^-seq.int(85, 50, by= -1/100)
+n.2 <- 2^-seq.int(85, 50, by= -(if(doExtras) 1/100 else 1/4))
 stirS.2 <- sapply(c("R3", "lgamma1p", "n0"), function(v) stirlerr_simpl(n.2, version=v))
 releS.2 <- asNumeric(relErrV(stirlerr(mpfr(n.2, 320)), stirS.2))
 
@@ -175,7 +175,7 @@ mtext('stirlerr_simpl(*, "n0")  is as good as others for n <= 5e-17', col=adjust
 ##     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## ===> "all *but* "n0" approximations for "larger" small n:
-n2 <- 2^-seq.int(20,0, length.out=1000)
+n2 <- 2^-seq.int(20,0, length.out = if(doExtras) 1000 else 200)
 relEx2 <- relE.lgam1(n2)[,c("R3", "lgamma1p", "MM2")] # "n0" is "bad": |relE| >= 2.2e-6 !
 cols <- c("gray30", adjustcolor(c(2,4), 1/2));  lwd <- c(1, 3,3)
 stopifnot((k <- length(cols)) == ncol(relEx2), k == length(lwd))
@@ -186,7 +186,7 @@ legend("topleft", legend = colnames(relEx2), col=cols, lwd=3)
 ##==> "MM" is *NOT* good for n < 1  *but*
 
 ## "the same" -- even larger small n:
-n3 <- seq(.01, 5, length=1000)
+n3 <- seq(.01, 5, length = if(doExtras) 1000 else 200)
 relEx3 <- relE.lgam1(n3)[,c("R3", "lgamma1p", "MM2")] # "no" is "bad" ..
 stopifnot((k <- length(cols)) == ncol(relEx3), k == length(lwd))
 
@@ -219,7 +219,7 @@ lgamma1p(ni)
 - (ni +0.5)*log(ni)  + ni
 
 ## much less extreme:
-n2 <- lseq(2^-12, 1/2, length=1000)
+n2 <- lseq(2^-12, 1/2, length = if(doExtras) 1000 else 200)
 relE2 <- relE.lgam1(n2)[,-4]
 
 cols <- c("gray30", adjustcolor(2:3, 1/2)); lwd <- c(1,3,3)
@@ -246,7 +246,7 @@ eaxis(1, sub10=c(-2,1)); eaxis(2); axis(3, at=max(n2)); abline(v = max(n2), lty=
 lines(n2, smooth.spline(d.absrelE, df=12)$y, lwd=3, col=2)
 
 ## not really small n at all == here see, how "bad" the direct formula gets for 1 < n < 10 or so
-n3 <- lseq(2^-14, 2^2, length=800)
+n3 <- lseq(2^-14, 2^2, length = if(doExtras) 800 else 150)
 relE3 <- relE.lgam1(n3)[, -4]
 
 matplot(n3, relE3, type = "l", log="x", col=cols, lty=1, lwd = c(1,3),
@@ -330,8 +330,8 @@ p.stirlerrDev <- function(n, precBits = if(doExtras) 2048L else 512L,
 
 showProc.time()
 
-n <- lseq(2^-10, 1e10, length=4096)
-n <- lseq(2^-10, 5000, length=4096)
+n <- lseq(2^-10, 1e10, length = if(doExtras) 4096 else 512)
+n <- lseq(2^-10, 5000, length = if(doExtras) 4096 else 512)
 ## store "expensive" stirlerr() result, and re-use many times below:
 nM <- mpfr(n, if(doExtras) 2048 else 512)
 st.nM <- stirlerr(nM, use.halves=FALSE) ## << on purpose
@@ -390,7 +390,7 @@ showProc.time()
 
 
 ##-- April 20: have more terms up to S10 in stirlerr() --> can use more cutoffs
-n <- n5m <- lseq(1/64, 5000, length=4096)
+n <- n5m <- lseq(1/64, 5000, length = if(doExtras) 4096 else 512)
 nM <- mpfr(n, if(doExtras) 2048L # a *lot* accuracy for stirlerr(nM,*)
 	      else 512L)
 ct10.1 <- c(            5.4, 7.5, 8.5, 10.625, 12.125, 20, 26, 60, 200, 3300)# till 2024-01-19
@@ -479,7 +479,7 @@ lgammacorTit(line=-1)
 drawCuts("R4.4_0", axis = 3)
 
 ## zoom in -- still "large" {no longer carry the  lgammacor() .. }:
-n2c <- 2^seq(2, 8, by=1/256)
+n2c <- 2^seq(2, 8, by = 1/(if(doExtras) 256 else 32))
 nMc <- mpfr(n2c, 1024)
 stnMc <- stirlerr(nMc) # the "true" values
 stirlOrc <- sapply(k, function(k.) stirlerr(n2c, order = k.))
@@ -497,7 +497,7 @@ drawCuts("R4.4_0", axis = 3)
 
 
 ## zoom into the critical n region
-nc <- seq(3.5, 11, by=1/128)
+nc <- seq(3.5, 11, by = 1/(if(doExtras) 128 else 16))
 ncM <- mpfr(nc, 256)
 stncM <- stirlerr(ncM) # the "true" values
 stirlO.c <- sapply(k, function(k) stirlerr(nc, order = k))
@@ -531,8 +531,8 @@ showProc.time()
 
 ##--- Accuracy of "R4.4_0" -------------------------------------------------------
 
-for(nc in list(seq(4.75, 28, by=1/512), # for a bigger pix
-               seq(4.75,  9, by=1/1024)))
+for(nc in list(seq(4.75, 28, by=1/(if(doExtras) 512 else 64)), # for a bigger pix
+               seq(4.75,  9, by=1/(if(doExtras) 1024 else 128))))
 {
   ncM <- mpfr(nc, 1024)
   stncM <- stirlerr(ncM) # the "true" values
@@ -613,13 +613,13 @@ stirlerrPlot <- function(nc, k, res=NULL, legend.xy = "left", full=TRUE, precB =
     invisible(list(nc=nc, k=k, relEc = relEc, splarelE = splarelE, arelEs0=arelEs0, arelEs2=arelEs2))
 }
 
-rr1 <- stirlerrPlot(nc = seq(4.75, 9.0, by=1/1024),
+rr1 <- stirlerrPlot(nc = seq(4.75, 9.0, by=1/(if(doExtras) 1024 else 256)),
                     k = 7:20)
 stirlerrPlot(res = rr1, full=FALSE, ylim = c(8e-17, 1e-13))
 if(interactive())
 stirlerrPlot(res = rr1)
 
-rr <- stirlerrPlot(nc = seq(5, 6.25, by=1/2048), k = 9:18)
+rr <- stirlerrPlot(nc = seq(5, 6.25, by=1/(if(doExtras) 2048 else 256)), k = 9:18)
 stirlerrPlot(res = rr, full=FALSE, ylim = c(8e-17, 1e-13))
 
 showProc.time()
@@ -633,7 +633,8 @@ if(do.pdf) { dev.off(); pdf("stirlerr-tst_order_k-vs-k1.pdf") }
 ##' where c(k) is such that relE(n=c(k), k) ~= eps)
 
 ##' 1. Find the c1(k)  such that |relE(n, k)| ~= c1(k) * n^{-2k}
-findC1 <- function(n, ks, e1 = 1e-15, e2 = 1e-5, res=NULL, precBits = 1024, do.plot = TRUE, ...)
+findC1 <- function(n, ks, e1 = 1e-15, e2 = 1e-5, res=NULL,
+                   precBits = if(doExtras) 1024 else 256, do.plot = TRUE, ...)
 {
     if(is.list(res) && all(c("n", "ks", "arelE") %in% names(res))) { ## do *not* recompute, take from 'res':
         list2env(res, envir = environment())
@@ -674,7 +675,7 @@ findC1 <- function(n, ks, e1 = 1e-15, e2 = 1e-5, res=NULL, precBits = 1024, do.p
     invisible(list(n=n, ks=ks, arelE = arelE, c1 = c1))
 } ## findC1()
 
-c1.Res <- findC1(n = 2^seq(2, 26, by=1/128), ks = 1:18)
+c1.Res <- findC1(n = 2^seq(2, 26, by = 1/(if(doExtras) 128 else 32)), ks = 1:18)
 (s.c1.fil <- paste0("stirlerr-c1Res-", myPlatform(), ".rds"))
 saveRDS(c1.Res, file = s.c1.fil)
 
@@ -844,8 +845,8 @@ form(as.data.frame( nints.k ))
 ### Here, compute only
 find1cuts <- function(k, c1,
                       n = nInt(k, c1), # the *set* of n's  or the 'range'
-                      len.n = 1000,
-                      precBits = 1024, nM = mpfr(n, precBits),
+                      len.n = if(doExtras) 1000 else 250,
+                      precBits =  if(doExtras) 1024 else 256, nM = mpfr(n, precBits),
                       stnM = stirlerr(nM),
                       stirlOrd = sapply(k+(0:1), function(.k.) stirlerr(n, order = .k.)),
                       relE = asNumeric(stirlOrd/stnM -1), # "true" relative error for the {k, k+1}
@@ -970,7 +971,7 @@ if(FALSE) {
 mult.fig(15, main = "stirlerr(n, order=k) vs order = k+1")$old.par -> opar
 invisible(lapply(resL[resLok], plot1cuts))
 ## plus the "last" ones {also showing that k=15 is worse here anyway than k=17}
-str(r17 <- find1cuts(k=17, n = seq(5.1, 6.5, length.out = 1500), c1=c1..$c1))
+str(r17 <- find1cuts(k=17, n = seq(5.1, 6.5, length.out = if(doExtras) 1500 else 400), c1=c1..$c1))
 plot1cuts(r17) # no-ldouble is *very* different than normal:  k *much better* than k+1
 
 (s.find17.fil <- paste0("stirlerr-find1_17_", myPlatform(), ".rds"))
@@ -986,7 +987,7 @@ system.time(
 mult.fig(15, main = "stirlerr(n, order=k) vs order = k+1 -- tau = 0.8")
 invisible(lapply(resL.8[resL8ok], plot1cuts))
 ## plus "last" one
-str(r17.8 <- find1cuts(k=17, n = seq(5.1, 6.5, length.out = 1500), c1=c1..$c1, tau = 0.80))
+str(r17.8 <- find1cuts(k=17, n = seq(5.1, 6.5, length.out = if(doExtras) 1500 else 400), c1=c1..$c1, tau = 0.80))
 plot1cuts(r17.8)
 par(opar)
 
@@ -1081,8 +1082,8 @@ lines(n[i.n], abs(relErrV(st.nM[i.n], stirlerr_simpl(n[i.n], "MM2" ))), col=cr2,
 legend(20, 1e-13, legend = quote(  relErr(stirlerr_simpl(n, '"MM2"'))), col=cr2, lwd=3, bty="n")
 
 
-n <- seq(1,6, by= 1/200)
-stM <- stirlerr(mpfr(n, 512), use.halves = FALSE)
+n <- seq(1,6, by= 1/(if(doExtras) 200 else 64))
+stM <- stirlerr(mpfr(n, if(doExtras) 512 else 256), use.halves = FALSE)
 relE <- asNumeric(relErrV(stM, cbind(stD = stirlerr_simpl(n), stD2 = stirlerr_simpl(n, "MM2"))))
 signif(apply(abs(relE), 2, summary), 4)
 ##               stD      stD2
@@ -1106,9 +1107,9 @@ drawEps.h(-(53:48))
 
 ## should we e.g., use interpolation spline through sfserr_halves[] for n <= 7.5
 ## -- doing the interpolation on the  log(1 - 12*x*stirlerr(x)) vs  log2(x)  scale -- maybe ?
-stirL <- curve(1-12*x*stirlerr(x, cutoffs = cuts, verbose=TRUE), 1/64, 8, log="xy", n=2048)
+stirL <- curve(1-12*x*stirlerr(x, cutoffs = cuts, verbose=TRUE), 1/64, 8, log="xy", n=if(doExtras) 2048 else 512)
 ## just need "true" values for x = 2^-(6,5,4,3,2) in addition to those we already have at x = 1/2, 1.5, 2, 2.5, ..., 7.5, 8
-xM <- mpfr(stirL$x, 2048)
+xM <- mpfr(stirL$x, if(doExtras) 2048 else 256)
 stilEM <- roundMpfr(1 - 12*xM*stirlerr(xM, verbose=TRUE), 128)
 relEsml <- relErrV(stilEM, stirL$y)
 plot(stirL$x, relEsml) # again: stirlerr() is "limited.." for ~ [2, 6]

@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.6-0 (2025-06-07, svn r339)}{
+\section{Version 0.6-0 (2025-07-08, svn r341)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item added functions \code{dltgammaInc()} and \code{lgammaP11()},
@@ -57,6 +57,9 @@
     \itemize{
       \item \file{tests/pow-tst.R} also work on "bizarre" platforms where
       \code{osVersion} is \code{NULL}.
+
+      \item \file{tests/stirlerr-tst.R} uses many more \code{if(doExtras) ...} to run faster
+      without \dQuote{extras}.
     }
   }
 }

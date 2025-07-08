@@ -1,25 +1,28 @@
 ##-*- org -*-->  Emacs .. [Tab] key + [Org] menu; C-c C-o to follow links
 
-* DONE *Embarrassing*: both qnormUappr() & qnormUappr6() were *negative* (wrong sign), for lp in [-.69, 0)
-* DONE Provide R functions interfacing to the "applied math utilities" in ./src/DPQ-misc.c : ./R/utils.R
-* DONE Add pgamma_1006() using the 2020  TOMS Algorithm 1006 === ~/src/TOMS/1006-inc_gamma/
+* TODO Have gam1d() now (calling C - TOMS 708) -- but also want to add the "pure R" version in ./TODO_R_versions_gam1_etc.R
 * TODO pbeta() approximations notably for log scale where bpser underflows to -Inf <<<<<<<<<<<
 ** TODO MM has had a pure R  bratio() for TOMS 708 in	~/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/toms708-bratio.R
 ***		including also (very unfinished)	~/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/toms708-regions.R
+* DONE *Embarrassing*: both qnormUappr() & qnormUappr6() were *negative* (wrong sign), for lp in [-.69, 0)
+* DONE Provide R functions interfacing to the "applied math utilities" in ./src/DPQ-misc.c : ./R/utils.R
+* DONE Add pgamma_1006() using the 2020  TOMS Algorithm 1006 === ~/src/TOMS/1006-inc_gamma/
 * TODO Compare pnchi1sq() with t1() function in tests/chisq-nonc-ex.R
 * TODO Computational Statistics paper ~/save/papers/Numerics/noncentral_gamma_deOliveira+Ferreira_ComputStat_2013.pdf
-   de Oliveira, I.R.C and Ferreir, D.F. (2013)
+   de Oliveira, I.R.C and Ferreira, D.F. (2013)
    Computing the noncentral gamma distribution, its inverse and the noncentrality parameter
    Comput Stat 28:1663–1680 -- \doi{10.1007/s00180-012-0371-8}
   --> CRAN package `ncg` (non-central gamma) .. lived on CRAN only till 2012.
   https://cran.r-project.org/src/contrib/Archive/ncg/
   showing
   	ncg_0.1.0.tar.gz	2012-06-19 08:43 	4.2K
-  	ncg_0.1.1.tar.gz	2012-07-05 15:40 	4.1K -- Maintainer Daniel Ferreir
-  --> add *some* of these functions to DPQ ? === R-code only -- *not*
-   sophisticated, but a valid "baseline". --> ~/R/Pkgs/ncg/ ||
-   Mlibrary(ncg) -- ~/R/Pkgs/ncg.Rcheck-64b/ncg
-   
+  	ncg_0.1.1.tar.gz	2012-07-05 15:40 	4.1K -- Maintainer Daniel Ferreira
+     --> unpacked, "fixed" -> Version 0.1-2 --> ~/R/Pkgs/ncg/DESCRIPTION 
+   slightly add *some* of these functions to DPQ ? === R-code only -- *not*
+   sophisticated, but a valid "baseline" .. *Actually* in their performance
+   part they find cases where their method ("PM" := proposed method) is better than R ("RM") !!
+   --> ~/R/Pkgs/ncg/ || Mlibrary(ncg) -- ~/R/Pkgs/ncg.Rcheck-64b/ncg
+
 * TODO Newer (than de Oliveira & Ferreir (2015) paper on  gammaCHI Software
        gives *better* approximations (at least in parts):
   - Gil, Amparo; Segura, Javier; Temme, Nico M. (2021),
