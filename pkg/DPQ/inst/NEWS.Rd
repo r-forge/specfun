@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.6-0 (2025-07-08, svn r341)}{
+\section{Version 0.6-0 (2025-07-08, svn r342)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item added functions \code{dltgammaInc()} and \code{lgammaP11()},
@@ -91,7 +91,7 @@
       \dQuote{parallelize} R's own C level \code{stirlerr()}.
 
       More documentation and tests; experiments added in
-      \file{../Misc/stirlerr-trms.R}; nice explorations to \file{../tests/stirlerr-tst.R}
+      \file{../Misc/stirlerr-trms.R}; nice explorations to \file{../tests/stirlerr-tst.R}.
 
       \item New functions \code{pow(x,y)} and \code{pow_di(x,y)} computing
       \eqn{x^y} as in \R's C API \file{Rmathlib}.
@@ -101,9 +101,6 @@
       \item New function \code{expm1x()} providing \eqn{exp(x) - 1 - x}
       numerically accurately also for small \eqn{|x|}.
 
-      \item New function \code{pntGST23_T6()} implementing Gil et al.(2023)'s
-      first asymptotic formula (Theorem 6).
-
       \item New experimental \code{Ixpq()} implementing Gil et al.(2023)'s
       direct incomplete Beta function, i.e., \code{pbeta()} version.
       \bold{TODO}: make it work with \code{mpfr()} !
@@ -111,6 +108,8 @@
       \item New function \code{pntGST23_T6()} and \code{pntGST23_1()}
       implementing Gil et al.(2023)'s first asymptotic formula (Theorem 6),
       and based on Temme's Maple code for their direct computation (1).
+
+      \code{pnt*():} CDF of the non-central t-distribution.
 
       \item New function \code{pntVW13()} implementing Viktor Witkovský(2013)'s
       algorithm, from his published Matlab code.
