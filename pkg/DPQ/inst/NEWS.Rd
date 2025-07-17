@@ -4,6 +4,20 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
+\section{Version 0.6-1 (2025-07-17, svn r343)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item \code{pnchisq_ss()} gets new optional argument \code{ssr = ss(....)}
+      for flexibility.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item \code{ldexp({}, 1)} or \code{pow({}, 2)} no longer segfault.
+    }
+  }
+}
+
 \section{Version 0.6-0 (2025-07-08, svn r342)}{
   \subsection{NEW FEATURES}{
     \itemize{

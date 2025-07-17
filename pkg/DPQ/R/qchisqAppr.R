@@ -12,7 +12,6 @@ qchisqAppr <- function(p, df, lower.tail = TRUE, log.p = FALSE, tol = 5e-7)
   ## Purpose: Cheap fast approximation to qchisq()
   ## ----------------------------------------------------------------------
   ## Arguments: tol: tolerance with default = EPS2 of qgamma()
-
   ## ----------------------------------------------------------------------
   ## Author: Martin Maechler, Date: 23 Mar 2004, 12:07
 

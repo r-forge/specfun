@@ -656,10 +656,10 @@ par(op)
 ## ----------- i >= lambda  : need better approx
 plotrq <- function(lambda, i = 1:(3*round(lambda))) {
     lab <- as.expression(substitute(lambda==la, list(la=lambda)))
-    plot(i, r_pois(i,lam=lambda) / (lambda/i),
+    plot(i, r_pois(i,lambda=lambda) / (lambda/i),
          type='b', cex=.4, col=2)
     abline(v=lambda, col='gray', lty=2)
-    axis(3, at = lambda, label = lab)
+    axis(3, at = lambda, labels = lab)
 }
 plotrq(10)
 
@@ -696,14 +696,19 @@ par(op)
 
 ### Now back to the original problem:
 ### Using ss() terms and see where they are maximal, etc.
-(pR <-          pnchisq (1.2,df=1,ncp=3, verbose=FALSE))# iter = 12, now 13
+(pR <-           pnchisq   (1.2,df=1,ncp=3, verbose=FALSE))# iter = 12, now 13
 all.equal(c(pR), pnchisq_ss(1.2,df=1,ncp=3), tol=0)# 2.19e-12, now 9.61e-14,
 ## 6.4e-16 on Win 32b !
 
-(pR <-          pnchisq (1.2,df=1,ncp=30, verbose=FALSE))# iter = 12, now 16
-all.equal(pR, pnchisq_ss(1.2,df=1,ncp=30), tol= 2e-13)
+(pR  <- pnchisq   (1.2, df=1, ncp=30, verbose=FALSE))# iter = 12, now 16
+(pss <- pnchisq_ss(1.2, df=1, ncp=30))
+all.equal(pR, pss, tol = 0)
+## Now you can also pass an ss() result to pnchisq_ss():
+str(ss1.2 <- ss(1.2, df=1, ncp=30))
+stopifnot(identical(pss,
+                    pss. <- pnchisq_ss(1.2, df=1, ncp=30, ssr = ss1.2)))
 ## was  2.616 e-8 (thanks to 'reltol'!)
-(pR <-          pnchisq (1.2,df=1,ncp=30, verbose=FALSE,reltol=3e-16))# 19 it.
+(pR <-        pnchisq   (1.2,df=1,ncp=30, verbose=FALSE, reltol=3e-16))# 19 it.
 all.equal(pR, pnchisq_ss(1.2,df=1,ncp=30), tol= 2e-16)
 
 str(sss <- ss(1.2,df=1,ncp=30))# s[1:161], max = 3

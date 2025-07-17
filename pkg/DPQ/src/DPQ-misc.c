@@ -106,6 +106,7 @@ SEXP R_ldexp(SEXP f_, SEXP E_)
 	n_f = XLENGTH(PROTECT(f_ = isReal   (f_) ? f_ : coerceVector(f_, REALSXP))),
 	n_E = XLENGTH(PROTECT(E_ = isInteger(E_) ? E_ : coerceVector(E_, INTSXP))),
 	n = (n_f >= n_E) ? n_f : n_E; // and recycle f_ or E_ when needed
+    if(!n_f || !n_E) return allocVector(REALSXP, 0); // length 0
     SEXP r_ = PROTECT(allocVector(REALSXP, n));
     const double *f = REAL(f_);
     double *r = REAL(r_);
@@ -142,6 +143,7 @@ SEXP dpq_pow(SEXP x_, SEXP y_)
 	nx = XLENGTH(PROTECT(x_ = isReal(x_) ? x_ : coerceVector(x_, REALSXP))),
 	ny = XLENGTH(PROTECT(y_ = isReal(y_) ? y_ : coerceVector(y_, REALSXP))),
 	n = (nx <= ny) ? ny : nx; // n <-  max(length(x), length(y))
+    if(!nx || !ny) return allocVector(REALSXP, 0); // length 0
     SEXP r_ = PROTECT(allocVector(REALSXP, n));
     const double *x = REAL(x_), *y = REAL(y_);
     double *r = REAL(r_);
@@ -158,6 +160,7 @@ SEXP dpq_pow_di(SEXP x_, SEXP y_)
 	nx = XLENGTH(PROTECT(x_ = isReal   (x_) ? x_ : coerceVector(x_, REALSXP))),
 	ny = XLENGTH(PROTECT(y_ = isInteger(y_) ? y_ : coerceVector(y_,  INTSXP))),
 	n = (nx <= ny) ? ny : nx; // n <-  max(length(x), length(y))
+    if(!nx || !ny) return allocVector(REALSXP, 0); // length 0
     SEXP r_ = PROTECT(allocVector(REALSXP, n));
     const double *x = REAL(x_);
     double *r = REAL(r_);

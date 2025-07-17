@@ -28,10 +28,12 @@
   degrees of freedom and non-centrality parameter \code{ncp}
   \eqn{= \lambda} has density
   \deqn{
-    f(x) = f_{n,\lambda}(x) = e^{-\lambda / 2}
-      \sum_{r=0}^\infty \frac{(\lambda/2)^r}{r!}\, f_{n + 2r}(x)}{f(x) = exp(-\lambda/2) SUM_{r=0}^\infty ((\lambda/2)^r / r!) dchisq(x, df + 2r)
+    f(x) = f_{n,\lambda}(x) = e^{-\lambda / 2} \sum_{r=0}^\infty\frac{(\lambda/2)^r}{r!}\, f_{n + 2r}(x)}{%
+    f(x) = f[n,lambda](x)   = exp(-\lambda/2)  SUM_{r=0}^\infty (\lambda/2)^r  / r! * f[n +2r](x)
   }
-  for \eqn{x \ge 0}; for more, see \R's help page for \code{\link{pchisq}}.
+  for \eqn{x \ge 0}, where \eqn{f_m(x)}{f[m](x)} (\code{= dchisq(x,m)}) is
+  the (\emph{central} chi-squared density with \eqn{m} degrees of freedom;
+  for more, see \R's help page for \code{\link{pchisq}}.
   % ~/R/D/r-devel/R/src/library/stats/man/Chisquare.Rd
 
   \itemize{
@@ -78,8 +80,9 @@
       Currently extreme cases tend to hang on Winbuilder (?) % FIXME?
     }
 
-    \item{\code{pnchisqIT}:}{ .... }
-    \item{\code{pnchisqTerms}:}{ .... }
+    \item{\code{pnchisqIT}:}{using C code \dQuote{paralleling} \R's own,
+      returns a \code{\link{list}} containing the full vector of terms
+      computed (and the resulting probability).}
     %
     \item{\code{pnchisqT93}:}{pure \R implementations of approximations when
       both \code{q} and \code{ncp} are large, by Temme(1993), from Johnson
@@ -87,11 +90,21 @@
       auxiliary functions \code{pnchisqT93a()} and \code{pnchisqT93b()}
       respectively, with adapted formulas for the \code{log.p=TRUE} cases.}
 
-    \item{\code{pnchisq_ss()}:}{ .... }
+    \item{\code{pnchisq_ss()}:}{based on \code{ss()}, shows pure \R code to
+      sum up the  non-central chi-squared distribution value.}
     %
-    \item{\code{ss}:}{ .... }
-    \item{\code{ss2}:}{ .... }
-    \item{\code{ss2.}:}{ .... }
+    \item{\code{ss}:}{pure \R function providing all the \bold{s}ummation
+      terms making up non-central chi-squared distribution values; terms
+      computed carefully only using simple arithmetic plus \code{exp()} and
+      \code{log()}, via \code{\link{cumsum}} and \code{\link{cumprod}} and
+      possibly in log space.}
+
+    \item{\code{pnchisqTerms}:}{pure \R providing these terms
+      \emph{directly}, calling (central) \code{\link{pchisq}(x, df +
+	2*(k-1))} for the whole length vector \code{k <- 1:i.max}.}
+    \item{\code{ss2()}:}{computes \dQuote{statistics} on \code{ss()}, whereas}
+    \item{\code{ss2.()}:}{uses \code{pnchisqIT()}'s C code providing
+      similar stats as \code{ss2()}.}
   }% end{descr}
 }
 \usage{
@@ -113,45 +126,50 @@ pnchisqBolKuz    (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchisqPatnaik   (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchisqPearson   (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchisqSankaran_d(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
-pnchisq_ss       (x, df, ncp = 0, lower.tail = TRUE, log.p = FALSE, i.max = 10000)
-pnchisqTerms     (x, df, ncp,     lower.tail = TRUE, i.max = 1000)
+pnchisq_ss       (x, df, ncp = 0, lower.tail = TRUE, log.p = FALSE, i.max = 10000,
+                  ssr = ss(x=x, df=df, ncp=ncp, i.max = i.max))
 
 pnchisqT93  (q, df, ncp, lower.tail = TRUE, log.p = FALSE, use.a = q > ncp)
 pnchisqT93.a(q, df, ncp, lower.tail = TRUE, log.p = FALSE)
 pnchisqT93.b(q, df, ncp, lower.tail = TRUE, log.p = FALSE)
 
+pnchisqTerms     (x, df, ncp,     lower.tail = TRUE, i.max = 1000)
 ss   (x, df, ncp, i.max = 10000, useLv = !(expMin < -lambda && 1/lambda < expMax))
 ss2  (x, df, ncp, i.max = 10000, eps = .Machine$double.eps)
 ss2. (q, df, ncp = 0, errmax = 1e-12, reltol = 2 * .Machine$double.eps,
       maxit = 1e+05, eps = reltol, verbose = FALSE)
 }
 \arguments{%--> ~/R/D/r-devel/R/src/library/stats/man/Chisquare.Rd :
-%% ===>  pchisq(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
+%           ===>  pchisq(q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
   \item{x}{numeric vector (of \sQuote{quantiles}, i.e., abscissa values).}
   \item{q}{number ( \sQuote{quantile}, i.e., abscissa value.)}
   \item{df}{degrees of freedom \eqn{> 0}, maybe non-integer.}
-  \item{ncp}{non-centrality parameter \eqn{\delta}{delta}; ....}
+  \item{ncp}{non-centrality parameter \eqn{\delta}{delta}.}
   \item{lower.tail, log.p}{logical, see, e.g., \code{\link{pchisq}()}.}
 %%% TODO: \item{method}{a string specifying the approximation method to be used.}
 %%% -----  INSTEAD of all these functions ??
   \item{i.max}{number of terms in evaluation ...}
+  \item{ssr}{an \code{ss()}-like \code{\link{list}} to be used in
+    \code{pnchisq_ss()}.}
   \item{use.a}{\code{\link{logical}} vector for Temme \code{pnchisqT93*()}
     formulas, indicating to use formula \sQuote{a} over \sQuote{b}.  The
     default is as recommended in the references, but they did not take into
     account \code{log.p = TRUE} situations.}
-  \item{cutOffncp}{a positive number, the cutoff value for \code{ncp}...}%% FIXME
-  \item{itSimple}{ ...}
+  \item{cutOffncp}{a positive number, the cutoff value for \code{ncp} at
+    which the algorithm branches; has been hard coded to \code{80} in \R.}
+  \item{itSimple}{positive integer, the maximal number of \dQuote{simple}
+    iterations; has been hard coded to \code{110} in \R.}
   \item{errmax}{absolute error tolerance.}% ...
   \item{reltol}{convergence tolerance for \emph{rel}ative error.}%... TODO
   \item{maxit}{maximal number of iterations.}% ...
   \item{xLrg.sigma}{positive number ...}% ... TODO
   \item{no2nd.call}{logical indicating if a 2nd call is made to the
-    internal function ....}%TODO
+    internal function \code{pnchisq_raw()}, swapping \code{lower.tail}.}
   \item{small.ncp.logspace}{logical vector or \code{\link{function}},
     indicating if the logspace computations for \dQuote{small} \code{ncp}
     (defined to fulfill \code{ncp < cutOffncp} !).}
   \item{epsS}{small positive number, the convergence tolerance of the
-    \sQuote{simple} iterations...}% ... TODO
+    \sQuote{simple} iterations; has been hard coded to \code{1e-15} in \R.}
   \item{verbose}{logical or integer specifying if or how much the algorithm
     progress should be monitored.}
   \item{\dots}{further arguments passed from \code{pnchisqV()} to \code{pnchisq()}.}
@@ -165,7 +183,7 @@ ss2. (q, df, ncp = 0, errmax = 1e-12, reltol = 2 * .Machine$double.eps,
       and returns \code{2*\link{dchisq}(x, df = df +2) * sum(si$s)}.}
 
     \item{\code{ss()}}{computes the terms needed for the expansion used in
-      \code{pnchisq_ss()}.}
+      \code{pnchisq_ss()} only using arithmetic, \code{exp()} and \code{log()}.}
 
     \item{\code{ss2()}}{computes some simple \dQuote{statistics} about \code{ss(..)}.}
     %% do we need it?  currently it computes ss() and trashes most of it ..
@@ -233,10 +251,12 @@ opal <- palette()
 palette(c("black", "red", "green3", "blue", "cyan", "magenta", "gold3", "gray44"))
 cR  <- curve(pchisq   (x, df=2,        lower.tail=FALSE, log.p=TRUE), 0, 4000, n=2001)
 cRC <- curve(pnchisqRC(x, df=2, ncp=0, lower.tail=FALSE, log.p=TRUE),
-             add=TRUE, col=adjustcolor(2,1/2), lwd=3, lty=2, n=2001)
+             add=TRUE, col=adjustcolor(2,1/2), lwd=10, lty=4, n=2001)
 cR0 <- curve(pchisq   (x, df=2, ncp=0, lower.tail=FALSE, log.p=TRUE),
-             add=TRUE, col=adjustcolor(3,1/2), lwd=4,        n=2001)
-## smart "named list" constructur :
+             add=TRUE, col=adjustcolor(3,1/2), lwd=12,        n=2001)
+## cRC & cR0 jump to -Inf much too early:
+pchisq(1492, df=2, ncp=0, lower.tail=FALSE,log.p=TRUE) #--> -Inf *wrongly*
+##' list_() := smart "named list" constructor
 list_ <- function(...)
    `names<-`(list(...), vapply(sys.call()[-1L], as.character, ""))
 JKBfn <-list_(pnchisqPatnaik,
@@ -248,16 +268,20 @@ cl. <- setNames(adjustcolor(3+seq_along(JKBfn), 1/2), names(JKBfn))
 lw. <- setNames(2+seq_along(JKBfn),                   names(JKBfn))
 cR.JKB <- sapply(names(JKBfn), function(nmf) {
   curve(JKBfn[[nmf]](x, df=2, ncp=0, lower.tail=FALSE, log.p=TRUE),
-        add=TRUE, col=cl.[[nmf]], lwd=lw.[[nmf]], lty=lw.[[nmf]], n=2001)
+        add=TRUE, col=cl.[[nmf]], lwd=lw.[[nmf]], lty=lw.[[nmf]], n=2001)$y
 })
 legend("bottomleft", c("pchisq", "pchisq.ncp=0", "pnchisqRC", names(JKBfn)),
        col=c(palette()[1], adjustcolor(2:3,1/2), cl.),
-       lwd=c(1,3,4, lw.), lty=c(1,2,1, lw.))
+       lwd=c(1,10,12, lw.), lty=c(1,4,1, lw.))
 palette(opal)# revert
-
-all.equal(cRC, cR0, tol = 1e-15) # TRUE [for now]
+##
 ## the problematic "jump" :
 as.data.frame(cRC)[744:750,]
+cRall <- cbind(as.matrix(as.data.frame(cR)), R0 = cR0$y, RC = cRC$y, cR.JKB)
+cbind(r1492 <- local({ r1 <- cRall[cRall[,"x"] == 1492, ]; r1[1+c(0, order(r1[-1]))] }))
+cbind(r1492[-1] - r1492[["y"]])
+## ==> Patnaik, Pearson, BolKuz are perfect for this x.
+all.equal(cRC, cR0, tol = 1e-15) # TRUE [for now]
 if(.Platform$OS.type == "unix")
   ## verbose=TRUE  may reveal which branches of the algorithm are taken:
   pnchisqRC(1500, df=2, ncp=0, lower.tail=FALSE, log.p=TRUE, verbose=TRUE) #

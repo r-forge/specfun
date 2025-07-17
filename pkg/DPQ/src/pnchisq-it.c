@@ -14,7 +14,7 @@
  * DONE:  o added 'verbose' argument, instead of  '#ifdef ...'
  */
 
-/**  This is a version of R (1.9.0)'s  src/nmath/pnchisq.c
+/**  This is a version of R (1.9.0)'s src/nmath/pnchisq.c  [R 1.9.0 @ 2004-04-12 => svn r28809]
  *                                    ~~~~~~~~~~~~~~~~~~~ */
 double pnchisq_it(double x, double f, double theta,
 		  double errmax, double reltol, int itrmax, Rboolean verbose,
@@ -37,7 +37,7 @@ double pnchisq_it(double x, double f, double theta,
     if(verbose)
 	REprintf("pnchisq(x=%g, f=%g, theta=%g): ",x,f,theta);
     lam = .5 * theta;
-    lamSml = (-lam < _dbl_min_exp);
+    lamSml = (-lam < _dbl_min_exp); // <==> lam > 1022*log(2) ~= 708.3964
     if(lamSml) {
 	/* MATHLIB_ERROR(
 	   "non centrality parameter (= %g) too large for current algorithm",
@@ -75,7 +75,7 @@ double pnchisq_it(double x, double f, double theta,
 	REprintf(" lt= %g", lt);
 
     tSml = (lt < _dbl_min_exp);
-    if(tSml) {
+    if(tSml) {           //  5 : R only warns for x > E[X] + 5*sigma
 	if (x > f + theta +  3* sqrt( 2*(f + 2*theta))) {
  	    /* x > E[X] + 3* sigma(X) */
 	    warning("x > E[X] + 3*sigma(X) -- result may not be good");
@@ -200,20 +200,22 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
 // called in a loop over x from Pnchisq_R() which is called from R's pnchisqRC() :
 double pnchisqR(double x, double df, double ncp, Rboolean lower_tail, Rboolean log_p,
 		double cutoff_ncp, Rboolean small_logspace,
+		//        80     || small_logspace was (lower_tail && f > 0. && log(x) < .....)
 		Rboolean no_2nd_call, int it_simple,
+		//         FALSE            110
 		double errmax, double reltol, double epsS, int itrmax, int verbose)
-		// 1e-12, 8*DBL_EPSILON, 1000000,
+		//     1e-12,  8*DBL_EPSILON,        1e-15    1000000,
 {
 #ifdef IEEE_754
     if (ISNAN(x) || ISNAN(df) || ISNAN(ncp))
 	return x + df + ncp;
     if (!R_FINITE(df) || !R_FINITE(ncp))
-	ML_ERR_return_NAN;
+	ML_WARN_return_NAN;
 #endif
-    if (df < 0. || ncp < 0.) ML_ERR_return_NAN;
+    if (df < 0. || ncp < 0.) ML_WARN_return_NAN;
 
     LDOUBLE sum, sum2;
-    double ans;
+    double
     ans = pnchisq_rawR(x, df, ncp, cutoff_ncp, small_logspace, it_simple,
 		       errmax, reltol, epsS, itrmax,
 		       verbose, lower_tail, log_p, &sum, &sum2);
@@ -231,13 +233,13 @@ double pnchisqR(double x, double df, double ncp, Rboolean lower_tail, Rboolean l
 		if(verbose)
 		    REprintf(" ans := pnch.raw(*, ncp >= cutoff, <upper tail>)=%g \"too small\" -> precision warning\n",
 			     ans);
-		ML_ERROR(ME_PRECISION, "pnchisq");
+		ML_WARNING(ME_PRECISION, "pnchisq");
 	    }
 	    if(!log_p && ans < 0.) ans = 0.;  /* Precaution PR#7099 */
 	    // else if(log_p && ISNAN(ans)) ans = ML_NEGINF;
 	}
     }
-    /* MM: the following "trick" / "hack", by Brian Ripley (& Jerry Lewis) in c51179 (<--> PR#14216)
+    /* MM: the following "hack" from c51179 (<--> PR#14216, by Jerry Lewis)
      * -- is "kind of ok" ... but potentially suboptimal: we do  log1p(- p(*, <other tail>, log=FALSE)),
      *    but that  p(*, log=FALSE) may already be an exp(.) or even expm1(..)
      *   <---> "in principle"  this check should happen there, not here  */
@@ -294,7 +296,7 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
 			     */
 	    // all  pchisq(x, f+2*i, lower_tail, FALSE), i=0,...,110 would underflow to 0.
 	    // ==> work in log scale
-	    double lambda = 0.5 * theta;
+	    double lambda = 0.5 * theta; // < cutoff_ncp/2
 	    double pr = -lambda, log_lam = log(lambda);
 	    *sum = *sum2 = (LDOUBLE) ML_NEGINF;
 	    /* we need to renormalize here: the result could be very close to 1 */
@@ -352,7 +354,7 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
 
     // Series expansion --- FIXME: log_p=TRUE, lower_tail=FALSE only applied at end ==> underflow
 
-    lam = .5 * theta;
+    lam = .5 * theta; // = lambda = ncp/2
     lamSml = (-lam < _dbl_min_exp);
     if(lamSml) {
 	/* MATHLIB_ERROR(
@@ -373,7 +375,6 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
 
     if(verbose)
 	REprintf("-- v=exp(-th/2)=%" PR_g_ ", x/2= %g, f/2= %g\n",v,x2,f2);
-
 
     if(f2 * DBL_EPSILON > 0.125 && /* very large f and x ~= f: probably needs */
        FABS(t = x2 - f2) <         /* another algorithm anyway */
@@ -434,13 +435,12 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
                  (is_r = (term <= reltol * ans))))
             {
 		if(verbose)
-		    REprintf("BREAK out of for(n = 1 ..): n=%d; bound= %g %s; term=%g, rel.err= %g %s\n",
+		    REprintf("BREAK from for(n = 1 ..): n=%d; bound= %g %s; term=%g, rel.err= %g %s\n",
 			     n,
 			     bound, (is_b ? "<= errmax" : ""), term,
 			     (double)(term/ans), (is_r ? "<= reltol" : ""));
 		break; /* out completely */
             }
-
 	}
 
 	/* evaluate the next term of the */

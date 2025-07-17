@@ -319,8 +319,9 @@ double G_func(double p, double x)
 
 
 /* perform 1 iteration of the Romberg approximation of I_{x,y}^{mu,p} */
-static void romberg_iterations(double *R,
-			       double sigma, int n, double x, double y, double mu, double p, double h, double pow2)
+static void
+romberg_iterations(double *R,
+		   double sigma, int n, double x, double y, double mu, double p, double h, double pow2)
 {
   int adr0_prev = ((n-1)*n)/2,
       adr0      = (n*(n+1))/2;

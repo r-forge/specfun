@@ -12,18 +12,21 @@
    de Oliveira, I.R.C and Ferreira, D.F. (2013)
    Computing the noncentral gamma distribution, its inverse and the noncentrality parameter
    Comput Stat 28:1663–1680 -- \doi{10.1007/s00180-012-0371-8}
-  --> CRAN package `ncg` (non-central gamma) .. lived on CRAN only till 2012.
-  https://cran.r-project.org/src/contrib/Archive/ncg/
+ --> CRAN package `ncg` (non-central gamma) https://cran.r-project.org/src/contrib/Archive/ncg/
   showing
   	ncg_0.1.0.tar.gz	2012-06-19 08:43 	4.2K
   	ncg_0.1.1.tar.gz	2012-07-05 15:40 	4.1K -- Maintainer Daniel Ferreira
-     --> unpacked, "fixed" -> Version 0.1-2 --> ~/R/Pkgs/ncg/DESCRIPTION 
+  was archived on CRAN: "Archived on 2022-05-09 as email to the maintainer is undeliverable."
+  https://cran-archive.r-project.org/web/checks/2022/2022-05-09_check_results_ncg.html
+     --> unpacked, "fixed" -> Version 0.1-2 --> ~/R/Pkgs/ncg/DESCRIPTION
    slightly add *some* of these functions to DPQ ? === R-code only -- *not*
    sophisticated, but a valid "baseline" .. *Actually* in their performance
    part they find cases where their method ("PM" := proposed method) is better than R ("RM") !!
    --> ~/R/Pkgs/ncg/ || Mlibrary(ncg) -- ~/R/Pkgs/ncg.Rcheck-64b/ncg
 
-* TODO Newer (than de Oliveira & Ferreir (2015) paper on  gammaCHI Software
+* TODO Add qnchisq{Approx} -- also from "the book" JKK vol.2, chapter 29 -- e.g. Pearson and other
+
+* TODO Newer (than de Oliveira & Ferreira (2013) paper on  gammaCHI Software
        gives *better* approximations (at least in parts):
   - Gil, Amparo; Segura, Javier; Temme, Nico M. (2021),
      “GammaCHI: A package for the inversion and computation of the gamma and
@@ -39,7 +42,7 @@
                cumulative distribution functions (central and noncentral)
      Computer Physics Communications 191, 132–139
      http://dx.doi.org/10.1016/j.cpc.2015.01.004
-    MM (nb-mm5): 1.  ~/src/GammaCHI/ --- the code is quite readable, maybe partly works with f2c ?
+    MM (nb-mm5): 1.  ~/src/GammaCHI/ --- the code is quite readable, but *NOT* translateable with f2c
                  2. our stirlerr() function is ~= (?) ~= their  stirling() function  !!
 
 * DONE in R >= 4.0.0, now .Machine has 10 "longdouble.*" components (when the configuration found long double)

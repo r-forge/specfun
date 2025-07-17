@@ -16,7 +16,7 @@
 ## for the R.D*() functions and vars :
 
 pnchisq <- function(q, df, ncp = 0, lower.tail = TRUE,
-                    ## log.p = FALSE,
+                    ## log.p = FALSE, <<< FIXME: also port from C to here
                     cutOffncp = 80, itSimple = 110,
                     errmax = 1e-12, reltol = 1e-11,
                     maxit = 10* 10000,
@@ -322,12 +322,9 @@ plRpois <- function(lambda, iset = 1:(2*lambda), do.main=TRUE,
 ## Approach used in pnchisq.c for  ncp < 80 :
 pnchisqTerms <-  function(x, df, ncp, lower.tail = TRUE, i.max = 1000)
 {
-    ## Author: Martin Maechler, Date:  1 Apr 2008, 17:52
-
-    if(length(x)   > 1) stop("'x' must be of length 1")
-    if(length(df)  > 1) stop("'df' must be of length 1")
-    if(length(ncp) > 1) stop("'ncp' must be of length 1")
-    stopifnot(length(i.max) == 1, i.max > 1)
+    ## Author: Martin Maechler, Date:  1 Apr 2008
+    stopifnot(length(x) == 1L, length(df) == 1L, length(ncp) == 1L,
+              length(i.max) == 1L, i.max > 1)
 
     lambda <- 0.5 * ncp
     sum <- 0.
@@ -358,7 +355,7 @@ ss <- function(x, df, ncp, i.max = 10000,
     ##        v'_0 := u'_0 = 1;
     ##        v'_k := v'_{k-1} + u'_k
     ##                           u'_k := u'_{k-1} * (lambda / i)
-    ## Return: list(s =(s_i){i= 0:i2},  i1, max)
+    ## Return: list(s =(s_i){i= 1:i2},  i1, max)
     ##		where i1  : the index of the first non-0 entry in s[]
     ##                i2  : in 0:i.max such that trailing 0's are left away
     ##                max : the (first) index of the maximal entry s[]
@@ -366,9 +363,7 @@ ss <- function(x, df, ncp, i.max = 10000,
     ## Arguments: as p[n]chisq(), but only scalar
     ## ----------------------------------------------------------------------
     ## Author: Martin Maechler, Date:  6 Feb 2004, 19:27
-    if(length(x)   != 1) stop("'x' must be of length 1")
-    if(length(df)  != 1) stop("'df' must be of length 1")
-    if(length(ncp) != 1) stop("'ncp' must be of length 1")
+    stopifnot(length(x) == 1L, length(df) == 1L, length(ncp) == 1L)
     if(x <= 0) stop("'x' must be positive (here)")
     expMin <- log(2)*.Machine$double.min.exp # ~= -708.4 for IEEE FP
     expMax <- log(2)*.Machine$double.max.exp # ~= +709.8
@@ -435,10 +430,11 @@ ss2 <- function(x, df, ncp, i.max = 10000, eps = .Machine$double.eps)
 }
 
 
-pnchisq_ss <- function(x, df, ncp = 0, lower.tail=TRUE, log.p=FALSE, i.max = 10000) {
+pnchisq_ss <- function(x, df, ncp = 0, lower.tail=TRUE, log.p=FALSE,
+                       i.max = 10000, ssr = ss(x=x, df=df, ncp=ncp, i.max = i.max))
+{
+    stopifnot(length(x) == 1L, length(df) == 1L, length(ncp) == 1L)
     ## deal with boundary cases as in pnchisq()
-    if(length(x)  != 1) stop("'x' must be of length 1")
-    if(length(df) != 1) stop("'df' must be of length 1")
     if(x <= 0) {
 	if(x == 0 && df == 0)
 	    return(
@@ -453,10 +449,14 @@ pnchisq_ss <- function(x, df, ncp = 0, lower.tail=TRUE, log.p=FALSE, i.max = 100
     if(!is.finite(x))
         return(.DT_1(lower.tail, log.p=log.p))
     ## Using ss() for the non-central chisq prob.
-    si <- ss(x=x, df=df, ncp=ncp, i.max = i.max)
+    si <- ssr$s
+    if(!missing(ssr)) # user-provided ss() result
+        stopifnot(is.list(ssr), is.numeric(si), is.numeric(i1 <- ssr$i1),
+                  length(i1) == 1L, 1 <= i1, i1 <= length(si))
+    ## ssr == ss(x=x, df=df, ncp=ncp, i.max = i.max)
     f <- if(log.p) log(2) + dchisq(x, df = df+2, log=TRUE)
          else          2  * dchisq(x, df = df+2)
-    s <- sum(si$s)
+    s <- sum(si)
     if(lower.tail) {
         if(log.p) f+log(s) else f*s
     } else { ## upper tail
@@ -470,9 +470,8 @@ pnchisq_ss <- function(x, df, ncp = 0, lower.tail=TRUE, log.p=FALSE, i.max = 100
 pnchisqIT <- function(q, df, ncp = 0, errmax = 1e-12,
                       reltol = 2*.Machine$double.eps, maxit = 1e5, verbose = FALSE)
 {
-    if(length(q) != 1 || length(df) != 1 || length(ncp) != 1)
-        stop("arguments must have length 1 !")
-    r <- .C(C_Pnchisq_it,
+    stopifnot(length(q) == 1L, length(df) == 1L, length(ncp) == 1L)
+     r <- .C(C_Pnchisq_it,
             x = as.double(q),
             f = as.double(df),
             theta = as.double(ncp),
@@ -494,12 +493,9 @@ ss2. <- function(q, df, ncp = 0, errmax = 1e-12,
 {
     ## Purpose: "Statistic" on ss() ==> give only interesting indices
     ## ----------------------------------------------------------------------
-    ## Arguments:
-    ## ----------------------------------------------------------------------
-    ## Author: Martin Maechler, Date: 16 Feb 2004, 10:57
+    ## Author: Martin Maechler, Date: 16 Feb 2004
 
-    if(length(q) != 1 || length(df) != 1 || length(ncp) != 1)
-        stop("arguments must have length 1 !")
+    stopifnot(length(q) == 1L, length(df) == 1L, length(ncp) == 1L)
     r <- .C(C_Pnchisq_it,
             x = as.double(q),
             f = as.double(df),

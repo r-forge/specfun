@@ -61,6 +61,7 @@ data.frame(x=x[!iF], lapply(rF, `[`, !iF))
 ## but on Windows, we've seen  3 NA's :
 ar <- abs(rF$r)
 ldx <- with(rF, ldexp(r, e))
+r0 <- numeric(0L)
 stopifnot(exprs = {
   0.5 <= ar[iF & x != 0]
   ar[iF] < 1
@@ -68,6 +69,7 @@ stopifnot(exprs = {
   all.equal(x[iF], ldx[iF], tol= 4*.Machine$double.eps)
   ## but actually, they should even be identical, well at least when finite
   identical(x[iF], ldx[iF])
+  identical(r0, ldexp(r0, 1)) # (0-length o non-0-l.) did seg.fault 
 })
 }
 \keyword{arith}
