@@ -1,5 +1,6 @@
 importFrom("DPQ"
          , .D_1, .D_exp, .D_qIv, .DT_Clog
+         , .DT_0, .DT_1
          , all_mpfr, any_mpfr # simple wrappers in  ../DPQ/R/utils.R
          , dbinom_raw
          , dntJKBf # ~/R/Pkgs/DPQ/R/t-nonc-fn.R
@@ -22,10 +23,13 @@ importFrom("Rmpfr"
          , mpfr, Const
          , asNumeric
          , dnorm, pnorm
+           ## , dchisq # for now have our own (*un*exported)
+         , dgamma
          , dpois
          , log1mexp
          , .mpfr_erange
          , roundMpfr
+         , which.min, which.max # call them, need method dispatch
 )
 
 importFrom("gmp"
@@ -53,8 +57,10 @@ importFrom("stats"
          , ppois, qpois
          , stats__dbinom = dbinom
          , dbeta, pbeta, qbeta
-         , dgamma, pgamma, qgamma
-         , dchisq, pchisq
+         , stats__dchisq = dchisq
+         , stats__dgamma = dgamma
+         , pgamma, qgamma
+         , pchisq
 )
 
 importFrom("methods"
@@ -71,7 +77,6 @@ importFrom("graphics", abline, axis
          , par
          , points, text
            )
-
 
 importFrom("utils"
          , str
@@ -112,3 +117,4 @@ export(ldexp) # our own {using *either* DPQ or Rmpfr's}
 export(pnormL_LD10, pnormU_S53)
 export(pnormAsymp, qnormAsymp)
 export(stirlerrM, stirlerrSer)
+export(ss, pnchisq)

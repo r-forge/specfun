@@ -5,6 +5,14 @@
 \encoding{UTF-8}
 
 % NB: svn revision numbering within all my R-forge `specfun` pkgs --- ..../R-forge/specfun/
+\section{Version 0.3-4 (2025-07-18, svn r344)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item new pnchisq() and its auxiliary ss(); both "mpfr"-ized from \CRANpkg{DPQ}.
+    }
+  }
+}
+
 \section{Version 0.3-3 (2024-08-19, svn r327)}{
   \subsection{NEW FEATURES}{
     \itemize{

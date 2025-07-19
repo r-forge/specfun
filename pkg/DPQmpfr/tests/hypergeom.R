@@ -1,6 +1,10 @@
 library(DPQ)
 library(DPQmpfr)
 
+osV <- abbreviate(gsub("[^[:alnum:]]", '', sub("\\(.*", '', osVersion)), 12)
+if(!dev.interactive(TRUE)) pdf(paste0("hypergeom_ex", osV, ".pdf"), width = 9, height=5)
+
+
 ## Imported from 'DPQ', support of the hypergeometric distrib. as function of its parameters:
 ## .suppHyper <- DPQ::.suppHyper
 .suppHyper <- function(m,n,k) max(0, k-n) : min(k, m)

@@ -231,6 +231,158 @@ stirlerrSer <- function(n, k) {
         )
 }
 
+##--------- Non-central chi^2 Chi-squared -------------------------------------
+## DPQ has ss() and pnchisq_ss() etc
+## ---
+## Should "easily" work with Rmpfr  -- ../../DPQ/R/pnchisq.R
+## Summands for pnchisq() series approximation, see pnchisq_ss() [below]
+ss <- function(x, df, ncp, i.max = 10000,
+               minPrec = 128L,
+               useLv = !(expMin < -lambda && 1/lambda < expMax))
+{
+    ## Purpose:
+    ## pnchisq() :=                         sum_{i=0}^{n*} v_i  t_i
+    ##            = exp(-lambda) t_0(x,f) * sum_{i=0}^{n*} v'_i t'_i
+    ## hence the summands
+    ## s_i := v'_i * t'_i
+    ## 		     t'_0 := 1 ;
+    ##               t'_i = t'_{i-1} * x /(f+2i)
+    ##                    = x^i / prod_{j=1}^i (f + 2j)
+    ##
+    ##        v'_0 := u'_0 = 1;
+    ##        v'_k := v'_{k-1} + u'_k
+    ##                           u'_k := u'_{k-1} * (lambda / i)
+    ## Return: list(s =(s_i){i= 1:i2},  i1, max)
+    ##		where i1  : the index of the first non-0 entry in s[]
+    ##                i2  : in 0:i.max such that trailing 0's are left away
+    ##                max : the (first) index of the maximal entry s[]
+    ## ----------------------------------------------------------------------
+    ## Arguments: as p[n]chisq(), but only scalar
+    ## ----------------------------------------------------------------------
+    ## Author: Martin Maechler, Date:  6 Feb 2004, 19:27
+    stopifnot(length(x) == 1L, length(df) == 1L, length(ncp) == 1L)
+    if(x <= 0) stop("'x' must be positive (here)")
+
+    isNum <- is.numeric(tmp <- x + df + ncp)
+    ## we need to create (expMin, expMax) for the *default* `useLv`
+    if(!isNum) {
+        precB <- if(isM <- inherits(tmp, "mpfr"))
+                     max(minPrec, .getPrec(tmp))
+                 else
+                     stop("arguments (x, df, ncp) must be numeric or \"mpfr\"")
+        if(!inherits(ncp, "mpfr"))
+            ncp <- mpfr(ncp, precB)
+        if(!inherits(x, "mpfr"))
+            x   <- mpfr(x, precB)
+        ## df may well stay numeric (more efficient)
+        one  <- mpfr(1, precB)
+        zero <- mpfr(0, precB)
+
+        erng <- .mpfr_erange()
+        ## need expMin, expMax  below anyway:
+        ## if(missing(useLv)) {
+        expMin <- log(2)* erng[["Emin"]] # ~ -744 Mio
+        expMax <- log(2)* erng[["Emax"]] # ~ +744 Mio
+        ## }
+    } else { # isNum :  numeric i.e.  double prec
+        if(missing(useLv)) {
+            expMin <- log(2)*.Machine$double.min.exp # ~= -708.4 for IEEE FP
+            expMax <- log(2)*.Machine$double.max.exp # ~= +709.8
+        } # now useLv's default
+        return( DPQ::ss(x, df, ncp, i.max, minPrec, useLv) )
+    }
+
+    ## mpfr-case =============================================
+
+    lambda <- ncp/2
+
+    i <- 1:i.max #- really: from 0 to i.max
+
+    xq <- x / (df + 2*i)
+    tt <- cumprod(c(one, xq))
+
+    ## useLt := use log terms in formula [protect against underflow / denormalized numbers]
+    useLt <- if(isNum) any(tt < .Machine$double.xmin) # was  it0 <- tt == 0
+             else      any(tt == 0) # or use erange ??
+    if(useLt) { ## work with log(tt) there
+        ltt <- cumsum(c(zero, log(xq)))
+    }
+
+    ## Nota Bene: v[n] == e_n(lambda) * exp(-lambda)  is always in [0,1)
+    ## default useLv <- !(expMin < -lambda && 1/lambda < expMax)
+    if(!useLv) {## otherwise overflows/underflows
+        u <- exp(-lambda)*cumprod(c(one, lambda / i))
+        v <- cumsum(u)
+    } else { ## lambda quite large or small --> compute log(u)
+        ##lu <- cumsum(c(-lambda, log(lambda / i)))
+        ##lu <- cumsum(c(-lambda, log(lambda) - log(i)))
+        ## lu + lambda:
+        luPl <- c(zero, i*log(lambda)) + cumsum(c(zero, - log(mpfr(i, precB))))
+        useLv <- useLt || any(luPl - lambda < expMin)
+        if(useLv) {
+            lv <- -lambda + log(cumsum(exp(luPl)))
+            if(!useLt)
+                ltt <- cumsum(c(zero, log(xq)))
+        }
+        else
+            v <- cumsum(exp(luPl -lambda))
+    }
+    ## the sequence  r := tt * v  :
+    if(useLv)
+        r <- exp(ltt + lv)
+    else {
+        if(useLt && any(it0 <- it0 & v != 0))
+            tt[it0] <- exp(ltt[it0])
+        r <- tt * v
+    }
+
+    ## now get it's attributes:
+
+    d <- diff(r > 0) ## currently (almost always: have *no* underflow to 0 w/ mpfr
+    ## ==> all r > 0 ==>  d[] == 0 everywhere ==> (i1, i2) == (1, i.max)  trivially
+    i1 <- which.max(d) # [i1] -> [i1+1]: first change from 0 to >0
+    i2 <- i.max+1 - which.min(rev(d))
+    ## [i2] -> [i2+1]: last change from >0 to 0
+    r <- r[1:i2]
+    list(s = r, i1 = i1, max = which.max(r))
+}# {ss}
 
 
+## dchisq() below is *NOT* mpfr-ized !!
+## ~~~~~~~~ *BUT*  Rmpfr  has mpfr-ized  dgamma():
+## TODO: {we should add this to Rmpfr (and export !)
+dchisq <- function(x, df, log = FALSE) dgamma(x, df / 2, scale = 2, log=log)
 
+pnchisq <- function(x, df, ncp = 0, lower.tail=TRUE, log.p=FALSE,
+                    i.max = 10000, ssr = ss(x=x, df=df, ncp=ncp, i.max = i.max))
+{
+    stopifnot(length(x) == 1L, length(df) == 1L, length(ncp) == 1L)
+    ## deal with boundary cases as in pnchisq()
+    if(x <= 0) {
+	if(x == 0 && df == 0)
+	    return(
+                if(log.p) {
+                    if(lower.tail)     -0.5*ncp  else log1mexp(+0.5*ncp)
+                } else {
+                    if(lower.tail) exp(-0.5*ncp) else   -expm1(-0.5*ncp)
+                })
+        ## else
+        return(.DT_0(lower.tail, log.p=log.p))
+    }
+    if(!is.finite(x))
+        return(.DT_1(lower.tail, log.p=log.p))
+    ## Using ss() for the non-central chisq prob.
+    si <- ssr$s
+    if(!missing(ssr)) # user-provided ss() result
+        stopifnot(is.list(ssr), is.numeric(si) || inherits(si, "mpfr"),
+                  is.numeric(i1 <- ssr$i1), length(i1) == 1L, 1 <= i1, i1 <= length(si))
+    ## ssr == ss(x=x, df=df, ncp=ncp, i.max = i.max)
+    f <- if(log.p) log(2) + dchisq(x, df = df+2, log=TRUE)
+         else          2  * dchisq(x, df = df+2)
+    s <- sum(si)
+    if(lower.tail) {
+        if(log.p) f+log(s) else f*s
+    } else { ## upper tail
+        if(log.p) log1p(- f*s) else 1 - f*s
+    }
+}

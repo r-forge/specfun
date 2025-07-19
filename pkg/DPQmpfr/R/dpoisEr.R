@@ -47,6 +47,8 @@ dpoisEr <- function(lambda, prBits = 1536, ## prBits = 256 is too small for lamb
                     sub("\\)$","",
                         deparse1(match.call(expand.dots=FALSE)[["..."]])))
     stopifnot(is.numeric(prBits), length(prBits) == 1, prBits >= 64, as.integer(prBits) == prBits,
+              ## TODO: `prBits` should be montone f(lambda) to prevent cancellation
+              ## ----  in Rmpfr::dpois()
               is.logical(log), length(log) == 1, !is.na(log), length(lambda) == 1,
               is.function(dpoisFUN), length(fArgs <- formals(dpoisFUN)) >= 3,
               names(fArgs)[1:3] == c("x", "lambda", "log"))
@@ -82,6 +84,7 @@ deparse1seq <- function(x, nonSmall = 37,
                         wEnd = nonSmall %/% 4, epsD = 1e-5) {
     r <- deparse1(x) # in integer cases, already gives  <n>:<m>  {but not in "double"!}
     if((w <- nchar(r)) >= nonSmall) { # try arithmetic sequence  seq(a, z, by = delta)
+        ## ud := delta = `by` in seq() :
 	if(length(ud <- unique(diff(x))) == 1 ||
            max(abs(ud/(ud <- mean(ud)) - 1)) < epsD)
         {
@@ -100,7 +103,7 @@ deparse1seq <- function(x, nonSmall = 37,
 	r
 }
 
-##' format() a (min,max)  range()-alike into  (closed) interval notation
+##' format(rng); rng: (min,max) range()-alike ==> (closed) interval notation string
 formatRng <- function(rng, digits=4, newLine=TRUE, closed=c(TRUE,TRUE), ...) {
     stopifnot(is.logical(closed), !anyNA(closed), (lc <- length(closed)) >= 1)
     if(lc == 1) closed <- rep_len(closed, 2) # recycling
@@ -111,20 +114,21 @@ formatRng <- function(rng, digits=4, newLine=TRUE, closed=c(TRUE,TRUE), ...) {
 }
 
 ##' plot()  dpoisEr() explorations nicely
-##' @param rEstr list, resulting from dpoisEr() calls
+##' @param rEstr list + attributes (=: at ), resulting from dpoisEr() calls
 ##' @param cex
-##' @param xlab, main x-axis label and main title
+##' @param xlab, main   x-axis label and main title -- each with a smart default.
 ##' @param col
 ##' @param lwd2, col2 : linewidth and color, needed \code{if(showP)}.
-##' @param showP logical specifying if ...
+##' @param showP TRUE or integer P, specifying that only every P-th point should be drawn ...
 ##' @param epsLine logical indicating if dotted horizontal lines at +- eps[C] should be drawn.
 ##' @param col.eps color for eps[C]-lines
-##' @param smallMid
-##' @param epsSmall
+##' @param smallMid logical indicating if "small middle region" where |relErr| < epsSmall  should be drawn
+##' @param epsSmall small positive number, see `smallMid`
 ##' @param small.bd0 positive number or FALSE, specifying the \emph{range} of small |x-lambda|
 ##'           values should be vizualized (by two vertical dashed lines in \code{col.bd0} color).
 ##' @param col.bd0
 ##' @param col.mid
+##'
 ##' @param ...
 p.dpoisEr <- function(rEstr, cex = 1/4, xlab = deparse1seq(x, digits=10),
                      col = if(!had0) 1 else local({ cc <- rep(1, n); cc[at[["i0"]]] <- 2; cc }),
@@ -191,10 +195,10 @@ p.dpoisEr <- function(rEstr, cex = 1/4, xlab = deparse1seq(x, digits=10),
     ## if(grepl("devel", R.version$status)) # on R-devel
     if(nzchar(R.version$status)) # on R-devel, R-patched ..
         mtext(R.version.string, 4, adj=0, cex=3/4)
-    op <- par(new=TRUE); on.exit(par(op))
     if(showP) {
+        op <- par(new=TRUE); on.exit(par(op))
         if(is.null(dpM <- at[["dpMpfr"]])) {
-            message("No 'dpMpfr' component, using 'dpR' instead; set keepMpfr=TRUE to change")
+            message("No 'dpMpfr' comp. for plot(<prob>, type=\"h\"); (maybe keepMpfr=TRUE)")
             dpM <- at[["dpR"]]
         }
         i <- if(showP == 1) TRUE else seq(1, n, by = showP)

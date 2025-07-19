@@ -1,8 +1,8 @@
 Package: DPQmpfr
 Title: DPQ (Density, Probability, Quantile) Distribution Computations using MPFR
-Version: 0.3-3
-VersionNote: Last CRAN: 0.3-2 on 2023-12-05; 0.3-1 on 2021-05-17
-Date: 2024-08-19
+Version: 0.3-4
+VersionNote: Last CRAN: 0.3-3 on 2024-08-19; 0.3-2 on 2023-12-05; 0.3-1 on 2021-05-17
+Date: 2025-07-18
 Authors@R: person("Martin","Maechler", role=c("aut","cre"),
    email="maechler@stat.math.ethz.ch", comment = c(ORCID = "0000-0002-8685-9910"))
 Description: An extension to the 'DPQ' package with computations for 'DPQ'
@@ -10,9 +10,7 @@ Description: An extension to the 'DPQ' package with computations for 'DPQ'
   the functions here partly use the 'Rmpfr' package and hence the
   underlying 'MPFR' and 'GMP' C libraries.
 Depends: R (>= 3.6.0)
-Imports: DPQ (>= 0.5-3), Rmpfr (>= 0.9-0), gmp (>= 0.6-4), sfsmisc, stats, graphics, methods, utils
-Suggests: Matrix
-SuggestsNote: Matrix for its test-tools-1.R
+Imports: DPQ (>= 0.5-3), Rmpfr (>= 1.1-1), gmp (>= 0.6-4), sfsmisc, stats, graphics, methods, utils
 License: GPL (>= 2)
 Encoding: UTF-8
 URL: https://specfun.r-forge.r-project.org/,

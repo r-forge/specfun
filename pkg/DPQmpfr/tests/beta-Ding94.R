@@ -4,7 +4,7 @@ require("Rmpfr") # (is in DPQmpfr's strict dependencies)
 options(warn = 1)# warnings *immediately*
 
 ##  *.time()  utilities   from
-source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
+## ../../DPQ/inst/test-tools.R - source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
 source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
 ## => list_() , loadList() ,  readRDS_() , save2RDS()
 
@@ -16,7 +16,11 @@ if(!nzchar(sdir) && dir.exists(pDir <- "~/R/Pkgs/DPQmpfr")) {
     sdir <- file.path(pDir, "inst/safe")
     if(!dir.exists(sdir)) dir.create(sdir)
 }
+
 ## IGNORE_RDIFF_BEGIN
+(osV <- abbreviate(gsub("[^[:alnum:]]", '', sub("\\(.*", '', osVersion)), 12))
+if(!dev.interactive(TRUE)) pdf(paste0("betaDing94_", osV, ".pdf"), width = 9, height=5)
+
 (has.sdir <- dir.exists(sdir))
 if(!has.sdir)
     cat("safe directory ", sQuote(sdir), " does not exist!\n")

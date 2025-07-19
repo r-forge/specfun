@@ -1,6 +1,9 @@
 require(DPQmpfr)
 require(Rmpfr)
 
+osV <- abbreviate(gsub("[^[:alnum:]]", '', sub("\\(.*", '', osVersion)), 12)
+if(!dev.interactive(TRUE)) pdf(paste0("dpqnorm_ex_", osV, ".pdf"), width = 9, height=5)
+
 ## very accurate set of *large* abscissa values
 x <- mpfr(2,1024)^ seq(3, 100, by=1/2)
 xN <- asNumeric(x)

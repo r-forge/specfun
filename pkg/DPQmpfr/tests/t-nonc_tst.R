@@ -18,5 +18,6 @@ cbind(x = -4:4,
       log.dt.M = asNumeric(log(dt5.10m)))
 
 ## FIXME: ==> more in ~/R/MM/NUMERICS/dpq-functions/dt-ex.R
-
-
+## -----
+## and/or rather  ~/R/Pkgs/DPQ/tests/t-nonc-tst.R
+##                '''''''''''''''''''^^^^^^^^^^^^

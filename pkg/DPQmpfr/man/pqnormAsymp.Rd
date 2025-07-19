@@ -62,11 +62,11 @@ lxm <- mpfr(lx, 256)
 Px <- pnorm(lxm, lower.tail = FALSE, log.p=TRUE)
 PxA <- sapplyMpfr(setNames(0:5, paste("k =",0:5)),
                   pnormAsymp, x=lxm, lower.tail = FALSE, log.p=TRUE)
+options(width = 111) -> oop # (nicely printing the matrices)
 if(interactive())
   roundMpfr(PxA, 40)
 # rel.errors :
 relE <- asNumeric(1 - PxA/Px)
-options(width = 99) -> oop # (nicely printing the matrices)
 cbind(lx, relE)
 matplot(lx, abs(relE), type="b", cex = 1/2, log="xy", pch=as.character(0:5),
         axes=FALSE,
@@ -77,6 +77,8 @@ legend("bottom", paste("k =", 0:5), col=1:6, lty=1:5,
 ## NB: rel.Errors go down to  7e-59 ==> need precision of  -log2(7e-59) ~ 193.2 bits
 
 ## 2. qnormAsymp() ---------------------
+qp1 <- qnormAsymp((0:16)/16, order=3, lower.tail = FALSE, log.p=TRUE) # did seg.fault: ldexp()
+
 QPx <- sapplyMpfr(setNames(0:5, paste("k =",0:5)),
                   function(k) qnormAsymp(Px, order=k, lower.tail = FALSE, log.p=TRUE))
 (relE.q <- asNumeric(QPx/lx - 1))
