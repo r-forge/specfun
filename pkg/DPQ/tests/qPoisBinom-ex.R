@@ -4,23 +4,17 @@
 if(!dev.interactive(orNone=TRUE)) pdf("qPoisBinom-ex.pdf")
 .O.P. <- par(no.readonly=TRUE)
 
-## Its source code, since {r80271 | 2021-05-08} in ~/R/D/r-devel/R/src/nmath/qDiscrete_search.h
-## contains
-'
-    /* Note : "same" code in qpois.c, qbinom.c, qnbinom.c --
-     * FIXME: This is far from optimal [cancellation for p ~= 1, etc]: */
-    if(!lower_tail || log_p) {
-	p = R_DT_qIv(p); /* need check again (cancellation!): */
-	if (p == R_DT_0) return 0;
-	if (p == R_DT_1) return ML_POSINF;
-    }
-    /* temporary hack --- FIXME --- */
-    if (p + 1.01*DBL_EPSILON >= 1.) return ML_POSINF;
-'
-## ==> same "bug" also in qbinom() and qnbinom()  [! ?? ]
+## NB:  No bug here anymore  --- fixed by this :
+## ------
+## r86504 | maechler | 2024-05-01 10:43:29 +0200 (Mi, 01 Mai 2024) | 1 line
+##
+## fix discrete inversion p |--> q; for qbinom() and more: PR#18711
+
+## source  ~/R/D/r-devel/R/src/nmath/qDiscrete_search.h
+
+relErrV <- sfsmisc::relErrV
 
 e <- c(-1000, -500, -200, -100, seq(-70,-1/4, by=1/4))
-
 lambda <- 10000
 qp <- qpois(2^e, lambda=lambda, lower.tail=FALSE)
 
@@ -32,65 +26,64 @@ cbNoRN <- function(...) {
 }
 
 cbNoRN(e, p=2^e, qpois=qp)
-##         e             p qpois
-##  -1000.00 9.332636e-302   Inf
-##     .....  ............   ...
-##     .....  ............   ...
-##    -52.25  1.867165e-16   Inf
-##    -52.00  2.220446e-16   Inf
-##    -51.75  2.640570e-16   Inf
-##    -51.50  3.140185e-16 10770
-##    -51.25  3.734330e-16 10769
-##    -51.00  4.440892e-16 10769
-##    -50.75  5.281140e-16 10769
-##    -50.50  6.280370e-16 10769
-##    -50.25  7.468660e-16 10769
-##    -50.00  8.881784e-16 10769
+## is all good now
 
 plot(qp ~ e, type = "b", subset = -(1:5),
      main = paste0("qpois(2^e, lambda=",lambda,
-                   ") - early overflow to +Inf"))
+                   ") - looks smooth now"))
 
-## qbinom() "same" problem -- does not overflow to +Inf but to
-##  'size' ( = n in C ) = 100  here : as indeed, the source
-##  ~/R/D/r-devel/R/src/nmath/qbinom.c has an *ADDITIONAL* hack here :
-'
-    q = 1 - pr;
-    if(q == 0.) return n; /* covers the full range of the distribution */
-'
+## p(q(.)) ~= identity (but have *discrete*ness errors) :
+l2p <- log2(ppois(qp, lambda=lambda, lower.tail=FALSE))
+relE <- relErrV(e, l2p)
+
+    all.equal(e, l2p, tolerance = 0) # 0.001125
+stopifnot(exprs = {
+    !is.unsorted(e)
+    9800 < qp; qp < 14000
+    diff(qp) < 0
+    all.equal(e, l2p, tolerance = 0.002)
+    0 < relE ; relE < 9e-3
+})
+
+
+### __________ NB   no bug anymore  !!! ____________________________
+
+## qbinom() "same" problem -- ... solved now
 qBin <- qbinom(2^e, size = 100, prob = 0.4, lower.tail=FALSE)
 cbNoRN(e, p=2^e, qBin)[c(1, 75:85),]
 
 plot(qBin ~ e, type = "b", subset = -(1:5),
-     main = paste0("qbinom(2^e, size = 100, prob = 0.4, lower.tail=FALSE",
-                   ") - early overflow to 'size'")); abline(h=100, lty=3)
+     main = paste0("qbinom(2^e, size = 100, prob = 0.4, lower.tail=FALSE) -- ok now"))
+abline(h=100, lty=3)
+d.qB <- diff(qBin)
 
-## qnbinom() "same" problem --
-##  ~/R/D/r-devel/R/src/nmath/qnbinom.c
+pB <- pbinom(qBin, size=100, prob = 0.4, lower.tail=FALSE)
+l2pB <- log2(pB[pB != 0])
+stopifnot(exprs = {
+    100 >= qBin; qBin >= 35
+    -8 <= d.qB; d.qB <= 0
+    max(relErrV(e[pB != 0], l2pB)) < 0.20
+     all.equal( e[pB != 0], l2pB, tolerance = 0.04) # 0.0281
+})
+
+## qnbinom() "same"  --
+
 qNB <- qnbinom(2^e, size = 100, prob = 0.4, lower.tail=FALSE)
-cbNoRN(e, p=2^e, qNB)[c(1, 70:82),]
- ##        e             p qNB
- ## -1000.00 9.332636e-302   0
- ##   -53.75  6.601426e-17   0
- ##   -53.50  7.850462e-17   0 <<<< !! even more wrong
- ##   -53.25  9.335826e-17 Inf
- ##   -53.00  1.110223e-16 Inf
- ##   -52.75  1.320285e-16 Inf
- ##   -52.50  1.570092e-16 Inf
- ##   -52.25  1.867165e-16 Inf
- ##   -52.00  2.220446e-16 Inf
- ##   -51.75  2.640570e-16 Inf <<
- ##   -51.50  3.140185e-16 337
- ##   -51.25  3.734330e-16 337
- ##   -51.00  4.440892e-16 337
- ##   -50.75  5.281140e-16 337
+cbNoRN(e, p=2^e, qNB)
+## now also fine:
+range(dqNB <- diff(qNB))
+stopifnot(1949 >= qNB, qNB >= 131,
+          -773 <= dqNB, dqNB <= 0)
 
-## to make the jump to Inf, then 0, more visible, replace Inf by HUGE :
-qN. <- qNB
-qN.[qNB == Inf] <- 1e300
-plot(qN. ~ e, type = "l", subset = -(1:5), ylim = range(qNB, finite=TRUE),
-     main = paste0("qnbinom(2^e, size = 100, prob = 0.4, lower.tail=FALSE)",
-                   ") - early \"overflow\" to **WRONG**")); abline(h=0, lty=3)
+(pNB <- pnbinom(qNB, size=100, prob = 0.4, lower.tail=FALSE))
+l2pN <- log2(pNB[pNB != 0])
+     all.equal(e[pNB != 0], l2pN, tolerance = 0.) # 0.00377
+stopifnot(exprs = {
+     all.equal( e[pNB != 0], l2pN, tolerance = 0.01)
+    max(relErrV(e[pNB != 0], l2pN)) <= 0.1 # 0.0756
+})
+
+
 
 require(DPQ)
 ## Embarrassing forgotten FIXME (for boring boundary cases only):
@@ -102,6 +95,12 @@ stopifnot(exprs = {
     qbinomR (c(-Inf,0), size=M, prob=pr, log.p=TRUE) == c(0, M)
     qnbinomR(c(-Inf,0), size=M, prob=pr, log.p=TRUE) == c(0, Inf)
     qpoisR  (c(-Inf,0),      M,          log.p=TRUE) == c(0, Inf)
+
+    ## The same for the plain R versions
+    qbinom (0:1, size=M, prob=pr) == c(0, M)
+    qnbinom(0:1, size=M, prob=pr) == c(0, Inf)
+    qpois  (0:1,      M)          == c(0, Inf)
+    qbinom (c(-Inf,0), size=M, prob=pr, log.p=TRUE) == c(0, M)
+    qnbinom(c(-Inf,0), size=M, prob=pr, log.p=TRUE) == c(0, Inf)
+    qpois  (c(-Inf,0),      M,          log.p=TRUE) == c(0, Inf)
 })
-
-
