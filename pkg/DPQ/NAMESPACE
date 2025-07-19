@@ -104,7 +104,7 @@ export(
   ## , lbetaIhalf
   , algdiv # name as in TOMS 708 .. but really?
   , bpser  # name as in TOMS 708 -- version of pbeta()
-  , gam1d, gamln1 # gam1() & gamln1() in TOMS 708
+  , gam1, gam1d, gamln1, gamln1. # gam1() & gamln1() in TOMS 708
   , okLongDouble # as with valgrind, it does not work contrary to what .Machine says
 
   , dltgammaInc, lgammaP11 # R/beta-fns.R -> src/gamma_inc_T1006.c

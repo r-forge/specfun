@@ -18,7 +18,10 @@ auto
 \.blg$
 \.grep$
 \.patch$
+\.out$
 log$
+mail$
+-tst\.Rout_
 /.*,v
 svn-
 TAGS
@@ -27,7 +30,7 @@ etags
 ^(dt|Rplots|p1l1|stirlerr.*)\.pdf
 vignettes/.*[:~]
 vignettes/DPQ_.*\.tar\.gz$
-vignettes/.*\.(pdf|aux|out|tex)$
+vignettes/.*\.(pdf|aux|tex)$
 vignettes/.*-woven
 vignettes/.*JSS
 vignettes/.*_save?$
@@ -39,5 +42,5 @@ tests/\.RData
 tests/.*[.]rds
 TODO-man
 TODO-merge-
-mail$
+TODO_R
 

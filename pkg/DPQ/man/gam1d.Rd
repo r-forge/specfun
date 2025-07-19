@@ -1,5 +1,6 @@
 \name{gam1d}
 \alias{gam1d}
+\alias{gam1}
 \title{Compute  1/Gamma(x+1) - 1  Accurately}
 \description{
   Computes \eqn{1/\Gamma(a+1) - 1} accurately in \eqn{[-0.5, 1.5]} for numeric argument \code{a};
@@ -9,11 +10,15 @@
  FIXME: "Pure-R" implementation is in \file{ ~/R/Pkgs/DPQ/TODO_R_versions_gam1_etc.R }
 }
 \usage{%% TODO: a DPQmpfr "joint" version: gam1(a, useDbl = is.numeric(a)#, verbose = FALSE)
+
+gam1 (a, useTOMS = is.numeric(a), warnIf=TRUE, verbose=FALSE)
 gam1d(a, warnIf = TRUE, verbose = FALSE)
 }
 \arguments{
   \item{a}{a numeric or numeric-alike, typically inheriting from \code{class} \code{"mpfr"}.}
-  \item{warnIf}{logical if a \code{\link{warning}} should be signalled when
+  \item{useTOMS}{\code{logical} indicating if the TOMS 708 C code should be
+    used; in that case \code{a} must be (C-level coercible to) numeric.}
+  \item{warnIf}{\code{\link{logical}} indicating if a \code{\link{warning}} should be signalled when
     \code{a} is not in the \dQuote{proper} range \eqn{[-0.5, 1.5]}.}
   %% \item{useDbl}{logical determining if the double precision approximation
   %%   in \eqn{[-0.5, 1.5]} from TOMS 708 should be used.}
@@ -48,14 +53,14 @@ gam1d(a, warnIf = TRUE, verbose = FALSE)
   a numeric-alike vector like \code{a}.
 }
 \references{
-  TOMS 708, see \code{\link{pbeta}}
+  TOMS 708, see \code{\link{pbeta}}, where \code{gam1()} is the C function name.
 }
 \author{Martin Maechler building on C code of TOMS 708}
 %% \note{
 
 %% }
 \seealso{
- \code{\link{gamma}}.
+  \code{\link{gamma}}; package \CRANpkg{DPQmpfr}'s \code{\link[DPQmpfr]{gam1M}}.
 }
 \examples{
 g1 <- function(u) 1/gamma(u+1) - 1
@@ -90,32 +95,29 @@ if(requireNamespace("Rmpfr")) withAutoprint({
 })
 
 
-%%------- FIXME ---------- DPQmpfr() should get a  gam1() which calls its gam1M() or this gam1d()
-%%        -----  depending on input type and  'useDbl' (see above)
-%%
-if(requireNamespace("Rmpfr") && FALSE) { %%___FIXME__ : all this should go to DPQmpfr()`s  gam1() function :
-  
-## Comparison using Rmpfr; slightly extending the [-.5, 1.5] interval:
-##	{relErrV(), mpfr(), asN() defined above}
+## FIXME(maybe) : original plan was a  gam1()  in DPQmpfr, but it is now here in DPQ
+if(requireNamespace("Rmpfr")) {
+    ## Comparison using Rmpfr; slightly extending the [-.5, 1.5] interval:
+    ##	relErrV(), mpfr(), asN() defined above (!)
+    u <- seq(-0.525, 1.525, length.out = 2001)
+    gam1M <- gam1(mpfr(u, 128))
+    relE <- asN(relErrV(gam1M, gam1d(u)))
 
-u <- seq(-0.525, 1.525, length.out = 2001)
-gam1M <- gam1(mpfr(u, 128))
-relE <- asN(relErrV(gam1M, gam1d(u)))
+    plot(relE ~ u, type="l", ylim = c(-1,1) * 2.5e-15,
+         main = expression("Relative Error of " ~~ gam1d(u) == frac(1, Gamma(u+1)) - 1))
+    grid(lty = 3); abline(v = c(-.5, 1.5), col = adjustcolor(4, 1/2), lty=2, lwd=2)
 
-plot(relE ~ u, type="l", ylim = c(-1,1) * 2.5e-15,
-     main = expression("Relative Error of " ~~ gam1d(u) == frac(1, Gamma(u+1)) - 1))
-grid(lty = 3); abline(v = c(-.5, 1.5), col = adjustcolor(4, 1/2), lty=2, lwd=2)
+    ## what about the direct formula -- how bad is it really ?
+    relED <- asN(relErrV(gam1M, g1(u)))
 
-## what about the direct formula -- how bad is it really ?
-relED <- asN(relErrV(gam1M, g1(u)))
+    plot(relE ~ u, type="l", ylim = c(-1,1) * 1e-14,
+         main = expression("Relative Error of " ~~ gam1d(u) == frac(1, Gamma(u+1)) - 1))
+    lines(relED ~ u, col = adjustcolor(2, 1/2), lwd = 2)
+    ## mtext("comparing with direct formula   1/gamma(u+1) - 1")
+    legend("top", c("gam1d(u)", "1/gamma(u+1) - 1"), col = 1:2, lwd=1:2, bty="n")
+    ## direct is clearly *worse* , but not catastrophical
 
-plot(relE ~ u, type="l", ylim = c(-1,1) * 1e-14,
-     main = expression("Relative Error of " ~~ gam1d(u) == frac(1, Gamma(u+1)) - 1))
-lines(relED ~ u, col = adjustcolor(2, 1/2), lwd = 2)
-# mtext("comparing with direct formula   1/gamma(u+1) - 1")
-legend("top", c("gam1d(u)", "1/gamma(u+1) - 1"), col = 1:2, lwd=1:2, bty="n")
-## direct is clearly *worse* , but not catastrophical
-}% not here
+} # if {Rmpfr}
 
 }
 \keyword{math}

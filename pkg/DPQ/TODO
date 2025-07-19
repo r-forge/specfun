@@ -1,12 +1,13 @@
 ##-*- org -*-->  Emacs .. [Tab] key + [Org] menu; C-c C-o to follow links
 
-* TODO Have gam1d() now (calling C - TOMS 708) -- but also want to add the "pure R" version in ./TODO_R_versions_gam1_etc.R
 * TODO pbeta() approximations notably for log scale where bpser underflows to -Inf <<<<<<<<<<<
 ** TODO MM has had a pure R  bratio() for TOMS 708 in	~/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/toms708-bratio.R
 ***		including also (very unfinished)	~/R/MM/NUMERICS/dpq-functions/beta-gamma-etc/toms708-regions.R
 * DONE *Embarrassing*: both qnormUappr() & qnormUappr6() were *negative* (wrong sign), for lp in [-.69, 0)
 * DONE Provide R functions interfacing to the "applied math utilities" in ./src/DPQ-misc.c : ./R/utils.R
 * DONE Add pgamma_1006() using the 2020  TOMS Algorithm 1006 === ~/src/TOMS/1006-inc_gamma/
+* DONE Have gam1d() now (calling C - TOMS 708) -- but also want to add the "pure R" version in ./TODO_R_versions_gam1_etc.R
+** gam1() now calls gam1d() or mpfr-ized code;  similarly new gamln1() now calling old gamln1.() or mpfr-ized code
 * TODO Compare pnchi1sq() with t1() function in tests/chisq-nonc-ex.R
 * TODO Computational Statistics paper ~/save/papers/Numerics/noncentral_gamma_deOliveira+Ferreira_ComputStat_2013.pdf
    de Oliveira, I.R.C and Ferreira, D.F. (2013)
@@ -26,6 +27,7 @@
 
 * TODO Add qnchisq{Approx} -- also from "the book" JKK vol.2, chapter 29 -- e.g. Pearson and other
 
+   we have all the pnchisq{Approximations} but not much from their inverse x_p(..)
 * TODO Newer (than de Oliveira & Ferreira (2013) paper on  gammaCHI Software
        gives *better* approximations (at least in parts):
   - Gil, Amparo; Segura, Javier; Temme, Nico M. (2021),

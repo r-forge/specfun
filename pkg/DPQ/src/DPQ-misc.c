@@ -105,14 +105,15 @@ SEXP R_ldexp(SEXP f_, SEXP E_)
     R_xlen_t
 	n_f = XLENGTH(PROTECT(f_ = isReal   (f_) ? f_ : coerceVector(f_, REALSXP))),
 	n_E = XLENGTH(PROTECT(E_ = isInteger(E_) ? E_ : coerceVector(E_, INTSXP))),
-	n = (n_f >= n_E) ? n_f : n_E; // and recycle f_ or E_ when needed
-    if(!n_f || !n_E) return allocVector(REALSXP, 0); // length 0
+	n = (!n_f || !n_E) ? 0 : (n_f >= n_E) ? n_f : n_E; // and recycle f_ or E_ when needed
     SEXP r_ = PROTECT(allocVector(REALSXP, n));
-    const double *f = REAL(f_);
-    double *r = REAL(r_);
-    int *E = INTEGER(E_);
-    for(R_xlen_t i=0; i < n; i++)
-	r[i] = ldexp(f[i % n_f], E[i % n_E]);
+    if(n) {
+	const double *f = REAL(f_);
+	double *r = REAL(r_);
+	int *E = INTEGER(E_);
+	for(R_xlen_t i=0; i < n; i++)
+	    r[i] = ldexp(f[i % n_f], E[i % n_E]);
+    }
     UNPROTECT(3);
     return r_;
 }
@@ -142,13 +143,14 @@ SEXP dpq_pow(SEXP x_, SEXP y_)
     R_xlen_t
 	nx = XLENGTH(PROTECT(x_ = isReal(x_) ? x_ : coerceVector(x_, REALSXP))),
 	ny = XLENGTH(PROTECT(y_ = isReal(y_) ? y_ : coerceVector(y_, REALSXP))),
-	n = (nx <= ny) ? ny : nx; // n <-  max(length(x), length(y))
-    if(!nx || !ny) return allocVector(REALSXP, 0); // length 0
+	n = (!nx || !ny) ? 0 : (nx <= ny) ? ny : nx;
     SEXP r_ = PROTECT(allocVector(REALSXP, n));
-    const double *x = REAL(x_), *y = REAL(y_);
-    double *r = REAL(r_);
-    for(R_xlen_t i=0; i < n; i++)
-	r[i] = R_pow(x[i % nx], y[i % ny]);
+    if(n) {
+	const double *x = REAL(x_), *y = REAL(y_);
+	double *r = REAL(r_);
+	for(R_xlen_t i=0; i < n; i++)
+	    r[i] = R_pow(x[i % nx], y[i % ny]);
+    }
     UNPROTECT(3);
     return r_;
 }
@@ -159,14 +161,15 @@ SEXP dpq_pow_di(SEXP x_, SEXP y_)
     R_xlen_t
 	nx = XLENGTH(PROTECT(x_ = isReal   (x_) ? x_ : coerceVector(x_, REALSXP))),
 	ny = XLENGTH(PROTECT(y_ = isInteger(y_) ? y_ : coerceVector(y_,  INTSXP))),
-	n = (nx <= ny) ? ny : nx; // n <-  max(length(x), length(y))
-    if(!nx || !ny) return allocVector(REALSXP, 0); // length 0
+	n = (!nx || !ny) ? 0 : (nx <= ny) ? ny : nx;
     SEXP r_ = PROTECT(allocVector(REALSXP, n));
-    const double *x = REAL(x_);
-    double *r = REAL(r_);
-    const int *y = INTEGER(y_);
-    for(R_xlen_t i=0; i < n; i++)
-	r[i] = R_pow_di(x[i % nx], y[i % ny]);
+    if(n) {
+	const double *x = REAL(x_);
+	double *r = REAL(r_);
+	const int *y = INTEGER(y_);
+	for(R_xlen_t i=0; i < n; i++)
+	    r[i] = R_pow_di(x[i % nx], y[i % ny]);
+    }
     UNPROTECT(3);
     return r_;
 }

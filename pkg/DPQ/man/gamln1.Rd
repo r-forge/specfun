@@ -1,17 +1,22 @@
 \name{gamln1}
-\alias{gamln1}
 \title{Compute  log( Gamma(x+1) ) Accurately in [-0.2, 1.25]}
+\alias{gamln1.}
+\alias{gamln1}
 \description{
   Computes \eqn{\log \Gamma(a+1)} accurately notably when
   \eqn{|a| \ll 1}{|a| << 1}.
-  Specifically, it uses high (double precision) accuracy rational
-  approximations for  \eqn{-0.2 \le a \le 1.25}.
+  Specifically, in the \code{userTOMS} case, it uses high (double
+  precision) accuracy rational approximations for
+  \eqn{-0.2 \le a \le 1.25}.
 }
 \usage{
-gamln1(a, warnIf = TRUE)
+gamln1 (a, useTOMS = is.numeric(a), warnIf = TRUE)
+gamln1.(a, warnIf = TRUE)
 }
 \arguments{
   \item{a}{a numeric or numeric-alike, typically inheriting from \code{class} \code{"mpfr"}.}
+  \item{useTOMS}{\code{logical} indicating if the TOMS 708 C code should be
+    used; in that case \code{a} must be (C-level coercible to) numeric.}
   \item{warnIf}{logical if a \code{\link{warning}} should be signalled when
     \code{a} is not in the \dQuote{proper} range \eqn{[-0.2, 1.25]}.}
   %% \item{useDbl}{logical determining if the double precision approximation

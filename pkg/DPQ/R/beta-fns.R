@@ -782,8 +782,63 @@ gam1d <- function(a, warnIf=TRUE, verbose=FALSE) { # ../src/bpser.c
     .Call(C_R_gam1, a, warnIf, verbose)
 }
 
+gam1 <- function(a, useTOMS = is.numeric(a), warnIf=TRUE, verbose=FALSE) {
+## // == 1/gamma(a+1) - 1
+    if(!length(a)) return(a)
+    if(useTOMS) ##  --- double precision version -- from toms708.c --------
+      ## /*     ------------------------------------------------------------------ */
+      ## /*     COMPUTATION OF 1/GAMMA(A+1) - 1  FOR -0.5 <= A <= 1.5 */
+      ## /*     ------------------------------------------------------------------ */
+      gam1d(a, warnIf=warnIf, verbose=verbose)
+    else if(inherits(a, "mpfr")) { ## >>>> identical  to DPQmpfr::gam1M()  <<<<<
+        pr_a <- Rmpfr::getPrec(a)
+        roundM <- Rmpfr::roundMpfr
+        ## use larger precision
+        bits <- ceiling(-log2(abs(a)))
+        bits[a == 0] <- 0
+        usePr <- pr_a + 2L + pmax(as.integer(bits), 0L)
+        ## and "round back"
+        roundM(1/gamma(roundM(a, usePr) + 1) - 1, pr_a)
+        ##     ^^^^^^^^       ^       ^^^^^^^^^^
+    } else {
+        warning("not numeric, nor \"mpfr\" -- using direct, possibly inaccurate formula")
+        1/gamma(a + 1) - 1
+    }
+} ## {gam1}
+
+
 ## _yet_ another lgamma1p() , name and C code from TOMS 708 (R/src/nmath/toms708.c
-gamln1 <- function(a, warnIf=TRUE) .Call(C_R_gamln1, a, warnIf) # --> ../src/bpser.c
+gamln1. <- function(a, warnIf=TRUE) .Call(C_R_gamln1, a, warnIf) # --> ../src/bpser.c
+
+gamln1 <- function(a, useTOMS = is.numeric(a), warnIf=TRUE) {
+  ##  == lgamma(a+1)    bpser() used it only for 0 <= a0 < 1
+  ## * ----------------------------------------------------------------------- */
+  ## *     EVALUATION OF LN(GAMMA(1 + A)) FOR -0.2 <= A <= 1.25 */
+  ## * ----------------------------------------------------------------------- */
+
+  ## FIXME: also SHOULD HAVE  lgamma1p()
+  ##       vvvvvvvvvvvvvvv    ---------- with Maple derived formulas,
+  ## from  lgamma1p_series() up to 15 terms !! --- should (?) use also with MPFR ?
+  if(!length(a)) return(a)
+  if(useTOMS) #  --- double precision version -- from toms708.c --------
+    gamln1.(a, warnIf=warnIf)
+  else if(inherits(a, "mpfr")) { ## FIXME -- for really small 'a', have  DPQ :: lgamma1p_series() *working* with "mpfr"
+    pr_a <- Rmpfr::getPrec(a)
+    roundM <- Rmpfr::roundMpfr
+    ## use larger precision
+    bits <- ceiling(-log2(abs(a)))
+    bits[a == 0] <- 0
+    usePr <- pr_a + 2L + pmax(as.integer(bits), 0L)
+    ## and "round back"
+    roundM(lgamma(roundM(a, usePr) + 1), pr_a)
+    ##     ^^^^^^^       ^       ^^^^^^
+  } else {
+    warning("not numeric, nor \"mpfr\" -- using direct, possibly inaccurate formula")
+    ## TODO?  switch between    log(a) + lgamma(a)   and the following
+    lgamma(a + 1)
+  }
+}
+
 
 
 ##  ../src/gamma_inc_T1006.c -- TOMS 1006 "fast and accurate eval of a generalized incomplete gamma function"

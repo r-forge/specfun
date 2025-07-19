@@ -9,6 +9,9 @@
     \itemize{
       \item \code{pnchisq_ss()} gets new optional argument \code{ssr = ss(....)}
       for flexibility.
+
+      \item New \code{gam1()} calls mpfr-ized direct code or the
+      double-only C code \code{gam1d()}
     }
   }
   \subsection{BUG FIXES}{
