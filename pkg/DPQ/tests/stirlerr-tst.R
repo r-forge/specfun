@@ -9,10 +9,10 @@ for(pkg in c("Rmpfr", "DPQmpfr"))
 require("Rmpfr")
 
 source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
-## => showProc.time(), ...  list_() , loadList() ,  readRDS_() , save2RDS()
+## => showProc.time(), ...  list_() , loadList() ,  readRDS_() , save2RDS(), matplotB()
 ##_ options(conflicts.policy = list(depends.ok=TRUE, error=FALSE, warn=FALSE))
 require(sfsmisc) # masking  'list_' *and* gmp's factorize(), is.whole()
-##_ options(conflicts.policy = NULL)o
+##_ options(conflicts.policy = NULL)
 
 ## plot1cuts() , etc:  ---> ../inst/extraR/relErr-plots.R <<<<<<<
 ##			    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

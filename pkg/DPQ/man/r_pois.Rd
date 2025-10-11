@@ -18,7 +18,7 @@
   }
   NB: This is relevant in computations for non-central chi-squared (and
   similar non-central distribution functions) defined as weighted sum with
- \dQuote{Poisson weights}.
+  \dQuote{Poisson weights}.
 }
 \usage{
 r_pois(i, lambda)
@@ -49,7 +49,7 @@ plRpois(lambda, iset = 1:(2*lambda), do.main = TRUE,
   \code{r_pois()} is related to our series expansions and approximations
   for the non-central chi-squared;
   in particular
-  ........... % TODO
+  \code{\link{pnchisq_ss}()} % ...........  TODO more
 
 
   \code{plRpois()} simply produces a \dQuote{nice} plot of \code{r_pois(ii, *)}

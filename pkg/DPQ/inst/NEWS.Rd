@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.6-1 (2025-07-17, svn r343)}{
+\section{Version 0.6-1 (2025-10-11, svn r348)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item \code{pnchisq_ss()} gets new optional argument \code{ssr = ss(....)}
@@ -17,6 +17,12 @@
   \subsection{BUG FIXES}{
     \itemize{
       \item \code{ldexp({}, 1)} or \code{pow({}, 2)} no longer segfault.
+
+      \item \code{pbetaRv1()} for \code{verbose = TRUE} and/or
+      \code{mpfr}-number arguments.
+
+      \item \code{dnbinomR()} and \code{dnbinom.mu()}: fix vectorization
+      logic, using \code{ifelse()}.
     }
   }
 }

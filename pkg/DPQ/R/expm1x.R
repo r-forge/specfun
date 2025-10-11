@@ -147,4 +147,5 @@ expm1x <- function(x, cutx = c(  4.4e-8, 0.10, 0.385, 1.1, 2),  # cutoff x[k]
 
 ## Experiments changing cutoff etc -- see  "Older Experiments for finding cutoffs ..
 ## ===>  ../tests/expm1x-tst.R
-##        ^^^^^^^^^^^^^^^^^^^^
+##       -- ----- ^^^^^^^^^^^^
+

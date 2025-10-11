@@ -25,7 +25,7 @@ pbetaRv1 <- function(q, shape1, shape2, lower.tail = TRUE,
     .N <- if(isMpfr) Rmpfr::asNumeric else as.numeric
     if(isMpfr) {
         lbeta <- Rmpfr::lbeta
-        beta <- Rmpfr::beta
+        ## beta <- Rmpfr::beta
         if(verbose) format <- Rmpfr::format
     }
     Cat <- function(...) if(verbose > 0) cat(..., sep="")

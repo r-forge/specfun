@@ -40,6 +40,13 @@ stopifnot(exprs = {
     dnbinomR(0, 1, 1) == 1
 })
 
+## Both of these gave errors in DPQ <= 0.6-0  -- fixed w/ ifelse():
+## Error in if (x < size) log1p(-x/(size + x)) ..... the condition has length > 1
+x <- c(1:9, 10^c(1:2,50*(1:6)))
+(dnbX <- dnbinomR  (x, size = 1.5e156, prob = .999, log = TRUE, eps = 0.001))
+(dnbM <- dnbinom.mu(x, size = 1.5e156, mu = 1e150,  log = TRUE, eps = 0.001))
+
+
 ### exploring 'eps' == "true" tests must be done with  Rmpfr !!
 
 ### 2. Testing  log1pmx(), logcf() etc

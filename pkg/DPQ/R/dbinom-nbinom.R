@@ -186,7 +186,7 @@ dnbinomR <- function (x, size, prob, log = FALSE, eps = 1e-10)
         ans <- dbinom_raw(x = n., n = x.+n., p = pr, q = 1-pr, log = log)
         ## p <- n./(n.+x) ## == 1 if |x| << n.;
         ## better in log case when x < n: log(n/(n+x)) = log(1 - x/(n+x))
-        r[!i0][i] <- if(log) (if(x. < n.) log1p(-x./(n.+x.)) else log(n./(n.+x.))) + ans
+        r[!i0][i] <- if(log) ifelse(x. < n., log1p(-x./(n.+x.)), log(n./(n.+x.))) + ans
                      else  n./(n.+x.) * ans
     }
     r
@@ -242,7 +242,7 @@ dnbinom.mu <- function(x, size, mu, log = FALSE, eps = 1e-10)
                           log = log)
         ## p <- size/(size+x) ## == 1 if  |x| << size; better in log case,
         ## log(n/(n+x)) = log(1 - x/(n+x))  if (x < size):
-        r[!i0][i] <- if(log) (if(x < size) log1p(-x/(size+x)) else log(size/(size+x))) + ans
+        r[!i0][i] <- if(log) ifelse(x < size, log1p(-x/(size+x)), log(size/(size+x))) + ans
                      else  size/(size+x) * ans
     }
     r

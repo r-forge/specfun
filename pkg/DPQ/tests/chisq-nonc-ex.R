@@ -50,18 +50,18 @@ showProc.time()
 ### densities alone :
 ## ===> shows Normal limit (for lambda -> Inf;  true also for nu -> Inf)
 nu <- 12
-nS <- length(ncSet <- if(doExtras) 10^(0:9) else 10^(0:6))
+nS <- length(ncSet <- if(doExtras) 10^seq(1, 9, by=1/2) else 10^(1:6))
 np <- if(doExtras) 201 else 64
 cpUse <- numeric(nS); names(cpUse) <- formatC(ncSet)
-mult.fig(nS, main = paste("non-central chisq(*, df=",nu,
-                          ") and normal approx"))$old.par -> op
+mult.fig(nS, marP = -0.8,
+         main = paste0("non-central chisq(*, df=",nu,") and normal approx"))$old.par -> op
 for(NC in ncSet) {
     m <- NC + nu
     s <- sqrt(2*(nu + 2*NC))
-    x <- seq(from= m - 3*s, to= m + 3*s, length = np)
+    x <- seq(from= m - 3*s, to= m + 3*s, length.out = np)
     cpUse[formatC(NC)] <- system.time(y <- dchisq(x, df=nu, ncp=NC))[1]
     plot(x, y, ylim=c(0,max(y)),type = "l", ylab='f(x)', main=paste("ncp =",NC))
-    lines(x, dnorm(x,m=m,s=s), col = 'blue')
+    lines(x, dnorm(x, mean=m, sd=s), col = 'blue')
 }
 par(op)# resetting mult.fig()
 showProc.time()
@@ -69,8 +69,8 @@ showProc.time()
 cbind(ncSet, cpUse, "c/ncp"= cpUse / ncSet)
 ## fails on Win 32b: "need finite 'ylim' values" :
 try(plot(cpUse ~ ncSet, log = "xy", type = 'b', col = 2))
-if(doExtras) try(# fails occasionally (too many zeros)
-  print(summary(lmll <- lm(log(cpUse) ~ log(ncSet), subset = ncSet >= 1e4)))
+if(doExtras) try(# fails occasionally (too many zeros -> log(0) = -Inf)
+  print(summary(lmll <- lm(log(cpUse) ~ log(ncSet), subset = cpUse > 0)))
 )
 ## Coefficients:
 ##              Estimate Std. Error t value Pr(>|t|)
@@ -92,7 +92,7 @@ if(doExtras) try(# fails occasionally (too many zeros)
 ncp <- 16
 nS <- length(dfSet <- 10^(if(doExtras) 0:11 else 0:8))
 cpUse <- numeric(nS); names(cpUse) <- formatC(dfSet)
-oPar <- mult.fig(nS, main = "non-central chisq(ncp = 16) and normal approx")$old.par
+oPar <- mult.fig(nS, marP = -0.75, main = "non-central chisq(ncp = 16) and normal approx")$old.par
 for(DF in dfSet) {
     m <- DF + ncp
     s <- sqrt(2*(DF + 2*ncp))
@@ -111,9 +111,9 @@ showProc.time()
 ## R
 curve(dnoncentchisq(x, df=3, ncp=0), 0, 10)
 curve(dchisq       (x, df=3),        0, 10, add=TRUE, col='purple')
-## ok
+## *no* visible difference -- ok
 curve(dnoncentchisq(x, df=3, ncp=1), 0, 10)
-curve(dchisq       (x, df=3, ncp=1), 0, 10, add=TRUE, col='purple') #ditto
+curve(dchisq       (x, df=3, ncp=1), 0, 10, add=TRUE, col='purple') # ditto
 
 x  <- seq(0, 10, length=101)
 del <- c(0:4,10,40)
@@ -221,9 +221,10 @@ p.dnchiB <- function(df, ncp, log=FALSE, from=0, to = 2*ncp, p.log="", n = if(do
 }
 
 ## simple check
-stopifnot(all.equal(dchisq(1:30, df=3, ncp=1:30),
-                    dnchisqBessel(1:30, df = 3, ncp = 1:30),
-                    tol = 1e-13)) ## tol=0 --> "Mean rel.diff.: 2.3378e-14"
+dchR  <- dchisq       (1:30, df = 3, ncp = 1:30)
+dchBI <- dnchisqBessel(1:30, df = 3, ncp = 1:30)
+          all.equal(dchR, dchBI, tol = 0) # "Mean rel.diff.: 2.3378e-14"
+stopifnot(all.equal(dchR, dchBI, tolerance = 1e-13))
 
 p.dnchiB(df=1.2, ncp=500,, 200, 800)
 p.dnchiB(df=1.2, ncp=500, log=TRUE)# differ in tail
@@ -239,14 +240,13 @@ p.dnchiB(df=35, ncp=400, log=TRUE, 0,1500)    # the same
 p.dnchiB(df= 3, ncp=600, log=TRUE, 0,2500)    # the same
 p.dnchiB(df= 3, ncp=800, log=TRUE, 0,3500)    # for large x --> NaN in besselI
 
-## However, large  ncp  -- gives overflow in besselI():
-dnchisqBessel(8000, df=20, ncp=5000) ## NaN -- no longer: now 1.3197e-78
+## Originally, large  ncp  gave overflow in besselI():
+dnchisqBessel(8000, df=20, ncp=5000) # 1.3197e-78
+       dchisq(8000, df=20, ncp=5000) # 6.8563e-79
 
-## Hmm, I'm slightly confused that the cutoff seems at 1500 [ < 1e4 !]
+## This is all fine now :
 x <- if(doExtras) 1000:1600 else seq(1000, 1600, by = 5)
-plot (x, besselI(x, 9, TRUE), type="l")
-## Warning message:
-## In besselI(x, nu, 1 + as.logical(expon.scaled)) : NaNs produced
+plot (x, besselI(x, 9,   TRUE), type="l")
 lines(x, besselI(x, 1.2, TRUE), col=2)
 lines(x, besselI(x, 1.0, TRUE), col=2)
 lines(x, besselI(x, 0.1, TRUE), col=2)
@@ -265,8 +265,8 @@ lines(x, besselI(x, 7.2, TRUE), col="blue")
 lines(x, besselI(x, 8.2, TRUE), col="blue")
 ##--> Need asymptotic for besselI(x, nu) with a term that depends on nu
 
-##--> ...bessel-large-x.R  and better  ~/R/Pkgs/Bessel/
-##       ~~~~~~~~~~~~~~~~~~~[April 2008]  ================
+##--> ~/R/MM/NUMERICS/Bessel/bessel-large-x.R  and better  ~/R/Pkgs/Bessel/
+##    ~~~~~~~~~~~~~~~~~~~[April 2008]  ================
 
 showProc.time()
 
