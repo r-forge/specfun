@@ -997,7 +997,7 @@ n.mn8 <- sapply(resL.8, `[[`, "i.n", simplify = "array")
 ##   ... when I later see errors here ... what's going on??
 str(n.mn) # all NULL  for "no-double" !!
 dim(n.mn["n.",,])
-str(n.mn8["n.", "cobs",])
+str(n.mn8["n.", "cobs",]) # (all NA if {cobs} n.a.)
 
 sessionInfo()
 
