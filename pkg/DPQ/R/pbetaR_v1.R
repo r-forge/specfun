@@ -13,8 +13,6 @@ pbetaRv1 <- function(q, shape1, shape2, lower.tail = TRUE,
 {
   ## Purpose: emulate the C function pbeta_raw() in R -- for diagnosing..
   ## ----------------------------------------------------------------------
-  ## Arguments:
-  ## ----------------------------------------------------------------------
   ## Author: Martin Maechler, Date:  3 Apr 2004, 16:28
 
     if(length(q) != 1 || length(shape1) != 1 || length(shape2) != 1)
@@ -22,10 +20,15 @@ pbetaRv1 <- function(q, shape1, shape2, lower.tail = TRUE,
     x <- q; pin <- shape1; qin <- shape2 # back to "C-code compatible" argument names
     isN <- is.numeric(x) && is.numeric(pin) && is.numeric(qin)
     isMpfr <- !isN && any_mpfr(x, pin, qin)
+    if(isMpfr) isMpfr <- requireNamespace("Rmpfr")
     ## needed for printing mpfr numbers {-> pkg Rmpfr}, e.g.
-    .N <- if(isMpfr && requireNamespace("Rmpfr"))
-              Rmpfr::asNumeric else as.numeric
-    Cat <- function(...) if(verbose > 0) cat(...)
+    .N <- if(isMpfr) Rmpfr::asNumeric else as.numeric
+    if(isMpfr) {
+        lbeta <- Rmpfr::lbeta
+        beta <- Rmpfr::beta
+        if(verbose) format <- Rmpfr::format
+    }
+    Cat <- function(...) if(verbose > 0) cat(..., sep="")
 
     lneps <- log(eps) #  -36.7368  ---	 but may be lower in mpfr case
     lnsml <- log(sml) # -708.3964  ---	 but may be lower in mpfr case
@@ -60,7 +63,7 @@ pbetaRv1 <- function(q, shape1, shape2, lower.tail = TRUE,
 	##	  when (one or) both p & q  are huge
 	##
 	##  ./pf.c  now has a cheap fix -- can use that here, but better
-	##  "get it right"  (PD to R-core on 20 Feb 2000)a
+	##  "get it right"  (PD to R-core on 20 Feb 2000)
 
 	## /* evaluate the infinite sum first.	term will equal */
 	## /* y^p / beta(ps, p) * (1 - ps)-sub-i * y^i / fac(i) */
@@ -69,30 +72,33 @@ pbetaRv1 <- function(q, shape1, shape2, lower.tail = TRUE,
 	ps <- q - floor(q)
 	xb <- p * Ly
 	if (ps == 0) {
-	    ps	<- 1;# in this case: lbeta(ps,p)= log Beta(1,p) = log(1/p)=-log(p)
+	    ps <- 1 # in this case: lbeta(ps,p)= log Beta(1,p) = log(1/p)= -log(p)
 	}
-	else xb	 <- xb - (lbeta(ps, p) + log(p))
+	else xb <- xb - (lbeta(ps, p) + log(p))
 
-	Cat("pbetaR() 'normal', swap.tail= ",swap.tail,
-	    "; xb=", format(xb))
+	Cat("pbetaR() 'normal', swap.tail= ", swap.tail,
+	    "; xb=", format(xb), ", lnsml=", format(lnsml), ", ")
 	if (xb >= lnsml) {
 	    ans	 <- exp(xb)
 	    term <- ans * p
-	    if (ps != 1) {
+            Cat("xb >= lnsml: ans_1 := exp(xb) =", format(ans), ", term = ", format(term), " ")
+            if(term == 0)
+                Cat("term = 0 => no summation ")
+            else if (ps != 1) {
 		n <- floor(max(lneps/Ly, 4.0))
 		## Now if 'n' is really too large, we should give up!
 		if(n > 1e9)
 		    stop("'n' := max(4, lneps/Ly) =",format(n),
 			 " is way too large")
 		n <- as.integer(n)# if it was "mpfr"
-		Cat(", n=", n)
+		Cat(", n=", n,", ")
 		for(i in 1:n) {
 		    xi	<- i
 		    term <- term * ((xi - ps) * y / xi)
 		    ans <- ans + term / (p + xi)
 		}
 	    }
-	    Cat(", 1st ans= ", format(ans), "\n")
+	    Cat("1st ans= ", format(ans), "\n")
 	} else {
             ans <- 0
 	    Cat("xb < lnsml ==> no first sum; ans := 0\n")
@@ -117,7 +123,7 @@ pbetaRv1 <- function(q, shape1, shape2, lower.tail = TRUE,
 	    p1	<- q * c / (p + q - 1)
 
 	    Cat(" q > 1: xb=",format(xb),", ib=",.N(ib),", term=",format(term),
-		", p1=",format(p1), if(p1 > 1)" > 1 !!!!" else '', "\n", sep="")
+		", p1=",format(p1), if(p1 > 1)" > 1 !!!!" else '', "\n")
 	    finsum <- 0
 	    n <- floor(q)
 	    if (q == n)
@@ -132,8 +138,8 @@ pbetaRv1 <- function(q, shape1, shape2, lower.tail = TRUE,
 		xi <- i
 		term <- (q - xi + 1) * c * term / (p + q - xi)
 		## do not: when n = 2e9, almost kills emacs...
-		##if(verbose)
-		##    cat(if(verbose >= 2) sprintf("term=%g ",term) else ".")
+		if(verbose) 
+		   cat(if(verbose >= 2 && i < 100) sprintf("term=%g ",term) else ".", if(!(i %% 100))"\n")
 		if (term > 1) {
 		    ib <- ib-1
 		    term <- term * sml
