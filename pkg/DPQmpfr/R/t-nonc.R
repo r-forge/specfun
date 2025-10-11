@@ -191,6 +191,7 @@ ML_NAN <- NaN
 
 pbeta_ser <- function(q, shape1, shape2, log.p=FALSE,
                       eps = 1e-15, ## R's C: eps = 2. * Rf_d1mach(3); // == DBL_EPSILON ..., but then set to  1e-15
+                      n.itmax = 1e7,
                       errPb = 0, # {0, -1, -2} on input;  {0, 1, 2} on output
                       verbose = FALSE)
 {
@@ -221,6 +222,21 @@ pbeta_ser <- function(q, shape1, shape2, log.p=FALSE,
     # for DPQ: */
     if (x == 1. || a == 0.) return(.D_1(log.p))
 
+    isN <- is.numeric(x) && is.numeric(a) && is.numeric(b)
+    isMpfr <- !isN && any_mpfr(x, a, b)
+    if(isMpfr) isMpfr <- requireNamespace("Rmpfr")
+    ## needed for printing mpfr numbers {-> pkg Rmpfr}, e.g.
+    .N <- if(isMpfr) Rmpfr::asNumeric else as.numeric
+    if(isMpfr) {
+        lbeta <- Rmpfr::lbeta
+        ## beta <- Rmpfr::beta
+        prec <- max(getPrec(x), getPrec(a), getPrec(b)) + 32L
+        x <- mpfr(x,  prec)
+        a <- mpfr(a, prec)
+        b <- mpfr(b, prec)
+        f <- function(x, digits = min(prec, 80)/log2(10)) Rmpfr::format(x, digits=digits)
+    } else f <- function(x, digits = getOption("digits"))        format(x, digits=digits)
+
 # ----------------------------------------------------------------------- */
 #             compute the factor  x^a/(a*Beta(a,b)) */
 # ----------------------------------------------------------------------- */
@@ -240,8 +256,8 @@ pbeta_ser <- function(q, shape1, shape2, log.p=FALSE,
                 } else {
                     ans  <- x^a # pow(x, a);
                     if (ans == 0.) { # once underflow, always underflow .. */
-                        if(verbose) cat(sprintf(" bpser(a=%g, b=%g, x=%g): x^a underflows to 0\n",
-                                                a,b,x));
+                        if(verbose) cat(sprintf(" bpser(a=%s, b=%s, x=%s): x^a underflows to 0\n",
+                                                f(a), f(b), f(x)));
                         return(ans)
                     }
                 }
@@ -301,9 +317,9 @@ pbeta_ser <- function(q, shape1, shape2, log.p=FALSE,
                 ans  <- a0 / a * exp(z);
         }
     }
-    if(verbose) cat(sprintf(" bpser(a=%g, b=%g, x=%g, log=%d, eps=%g): %s = %.14g;",
-                            a,b,x, log.p, eps,
-                            if(log.p) "log(x^a/(a*B(a,b)))" else "x^a/(a*B(a,b))", ans))
+    if(verbose) cat(sprintf(" bpser(a=%s, b=%s, x=%s, log=%d, eps=%g): %s = %s;",
+                            f(a),f(b),f(x), log.p, eps,
+                            if(log.p) "log(x^a/(a*B(a,b)))" else "x^a/(a*B(a,b))", f(ans, digits=14)))
     if (ans == .D_0(log.p) || (!log.p && a <= eps * 0.1)) {
         if(verbose) cat(" = final answer\n")
         return(ans)
@@ -313,38 +329,38 @@ pbeta_ser <- function(q, shape1, shape2, log.p=FALSE,
     ## ----------------------------------------------------------------------- */
     ##                      COMPUTE THE SERIES */
     ## ----------------------------------------------------------------------- */
-    tol  <- eps / a
+    tol  <- asNumeric(eps / a)
     n  <- 0.
-    sum  <- 0.
-    c  <- 1.
+    sum <- 0. # will be coerced to 'mpfr' as {a,b,x} are already
+    c <- 1.
     repeat { ## sum is alternating as long as n < b (<==> 1 - b/n < 0)
         n <- n+1
         c <- c * (0.5 - b / n + 0.5) * x;
         w  <- c / (a + n);
         sum <- sum + w;
-        if(!(n < 1e7 && abs(w) > tol)) break
+        if(!(n < n.itmax && abs(w) > tol)) break
     }
     if(abs(w) > tol) { ## the series did not converge (in time)
         ## warn only when the result seems to matter:
         if(( log.p && !(a*sum > -1. && abs(log1p(a * sum)) < eps*abs(ans))) ||
            (!log.p && abs(a*sum + 1.) != 1.)) {
             if(errPb >= 0) ## caller can specify err_bp = -1  to suppress this warning
-                warning(gettextf(" bpser(a=%g, b=%g, x=%g,...) did not converge (n=1e7, |w|/tol=%g > 1; A=%g)",
-                        a,b,x, abs(w)/tol, ans), domain=NA)
+                warning(gettextf(" bpser(a=%s, b=%s, x=%s,...) did not converge (n=%d, |w|/tol=%g > 1; A=%s)",
+                        f(a),f(b),f(x), n.itmax, asNumeric(abs(w))/tol, f(ans)), domain=NA)
             errPb  <- 1;
         }
     }
-    if(verbose) cat(sprintf("  -> n=%.0f iterations, |w|=%g %s %g=tol:=eps/a ==> a*sum=%g %s -1\n",
-                            n, abs(w), if(abs(w) > tol) ">!!>" else "<=", tol,
-                            a*sum, if(a*sum > -1.) ">" else "<="))
+    if(verbose) cat(sprintf(" -> n=%.0f iterations, |w|=%s %s %g = tol:=eps/a ==> a*sum=%s %s -1\n",
+                            n, f(abs(w)), if(abs(w) > tol) ">!!>" else "<=", tol,
+                            f(a*sum), if(a*sum > -1.) ">" else "<="))
     if(log.p) {
         if (a*sum > -1.)
             ans <- ans + log1p(a * sum)
         else {
             if(ans > ML_NEGINF) {
                 if(errPb >= -1) ## caller can specify err_bp = -2  to suppress both warnings
-                    warning(gettextf("pbeta(*, log.p=TRUE) -> bpser(a=%g, b=%g, x=%g,...) underflow to -Inf",
-                                     a,b,x), domain=NA)
+                    warning(gettextf("pbeta(*, log.p=TRUE) -> bpser(a=%s, b=%s, x=%s,...) underflow to -Inf",
+                                     f(a),f(b),f(x)), domain=NA)
                 errPb  <- 2
             }
             ## FIXME ? rather keep first order term ans = log(x^a/(a*B(a,b))) from above

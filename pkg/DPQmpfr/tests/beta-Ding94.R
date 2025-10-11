@@ -6,7 +6,7 @@ options(warn = 1)# warnings *immediately*
 ##  *.time()  utilities   from
 ## ../../DPQ/inst/test-tools.R - source(system.file(package="Matrix", "test-tools-1.R", mustWork=TRUE))
 source(system.file(package="DPQ", "test-tools.R", mustWork=TRUE))
-## => list_() , loadList() ,  readRDS_() , save2RDS()
+## => list_() , loadList() ,  readRDS_() , save2RDS(), *.time()  utilities 
 
 (doExtras <- DPQmpfr:::doExtras())
 ## save directory (to read from):

@@ -24,8 +24,8 @@ importFrom("Rmpfr"
          , asNumeric
          , dnorm, pnorm
            ## , dchisq # for now have our own (*un*exported)
-         , dgamma
-         , dpois
+         , dgamma, dpois
+         , lbeta
          , log1mexp
          , .mpfr_erange
          , roundMpfr

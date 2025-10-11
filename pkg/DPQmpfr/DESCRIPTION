@@ -2,7 +2,7 @@ Package: DPQmpfr
 Title: DPQ (Density, Probability, Quantile) Distribution Computations using MPFR
 Version: 0.3-4
 VersionNote: Last CRAN: 0.3-3 on 2024-08-19; 0.3-2 on 2023-12-05; 0.3-1 on 2021-05-17
-Date: 2025-07-18
+Date: 2025-10-11
 Authors@R: person("Martin","Maechler", role=c("aut","cre"),
    email="maechler@stat.math.ethz.ch", comment = c(ORCID = "0000-0002-8685-9910"))
 Description: An extension to the 'DPQ' package with computations for 'DPQ'

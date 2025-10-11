@@ -1,4 +1,4 @@
-\name{ss}
+\name{pnchisq_ss}
 \alias{ss}
 \alias{pnchisq}
 \title{Noncentral Chisquare Terms \code{"mpfr"}-ized}
@@ -25,7 +25,8 @@ pnchisq(x, df, ncp = 0, lower.tail = TRUE, log.p = FALSE, i.max = 10000,
     which inherit not from \code{"mpfr"} already.}
   \item{useLv}{\code{\link{logical}} indicating if logarithmic scale should
     be used for \eqn{\lambda} computations.}
-  \item{ssr}{the result of calling \code{ss(..)}.}
+  \item{ssr}{the result of calling \code{ss(..)}, typically only specified
+    when pre-computed.}
 }
 \details{
   Using mpfr-arithmetic (provided by package \CRANpkg{Rmpfr}) where
@@ -60,12 +61,18 @@ ssm <- ss(xm, df=512, ncp=128) # currently returns all i.max = 10'000 terms ..
 str(ssm)
 Rmpfr::roundMpfr(head(ssm $ s), 32) # 1.6038108905e-28 4.0563310465e-26 5.1109287414e-24 ...
 Rmpfr::roundMpfr(tail(ssm $ s), 32) # ... 1.2146182008e-6176 1.1844156032e-6177
-plot(Rmpfr::asNumeric(log10(ssm$s)), type = "l")
-with(ssm, lines(max, log10(s[max]), type = "h", col=2)); abline(h=0, v=0, lty=3)
+tit <- substitute(
+    list({chi[nu]^2}(ncp=NCP) ~ "series" ~~ quote(log10( s[i](x) )), nu=NU, x=X, i==1:IM),
+    list(NU = 512, X = x, NCP = 128, IM = 10000))
+plot(Rmpfr::asNumeric(log10(ssm$s)),
+     xlab = quote(i), ylab = "", main = tit, type = "l")
+c(max = (mx <- ssm$max), "ss(max)" = Rmpfr::asNumeric(ssm$s[mx]))
+lines(mx, Rmpfr::asNumeric(log10(ssm$s[mx])), type = "h", col=2) # not visible
+ abline(h=0, v=0, lty=3)
 str(Dss <- DPQ::ss(x, df=512, ncp=128) )
 (nD <- length(Dss$s))
 stopifnot(Rmpfr::all.equal(ssm$s[1:nD], Dss$s, tolerance = 1e-14))
-          Rmpfr::all.equal(ssm$s[1:nD], Dss$s, tol=0) # Mean rel. diff.: 1.0597e-15
+          Rmpfr::all.equal(ssm$s[1:nD], Dss$s, tolerance = 0) # Mean rel. diff: 1.0597e-15
 
 x <- 2000 ; xm <- Rmpfr::mpfr(x, 128)
  pn  <- pchisq (x , df=512, ncp=128) # prints as 1

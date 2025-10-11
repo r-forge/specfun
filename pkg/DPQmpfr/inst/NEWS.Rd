@@ -5,10 +5,17 @@
 \encoding{UTF-8}
 
 % NB: svn revision numbering within all my R-forge `specfun` pkgs --- ..../R-forge/specfun/
-\section{Version 0.3-4 (2025-07-18, svn r344)}{
+\section{Version 0.3-4 (2025-10-11, svn r350)}{
   \subsection{NEW FEATURES}{
     \itemize{
       \item new pnchisq() and its auxiliary ss(); both "mpfr"-ized from \CRANpkg{DPQ}.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item import \code{lbeta()} from \pkg{Rmpfr} and also ensure
+      \code{pbeta_ser()} works with \code{"mpfr"}-numbers (even when
+      \code{verbose = TRUE}).
     }
   }
 }

@@ -235,7 +235,7 @@ stirlerrSer <- function(n, k) {
 ## DPQ has ss() and pnchisq_ss() etc
 ## ---
 ## Should "easily" work with Rmpfr  -- ../../DPQ/R/pnchisq.R
-## Summands for pnchisq() series approximation, see pnchisq_ss() [below]
+## Summands for pnchisq() series approximation, see pnchisq() [below]
 ss <- function(x, df, ncp, i.max = 10000,
                minPrec = 128L,
                useLv = !(expMin < -lambda && 1/lambda < expMax))
@@ -266,7 +266,7 @@ ss <- function(x, df, ncp, i.max = 10000,
     isNum <- is.numeric(tmp <- x + df + ncp)
     ## we need to create (expMin, expMax) for the *default* `useLv`
     if(!isNum) {
-        precB <- if(isM <- inherits(tmp, "mpfr"))
+        precB <- if(inherits(tmp, "mpfr"))
                      max(minPrec, .getPrec(tmp))
                  else
                      stop("arguments (x, df, ncp) must be numeric or \"mpfr\"")

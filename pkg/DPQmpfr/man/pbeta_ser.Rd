@@ -74,6 +74,23 @@ curve(pbeta   (x, 1.5, 4.5), add=TRUE, col = adjustcolor(2, 1/4), lwd=3)
 half <- 1/Rmpfr::mpfr(2, 256)
 (p2 <- pbeta_ser(half, shape1 = 1, shape2 = 123))
 
+## Ex. in pbeta() bug PR#16332 (claiming *wrong* "true answer"):
+op <- options(digits = 15)
+pbeta_ser(0.555555, 1925.74, 33.7179, log.p=TRUE, eps = 1e-22, verbose=2)
+## -993.17... not perfect, but quite close
+## Using Rmpfr, can get closer :
+xM <- Rmpfr::mpfr(0.555555, 256)
+pbeta_ser(xM, 1925.74, 33.7179,       log.p=TRUE, eps = 1e-22, verbose=2)
+## -994.769290541658  [probably fully accurate];
+
+## --- similar, but _integer_ shape pars -- can use closed from result:
+pbeta    (5/9, 1925, 34, log.p=TRUE)                 # -990.1492 "okay-ish"
+pbetaI   (5/9, 1925, 34, log.p=TRUE, precBits = 128) # -993.4246249676072432372204982300614797329
+pbeta_ser(5/9, 1925, 34, log.p=TRUE, eps = 1e-22)    # -991.574 +/-
+## using Rmpfr - much more accurate
+pbeta_ser(mpfr(5/9, 128), 1925, 34, log.p=TRUE)      # -993.424624967607243237220498230061144809..
+options(op) # reverting
+
 }
 \keyword{distribution}
 \keyword{math}
