@@ -14,7 +14,8 @@
   values.
 }
 \usage{
-pbeta_ser(q, shape1, shape2, log.p = FALSE, eps = 1e-15, errPb = 0, verbose = FALSE)
+pbeta_ser(q, shape1, shape2, log.p = FALSE, eps = 1e-15, n.itmax = 1e7,
+          errPb = 0, verbose = FALSE)
 }
 \arguments{
   \item{q, shape1, shape2}{quantiles and shape parameters of the Beta
@@ -25,6 +26,7 @@ pbeta_ser(q, shape1, shape2, log.p = FALSE, eps = 1e-15, errPb = 0, verbose = FA
   \item{log.p}{if TRUE, probabilities \code{p} are given as \code{log(p)}.}
   \item{eps}{non-negative number; \code{tol <- eps/shape1} will be used for
     convergence checks in the series computations.}
+  \item{n.itmax}{maximal number of terms used in the series expansion.}
   \item{errPb}{an integer code, typically in \code{-2, -1, 0} to determine how
     warnings on convergence failures are handled.}
   \item{verbose}{logical indicating if console output about intermediate
@@ -71,7 +73,8 @@ curve(pbetaSer(x, 1.5, 4.5)); abline(h=0:1, v=0:1, lty=2, col="gray")
 curve(pbeta   (x, 1.5, 4.5), add=TRUE, col = adjustcolor(2, 1/4), lwd=3)
 
 ## now using mpfr-numbers:
-half <- 1/Rmpfr::mpfr(2, 256)
+MP <- Rmpfr::mpfr
+half <- 1/MP(2, 256)
 (p2 <- pbeta_ser(half, shape1 = 1, shape2 = 123))
 
 ## Ex. in pbeta() bug PR#16332 (claiming *wrong* "true answer"):
@@ -79,18 +82,17 @@ op <- options(digits = 15)
 pbeta_ser(0.555555, 1925.74, 33.7179, log.p=TRUE, eps = 1e-22, verbose=2)
 ## -993.17... not perfect, but quite close
 ## Using Rmpfr, can get closer :
-xM <- Rmpfr::mpfr(0.555555, 256)
+xM <- MP(0.555555, 256)
 pbeta_ser(xM, 1925.74, 33.7179,       log.p=TRUE, eps = 1e-22, verbose=2)
 ## -994.769290541658  [probably fully accurate];
 
-## --- similar, but _integer_ shape pars -- can use closed from result:
-pbeta    (5/9, 1925, 34, log.p=TRUE)                 # -990.1492 "okay-ish"
-pbetaI   (5/9, 1925, 34, log.p=TRUE, precBits = 128) # -993.4246249676072432372204982300614797329
-pbeta_ser(5/9, 1925, 34, log.p=TRUE, eps = 1e-22)    # -991.574 +/-
-## using Rmpfr - much more accurate
-pbeta_ser(mpfr(5/9, 128), 1925, 34, log.p=TRUE)      # -993.424624967607243237220498230061144809..
+## --- similar, but _integer_ shape pars -- can use closed-form pbetaI():
+pbeta        (5/9, 1925, 34, log.p=TRUE)                 # -990.1492 "okay-ish"
+Rmpfr::pbetaI(5/9, 1925, 34, log.p=TRUE, precBits = 128) # -993.4246249676072432372204982300614797..
+pbeta_ser    (5/9, 1925, 34, log.p=TRUE, eps = 1e-22)    # -991.574 +/-
+## using Rmpfr -> more accurate
+pbeta_ser(MP(5/9, 128), 1925, 34, log.p=TRUE)            # -993.4246249676072432372204982300611448..
 options(op) # reverting
-
 }
 \keyword{distribution}
 \keyword{math}

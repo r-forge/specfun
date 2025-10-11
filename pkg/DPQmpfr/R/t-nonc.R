@@ -226,7 +226,7 @@ pbeta_ser <- function(q, shape1, shape2, log.p=FALSE,
     isMpfr <- !isN && any_mpfr(x, a, b)
     if(isMpfr) isMpfr <- requireNamespace("Rmpfr")
     ## needed for printing mpfr numbers {-> pkg Rmpfr}, e.g.
-    .N <- if(isMpfr) Rmpfr::asNumeric else as.numeric
+    ## .N <- if(isMpfr) Rmpfr::asNumeric else as.numeric
     if(isMpfr) {
         lbeta <- Rmpfr::lbeta
         ## beta <- Rmpfr::beta
