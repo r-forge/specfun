@@ -113,7 +113,6 @@ cbind(aarg3, pnbA3, pnA310, pnbR,
       relD2 = signif(relD2, 3), relD310 = signif(relD310, 3)) # <------> Table 3
 stopifnot(abs(relD2  ) < 0.09) # max is 0.06337
 stopifnot(abs(relD310) < 1e-4) # max is 3.898e-5
-
 }
 \keyword{math}
 \keyword{distribution}

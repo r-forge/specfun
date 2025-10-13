@@ -60,7 +60,8 @@ pbetaRv1(q, shape1, shape2, lower.tail = TRUE,
 %% \note{
 %% }
 \seealso{
-  \code{\link{pbeta}}.
+  \code{\link{pbeta}};
+  our approximations to the non-central beta \code{\link{pnbetaAppr2}}.
 }
 \examples{
 all.equal(pbetaRv1(1/4, 2, 3),

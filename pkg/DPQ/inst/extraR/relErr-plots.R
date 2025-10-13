@@ -49,6 +49,10 @@ plot1cuts <- function(res1c, # resulting from
     stopifnot(is.list(res1c), rnms %in% names(res1c))
     list2env(res1c, envir = environment())
     ## ---> { k, n, relE, smooths, i.n , ..} now exist in local environment
+    if(is.null(smooths$cobs)) {
+        smooths$cobs <- NULL # rm it
+        i.n <- i.n[, setdiff(colnames(i.n), "cobs"), drop=FALSE]
+    }
     stopifnot(exprs = {
         is.list(smooths)
         (nS <- length(smooths)) >= 1L

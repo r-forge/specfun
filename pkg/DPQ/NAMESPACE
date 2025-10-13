@@ -122,6 +122,9 @@ export(
   , plRpois  # another plot ... keep ?
 
   , pbetaRv1
+  , pbetaAS_eq20, pbetaAS_eq21, pbetaNorm2
+  ,  .pbeta.eq20,  .pbeta.eq21
+  ,  .pbetaSeq20,  .pbetaSeq21
   , pnbetaAS310
   , pnbetaAppr2, pnbetaAppr2v1
 
