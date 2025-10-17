@@ -18,6 +18,8 @@ if(!nzchar(sdir) && dir.exists(pDir <- "~/R/Pkgs/DPQmpfr")) {
 }
 
 ## IGNORE_RDIFF_BEGIN
+(siX <- sfsmisc::sessionInfoX())
+
 (osV <- abbreviate(gsub("[^[:alnum:]]", '', sub("\\(.*", '', osVersion)), 12))
 if(!dev.interactive(TRUE)) pdf(paste0("betaDing94_", osV, ".pdf"), width = 9, height=5)
 
