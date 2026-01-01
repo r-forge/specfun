@@ -90,3 +90,46 @@ besselJs <-
 	(x/2)^nu * s
     }
 }
+
+##------------- Small nu  case  -- R-devel 2025-12 -----------------
+## MM: see ~/R/MM/NUMERICS/Bessel/besselJ_small_nu.md
+##         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+bessJsmlNu.1 <- function(x, nu, nTrms, m.max) {
+    stopifnot(length(x) == 1, length(nu) == 1, ## --> to be vectorized to bJsmlNu()
+              nTrms == as.integer(nTrms), length(nTrms) == 1, 0 <= nTrms, nTrms <= 2,
+              m.max == as.integer(m.max), length(m.max) == 1, 1 <= m.max)
+    J0 <- besselJ(x, 0)
+    if(nTrms == 0)
+        return(J0)
+    ## else nTrms >= 1 ,  i.e., (for now) in { 1 , 2 }:
+    m <- 0:m.max; sig.m <- rep_len(c(1, -1), m.max+1) # = (-1)^m
+    x2 <- x/2 # ldexp(x, -1)
+    m.fac <- factorial(m)
+    a_m <- sig.m * x2^(2*m)/m.fac^2 # := (-1)^m (x/2)^{2m}/(m!)^2
+    ## Compute the nu = nu^1 "coefficient" (an infinite series sum)
+    ## s1 <- 0
+    ##- for(m in 0:m.max) -->
+    ##    s1 <- s1 + sum(a_m *  ...........)
+
+    ## J1 :=  ν · Σ_{m≥0} a_m ( ln(x/2) − ψ(m+1) )
+    s1 <- sum( a_m * (log(x2) - digamma(m+1)))
+    J1 <- nu * s1
+    if(nTrms == 1)
+        return(J0 + J1)
+    ## else nTrms >= 2
+    ## Compute the nu^2 "coefficient" (an infinite series sum)
+    ## s2 <- 0
+    ## for(m in 0:m.max)
+    ##    s2 <- s2 +  ........
+
+    ## J2 :=  ν^2 · Σ_{m≥0} a_m · ( 1/2 ln^2(x/2) − ln(x/2) ψ(m+1) + 1/2(ψ(m+1)^2 − ψ'(m+1)) )
+    s2 <- sum( a_m * (log(x2)^2/2 - log(x2)* digamma(m+1) + 1/2*(digamma(m+1)^2 - trigamma(m+1))) )
+    J2 <- nu^2 * s2
+    if(nTrms > 2)
+        stop(" 'nTrms' must be in {0, 1, 2} currently")
+    ## return
+    J0 + J1 + J2
+}
+
+bessJsmlNu <- Vectorize(bessJsmlNu.1, c("x", "nu"))
