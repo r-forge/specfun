@@ -4,11 +4,16 @@
 \title{News for \R Package \pkg{Bessel}}
 \encoding{UTF-8}
 
-\section{Changes in version 0.7-0 (2026-01-01, svn r354)}{
+\section{Changes in version 0.7-0 (2026-01-02, svn r355)}{
   \subsection{New Features}{
     \itemize{
       \item New \code{bessJsmlNu()}, to get \eqn{J_\nu(x)} for very small
       \eqn{\nu}; related to R-devel bug report for \code{nu = 1e-15}.
+
+      \item New \code{incompleteBesselK()} (calling C code) and
+      \code{incompleteBesselKR()} pure \R code, both from CRAN package
+      \CRANpkg{DistributionUtils}, donated by \I{David Scott} and \I{Hassan Safouhi}
+      (in Sep. 2010, but never activated).
     }
   }
 }

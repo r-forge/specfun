@@ -23,8 +23,8 @@ bessJsmlNu(x, nu, nTrms, m.max)
   ............ show derivation? ...........
 }
 \value{
-  The function is explicitly using \code{\link{Vectorize(<fn>, c("x",
-      "nu"))}}, hence a numeric vector conforming to (e.g., ) \code{x + nu}.
+  The function explicitly calls \code{\link{Vectorize}(<fn>, c("x", "nu"))},
+  hence a numeric vector conforming to (e.g., ) \code{x + nu}.
 }
 \references{
   Abramowitz, M., and Stegun, I. A. (1964--1972).
@@ -70,9 +70,12 @@ stopifnot(all.equal(BessJ2[i], Jsm2.2[i], tolerance = 4e-14),
 ##  |error|  wrt BesselJ() ---------------
 matplot(nu2, abs(cbind(bessJ2, Jsm2.1, Jsm2.2) - BessJ2), log = "xy",
         type = "l", ylim = c(5e-17, 1e-10),
-        xlab = quote("nu" == nu),
-	main = substitute(list(abs("<bess J>"(x, nu) - BesselJ(x, nu)), x == XX), list(XX = formatC(x.))))
-legend("topleft", lty = 1:5, lwd=2, col=1:6, bty = "n",
-       legend = paste0(c("besselJ(", "bessJsmlNu(*, nTrms = 1", "bessJsmlNu(*, nTrms = 2"),")"))
+        xlab = quote("nu" == nu),  xaxt="n", yaxt="n",
+	main = substitute(list(abs("<bess J>"(x, nu) - BesselJ(x, nu)), x == XX),
+                          list(XX = formatC(x.))))
+eaxis <- if(!requireNamespace("sfsmisc")) axis else sfsmisc::eaxis
+eaxis(1, sub10 = c(-2,0)); eaxis(2)
+legend("topleft", lty = 1:5, lwd = 2, col = 1:6, bty = "n",
+       legend = paste0(c("besselJ(", paste0("bessJsmlNu(*, nTrms = ",1:2)), ")"))
 }
 \keyword{math}

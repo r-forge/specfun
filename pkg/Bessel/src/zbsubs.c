@@ -197,7 +197,7 @@ void zbesh(double *zr, double *zi, double *fnu, int *kode, int *m, int *n,
                  trans. math. software, vol. 12, no. 3, september 1986,
                  pp 265-273.
 
- ***routines called  zacon,zbknu,zbunk,zuoik,zabs,i1mach,d1mach
+ ***routines called  zacon,zbknu,zbunk,zuoik,zabs
  ***end prologue  zbesh
  */
 
@@ -557,7 +557,7 @@ void zbesi(double *zr, double *zi, double *fnu, int *kode, int *n,
                  trans. math. software, vol. 12, no. 3, september 1986,
                  pp 265-273.
 
- ***routines called  zbinu,zabs,i1mach,d1mach
+ ***routines called  zbinu,zabs
  ***end prologue  zbesi
  */
     /* Initialized data */
@@ -847,7 +847,7 @@ void zbesj(double *zr, double *zi, double *fnu, int *kode, int *n,
                  trans. math. software, vol. 12, no. 3, september 1986,
                  pp 265-273.
 
- ***routines called  zbinu, zabs, i1mach, d1mach
+ ***routines called  zbinu, zabs
  ***end prologue  zbesj */
 
     *nz = 0;
@@ -1117,7 +1117,7 @@ void zbesk(double *zr, double *zi, double *fnu, int *kode, int *n,
                  trans. math. software, vol. 12, no. 3, september 1986,
                  pp 265-273.
 
- ***routines called  zacon,zbknu,zbunk,zuoik,zabs,i1mach,d1mach
+ ***routines called  zacon,zbknu,zbunk,zuoik,zabs
  ***end prologue  zbesk
  */
 
@@ -1425,7 +1425,7 @@ void zbesy(double *zr, double *zi, double *fnu,
                  trans. math. software, vol. 12, no. 3, september 1986,
                  pp 265-273.
 
- ***routines called  zbesi,zbesk,i1mach,d1mach
+ ***routines called  zbesi,zbesk
  ***end prologue  zbesy
  */
 
@@ -1702,7 +1702,7 @@ void zairy(double *zr, double *zi, int *id, int *kode,
  trans. math. software, vol. 12, no. 3, september 1986,
  pp 265-273.
 
- ***routines called  zacai,zbknu,zexp_sub,zsqrt_sub,zabs,i1mach,d1mach
+ ***routines called  zacai,zbknu,zexp_sub,zsqrt_sub,zabs
  ***end prologue  zairy
  */
     /* Initialized data */
@@ -2137,7 +2137,7 @@ void zbiry(double *zr, double *zi, int *id, int *kode,
                  trans. math. software, vol. 12, no. 3, september 1986,
                  pp 265-273.
 
- ***routines called  zbinu,zabs,zdiv,zsqrt_sub,d1mach,i1mach
+ ***routines called  zbinu,zabs,zdiv,zsqrt_sub
  ***end prologue  zbiry
      complex bi,cone,csq,cy,s1,s2,trm1,trm2,z,zta,z3
  ***first executable statement  zbiry */
@@ -2635,7 +2635,7 @@ int zbknu(double *zr, double *zi, double *fnu,
 
      zbknu computes the k bessel function in the right half z plane.
 
- *** routines called  dgamln,i1mach,d1mach,zkscl,zshch,zuchk,zabs,zdiv,
+ *** routines called  dgamln,zkscl,zshch,zuchk,zabs,zdiv,
                     zexp_sub,zlog_sub,zmlt,zsqrt_sub
  */
     int nz = 0; // the return value
@@ -3730,7 +3730,7 @@ int zmlri(double *zr, double *zi, double *fnu, int kode, int n,
      zmlri computes the i bessel function for re(z) >= 0.0 by the
      miller algorithm normalized by a neumann series.
 
- ***routines called  dgamln,d1mach,zabs,zexp_sub,zlog_sub,zmlt
+ ***routines called  dgamln,zabs,zexp_sub,zlog_sub,zmlt
  */
 
     /* Initialized data */
@@ -3961,7 +3961,7 @@ zwrsk_(double *zrr, double *zri, double *fnu,
  zwrsk computes the i bessel function for re(z) >= 0.0 by
  normalizing the i function ratios from zrati by the wronskian
 
- ***routines called  d1mach,zbknu,zrati,zabs
+ ***routines called  zbknu,zrati,zabs
  */
 
     int i, nw;
@@ -4069,7 +4069,7 @@ zseri_(double *zr, double *zi, double *fnu,
      condition cabs(z) <= 2*sqrt(fnu+1) was violated and the
      computation must be completed in another routine with n=n-abs(nz).
 
- ***routines called  dgamln,d1mach,zuchk,zabs,zdiv,zlog_sub,zmlt
+ ***routines called  dgamln,zuchk,zabs,zdiv,zlog_sub,zmlt
  ***end prologue  zseri
  */
     /* Initialized data */
@@ -4325,7 +4325,7 @@ int zasyi(double *zr, double *zi, double *fnu,
      nz = 0 is a normal return.
      nz < 0 indicates an overflow on kode=1.
 
- ***routines called  d1mach,zabs,zdiv,zexp_sub,zmlt,zsqrt_sub
+ ***routines called  zabs,zdiv,zexp_sub,zmlt,zsqrt_sub
  */
 
     /* Initialized data */
@@ -4533,7 +4533,7 @@ int zuoik(double *zr, double *zi, double *fnu,
      ikflg=2 and 0 < nuf < n not considered. y must be set by
              another routine
 
- ***routines called  zuchk,zunhj,zunik,d1mach,zabs,zlog_sub
+ ***routines called  zuchk,zunhj,zunik,zabs,zlog_sub
  ***end prologue  zuoik
  */
     int nuf = 0; // return value
@@ -4772,7 +4772,7 @@ zacon_(double *zr, double *zi, double *fnu,
      to continue the k function from the right half to the left
      half z plane
 
- ***routines called  zbinu,zbknu,zs1s2,d1mach,zabs,zmlt
+ ***routines called  zbinu,zbknu,zs1s2,zabs,zmlt
  ***end prologue  zacon
  */
     /* Initialized data */
@@ -5295,7 +5295,7 @@ zacai_(double *zr, double *zi, double *fnu,
      recurrence removed. a recursive call to zacon can result if zacon
      is called from zairy.
 
- ***routines called  zasyi,zbknu,zmlri,zseri,zs1s2,d1mach,zabs
+ ***routines called  zasyi,zbknu,zmlri,zseri,zs1s2,zabs
  ***end prologue  zacai
  */
 
@@ -5444,7 +5444,7 @@ zunik_(double *zrr, double *zri, double *fnu,
         array. ipmtr=0 computes all parameters. ipmtr=1 computes phi,
         zeta1,zeta2.
 
- ***routines called  zdiv,zlog_sub,zsqrt_sub,d1mach
+ ***routines called  zdiv,zlog_sub,zsqrt_sub
  ***end prologue  zunik
  */
     /* Initialized data */
@@ -5656,7 +5656,7 @@ zunhj_(double *zr, double *zi, double *fnu,
          must be specified. ipmtr=0 returns all parameters. ipmtr=
          1 computes all except asum and bsum.
 
- ***routines called  zabs,zdiv,zlog_sub,zsqrt_sub,d1mach
+ ***routines called  zabs,zdiv,zlog_sub,zsqrt_sub
  ***end prologue  zunhj
  */
     /* Initialized data */
@@ -6282,7 +6282,7 @@ void zunk1_(double *zr, double *zi, double *fnu,
      mr indicates the direction of rotation for analytic continuation.
      nz=-1 means an overflow will occur
 
- ***routines called  zkscl,zs1s2,zuchk,zunik,d1mach,zabs
+ ***routines called  zkscl,zs1s2,zuchk,zunik,zabs
  ***end prologue  zunk1
  */
 
@@ -6835,7 +6835,7 @@ void zunk2_(double *zr, double *zi, double *fnu,
      ates the direction of rotation for analytic continuation.
      nz=-1 means an overflow will occur
 
- ***routines called  zairy,zkscl,zs1s2,zuchk,zunhj,d1mach,zabs
+ ***routines called  zairy,zkscl,zs1s2,zuchk,zunhj,zabs
  ***end prologue  zunk2
  */
 
@@ -7459,7 +7459,7 @@ int zbuni(double *zr, double *zi, double *fnu,
      according to the uniform asymptotic expansion for I(fnu,z)
      on iform=1 and the expansion for J(fnu,z) on iform=2
 
- ***routines called  zuni1,zuni2,zabs,d1mach
+ ***routines called  zuni1,zuni2,zabs
  ***end prologue  zbuni
  */
     int nz = 0; // return value
@@ -7673,7 +7673,7 @@ void zuni1_(double *zr, double *zi, double *fnu, int *kode, int *n,
      formula for orders fnu to fnu+nlast-1 because fnu+nlast-1 < fnul.
      Y(i)=czero for i=nlast+1,n
 
- ***routines called  zuchk,zunik,zuoik,d1mach,zabs
+ ***routines called  zuchk,zunik,zuoik,zabs
 ***end prologue  zuni1 */
 
     /* Initialized data */
@@ -7934,7 +7934,7 @@ void zuni2_(double *zr, double *zi, double *fnu,
      formula for orders fnu to fnu+nlast-1 because fnu+nlast-1 < fnul.
      Y(i)=czero for i=nlast+1,n
 
- ***routines called  zairy,zuchk,zunhj,zuoik,d1mach,zabs
+ ***routines called  zairy,zuchk,zunhj,zuoik,zabs
  ***end prologue  zuni2
  */
 

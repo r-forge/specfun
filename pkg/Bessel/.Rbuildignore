@@ -1,9 +1,17 @@
+## -*-sh-*-  using reg.exp (==> no final .*), *but* case is ignored!
 .Rhistory
-.*\.patch
+\.patch
+\+$
+auto/
 misc/
-Old/.*
+R/.*\.R[-_+]
+src/.*\.c[-_+]
+tests/.*\.R.*[-_+]
+tests/.*\.Rout$
+^svn-
+Old/
 TOMS-dir
-.*-warnings
-.*CRAN_pkgs
+-warnings
+CRAN_pkgs
 vignettes/fullpage.sty
 tests/IJKY.Rout.save

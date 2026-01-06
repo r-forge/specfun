@@ -36,15 +36,23 @@
   ========   should not be hard, since the Abramowitz & Stegun formula
    are for complex .. though restricted, e.g. 9.7.1 (p.377) to  |Arg(z)| < pi/2
 
-** TODO David Scott: has *incomplete* BesselK  (x,y, nu,..) interfacing Fortran and would donate it here
-  code from .... (2010), in
-  ~/R/D/R-forge/Rmetrics/pkg/DistributionUtils/R/incompleteBesselK.R (etc: man/*, tests/*)
+** TODO David Scott: has *incomplete* BesselK  (x,y, nu,..) interfacing Fortran and would donate it here;
+  code from 30 August 2010, in
+  ~/R/D/R-forge/Rmetrics/pkg/DistributionUtils/R/incompleteBesselK.R (etc: src/*.f, man/*, tests/*)
   and offers to let me move them into 'Bessel'
     E-mail: Sat, Sep 18, 2010 at 14:34; From: David Scott <d.scott@auckland.ac.nz>
-     	    Subject "Incomplete Bessel K Function"
+     	    Subject "Incomplete Bessel K Function"  (MM: ~/F/INBOX--2010-10 )
+*** 2026-01-01: mostly DONE, not yet committed, waiting for E-mail reply from David J Scott
+
+** TODO Tobias Seitz, in his Ph.D. thesis, Oct 2017
+  (which MM was "co-leading" after the deadly accident of his principal supervisor Diethelm Würtz)
+  used partly *better* algorithms than R's besselK() and {Bessel}'s BesselK()
+  ==> ~/R/MM/NUMERICS/Bessel/logBesselK.R (and ..../logBesselK_tst.R )
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^           ^^^^^^^^^^^^^^^^
+
 
 * Updates and misc.
-** TODO Once we depend on R >= 3.1.0,  use sinpi() and cospi() in R/toms644.R
+** DONE Once we depend on R >= 3.1.0,  use sinpi() and cospi() in R/toms644.R
 * C code:
 ** TODO declare all auxiliaries as 'static void'
 ** TODO Consider .C() --> .Call()

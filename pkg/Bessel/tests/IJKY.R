@@ -6,6 +6,7 @@ library(Bessel)
 all.eq <- function(x,y, tol=1e-15,...) all.equal(x, rep_len(y,length(x)), tol=tol, ...)
 
 (op <- options(width=max(99, getOption("width")), warn = 0,
+               CBoundsCheck = TRUE, # check if .C and .Fortran ... for array over-runs.. [we had such a bug]
                nwarnings = 999, warnPartialMatchArgs = FALSE)) # all.equal(*,*, tol = ..)
 
 isOSunix <- .Platform$OS.type == "unix"

@@ -49,6 +49,3 @@ int zbuni(double *zr, double *zi, double *fnu,
 	  double fnul, double tol, double elim, double alim);
 void zuni1_(double *zr, double *zi, double *fnu, int *kode, int *n, double *yr, double *yi, int *nz, int *nlast, double *fnul, double *tol, double *elim, double *alim);
 void zuni2_(double *zr, double *zi, double *fnu, int *kode, int *n, double *yr, double *yi, int *nz, int *nlast, double *fnul, double *tol, double *elim, double *alim);
-
-/*:ref: d1mach_ 7 1 4 */
-/*:ref: i1mach_ 4 1 4 */
