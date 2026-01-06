@@ -59,7 +59,8 @@ besselI.ftrms(x, nu, K = 20)
 \seealso{
   From this package \pkg{Bessel()} \code{\link{BesselI}()}; further,
   \code{\link{besselI.nuAsym}()} which is useful when \eqn{\nu} is large
-  (as well); further \pkg{base} \code{\link{besselI}}, etc
+  as well, using A.&S. (9.7.7) and (9.7.8);
+  further \pkg{base} \code{\link{besselI}}, etc.
 }
 \examples{
 x <- c(1:10, 20, 50, 100^(2:10))
@@ -68,7 +69,7 @@ nu <- c(1, 10, 20, 50, 100)
 r <- lapply(c(0:4,10,20), function(k.)
             sapply(nu, function(n.)
                   besselIasym(x, nu=n., k.max = k., log = TRUE)))
-warnings() %% NaN's  ... seem a bit scattered.  FIXME ??
+warnings() % NaN's  ... seem a bit scattered.  FIXME ??%
 
 try( # needs improvement in R  [or a local workaround]
  besselIasym(10000*(1+1i), nu=200, k.max=20, log=TRUE)

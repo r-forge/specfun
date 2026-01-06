@@ -33,7 +33,7 @@ besselK.nuAsym(x, nu, k.max, expon.scaled = FALSE, log = FALSE)
     \eqn{K_{\nu}(\nu z)}{K[nu](nu * z)})
     hold uniformly with respect to \eqn{z} in the sector
     \eqn{|arg z| \le \frac{1}{2} \pi - \epsilon}{|arg z| <= pi/2 - eps},
-    where \eqn{\epsilon}{eps} iw qn arbitrary positive number.}
+    where \eqn{\epsilon}{eps} is an arbitrary positive number.}
   and for this reason, we require \eqn{\Re(x) \ge 0}{Re(x) >= 0}.
 
   The Debye polynomials \eqn{u_k(x)} are defined in 9.3.9 and 9.3.10 (page 366).
@@ -50,7 +50,7 @@ besselK.nuAsym(x, nu, k.max, expon.scaled = FALSE, log = FALSE)
 \seealso{
   From this package \pkg{Bessel}: \code{\link{BesselI}()}; further,
   \code{\link{besselIasym}()} for the case when \eqn{x} is large and
-  \eqn{\nu} is small or moderate.
+  \eqn{\nu} is small or moderate (using A.&S. (9.7.1) and (9.7.2)).
 
   Further, from \pkg{base}: \code{\link{besselI}}, etc.
 }

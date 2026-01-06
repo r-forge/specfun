@@ -44,7 +44,7 @@ bessJsmlNu(x, nu, nTrms, m.max)
 ## 9.3e-10 6.6e-10 ... 1.1e-16 .. 2.22e-308 4.94e-324 0.0
 ## bug in R (at least up to Jan. 1 2026) :
 options(digits = 14) # show more digits
-Jsml <- sapply(nuSml, \(nu) besselJ(pi/2, nu))
+Jsml <- sapply(nuSml, function(nu) besselJ(pi/2, nu))
 tail(cbind(nuSml, Jsml), 20) # complete "divergence" for  nu <~ 10^-{16}
 Jsm.nT.1 <- bessJsmlNu(pi/2, nuSml, nTrms = 1, m.max = 30)
 Jsm.nT.2 <- bessJsmlNu(pi/2, nuSml, nTrms = 2, m.max = 30)
