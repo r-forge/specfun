@@ -10,7 +10,8 @@
 ## ---------
 besselJs <-
     function(x, nu, nterm = 800, log = FALSE,
-	     Ceps = if(isNum) 8e-16 else 2^(- x@.Data[[1]]@prec))
+             use.log =  log || any(nu * log(x/2) > .Machine$double.max.exp * log(2)),
+	     Ceps = if(isNum) 8e-16 else 2^(- x.@.Data[[1]]@prec))
 {
     ## Purpose: besselJ() primitively
     ## ----------------------------------------------------------------------
@@ -21,6 +22,7 @@ besselJs <-
         stop(" 'nu' must be scalar (length 1)!")
     n <- length(x)
     if(n == 0) return(x)
+    if(log && !missing(use.log) && !use.log) stop("'use.log' must not be false, when 'log' is true")
     isNum <- is.numeric(x) || is.complex(x)
     if (nu < 0) {
 	## Using Abramowitz & Stegun  9.1.2
@@ -58,12 +60,12 @@ besselJs <-
     ## s.j <- s.j / (gamma(j+1) * gamma(nu+1 + j))  but without overflow :
     log.s.j <- l.s.j - lgamma(j+1) - lgamma(nu+1 + j)
     s.j <-
-        if(log) # NB: lsum() works on whole matrix
+        if(use.log) # NB: lsum() works on whole matrix
             lssum(log.s.j, signs=sgns) # == log(sum_{j} exp(log.s.j) )
         else ## log J_nu(x) -- trying to avoid overflow/underflow for large x OR large nu
             ## log(s.j) ; e..x <- exp(-x) # subnormal for x > 1024*log(2) ~ 710;
             exp(log.s.j)
-    if(log) {
+    if(use.log) {
 	if(any(lrgS <- log.s.j[1,] > log(Ceps) + s.j))
 	    lapply(x.[lrgS], function(x)
 		warning(gettextf(" 'nterm=%d' may be too small for x=%g", nterm, x),
@@ -73,8 +75,9 @@ besselJs <-
 	    sj[!i0] <- s.j
 	    s.j <- sj
 	}
-	nu*log(x/2) + s.j
-    } else { ## !log
+	r <- nu*log(x/2) + s.j
+        if(log) r else exp(r)
+    } else { ## !use.log
 	s <- colSums(sgns * s.j)
 	if(!all(iFin <- is.finite(s)))
 	    stop(sprintf("infinite s for x=%g", x.[!iFin][1]))

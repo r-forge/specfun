@@ -10,7 +10,8 @@
 }
 \usage{
 besselJs(x, nu, nterm = 800, log = FALSE,
-         Ceps = if (isNum) 8e-16 else 2^(-x@.Data[[1]]@prec))
+         use.log = log || any(nu * log(x/2) > .Machine$double.max.exp * log(2)),
+         Ceps = if(isNum) 8e-16 else 2^(- x.@.Data[[1]]@prec))
 }
 \arguments{
   \item{x}{numeric or complex vector, or of another \code{\link{class}}
@@ -23,6 +24,10 @@ besselJs(x, nu, nterm = 800, log = FALSE,
     small. (Currently, many of these warnings are wrong, as}
   \item{log}{logical indicating if the logarithm \eqn{log J.()} is
     required.}
+  \item{use.log}{logical indicating if the logarithm should work in
+    logarithmic scale notably even when \code{log = FALSE}.   Its smart
+    default, makes \code{besselJs(4, 1e10)} to work, correctly giving
+    \code{0}, where it gave \code{NaN} previously.}
   \item{Ceps}{a relative error tolerance for checking if \code{nterm}
     has been sufficient.  The default is \dQuote{correct} for double
     precision and also for
@@ -53,14 +58,25 @@ x <- (0:20)/4
 if(interactive()) op <- options(nwarnings = 999)
 (bx <- besselJ(x, nu=200))# base R's -- gives 19 (mostly wrong) warnings about precision lost
 ## Visualize:
-bj <- curve(besselJ(1, x), 1, 2^10, log="xy", n=1001,
+bj <- curve(besselJ(1, x), .001, 2^10, log="xy", n=1001,
             main=quote(J[nu](1)), xlab = quote(nu), xaxt="n", yaxt="n") # 50+ warnings
 eaxis <- if(!requireNamespace("sfsmisc")) axis else sfsmisc::eaxis
-eaxis(1, sub10 = 3); eaxis(2)
+eaxis(1, sub10 = c(-2,3)); eaxis(2)
+abline(h = (J01 <- besselJ(1, 0)), col=adjustcolor(2, 1/2))
+axis(4, at=J01, quote(J[0](1)), las=2, col=2, col.axis=2, line = -1)
 bj6 <- curve(besselJ(6, x), add=TRUE, n=1001, col=adjustcolor(2, 1/2), lwd=2)
 plot(y~x, as.data.frame(bj6), log="x", type="l", col=2, lwd=2,
      main = quote(J[nu](6)), xlab = quote(nu), xaxt="n")
 eaxis(1, sub10=3); abline(h=0, lty=3)
+
+## large nu (non-log case) -- gave NaN wrongly (typically when it should have given 0):
+stopifnot(exprs = {
+    besselJs(c(.1, 1:10),  999) == 0
+    besselJs(c(.1, 1:10), 9999) == 0
+    besselJs(c(.1, 1:1000), 1e10) == 0
+ ## besselJs(c(.1, 1:10), 1e20) == 0 -- another *BUG*: Error ... lssum found non-positive sums
+})
+
 
 if(require("Rmpfr")) { ## Use high precision, notably large exponent range, numbers:
   Bx <- besselJs(mpfr(x, 64), nu=200)

@@ -49,6 +49,8 @@
   used partly *better* algorithms than R's besselK() and {Bessel}'s BesselK()
   ==> ~/R/MM/NUMERICS/Bessel/logBesselK.R (and ..../logBesselK_tst.R )
       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^           ^^^^^^^^^^^^^^^^
+** TODO `besselJs(x, nu)`  for really large `nu` -- e.g., r <- try(besselJs(4, 1e20))
+        __Error in lssum(log.s.j, signs = sgns) : lssum found non-positive sums__
 
 
 * Updates and misc.

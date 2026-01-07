@@ -4,11 +4,15 @@
 \title{News for \R Package \pkg{Bessel}}
 \encoding{UTF-8}
 
-\section{Changes in version 0.7-0 (2026-01-02, svn r355)}{
+\section{Changes in version 0.7-0 (2026-01-07, svn r357)}{
   \subsection{New Features}{
     \itemize{
       \item New \code{bessJsmlNu()}, to get \eqn{J_\nu(x)} for very small
       \eqn{\nu}; related to R-devel bug report for \code{nu = 1e-15}.
+
+      \item \code{besselJs(x, nu)} got new switch \code{use.log} which is now
+      automatically true for large \code{(x/2)^nu}, and allows e.g.,
+      \code{besselJs(5, 999)} to correctly return \code{0} instead of \code{NaN}.
 
       \item New \code{incompleteBesselK()} (calling C code) and
       \code{incompleteBesselKR()} pure \R code, both from CRAN package

@@ -9,8 +9,8 @@
 bessJsmlNu(x, nu, nTrms, m.max)
 }
 \arguments{
-  \item{x, nu}{numeric Bessel J() arguments, see e.g.,
-    \code{\link{besselJ}}}. %% FIXME/TODO: complex arguments should work too!
+  \item{x, nu}{numeric Bessel J() arguments, see e.g., \code{\link{besselJ}}.}
+  %% FIXME/TODO: complex arguments should work too!
   \item{nTrms}{integer, one of 0, 1, or 2, denoting the number of Taylor
     series terms to be used,  \code{nTrms = 0} simply returning
     \code{\link{BesselJ}(x, 0)}.}
@@ -70,7 +70,7 @@ stopifnot(all.equal(BessJ2[i], Jsm2.2[i], tolerance = 4e-14),
 ##  |error|  wrt BesselJ() ---------------
 matplot(nu2, abs(cbind(bessJ2, Jsm2.1, Jsm2.2) - BessJ2), log = "xy",
         type = "l", ylim = c(5e-17, 1e-10),
-        xlab = quote("nu" == nu),  xaxt="n", yaxt="n",
+        xlab = quote("nu" == nu), xaxt = "n", yaxt = "n",
 	main = substitute(list(abs("<bess J>"(x, nu) - BesselJ(x, nu)), x == XX),
                           list(XX = formatC(x.))))
 eaxis <- if(!requireNamespace("sfsmisc")) axis else sfsmisc::eaxis
