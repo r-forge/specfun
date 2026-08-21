@@ -4,6 +4,33 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
+\section{Version 0.6-2 (2026-08-11, svn r358)}{% (cd ~/R/D/R-forge/specfun/; svn info)
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item New \code{laBeta()}.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Re-add bib.ref. \code{KenWG80}.
+      \item Tweaks in \file{R/beta-fns.R}.
+      \item Ensure \verb{\usage} for all exported functions.
+    }
+  }
+  \subsection{Misc}{
+    \itemize{
+      \item No longer export the Wienergerm utilities \code{g2()},
+      \code{h()}, \code{hnt()}, etc.
+
+      \item More speed up for \file{man/dnt.Rd} example when \code{doExtra}
+      is false.
+
+      \item \file{vignettes/qnorm-asymp.Rnw} update to 2026;
+      mention practical inference non-relevance.
+    }
+  }
+}
+
 \section{Version 0.6-1 (2025-10-13, svn r352)}{
   \subsection{NEW FEATURES}{
     \itemize{

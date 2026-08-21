@@ -4,6 +4,15 @@
 library(DPQ)
 ## --> pchisq.W(), h0(), h1(), h2() === h(),  etc
 
+g2  <- DPQ:::g2
+gnt <- DPQ:::gnt
+h   <- DPQ:::h
+h0  <- DPQ:::h0
+h1  <- DPQ:::h1
+h2  <- DPQ:::h2
+hnt <- DPQ:::hnt
+
+
 mult.fig <- sfsmisc::mult.fig
 ## and (used via :: below) rrange <- sfsmisc::rrange
 

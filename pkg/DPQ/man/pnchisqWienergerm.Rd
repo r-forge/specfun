@@ -10,14 +10,14 @@
 \alias{z0}
 \alias{z.f}
 \alias{z.s}
-%-
-\alias{g2}
-\alias{gnt}
-\alias{h}
-\alias{h0}
-\alias{h1}
-\alias{h2}
-\alias{hnt}
+%- no longer export (Aug. 2026)
+%% \alias{g2}
+%% \alias{gnt}
+%% \alias{h}
+%% \alias{h0}
+%% \alias{h1}
+%% \alias{h2}
+%% \alias{hnt}
 \alias{scalefactor}% ? no longer exported
 \description{%%--> ../R/wienergerm_nchisq-fn.R <--
 

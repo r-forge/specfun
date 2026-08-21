@@ -44,9 +44,7 @@
   Pure \R{} implementations of these are provided in % our
   \R{} package
   \CRANpkg{DPQ} \citep{DPQ}, functions \fct{qnormAsymp} and \fct{qnormR}
-  and have also been
-  prepared to be added to (the C code in \file{Rmathlib} in) the next
-  version of \R's \fct{qnorm}.
+  and have also been added to (the C code in \file{Rmathlib} of) \fct{qnorm} in \R version 4.3.0.
 }
 
 \Keywords{asymptotic, approximation, extreme tail, Gaussian, Normal Quantile, \R}
@@ -66,11 +64,11 @@
 %% in the following format:
 \Address{
  Martin M\"achler\\
- Seminar f\"ur Statistik, HG G~16\\
+ Seminar f\"ur Statistik, HG G~14.2\\
  ETH Zurich\\
  8092 Zurich, Switzerland\\
  E-mail: \email{maechler@stat.math.ethz.ch}\\
- URL: \url{http://stat.ethz.ch/~maechler}
+ URL: \url{https://people.math.ethz.ch/~maechler/}
 }
 
 %% for those who use Sweave please include the following line (with % symbols):
@@ -173,6 +171,7 @@ options(width = 70, useFancyQuotes = FALSE
         ## , SweaveHooks = list(fig=function() par(mar=c(5.1, 4.1, 1.1, 2.1)))
         ## JSS--ugly!  , prompt="R> ", continue="+  "
       , continue = "   "
+      , warnPartialMatchArgs = FALSE
         )
 Sys.setenv(LANGUAGE = "en")
 if(.Platform$OS.type != "windows")#$
@@ -265,13 +264,13 @@ $r \in (5, 27] \Longleftrightarrow r^2 \in (25, 729]$, or equivalently,
 
 At first, the above seems sufficient, since indeed, the lower bound is
 already ``de-normalized'' in double precision,
-$e^{-27^2} = e^{-729}  \approx 2.51 \cdot 10^{-317}$ is smaller than \code{DBL\_XMIN} in C's \code{math} library $=$ \R's
+$e^{-27^2} = e^{-729}  \approx 2.51 \cdot 10^{-317}$ is smaller than \code{DBL\_XMIN} in C's \code{math} library, and \code{DBL\_XMIN} is the same as \R's
 \code{.Machine\$double.xmin}$=2^{-1022} \approx 2.225 \cdot 10^{-308}$.
 
 
 \emph{However}, as mentioned above, in the R core team we had already seen
 that it is often advisable to work on the \emph{$\log$}--scale with probabilities and
-therefore had introduced the option \code{log.p = TRUE} for all our
+therefore we had introduced the option \code{log.p = TRUE} for all our
 (cumulative) distribution and quantile functions.
 %%
 Now this changes the picture of ``sufficient'' approximation dramatically, as, indeed, on
@@ -280,6 +279,13 @@ and then quickly loses precision (see below).
 
 The goal of the remaining part of this paper is to describe the research
 for finding accurate approximations in these outermost tails.
+
+Note that we do \emph{not} claim that such probabilities and quantiles
+are necessary for inferential statistics in realistic data analyses.
+Rather, we show how to compute the fundamental function $\Phi^{-1}(p) =\ $\code{qnorm(p)}
+also for ${p}$ very close to $0$ (or $1$), i.e., probabilities too small to be relevant in
+practical statistics.
+
 
 \subsection[DPQ's qnormR()]{\pkg{DPQ}'s \fct{qnormR} -- documenting R history}
 
@@ -353,7 +359,7 @@ require("DPQ") # -->  qnormR():
 qnrm    <- qnorm (-s, lower.tail=FALSE, log.p=TRUE)
 qnrm405 <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version= "4.0.x") # R <= 4.0.5
 qnrm410 <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version= "2020-10-17")
-qnrm43  <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version= "2022")
+qnrm43  <- qnormR(-s, lower.tail=FALSE, log.p=TRUE, version= "2022")# R >= 4.3.0, 2022 ff
 Rver <- sfsmisc::shortRversion()
 if(getRversion() <= "4.0.5") { # our qnormR(.., version="4.0.x")
     cat(sprintf("%s, \"4.0.5\",\n   all.equal(*, tol=0): %s;  identical(): %s\n", Rver,
@@ -483,16 +489,21 @@ double precision implementation of AS~241) cutoff.
 Computing the difference (``delta'') betwen the absolute value of the relative errors for
 R~4.0.x's \fct{qnorm} and for the asymptotic approximation (\ref{eq:x-asym-0})%
 \ifJSS{,}\else{:}\fi
-<<delta-relE, fig=TRUE, height = 5, width=6>>=
+<<delta-relE-def>>=
 delta.relE <- function(q, qNorm = function(...) qnormR(..., version = "4.0.x")) {
   lp <- pnorm(q, lower.tail=FALSE, log.p=TRUE) # <==>  q = true qnorm(lp, *)
   ## the "delta" of the two relative errors qnorm() vs sqrt(2*s) approx:
   abs(1 - qNorm(lp, lower.tail=FALSE, log.p=TRUE) / q) -
   abs(1 - sqrt(-2*lp) / q)
 }
+<<plot-D-relE, eval=FALSE>>=
 plot(delta.relE(qs) ~ qs, subset = 10 < qs & qs < 4e6, type="l", log="x")
 abline(h=0, col = adjustcolor(2, 1/2))
+<<do-plot-d-relE, fig=TRUE, height = 5, width=6, echo=FALSE>>=
+par(mar = c(3.5, 3.8, .5, .1), mgp = c(2, .75, 0))
+<<plot-D-relE>>
 @
+\\
 looks like a well defined zero, we now determine the root location as the optimal
 cutoff, as it will minimize the absolute value of the relative error of
 computing \code{qnorm(..)}.  At first:
@@ -990,6 +1001,7 @@ for(ir in 2:length(r0))
 options(op.orig)
 @
 
+% {jst} class  will  bibliographystyle 'jss' (jss.bst)
 \bibliography{qnorm-litt}
 
 \end{document}

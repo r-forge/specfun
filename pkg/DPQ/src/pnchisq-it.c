@@ -489,7 +489,7 @@ double pnchisq_rawR(double x, double f, double theta /* = ncp */,
 #ifdef _WIN32
 	REprintf("\n == L_End: n=%d; term= %g; bound=%g: [dbl]ans=%g\n",
 		 n, term, bound, dans);
-#else // working printf(<long double)
+#else // working printf(<long double>)
 	REprintf("\n == L_End: n=%d; term= %g; bound=%g: ans=%" PR_g_ "\n",
 		 n, term, bound, ans);
 #endif

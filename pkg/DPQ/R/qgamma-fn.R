@@ -20,8 +20,8 @@
 
 
 ### This is the R equivalent of the .C() calling
-### qgammaAppr() in ../qchisqAppr.R
-##                  ---------------
+### qgammaAppr() in qchisqAppr.R
+##                  ------------
 qchisqAppr.R <- function(p, df, lower.tail = TRUE, log.p = FALSE,
                          tol = 5e-7, maxit = 1000, verbose = getOption('verbose'),
                          kind = NULL)

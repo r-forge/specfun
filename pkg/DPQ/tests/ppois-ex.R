@@ -85,8 +85,8 @@ all.equal(pE, pEd) # not quite: 'x0' differs slightly
 ## Large Lam  where  exp(-lambda) underflows to 0 (even in 'long double'):
 
 ## "the minimal" large lambda is
-okLD <- okLongDouble(999)
-notXorLD <- !okLD || !doExtras
+(okLD <- okLongDouble(999))
+(notXorLD <- !okLD || !doExtras)
 Lam  <- 11400 ## but we choose a slightly larger, where one sees more
 set.seed(12)
 for(Lam in c(11400 + c(0, sort(round(rlnorm(10, 4, 2), 1))))) {
@@ -94,7 +94,7 @@ for(Lam in c(11400 + c(0, sort(round(rlnorm(10, 4, 2), 1))))) {
     tit <- sprintf("Lam = %g; M = %7.0f", Lam, M)
     cat(tit, ":\n")
     kM <- 0:M
-    pp. <- ppoisD(M, lambda=Lam) ## with current DEBUG output vives
+    pp. <- ppoisD(M, lambda=Lam) ## with current DEBUG output gives
     ## ppoisD(*, lambda=11600): expl(-ldlam)=0= 0 ==> llam=9.35876, exp_arg=-11600
     ##  .. i=30, finally new f = expl(exp_arg = -11393.9) = 4.95747e-4949 > 0
     ## ____________or________________
@@ -106,17 +106,36 @@ for(Lam in c(11400 + c(0, sort(round(rlnorm(10, 4, 2), 1))))) {
         print(system.time(
             ppSL <- ppoisD(kM, lambda=Lam, all.from.0=FALSE)
         ))
-    ip <- dp > 0
-    plot(kM[ip], pp[ip], type="l", main = tit)
-    plot(kM[ip], pp[ip], type="l", main = tit, log = "y")# LOG: here *no* warnings
-    lines(kM[ip], pp0[ip], col=2)
-    lines(kM[ip], pp.[ip], col=adjustcolor("blue", 1/2), lwd=4)
-    abline(v = Lam, lty=2, col="gray")
-    ##
-    plot (kM[ip], pp.[ip] - pp[ip], xlab = "k", type="l", main = tit)
-    lines(kM[ip], pp0[ip] - pp[ip], col = adjustcolor("red", 1/2), lwd = 2)
-    if(doExtras) lines(kM[ip], ppSL[ip] - pp[ip], col = adjustcolor(3, 1/2), lwd=3)
-    abline(v = Lam, lty=2, col="gray")
+    ip <- dp > 0  &  pp. > 0  &  pp > 0
+
+    ## FIXME: check if pp[ip] etc is _finite_ (even_ with log="y")
+    ## arm64 gives (../Misc/output-arm64/DPQ.Rcheck/tests/ppois-ex.Rout.fail )
+## Lam = 11400; M =   11850 :
+##     Error in plot.window(...) : need finite 'ylim' values
+## Calls: plot -> plot.default -> localWindow -> plot.window
+## In addition: Warning messages:
+## 1: In min(x) : no non-missing arguments to min; returning Inf
+## 2: In max(x) : no non-missing arguments to max; returning -Inf
+## Execution halted
+
+    N <- !any(ip) # N:= {"will not plot"}
+    if(any(n <- !is.finite(pp [ip]))) { N <- TRUE; cat("pp [ip]: n:",which(n)," "); print(summary(pp [ip]))}
+    if(any(n <- !is.finite(pp0[ip]))) { N <- TRUE; cat("pp0[ip]: n:",which(n)," "); print(summary(pp0[ip]))}
+    if(any(n <- !is.finite(pp.[ip]))) { N <- TRUE; cat("pp.[ip]: n:",which(n)," "); print(summary(pp.[ip]))}
+    if(N) { 
+      cat("_NOT_ plotting as we have  non-finite pp*[ip] results!\n============================\n")
+    } else { # there are no  Inf/NA/... problems
+      plot(kM[ip], pp[ip], type="l", main = tit)
+      plot(kM[ip], pp[ip], type="l", main = tit, log = "y")# LOG: here *no* warnings
+      lines(kM[ip], pp0[ip], col=2)
+      lines(kM[ip], pp.[ip], col=adjustcolor("blue", 1/2), lwd=4)
+      abline(v = Lam, lty=2, col="gray")
+      ##
+      plot (kM[ip], pp.[ip] - pp[ip], xlab = "k", type="l", main = tit)
+      lines(kM[ip], pp0[ip] - pp[ip], col = adjustcolor("red", 1/2), lwd = 2)
+      if(doExtras) lines(kM[ip], ppSL[ip] - pp[ip], col = adjustcolor(3, 1/2), lwd=3)
+      abline(v = Lam, lty=2, col="gray")
+    }
     stopifnot(exprs =
       if(doExtras) {
         !okLD    || all.equal(pp,  pp. , tol = 1e-12)

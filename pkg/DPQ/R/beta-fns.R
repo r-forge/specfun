@@ -23,11 +23,11 @@ logQab_asy <- function(a,b, k.max = 5, give.all = FALSE)
   pa <- rbind(Qab_terms(a, k.max)) ##  --> pa is  {na * k.max} matrix
   ##	      ~~~~~~~~~
   stopifnot(identical(c(na, k.max), dim(pa)))
-  ki <- if(k.max >= 1) k.max:1 else numeric(0)
+  ki <- if(k.max >= 1L) k.max:1L else integer(0)
   if(give.all) {
-    r <- matrix(0, nrow=na, ncol=k.max+1,
-                dimnames = list(format(a), paste(k.max:0)))
+    r <- matrix(0, nrow=na, ncol=k.max+1) # (dimnames after comp.)
     for(k in ki) r[,k] <- pa[,k] + r[,k+1]*(a-k-1)/b
+    dimnames(r) <- list(format(a), as.character(k.max:0L))
   } else {
     r <- numeric(na)
     for(k in ki) r <- pa[,k] + r*(a-k-1)/b
@@ -60,10 +60,10 @@ Qab_terms <- function(a, k)
   ## p_5(n) = n/5760 (1 + n(2 + n(n - 5)))
 
   k <- as.integer(k)
-  if(!(is.numeric(a) || inherits(a, "mpfr") || inherits(a, "bigz")|| inherits(a, "bigq")))
-    a <- as.numeric(a) #- leave integers alone..
   if(length(k) != 1 || k > 5 || k < 0)
     stop("'k' must be 1 number in { 0, 1,..,5 }")
+  if(!(is.numeric(a) || inherits(a, "mpfr") || inherits(a, "bigz")|| inherits(a, "bigq")))
+    a <- as.numeric(a) #- leave integers alone..
   na <- length(a)
   Qab.trms <- expression(
       rep.int(1/2, na),	##  k=1
@@ -98,29 +98,46 @@ lbeta_asy <- function(a,b, k.max = 5, give.all = FALSE)
 ##'
 ##' log(a * beta(a,b)) == log(a) + log(beta(a,b)) == log(a) + lbeta(a,b), but the latter suffers cancellation !!
 ##' We use the Taylor series
+##' vvvvvvvvvvvvvvv   vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 ##' log(a * B(a,b)) = a \sum_{n=0}^\infty (\psi^{(n)}(1) - \psi^{(n)}(b)) \frac{a^n}{(n+1)!}
 ##'              where \psi^{(n)} is the n-th derivative of the "psi gamma" function
-##' derived from Abramowitz & Stegun, p.259, (6.3.14) series for \psi(1+z)
-##' it's integral is \log \Gamma(z+1) = - \gamma z + \sum_{k=2}^\infty \zeta(k)/k (-z)^k   (G)
-##' and as \Gamma(z+1) = z \Gamma(z), have \log \Gamma(y) = \log(\Gamma(y+1)/y) = - \log(y) + formula (G) above.
-##'
+##' derived from Abramowitz & Stegun, (6.3.14), p.259 series for \psi(1+z):
+##' it's integral is \log \Gamma(z+1) = - \gamma z + \sum_{n=2}^\infty \zeta(n)/n (-z)^n   (G)
+##' and as \Gamma(z+1) = z \Gamma(z), have \log \Gamma(y) = \log(\Gamma(y+1)/y) = - \log(y) + {RHS of (G) above}.
+##'  .. which I now see, is also derivable from  A & S (6.1.33)  [zeta(n) - 1] : the -1 is series of ln(1+z)
 ##' Now, \log(a \times B(a,b)) = \log(a) + \log \frac{\Gamma(a) \Gamma(b)}{\Gamma(a+b)}
 ##'                            = \log(a) + \log \Gamma(a)         + \log (\Gamma(b) / \Gamma(a+b))
 ##'                            = \gamma a + \pi^2/12 a^2 +O(a^3)  + \log (\Gamma(b) / \Gamma(a+b))
+##' also use A & S (6.4.2), p.260 : \psi^{(n)}(1) = (-1)^{n+1} n! \zeta(n+1) <==>
+##'  <==>        \zeta(n)/n = (-1)^n \psi^{(n-1)}(1) / n!
+##'  <==> (-z)^n \zeta(n)/n =   z ^n \psi^{(n-1)}(1) / n!
 ##'  ...
 ##'                            = a \times \sum_{n=0}^\infty .. sum above
 
 ##' @title Accurate Approximation of log(a * beta(a,b)) for small a
 ##' @param a, b  numeric vectors: the non-negative arguments of Beta
-##' @return
+##' @return nT-terms approximation to  log(a * beta(a,b)) -- is *better* for small 'a'
 ##' @author Martin Maechler
 laBeta <- function(a,b, nT) {
-    stopifnot(length(nT) == 1, nT == as.integer(nT), nT >= 1)
-
-### ===> ../tests/qbeta-dist.R
-##       =========~~~~~~~~~~~~ at the end has already *several* such approximations !!! <<< FIXME
-
+    stopifnot(length(nT) == 1L, nT == as.integer(nT), nT >= 1L)
+    ## log(a * B(a,b)) = a \sum_{n=0}^\infty (\psi^{(n)}(1) - \psi^{(n)}(b)) \frac{a^n}{(n+1)!}
+    ##              where \psi^{(n)} is the n-th derivative of the "psi gamma" function, i.e. = psigamma(., n)
+    if(nT <= 3)
+      a* switch(nT,
+                digamma(1) - digamma(b), # 1
+                digamma(1) - digamma(b) + a/2*(trigamma(1) - trigamma(b)), # 2
+                digamma(1) - digamma(b) + a/2*(trigamma(1) - trigamma(b) + a/3*(psigamma(1, 2) - psigamma(b, 2))), # 3
+                stop("should never happen"))
+    else { # nT >= 4
+      r <- 0
+      for(n in nT:1L)
+        r <- a/n*(psigamma(1, n-1L) - psigamma(b, n-1L) + r)
+      r
+    }
 }
+### ===> ../tests/qbeta-dist.R
+###      =========~~~~~~~~~~~~ at the end has already *several* such approximations !!! <<< FIXME
+
 
 ## MM: this is unused (why ??) -- should be "uniformly better" than lbeta_asy() above
 lbetaMM <- function(a,b, cutAsy = 1e-2, verbose = FALSE)
@@ -169,7 +186,7 @@ lbetaI <- function(a, n)
   ##    beta(a,n) = G(a) G(n) / G(a+n) = (n-1)! / (a*(a+1)*...*(a+n-1))
   ## -------------------------------------------------------------------------
   ## Author: Martin Maechler, Date: 20 May 97, 10:08
-  if(is.na(n <- as.integer(n)) || min(n) <= 0 || max(n) > 10000)
+  if(anyNA(n <- as.integer(n)) || min(n) <= 0 || max(n) > 10000)
     stop("'n' must be positive (not too large) integer")
   r <- numeric(nn <- length(n))
   for (i in 1:nn)
@@ -184,7 +201,7 @@ betaI <- function(a, n)
   ## -------------------------------------------------------------------------
   ## Author: Martin Maechler, Date: 20 May 97, 10:08
   if(length(n) > 1) stop("'n' must have length 1.")
-  if(is.na(n <- as.integer(n)) || n <= 0)
+  if(anyNA(n <- as.integer(n)) || n <= 0)
     stop("'n' must be positive (not too large) integer")
   ni <- seq_len(n-1L)
   prod(ni) / prod(a+c(0,ni))

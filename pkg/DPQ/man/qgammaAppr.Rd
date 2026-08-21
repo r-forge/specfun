@@ -23,29 +23,33 @@ qgammaApprKG(p, shape, lower.tail = TRUE, log.p = FALSE)
 qgammaApprSmallP(p, shape, lower.tail = TRUE, log.p = FALSE)
  %% qgamma() approximation for small p -- particularly useful for small shape !
  %% based on \code{\link{lgamma1p}()}
-
+.qgammaApprBnd(a, logEps = -36.043653389117156)
 }
 \arguments{
   \item{p}{numeric vector (possibly log tranformed) probabilities.}
-  \item{shape, alpha}{shape parameter, non-negative.}
+  \item{shape, alpha, a}{shape parameter, non-negative.}
   \item{scale}{scale parameter, non-negative, see \code{\link{qgamma}}.}
   \item{lower.tail, log.p}{logical, see, e.g., \code{\link{qgamma}()}; must
     have length 1.}
 
   \item{tol}{tolerance of maximal approximation error.}
   \item{EPS1}{small positive number. ...}% TODO
-  \item{EPS2}{small positive number. ...}% TODO
-  \item{epsN}{small positive number. ...}% TODO
-  \item{maxit}{maximal number of iterations. ...}% TODO
-  \item{pMin, pMax}{boundaries for \code{p}. ...}% TODO
+  \item{EPS2}{smaller positive number. ...}% TODO
+  \item{epsN}{even smaller positive number, typically circa 4.5\eqn{\epsilon_c}.}
+  \item{maxit}{maximal number of iterations for \code{qgamma.R()}.}
+  \item{pMin, pMax}{boundaries for \code{p.} in \code{qgamma.R(p)}, where
+    \code{p.} is defined to be in \eqn{[0, 1]}, i.e., not on the log scale
+    even when \code{log.p = TRUE}.}
   \item{verbose}{logical indicating if the algorithm should produce
     \dQuote{monitoring} information.}
+  \item{logEps}{\eqn{ = \log(\epsilon_c)}\code{ := log(.Machine$double.eps)},
+    see the approximation \code{.qgammaApprBnd()}, below.}
 }
 \details{
 
   \code{qgammaApprSmallP(p, a)} should be a good approximation in the
-  following situation when both \code{p} and \code{shape} \eqn{= \alpha =:
-  a} are small :
+  following situation when both \code{p} and \code{shape} \eqn{= \alpha =: a}
+  are small :
 
  If we look at  Abramowitz&Stegun \eqn{gamma*(a,x) = x^-a * P(a,x)}
  and its series  \eqn{g*(a,x) = 1/gamma(a) * (1/a - 1/(a+1) * x + ...)},

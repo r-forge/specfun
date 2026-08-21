@@ -33,7 +33,8 @@
 \usage{
 b_chi     (nu, one.minus = FALSE, c1 = 341, c2 = 1000)
 b_chiAsymp(nu, order = 2, one.minus = FALSE)
-#lb_chi    (nu, ......) # not yet
+lb_chi0(nu)  # experimental
+lb_chi00(nu) #   (ditto)
 lb_chiAsymp(nu, order)
 
 c_dt(nu)       # warning("FIXME: current c_dt() is poor -- base it on lb_chi(nu) !")
@@ -94,7 +95,7 @@ c_pt(nu)       # warning("use better c_dt()") %---> FIXME deprecate even stronge
 \references{
   Johnson, Kotz,  Balakrishnan (1995)
   \emph{Continuous Univariate Distributions},
-  Vol 2, 2nd Edition; Wiley;  
+  Vol 2, 2nd Edition; Wiley;
   Formula on page 520, after (31.26a)
 
   Abramowitz, M. and Stegun, I. A. (1972)

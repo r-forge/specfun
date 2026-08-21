@@ -9,8 +9,8 @@
 \alias{pntJW39.0}
 \alias{pnt3150}
 \alias{pnt3150.1}
-\alias{pntChShP94}
-\alias{pntChShP94.1}
+%% \alias{pntChShP94} -- to implement see below
+%% \alias{pntChShP94.1}
 \alias{pntGST23_T6}
 \alias{pntGST23_T6.1}
 \alias{pntGST23_1}
