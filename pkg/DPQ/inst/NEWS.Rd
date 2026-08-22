@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.6-2 (2026-08-11, svn r358)}{% (cd ~/R/D/R-forge/specfun/; svn info)
+\section{Version 0.6-2 (2026-08-22, svn r359)}{% (cd ~/R/D/R-forge/specfun/; svn info)
   \subsection{NEW FEATURES}{
     \itemize{
       \item New \code{laBeta()}.
@@ -21,6 +21,8 @@
     \itemize{
       \item No longer export the Wienergerm utilities \code{g2()},
       \code{h()}, \code{hnt()}, etc.
+
+      \item \file{tests/ppois-ex.R} should no longer fail on Linux arm64.
 
       \item More speed up for \file{man/dnt.Rd} example when \code{doExtra}
       is false.

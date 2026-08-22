@@ -86,7 +86,7 @@ all.equal(pE, pEd) # not quite: 'x0' differs slightly
 
 ## "the minimal" large lambda is
 (okLD <- okLongDouble(999))
-(notXorLD <- !okLD || !doExtras)
+(XnLD <- okLD && doExtras)
 Lam  <- 11400 ## but we choose a slightly larger, where one sees more
 set.seed(12)
 for(Lam in c(11400 + c(0, sort(round(rlnorm(10, 4, 2), 1))))) {
@@ -122,7 +122,7 @@ for(Lam in c(11400 + c(0, sort(round(rlnorm(10, 4, 2), 1))))) {
     if(any(n <- !is.finite(pp [ip]))) { N <- TRUE; cat("pp [ip]: n:",which(n)," "); print(summary(pp [ip]))}
     if(any(n <- !is.finite(pp0[ip]))) { N <- TRUE; cat("pp0[ip]: n:",which(n)," "); print(summary(pp0[ip]))}
     if(any(n <- !is.finite(pp.[ip]))) { N <- TRUE; cat("pp.[ip]: n:",which(n)," "); print(summary(pp.[ip]))}
-    if(N) { 
+    if(N) {
       cat("_NOT_ plotting as we have  non-finite pp*[ip] results!\n============================\n")
     } else { # there are no  Inf/NA/... problems
       plot(kM[ip], pp[ip], type="l", main = tit)
@@ -136,14 +136,14 @@ for(Lam in c(11400 + c(0, sort(round(rlnorm(10, 4, 2), 1))))) {
       if(doExtras) lines(kM[ip], ppSL[ip] - pp[ip], col = adjustcolor(3, 1/2), lwd=3)
       abline(v = Lam, lty=2, col="gray")
     }
-    stopifnot(exprs =
-      if(doExtras) {
-        !okLD    || all.equal(pp,  pp. , tol = 1e-12)
-        notXorLD || all.equal(pp,  ppSL, tol = 1e-12)
-        notXorLD || all.equal(pp., ppSL, tol = 1e-14)# both ppoisD()  "fast" or "slow" should be very close
-      } else {
-        !okLD    || all.equal(pp,  pp. , tol = 1e-12)
-      })
+    ## Checking: currently only if(okLD)
+    if(okLD)  stopifnot(all.equal(pp,  pp., tol = 1e-12))
+    if(doExtras) {
+        if(okLD) stopifnot(exprs = {
+            all.equal(pp,  ppSL, tol = 1e-12)
+            all.equal(pp., ppSL, tol = 1e-14)# both ppoisD()  "fast" or "slow" should be very close
+        })
+    }
 }
 
 
