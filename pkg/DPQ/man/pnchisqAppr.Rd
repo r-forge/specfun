@@ -4,11 +4,11 @@
 %%     ----------------------------------------------------------------
 \alias{pnchisq}
 \alias{pnchisqV}% with "n" (--> ./pnchisqWienergerm.Rd has {pchisqV}  w/o "n" )
+\alias{pnchisqIT}
 \alias{pnchisqRC}
 \alias{pnchisq_ss}
 \alias{pnchisqAbdelAty}
 \alias{pnchisqBolKuz}
-\alias{pnchisqIT}
 \alias{pnchisqPatnaik}
 \alias{pnchisqPearson}
 \alias{pnchisqSankaran_d}
@@ -115,12 +115,16 @@ pnchisq          (q, df, ncp = 0, lower.tail = TRUE, %% TODO?!? log.p = FALSE,
                   maxit = 10* 10000, verbose = 0, xLrg.sigma = 5)
 pnchisqV(x, \dots, verbose = 0)
 
+pnchisqIT        (q, df, ncp = 0, errmax = 1e-12,
+                  reltol = 2*.Machine$double.eps, maxit = 1e5, verbose = FALSE)
+
 pnchisqRC        (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE,
                   no2nd.call = FALSE,
                   cutOffncp = 80, small.ncp.logspace = small.ncp.logspaceR2015,
                   itSimple = 110, errmax = 1e-12,
                   reltol = 8 * .Machine$double.eps, epsS = reltol/2, maxit = 1e6,
                   verbose = FALSE)
+
 pnchisqAbdelAty  (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchisqBolKuz    (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 pnchisqPatnaik   (q, df, ncp = 0, lower.tail = TRUE, log.p = FALSE)

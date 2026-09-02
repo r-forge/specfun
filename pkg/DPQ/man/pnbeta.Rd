@@ -12,7 +12,8 @@
   \dQuote{Rification}) of the \code{AS 310} Fortran implementation.
 }
 \usage{%  R code : ../R/pnbeta.R <<<<
-pnbetaAppr2(x, a, b, ncp = 0, lower.tail = TRUE, log.p = FALSE)
+pnbetaAppr2  (x, a, b, ncp = 0, lower.tail = TRUE, log.p = FALSE)
+pnbetaAppr2v1(x, a, b, ncp = 0, lower.tail = TRUE, log.p = FALSE)
 
 pnbetaAS310(x, a, b, ncp = 0, lower.tail = TRUE, log.p = FALSE,
             useAS226 = (ncp < 54.),
