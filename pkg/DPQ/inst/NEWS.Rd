@@ -4,7 +4,7 @@
 \title{DPQ News}
 \encoding{UTF-8}
 
-\section{Version 0.6-2 (2026-08-22, svn r359)}{% (cd ~/R/D/R-forge/specfun/; svn info)
+\section{Version 0.6-2 (2026-09-04, svn r362)}{% (cd ~/R/D/R-forge/specfun/; svn info)
   \subsection{NEW FEATURES}{
     \itemize{
       \item New \code{laBeta()}.

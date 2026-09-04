@@ -115,13 +115,11 @@
 // --------- MM_R end_of { #include <nmath.h> substitute } ----------------------
 
 
-/* R's  #include <config.h> typically defines this
- *                          (it may be very slow on Solaris):
+/* R's  #include <config.h> typically defines this (was _very slow_ on Solaris):
  *
  * Define if you wish to use the 'long double' type.
  */
-#define HAVE_LONG_DOUBLE 1
-/* no longer needed :------
+// No longer needed currently (should *always* be true, i.e.,  1 ), but keep as reminder :
 #ifndef _WIN32
 #define HAVE_LONG_DOUBLE 1
 #else // Windows:
@@ -131,7 +129,7 @@
 #    define HAVE_LONG_DOUBLE 1
 #  endif
 #endif
-*/
+
 
 /* Required by C99, but might be slow */
 #ifdef HAVE_LONG_DOUBLE

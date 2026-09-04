@@ -4,7 +4,7 @@
 [A-Za-z]\+[A-Za-z0-9]
 # top level *.rds
 ^[A-Za-z_0-9]*\.rds$
-DESCRIPTION_Author
+DESCRIPTION(_Author|\+)
 ^MM
 ^M1mac
 ^Resnikoff
@@ -14,11 +14,9 @@ do-now\.org
 ^Misc
 ^old$
 auto
-\.bbl$
-\.blg$
+\.(bbl|blg|aux|out)$
 \.grep$
 \.patch$
-\.out$
 log$
 mail$
 -tst\.Rout_

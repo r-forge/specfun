@@ -39,19 +39,24 @@ SEXP chk_LDouble(SEXP lambda_, SEXP verbose_, SEXP tol_) {
 	eq_lg1p= fabsl(RErr_lg1p)<= tol
 	;
     if(verbose) {
-	Rprintf("lambda=%g; eps = e^-sqrt(l.) = %g  ==>  logl(ldlam)=%" PR_g_
-		"; expl(-ldlam)=%" PR_g_
+	int LL = -LDBL_MANT_DIG + LDBL_MIN_EXP;
+	Rprintf("lambda=%g; eps = e^-sqrt(l.) = %g => logl(ldlam)=%" PR_g_
+		";\nLDBL_MANT_DIG=%d, LDBL_MIN_EXP=%d ==> LL=log2(<TRUE>_MIN)=%d"
+		"\n   ==> <TRUE>_MIN = min.long dbl = 2^LL =%" PR_g_
+		";\n expl(-ldlam)=%" PR_g_
 		";\n logl(expl(-ldlam))= %" PR_g_ "~= -ldlam? rel.err=%g: %s"
 		";\n expl(logl( ldlam))= %" PR_g_ " ~= ldlam? rel.err=%g: %s"
 		";\n log1pl(eps)= %" PR_g_ "~= eps(1-eps/2)?  rel.err=%g: %s"
 		"\n"
- 		, lambda, eps, llam, f0
+ 		, lambda, eps, llam
+		, LDBL_MANT_DIG, LDBL_MIN_EXP, LL, powl(2.L, LL)
+		, f0
 		, logf0, (double)RErr_log, (eq_log ? "TRUE" : "FALSE")
 		, explg, (double)RErr_exp, (eq_exp ? "TRUE" : "FALSE")
 		, lg1p,  (double)RErr_lg1p,(eq_lg1p? "TRUE" : "FALSE")
 	    );
     }
-    return ScalarLogical(eq_log && eq_exp);
+    return ScalarLogical(eq_log && eq_exp && eq_lg1p);
 }
 
 
@@ -100,20 +105,19 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0, SEXP verbose_)
     SEXP Prob = PROTECT(allocVector(REALSXP, n)); // the result
     double *prob = REAL(Prob);
     long double f, P,
-	exp_arg = 0, // "= 0": -Wall
 	ldlam = (long double) lam,
+	exp_arg = -ldlam,
 	llam  = logl(ldlam),
-	f0    = expl(-ldlam); // e^{-lambda}  [in long double]
+	f0    = expl(exp_arg); // e^{-lambda}  [in long double]
 	// f0 = f_0; where  f_j := e^{-lam} lam^j / j!  for j = 0,1,...
     if (f0 == 0.L) {
-	exp_arg = -ldlam;
 	if(verbose)
-	    REprintf("ppoisD(*, lambda=%g): expl(-ldlam)=%" PR_g_ "= 0 ==> llam=%" PR_g_
-		     ", exp_arg=%" PR_g_ "\n", lam, f0, llam, exp_arg);
+	    REprintf("ppoisD(*, lambda=%g): expl(-ldlam) =: f0=%" PR_g_ "= ~0 ==> llam=%" PR_g_
+		     "\n", lam, f0, llam);
     } else if(verbose)
-	    REprintf("ppoisD(*, lambda=%g): ldlam = %" PR_g_ ", expl(-ldlam)=%" PR_g_
-		     "; llam=%" PR_g_ ", exp_arg=%" PR_g_ "\n",
-		     lam, ldlam, f0, llam, exp_arg);
+	    REprintf("ppoisD(*, lambda=%g): ldlam = %" PR_g_ ", expl(-ldlam) =: f0=%" PR_g_
+		     "; llam=%" PR_g_ "\n",
+		     lam, ldlam, f0, llam);
 
     for(i = 0; i < n; i++) { /* prob[i] := ppois(xi, lambda) */
 
@@ -127,16 +131,22 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0, SEXP verbose_)
 	 *
 	 * However,  if(from_0) for speed reasons we will just go _forwards_
 	 */
-	if(from_0) {
+ 	if(from_0) { // <--> in R's ppoisD() :  all.from.0 = TRUE  {is the default!}
 	    if(i == 0) {
 		P = f = f0; // NB: here too, f = f_i := e^{-lam} lam^i / i!
 	    } else if(f > 4*LDBL_MIN) { // i >= 1
 		f *= ldlam/i;
 		// ==>     f == f_i := e^{-lam} lam^i / i!
 		P += f; // P == sum_{m=0, i} f_m
-	    } else { // i >= 1, f = f0 = 0:
+	    } else { // i >= 1, f is really small (close to subnormal) ==> work in log scale
 		//  f := e^-lam lam^i / i! = exp(-lam + i*log(lam) - log(i!))
 		//       and  log(i!) = log(i* (i-1)!) = log(i) + log((i-1)!)
+
+/* MM: __THINKO__????
+	Aren't we assuming below that we __keep__ running the log-scale case once we enter it
+	since we assume with  "exp_arg += ... that log(i!) = log(i) + log((i-1)!) part is ok?
+	It is only okay, if a *previous* exp_arg += .. already contains the  log((i-1)!)  terms ....
+*/
 		exp_arg += llam - logl((long double)i); // ... not accurate ?
 		// exp_arg = -ldlam + i*llam - lgammal((long double)(i+1));
 		if((f = expl(exp_arg)) > 0) {
@@ -145,7 +155,7 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0, SEXP verbose_)
 			REprintf(" ..>> i=%lld, finally new f = expl(exp_arg = %"PR_g_
 				 ") = %"PR_g_ " > 0\n", (long long)i, exp_arg, f);
 		} else if(verbose >= 2)
-			REprintf(" .. i=%lld, f = expl(exp_arg = %"PR_g_") = %"PR_g_"\n",
+			REprintf(" .. i=%lld, f = expl(exp_arg = %"PR_g_") = %"PR_g_" == 0 \n",
 				 (long long)i, exp_arg, f);
 	    }
 	    prob[i] = (double) P;
@@ -177,9 +187,9 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0, SEXP verbose_)
 	    if(sml_x) {
 		prob[i] = (double) S1;
 	    }
-	    else { // !sml_x : xi > jI := ceil(lam) - 1  ==> start summation at xi :
-		/* f := f_xi = e^-lam * lam^xi / xi! = e^-lam * lam^xi / gamma(xi+1)
-		 *           = e^{-lam + xi*log(lam) - log(gamma(xi+1)) } */
+	    else { /* !sml_x : xi > jI := ceil(lam) - 1  ==> start summation at xi :
+		    * f := f_xi = e^-lam * lam^xi / xi! = e^-lam * lam^xi / gamma(xi+1)
+		    *           = e^{-lam + xi*log(lam) - log(gamma(xi+1)) } */
 		if(verbose >= 2) {
 		    f = expl(-ldlam + xi*llam - lgammal((long double)(xi+1)));
 		    if(f == 0L) {
@@ -187,12 +197,12 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0, SEXP verbose_)
 				 ", exp_arg=%" PR_g_ "\n",
 				 xi, lam, f0, llam, exp_arg);
 			xi--;
-			while((f = expl(-ldlam + xi*logl(ldlam) - lgammal((long double)(xi+1)))) == 0L
+			while((f = expl(-ldlam + xi*llam - lgammal((long double)(xi+1)))) == 0L
 			      && xi > j_+1)
 			    xi--;
 		    }
 		} else { // not verbose
-		    while((f = expl(-ldlam + xi*logl(ldlam) - lgammal((long double)(xi+1)))) == 0L
+		    while((f = expl(-ldlam + xi*llam - lgammal((long double)(xi+1)))) == 0L
 			  && xi > j_+1)
 			xi--;
 		}
@@ -209,9 +219,8 @@ SEXP ppoisD(SEXP X, SEXP lambda_, SEXP all_from_0, SEXP verbose_)
 		    S2 += f;
 		}
 		prob[i] = (double) (S1 + S2);
-	    }
-	}
-
+	    } // else, i.e., not sml_x
+	} // else, i.e., not from_0, i.e., using xi = x[i] .. x[]
     } /* i = 0..(n-1) */
     UNPROTECT(1);
     return Prob;
